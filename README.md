@@ -10,7 +10,7 @@ This analysis provides an intuitive way to assess your current training load sta
 
 With this analysis, you can monitor the rate of change in your training load over time, helping to identify periods of rapid increases that might lead to overtraining or heightened injury risk. It's a valuable tool for periodized training monitoring and risk management.
 
-![]()
+![](https://gaudy-pipe-239.notion.site/image/attachment%3A3b50a271-b755-4eb5-9108-34f97e68b58b%3Aimage.png?table=block&id=1cafc401-a191-80e8-967a-fc60f6946af5&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 
 ### 3. Efficiency Factor Trend
 
