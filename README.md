@@ -1,4 +1,4 @@
-Few examples `Athlytics` may have:
+You might find these features helpful in `Athlytics` :
 
 ### 1. Load Exposure
 
