@@ -18,6 +18,10 @@ The Efficiency Factor (EF) is a common metric for assessing aerobic fitness adap
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A6bc4a180-e60c-414e-844a-a898efd42876%3Aimage.png?table=block&id=1cafc401-a191-8056-b314-fabc3d3d44ac&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1360&userId=&cache=v2)
 
+### 4. Long-Term Performance Metrics Tracking
 
+This analysis allows you to visualize the progression of your key performance benchmarks over extended periods. Track metrics like your estimated best times for standard distances (e.g., 1k, 5k, 10k) or critical power outputs. By observing these trends, including highlighted Personal Bests (PBs), you can directly assess the effectiveness of different training blocks, validate fitness improvements beyond physiological markers, identify performance plateaus, and stay motivated by seeing concrete results align with your goals. 
+
+![](https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&id=1cbfc401-a191-808d-a62b-faa76e4beb5f&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 ---
 *...more features upcoming.*
