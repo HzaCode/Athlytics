@@ -28,5 +28,6 @@ This analysis allows you to visualize the progression of your key performance be
 This analysis quantifies how much your heart rate "drifts" upwards relative to a steady pace or power output during aerobic activities. Calculated typically by comparing efficiency (Pace/HR or Power/HR) in the first half versus the second half of a sustained effort, a lower decoupling rate generally indicates better aerobic endurance and cardiovascular fitness. By categorizing runs based on duration, this view helps identify if endurance capacity differs across varying effort lengths and tracks improvements over time. Monitoring this trend can reveal stamina gains, signal fatigue/dehydration, or evaluate pacing strategies.
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&id=1cbfc401-a191-80b5-8f1a-efda0eddf069&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
+### 6
 ---
 *...more features upcoming.*
