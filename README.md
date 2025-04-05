@@ -39,7 +39,6 @@ This analysis provides an intuitive way to assess your current training load sta
 ``` r
 plot_load_exposure()
 ```
-plot_load_exposure() # Needs arguments like data = historical_summary
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3Ada869625-0481-4b1d-af1a-a1785add2962%3Aimage.png?table=block&id=1c9fc401-a191-8045-aadf-cc29956870ef&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 
 ### 2. ACWR Trend
