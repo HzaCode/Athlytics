@@ -139,13 +139,13 @@ The Efficiency Factor (EF) is a common metric for assessing aerobic fitness adap
 ```r
 plot_ef(
     stoken = stoken,
-    activity_type = "Run",
+    activity_type = c("Run", "Ride")
     ef_metric = "Pace_HR"         # Choose metric: "Pace_HR", "Power_HR"
 )
 
 ```
 
-![](https://gaudy-pipe-239.notion.site/image/attachment%3A6bc4a180-e60c-414e-844a-a898efd42876%3Aimage.png?table=block&id=1cafc401-a191-8056-b314-fabc3d3d44ac&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1360&userId=&cache=v2)
+![](https://gaudy-pipe-239.notion.site/image/attachment%3A20a75be7-f255-43ce-a848-ad8e4213858e%3Aimage.png?table=block&id=1cdfc401-a191-806a-986a-d49ee4389a08&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 
 ### 4. Long-Term Performance Metrics Tracking
 
