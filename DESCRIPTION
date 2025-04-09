@@ -5,17 +5,26 @@ Authors@R:
     person("Ang", "Ho", email = "ang@hezhiang.com", role = c("aut", "cre"))
 Description: Provides a suite of tools for advanced sports performance analysis and modeling, designed to work with activity data retrieved from Strava. It focuses on applying established sports science models and statistical methods to gain deeper insights into training load, performance prediction, recovery status, and identifying key performance factors, extending basic data analysis capabilities.
 License: MIT + file LICENSE
+URL: https://github.com/HzaCode/Athlytics 
+BugReports: https://github.com/HzaCode/Athlytics/issues 
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
-Imports: 
-    dplyr,
-    lubridate,
-    rstrava (>= 1.0.0)
-Suggests: 
-    ggplot2,
-    testthat (>= 3.0.0), 
+LazyData: true
+Depends: 
+    R (>= 3.6.0) 
+Imports:
+    dplyr (>= 1.0.0),
+    ggplot2,            
+    glue,               
+    httr,               
+    lubridate,          
+    purrr,              
+    rlang (>= 0.4.0),   
+    rStrava,            
+    scales,             
+    tidyr,              
+    zoo                 
     knitr,
-    rmarkdown
-Depends:
-    R (>= 3.5.0) 
+    rmarkdown,
+    testthat (>= 3.0.0)
+RoxygenNote: 7.2.3
+NeedsCompilation: no
