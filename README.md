@@ -7,7 +7,7 @@
 
 
 
-[![Status: Submitting to CRAN](https://img.shields.io/badge/Status-Submitting%20to%20CRAN-blue)](https://CRAN.R-project.org/)
+[![CRAN: Submitted](https://img.shields.io/badge/CRAN-Submitted-blue)](https://CRAN.R-project.org/) 
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 
 [](http://cranlogs.r-pkg.org/badges/grand-total/Athlytics)
