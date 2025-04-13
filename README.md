@@ -1,12 +1,13 @@
 
 
 
-# Athlytics <img src="man/figures/logo.png" align="right" height="138" />
+# Athlytics 
 
 <!--  --> <!-- Uncomment if on CRAN -->
 
-[](https://www.r-pkg.org/badges/version/Athlytics)
 
+
+[![Status: Submitting to CRAN](https://img.shields.io/badge/Status-Submitting%20to%20CRAN-blue)](https://CRAN.R-project.org/)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 
 [](http://cranlogs.r-pkg.org/badges/grand-total/Athlytics)
