@@ -9,9 +9,8 @@
 
 [![CRAN: Submitted](https://img.shields.io/badge/CRAN-Submitted-blue)](https://CRAN.R-project.org/) 
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
-
-[](http://cranlogs.r-pkg.org/badges/grand-total/Athlytics)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
+[![arXiv](https://img.shields.io/badge/arXiv-preprint-B31B1B.svg)](< in preparation >)
 ### Overview
 
 This is the development repository for **Athlytics**, an R package designed to simplify the analysis of athletic performance and training load data sourced **directly from the Strava API**. The package provides functions for fetching your Strava data, calculating key metrics, and generating insightful visualizations for training monitoring.
