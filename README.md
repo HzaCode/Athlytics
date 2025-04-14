@@ -10,6 +10,7 @@
 [![CRAN: Submitted](https://img.shields.io/badge/CRAN-Submitted-blue)](https://CRAN.R-project.org/) 
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
+[![pkgdown](https://img.shields.io/badge/pkgdown-site-blue.svg)](<in preparation>)
 [![arXiv](https://img.shields.io/badge/arXiv-preprint-B31B1B.svg)](< in preparation >)
 ### Overview
 
