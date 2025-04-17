@@ -1,9 +1,8 @@
 
 
 
-# Athlytics 
-
-<!--  --> <!-- Uncomment if on CRAN -->
+Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw=true" align="right" width="200"/>
+=======================================================
 
 
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
