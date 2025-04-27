@@ -8,6 +8,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 [![pkgdown](https://img.shields.io/badge/pkgdown-site-blue.svg)](<in preparation>)
+![](https://img.shields.io/badge/version-0.1.0-blue.svg)
 
 ### Overview
 
