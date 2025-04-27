@@ -15,7 +15,13 @@ This is the development repository for **Athlytics**, an R package designed to s
 
 ### Installation
 
-The development version from this repository can be installed as follows:
+You can install the released version of Athlytics from CRAN (once available) with:
+
+```r
+install.packages("Athlytics")
+```
+
+Alternatively, the development version from this repository can be installed as follows:
 
 ```r
 # install.packages('remotes')
@@ -236,7 +242,7 @@ pb_data <- calculate_pbs(
 plot_pbs(
     stoken = stoken,
     distance_meters = c(1000, 5000, 10000), # Specify distances in meters (REQUIRED)
-    activity_type = "Run"                   # Specify activity type (currently only "Run" is fully supported based on docs)
+    activity_type = "Run"                   # Specify activity type (currently only "Run" is fully supported)
     # , max_activities = 500                # Optional
     # , date_range = NULL                   # Optional
 )
