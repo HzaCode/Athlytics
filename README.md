@@ -3,7 +3,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 
 
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![CRAN: Submitted](https://img.shields.io/badge/CRAN-Submitted-blue)](https://CRAN.R-project.org/) 
+[![CRAN Status](https://img.shields.io/badge/CRAN-Pending%20Review-yellow)](https://CRAN.R-project.org/) 
 ![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
