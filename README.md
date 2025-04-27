@@ -3,11 +3,11 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 
 
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![CRAN: Submitted](https://img.shields.io/badge/CRAN-Submitted-blue)](https://CRAN.R-project.org/) 
+[![CRAN status: pending review](https://img.shields.io/badge/CRAN%20status-pending%20review-orange.svg)](https://CRAN.R-project.org/) 
 ![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
-[![pkgdown](https://img.shields.io/badge/pkgdown-site-blue.svg)](<in preparation>)
+[![arXiv: in preparation](https://img.shields.io/badge/arXiv-preprint-red.svg)](https://#)
 ![](https://img.shields.io/badge/version-0.1.0-blue.svg)
 [![Manual](https://img.shields.io/badge/Manual-Read%20PDF-blue?style=flat-square)](Athlytics-manual.pdf)
 
