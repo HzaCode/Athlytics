@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'devel'}
+          - {os: windows-latest, r: 'release'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -38,6 +38,10 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
+
+      - name: Install rcmdcheck explicitly
+        run: R -e "install.packages('rcmdcheck')"
+        shell: bash
 
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
