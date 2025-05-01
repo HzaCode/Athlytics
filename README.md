@@ -7,9 +7,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 ![R-CMD-check](https://img.shields.io/badge/R--CMD--check-passing-brightgreen)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
-[![arXiv: in preparation](https://img.shields.io/badge/arXiv-preprint-red.svg)](https://#)
-![](https://img.shields.io/badge/version-0.1.0-blue.svg)
-[![Manual](https://img.shields.io/badge/Manual-Read%20PDF-blue?style=flat-square)](Athlytics-manual.pdf)
+
 
 ### Overview
 
@@ -50,7 +48,7 @@ library(Athlytics)
     - Go to https://www.strava.com/settings/api.
     - Create a new API application (e.g., "My Athlytics Analysis").
     - Set the "Authorization Callback Domain" to `localhost`.
-    - Note your **Client ID** and **Client Secret**. **Keep the Secret confidential!**
+    - Note your **Client ID** and **Client Secret**.
 2. **Authenticate in R using `rStrava::strava_oauth()`:**
     - This function handles the OAuth2.0 flow, potentially opening a browser window for authorization.
     - It returns a `Token2.0` object needed by `Athlytics`.
@@ -93,9 +91,11 @@ While most functions rely on data directly available from Strava (like duration,
 
 These functions generate plots to analyze trends and performance, using data fetched and processed from Strava via the `stoken` you provide.
 
+**Important Note on API Usage and Performance:** Some functions, particularly `calculate_pbs` and `calculate_decoupling`, need to fetch detailed data (best efforts, streams) for multiple activities. This can be **slow** and may hit Strava API rate limits (leading to errors) if you analyze a large number of activities. Consider using the `max_activities` parameter in these functions or analyzing shorter date ranges if you encounter issues.
+
 ### 1. Load Exposure
 
-This analysis provides an intuitive way to assess your current training load status and potential injury risk level by plotting acute vs. chronic load. You can clearly see where your load combination falls within defined risk zones (like the sweet spot, caution zone, or danger zone). **Note:** When using TSS or HRSS as the `load_metric`, the calculation is an *approximation* based on average power or average heart rate available from the Strava activity summary, not detailed stream data.
+This analysis provides an intuitive way to assess your current training load status and potential injury risk level by plotting acute vs. chronic load. You can clearly see where your load combination falls within defined risk zones (like the sweet spot, caution zone, or danger zone). **Note:** When using TSS or HRSS as the `load_metric`, the calculation is an *approximation* based on average power or average heart rate available from the Strava activity summary, not detailed stream data (which would be much slower to process).
 
 **Calculating Data:**
 To get the underlying data (date, daily_load, atl, ctl, acwr) as a data frame without plotting:
@@ -105,7 +105,7 @@ To get the underlying data (date, daily_load, atl, ctl, acwr) as a data frame wi
 exposure_data <- calculate_exposure(
     stoken = stoken,
     activity_type = "Ride", # Example: Target Rides
-    load_metric = "tss",    # Example: Use TSS
+    load_metric = "tss",    # Example: Use approximate TSS based on average power
     user_ftp = 280,         # REQUIRED for TSS
     acute_period = 7,
     chronic_period = 28
@@ -120,7 +120,7 @@ exposure_data <- calculate_exposure(
 plot_exposure(
     stoken = stoken,
     activity_type = "Ride",        # Specify activity type(s)
-    load_metric = "tss",           # Choose metric
+    load_metric = "tss",           # Use approximate TSS
     user_ftp = 280,                # REQUIRED for TSS
     acute_period = 7,              # Duration (days) for acute load calculation
     chronic_period = 28            # Duration (days) for chronic load calculation
@@ -133,7 +133,7 @@ plot_exposure(
 plot_exposure(
     stoken = stoken,
     activity_type = "Run",         # Specify activity type(s)
-    load_metric = "hrss",          # Choose metric
+    load_metric = "hrss",          # Use approximate HRSS
     user_max_hr = 190,             # REQUIRED for HRSS
     user_resting_hr = 50,          # REQUIRED for HRSS
     acute_period = 7,              # Duration (days) for acute load calculation
@@ -244,8 +244,8 @@ pb_data <- calculate_pbs(
 plot_pbs(
     stoken = stoken,
     distance_meters = c(1000, 5000, 10000), # Specify distances in meters (REQUIRED)
-    activity_type = "Run"                   # Specify activity type (currently only "Run" is fully supported)
-    # , max_activities = 500                # Optional
+    activity_type = "Run",                   # Specify activity type (currently only "Run" is fully supported)
+    max_activities = 100                    # Optional: Limit activities to check for speed/API limits
     # , date_range = NULL                   # Optional
 )
 
@@ -253,10 +253,13 @@ plot_pbs(
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&id=1cbfc401-a191-808d-a62b-faa76e4beb5f&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 ### 5. Decoupling Trend (Pace/Power vs HR)
 
+**Note:** This analysis requires fetching detailed stream data for each activity and can be very slow or hit API rate limits. Use the `max_activities` parameter to limit the scope.
+
 **Calculating Data:**
 To get the underlying decoupling data (date, decoupling) as a data frame:
 ```r
-# Ensure stoken is valid. WARNING: Can be slow. Reduce max_activities for testing.
+# Ensure stoken is valid.
+# WARNING: Can be slow. Reduce max_activities for testing.
 decoupling_data <- calculate_decoupling(
     stoken = stoken,
     activity_type = "Run",
@@ -268,7 +271,8 @@ decoupling_data <- calculate_decoupling(
 
 **Plotting:**
 ```r
-# Ensure stoken is valid. WARNING: Can be slow. Reduce max_activities for plotting.
+# Ensure stoken is valid.
+# WARNING: Can be slow. Reduce max_activities for plotting.
 plot_decoupling(
     stoken = stoken,
     activity_type = "Run",

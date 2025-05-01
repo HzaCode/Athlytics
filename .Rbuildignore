@@ -1,2 +1,48 @@
-^Athlytics\.Rproj$
+# Regex patterns to ignore files/dirs during R CMD build
 ^\.Rproj\.user$
+^\.RData$
+^\.Rbuildignore$
+^\.gitignore$
+^\.git$
+^\.\.Rcheck$
+^cran-comments\.md$
+^.*\.Rproj$
+^Athlytics_.*\\.tar\\.gz$ # Ignore built packages
+^install_deps\.Rout$
+^install_pkgs\.R$ # Added just in case
+^run_tests\.R$ # Added just in case
+# Other non-standard files found
+^ijspp-article-p151\.pdf$
+^ijspp-article-p151\.txt$
+^image\.png$
+^install_deps\.R$
+^paper\.md$
+^pdf_to_text\.py$
+^rStrava.*\.txt$ # Ignore any rStrava text files
+# Ignore helper files if only used for local testing setup
+# ^helper-.*
+# Ignore R history if present
+^\.Rhistory$
+# Ignore OS specific hidden files
+^\.DS_Store$
+^Thumbs\.db$
+# Ignore testthat snapshots if any
+^tests/testthat/_snaps/$
+# Ignore temporary check directory if created inside project
+^Athlytics\.Rcheck/$
+# pkgdown files
+^_pkgdown\.yml$
+^docs$
+# Files/dirs noted in R CMD check
+^\\.aspell$ # Escaped dot
+^Athlytics-manual\\.pdf$
+^Athlytics_0\\.1\\.0/$
+^arxiv/$
+^create_sample_data\\.R$
+^figure/$
+^paper\\..*$
+^references\\.bib$
+^\.httr-oauth$
+
+# Ignore the manual test script
+^tests/manual_test_script\\.R$
