@@ -40,7 +40,7 @@ jobs:
           needs: check
 
       - name: Install rcmdcheck explicitly
-        run: R -e "install.packages('rcmdcheck')"
+        run: R -e "install.packages('rcmdcheck', repos = 'https://cloud.r-project.org')"
         shell: bash
 
       - name: Check package
