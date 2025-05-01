@@ -46,7 +46,7 @@ jobs:
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
-          args: --no-manual --as-cran
+          args: --as-cran
           error-on: '"warning"'
 
       # (Optional) Upload check logs as Artifact if check fails
