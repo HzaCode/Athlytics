@@ -48,8 +48,8 @@ jobs:
         with:
           args: --no-manual --as-cran
           error-on: '"warning"'
-          check-dir: "check"
 
+      # (Optional) Upload check logs as Artifact if check fails
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@v4
