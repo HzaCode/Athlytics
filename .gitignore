@@ -8,3 +8,8 @@ Athlytics.Rcheck/00check.log
 cran-comments.md
 CRAN-SUBMISSION
 tests/manual_test_script.R
+/Athlytics.Rcheck/00_pkg_src/Athlytics/.aspell
+/Athlytics.Rcheck/00_pkg_src/Athlytics
+/Athlytics.Rcheck
+*.gz
+/man
