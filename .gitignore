@@ -7,3 +7,4 @@ _pkgdown.yml
 Athlytics.Rcheck/00check.log
 cran-comments.md
 CRAN-SUBMISSION
+tests/manual_test_script.R
