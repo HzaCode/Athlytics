@@ -12,4 +12,3 @@ tests/manual_test_script.R
 /Athlytics.Rcheck/00_pkg_src/Athlytics
 /Athlytics.Rcheck
 *.gz
-/man

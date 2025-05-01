@@ -46,3 +46,6 @@
 
 # Ignore the manual test script
 ^tests/manual_test_script\\.R$
+
+# Ignore GitHub Actions directory
+^\.github$
