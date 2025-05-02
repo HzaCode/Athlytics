@@ -37,11 +37,15 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, any::covr, any::devtools
           needs: check
 
       - name: Install rcmdcheck explicitly
         run: R -e "install.packages('rcmdcheck', repos = 'https://cloud.r-project.org')"
+        shell: bash
+
+      - name: Build Vignettes
+        run: R -e "devtools::build_vignettes()"
         shell: bash
 
       - name: Check package
