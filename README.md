@@ -56,8 +56,9 @@ library(Athlytics)
     - It returns a `Token2.0` object needed by `Athlytics`.
     - **Use `cache = TRUE`** (default) to store the token securely (in `.httr-oauth`), avoiding re-authentication in later sessions.
 
-```r
+Note: Running `strava_oauth()` may open a browser window for you to log in to Strava and authorize the application.
 
+```r
 library(Athlytics)
 library(rStrava) 
 
@@ -72,8 +73,8 @@ client_secret <- Sys.getenv("STRAVA_CLIENT_SECRET")
 # Authenticate using rStrava and STORE the token object
 # Make sure app_scope allows reading activities.
 stoken <- rStrava::strava_oauth(app_name,
-                                client_id = client_id,
-                                client_secret = client_secret,
+                                app_client_id = client_id, # Use app_client_id
+                                app_secret = client_secret, # Use app_secret
                                 app_scope = "activity:read_all", # Or specific scope needed
                                 cache = TRUE) # IMPORTANT for reusing the token
 
