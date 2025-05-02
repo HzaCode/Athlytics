@@ -49,3 +49,4 @@
 
 # Ignore GitHub Actions directory
 ^\.github$
+^tests/run_all_tests\.R$ # Ignore the manual test script runner
