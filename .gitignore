@@ -13,3 +13,4 @@ tests/manual_test_script.R
 /Athlytics.Rcheck
 *.gz
 /tests/run_all_tests.R
+.httr-oauth
