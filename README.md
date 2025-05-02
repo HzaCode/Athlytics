@@ -293,4 +293,6 @@ plot_decoupling(
 
 ---
 
-*Note: Features are actively being developed and may change.*
+### Development Status & Potential Issues
+
+Athlytics is under active development. While core functionalities are tested, variations in Strava data availability or unforeseen API interactions might occasionally lead to warnings or errors during execution. We appreciate bug reports and contributions to improve robustness!
