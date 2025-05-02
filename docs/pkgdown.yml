@@ -1,8 +1,9 @@
 pandoc: 3.6.3
 pkgdown: 2.1.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2025-05-02T01:24Z
+articles:
+  Athlytics-introduction: Athlytics-introduction.html
+last_built: 2025-05-02T04:27Z
 urls:
   reference: https://hzaCode.github.io/Athlytics/reference
   article: https://hzaCode.github.io/Athlytics/articles

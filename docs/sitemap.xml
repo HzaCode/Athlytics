@@ -1,8 +1,11 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://hzaCode.github.io/Athlytics/404.html</loc></url>
+<url><loc>https://hzaCode.github.io/Athlytics/articles/Athlytics-introduction.html</loc></url>
+<url><loc>https://hzaCode.github.io/Athlytics/articles/index.html</loc></url>
 <url><loc>https://hzaCode.github.io/Athlytics/authors.html</loc></url>
 <url><loc>https://hzaCode.github.io/Athlytics/index.html</loc></url>
 <url><loc>https://hzaCode.github.io/Athlytics/LICENSE-text.html</loc></url>
+<url><loc>https://hzaCode.github.io/Athlytics/news/index.html</loc></url>
 <url><loc>https://hzaCode.github.io/Athlytics/reference/calculate_acwr.html</loc></url>
 <url><loc>https://hzaCode.github.io/Athlytics/reference/calculate_decoupling.html</loc></url>
 <url><loc>https://hzaCode.github.io/Athlytics/reference/calculate_ef.html</loc></url>
