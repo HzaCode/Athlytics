@@ -291,4 +291,4 @@ plot_decoupling(
 
 ---
 
-*README actively updating...*
+*Note: Features are actively being developed and may change.*
