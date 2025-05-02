@@ -9,6 +9,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/HzaCode/Athlytics/pulls)
 [![Website](https://img.shields.io/badge/website-Athlytics-blue)](https://hzaCode.github.io/Athlytics)
+![R Journal: In Submission](https://img.shields.io/badge/R%20Journal-In%20Submission-orange)
 
 
 ### Overview
