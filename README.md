@@ -89,7 +89,7 @@ While most functions rely on data directly available from Strava (like duration,
 
 *(Provide these parameters directly to the Athlytics function call if the chosen `load_metric` or analysis requires them. Check function documentation for details.)*
 
-### Key Analysis Visualizations
+### Example Analysis Visualizations
 
 These functions generate plots to analyze trends and performance, using data fetched and processed from Strava via the `stoken` you provide.
 
