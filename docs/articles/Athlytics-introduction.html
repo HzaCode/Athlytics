@@ -97,10 +97,6 @@ available) with:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages('remotes') # If needed</span></span>
 <span><span class="co"># remotes::install_github('HzaCode/Athlytics') </span></span></code></pre></div>
-<p>You also need the <code>rStrava</code> package for
-authentication:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("rStrava") </span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="authentication-with-strava">Authentication with Strava<a class="anchor" aria-label="anchor" href="#authentication-with-strava"></a>
@@ -127,7 +123,7 @@ store the token and avoid re-authenticating every session.</li>
 </ul>
 </li>
 </ol>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># --- Example Authentication Code ---</span></span>
 <span><span class="co"># (Do not run this block directly in the vignette build)</span></span>
 <span></span>
@@ -170,7 +166,7 @@ running interactively with a valid, cached token.</p>
 (chronic) training load to assess readiness and potential injury risk.
 Note that TSS/HRSS calculations based on activity summaries are
 approximations.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate using approximate TSS for Rides (Requires FTP)</span></span>
 <span><span class="va">exposure_data_tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_exposure.html">calculate_exposure</a></span><span class="op">(</span></span>
 <span>    stoken <span class="op">=</span> <span class="va">stoken_placeholder</span>, </span>
@@ -202,7 +198,7 @@ approximations.</p>
 </h3>
 <p>Tracks the Acute:Chronic Workload Ratio over time, highlighting
 periods of potentially risky load increases.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate ACWR using duration for Runs</span></span>
 <span><span class="va">acwr_data_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span></span>
 <span>    stoken <span class="op">=</span> <span class="va">stoken_placeholder</span>,</span>
@@ -221,7 +217,7 @@ periods of potentially risky load increases.</p>
 <p>Monitors aerobic efficiency, typically calculated as output (Pace or
 Power) divided by input (Heart Rate). Requires activities with both
 relevant metrics.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate EF (Pace/HR) for Runs and Rides</span></span>
 <span><span class="va">ef_data_pacehr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
 <span>    stoken <span class="op">=</span> <span class="va">stoken_placeholder</span>,</span>
@@ -239,7 +235,7 @@ relevant metrics.</p>
 distances (currently primarily for running).</p>
 <p><strong>Note:</strong> Fetching PB data can be slow and
 API-intensive.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate PBs for 1k, 5k, 10k Runs</span></span>
 <span><span class="co"># Limit activities checked for speed</span></span>
 <span><span class="va">pb_data_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_pbs.html">calculate_pbs</a></span><span class="op">(</span></span>
@@ -258,9 +254,13 @@ API-intensive.</p>
 <p>Assesses cardiovascular drift during activities by comparing
 performance (Pace or Power) in the first half vs. the second half
 relative to Heart Rate.</p>
-<p><strong>Note:</strong> Fetching decoupling data requires detailed
-activity streams and can be very slow and API-intensive.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p><strong>Note:</strong> Fetching decoupling data now uses direct
+Strava API calls via <code>httr</code> (instead of
+<code><a href="https://rdrr.io/pkg/rStrava/man/get_activity_streams.html" class="external-link">rStrava::get_activity_streams</a></code>) to obtain detailed activity
+streams. This can be very slow and may hit API rate limits more easily,
+especially for many activities. Consider using the
+<code>max_activities</code> parameter.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate Pace/HR decoupling for Runs</span></span>
 <span><span class="co"># Limit activities checked for speed</span></span>
 <span><span class="va">decoupling_data_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span>

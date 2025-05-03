@@ -52,12 +52,6 @@ Alternatively, install the development version from GitHub:
 # remotes::install_github('HzaCode/Athlytics') 
 ```
 
-You also need the `rStrava` package for authentication:
-
-```r
-# install.packages("rStrava") 
-```
-
 ## Authentication with Strava
 
 `Athlytics` requires a valid Strava API token to fetch data. This is handled using the `rStrava` package.
@@ -195,7 +189,7 @@ plot_pbs(pb_data = pb_data_run)
 
 Assesses cardiovascular drift during activities by comparing performance (Pace or Power) in the first half vs. the second half relative to Heart Rate.
 
-**Note:** Fetching decoupling data requires detailed activity streams and can be very slow and API-intensive.
+**Note:** Fetching decoupling data now uses direct Strava API calls via `httr` (instead of `rStrava::get_activity_streams`) to obtain detailed activity streams. This can be very slow and may hit API rate limits more easily, especially for many activities. Consider using the `max_activities` parameter.
 
 ```{r decoupling_example, eval=EVAL_EXAMPLES}
 # Calculate Pace/HR decoupling for Runs
