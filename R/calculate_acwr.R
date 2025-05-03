@@ -4,9 +4,7 @@
 #'
 #' Calculates the Acute:Chronic Workload Ratio (ACWR) from Strava data.
 #'
-#' This function fetches activities, calculates daily load using a chosen metric,
-#' computes Acute Training Load (ATL) and Chronic Training Load (CTL),
-#' and finally calculates the raw and smoothed ACWR.
+#' Calculates daily load, ATL, CTL, raw ACWR, and smoothed ACWR from Strava activities.
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`.
 #' @param activity_type Optional. Filter activities by type (e.g., "Run", "Ride").
@@ -25,9 +23,8 @@
 #' @return A data frame with columns: `date`, `acwr` (raw ACWR), and `acwr_smooth`
 #'   (smoothed ACWR) for the specified date range.
 #'
-#' @details This function provides the data used by `plot_acwr`. It fetches
-#'   activity data going back far enough to accurately calculate the initial
-#'   chronic load. Note that fetching data can be slow if the period is long.
+#' @details Provides data for `plot_acwr`. Fetches extra prior data for accurate
+#'   initial CTL. Fetching can be slow for long periods.
 #'
 #' @importFrom rStrava get_activity_list
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
@@ -89,8 +86,8 @@ calculate_acwr <- function(stoken,
   # --- Fetch Strava Activities ---
   fetch_start_buffer_days <- chronic_period
   fetch_start_date <- analysis_start_date - lubridate::days(fetch_start_buffer_days)
-  before_epoch <- as.numeric(lubridate::as_datetime(analysis_end_date + lubridate::days(1)))
-  after_epoch <- as.numeric(lubridate::as_datetime(fetch_start_date))
+  fetch_before_date <- analysis_end_date + lubridate::days(1)
+  fetch_after_date <- fetch_start_date
 
   message("Fetching activities from Strava...")
   activities_list <- list()
@@ -101,9 +98,9 @@ calculate_acwr <- function(stoken,
 
   while (!fetched_all && page <= max_pages) {
     current_page_activities <- tryCatch({
-      rStrava::get_activity_list(stoken, before = before_epoch, after = after_epoch, page = page, per_page = 200)
+      rStrava::get_activity_list(stoken, before = fetch_before_date, after = fetch_after_date)
     }, error = function(e) {
-      message(sprintf("Error fetching page %d: %s", page, e$message))
+      message(sprintf("Error fetching activities: %s", e$message))
       return(NULL)
     })
 
@@ -112,8 +109,7 @@ calculate_acwr <- function(stoken,
     } else if (length(current_page_activities) > 0) {
       activities_list <- c(activities_list, current_page_activities)
       activities_fetched_count <- activities_fetched_count + length(current_page_activities)
-      if (length(current_page_activities) < 200) fetched_all <- TRUE
-      page <- page + 1
+      fetched_all <- TRUE
     } else {
       fetched_all <- TRUE
     }
@@ -130,50 +126,98 @@ calculate_acwr <- function(stoken,
   safe_as_numeric <- function(x) { as.numeric(x %||% 0) }
 
   daily_load_df <- purrr::map_dfr(activities_list, ~{
+    # --- DEBUG REMOVED: Remove browser() call ---
+    # if (!exists("debug_invoked_acwr", where = .GlobalEnv)) { 
+    #     message("DEBUG: Entering map_dfr function body for the first time. Invoking browser().")
+    #     browser() # <<< PAUSES EXECUTION HERE FOR INTERACTIVE DEBUGGING >>>
+    #     assign("debug_invoked_acwr", TRUE, envir = .GlobalEnv) # Prevent browser() on subsequent loops
+    # }
+    # --- End DEBUG ---
+    
+    # Add index or ID for debugging
+    act_id <- as.character(.x$id %||% "UNKNOWN_ID")
+    message(sprintf("  Processing activity %s...", act_id))
+    
     activity_date <- lubridate::as_date(lubridate::ymd_hms(.x$start_date_local %||% NA))
     act_type <- .x$type %||% "Unknown"
+    message(sprintf("    Date: %s, Type: %s", activity_date, act_type))
 
-    if (is.na(activity_date) || activity_date < fetch_start_date || activity_date > analysis_end_date) return(NULL)
-    if (!is.null(activity_type) && !act_type %in% activity_type) return(NULL)
+    if (is.na(activity_date) || activity_date < fetch_start_date || activity_date > analysis_end_date) {
+        message("    -> Filtered out by date.")
+        return(NULL)
+    }
+    if (!is.null(activity_type) && !act_type %in% activity_type) {
+        message("    -> Filtered out by type.")
+        return(NULL)
+    }
 
-    load_value <- 0
     duration_sec <- safe_as_numeric(.x$moving_time)
     distance_m <- safe_as_numeric(.x$distance)
     elapsed_sec <- safe_as_numeric(.x$elapsed_time)
     avg_hr <- safe_as_numeric(.x$average_heartrate)
     avg_power <- safe_as_numeric(.x$average_watts)
     elevation_gain <- safe_as_numeric(.x$total_elevation_gain)
-    np_proxy <- safe_as_numeric(.x$device_watts %||% avg_power)
+    # Use device_watts if available (direct power), otherwise fallback to average_watts (estimated power)
+    np_proxy <- safe_as_numeric(.x$device_watts %||% .x$average_watts %||% 0) 
+    message(sprintf("    Duration: %.0f sec", duration_sec))
 
+    # --- Added Debugging and Refined Logic --- 
+    message(sprintf("    Inputs check: load_metric='%s', duration_sec=%.1f, distance_m=%.1f, avg_hr=%.1f, np_proxy=%.1f, user_ftp=%s, user_max_hr=%s, user_resting_hr=%s", 
+                    load_metric, duration_sec, distance_m, avg_hr, np_proxy, 
+                    deparse(user_ftp), deparse(user_max_hr), deparse(user_resting_hr)))
+    
     if (duration_sec > 0) {
-      load_value <- dplyr::case_when(
-        load_metric == "duration_mins" ~ duration_sec / 60,
-        load_metric == "distance_km" ~ distance_m / 1000,
-        load_metric == "elapsed_time_mins" ~ elapsed_sec / 60,
-        load_metric == "elevation_gain_m" ~ elevation_gain,
-        load_metric == "hrss" & avg_hr > 0 & !is.null(user_max_hr) & !is.null(user_resting_hr) & user_max_hr > user_resting_hr & avg_hr > user_resting_hr & avg_hr <= user_max_hr ~ {
-          hr_reserve <- user_max_hr - user_resting_hr
-          avg_hr_rel <- (avg_hr - user_resting_hr) / hr_reserve
-          (duration_sec / 60) * avg_hr_rel # Simplified TRIMP
-        },
-        load_metric == "tss" & np_proxy > 0 & !is.null(user_ftp) & user_ftp > 0 ~ {
-          intensity_factor <- np_proxy / user_ftp
-          (duration_sec * np_proxy * intensity_factor) / (user_ftp * 3600) * 100
-        },
-        TRUE ~ 0 # Default case if conditions not met
-      )
+      # Initialize load_value outside case_when to handle default case cleanly
+      load_value <- 0 
+      
+      if (load_metric == "duration_mins") {
+          load_value <- duration_sec / 60
+      } else if (load_metric == "distance_km") {
+          load_value <- distance_m / 1000
+      } else if (load_metric == "elapsed_time_mins") {
+          load_value <- elapsed_sec / 60
+      } else if (load_metric == "elevation_gain_m") {
+          load_value <- elevation_gain
+      } else if (load_metric == "hrss") {
+          # Check required HR parameters before calculating
+          if (!is.null(user_max_hr) && !is.null(user_resting_hr) && is.numeric(user_max_hr) && is.numeric(user_resting_hr) && 
+              user_max_hr > user_resting_hr && avg_hr > user_resting_hr && avg_hr <= user_max_hr) {
+            hr_reserve <- user_max_hr - user_resting_hr
+            avg_hr_rel <- (avg_hr - user_resting_hr) / hr_reserve
+            load_value <- (duration_sec / 60) * avg_hr_rel # Simplified TRIMP
+          } else {
+              message("    Skipping HRSS calculation: Missing/invalid HR parameters or avg_hr out of range.")
+          }
+      } else if (load_metric == "tss") {
+           # Check required FTP parameter before calculating
+           if (!is.null(user_ftp) && is.numeric(user_ftp) && user_ftp > 0 && np_proxy > 0) {
+             intensity_factor <- np_proxy / user_ftp
+             load_value <- (duration_sec * np_proxy * intensity_factor) / (user_ftp * 3600) * 100
+           } else {
+               message("    Skipping TSS calculation: Missing/invalid FTP or power data (np_proxy).")
+           }
+      }
+      
+      message(sprintf("    Calculated load_value: %.2f", load_value))
+    } else {
+        message("    Duration <= 0, load is 0.")
+        load_value <- 0 # Ensure load_value is defined even if duration is 0
     }
 
     if (!is.na(load_value) && load_value > 0) {
+      message("    -> Activity PASSED filters, returning load data.")
       data.frame(
         date = activity_date,
         load = load_value,
         stringsAsFactors = FALSE
       )
     } else {
+      message("    -> Activity FAILED final check (load NA or <= 0).")
       NULL
     }
   })
+
+  message("Finished processing activity list.")
 
   if (is.null(daily_load_df) || nrow(daily_load_df) == 0) {
     stop("No activities found with valid load data for the specified criteria.")
@@ -190,26 +234,48 @@ calculate_acwr <- function(stoken,
     dplyr::left_join(daily_load_summary, by = "date") %>%
     dplyr::mutate(daily_load = dplyr::coalesce(.data$daily_load, 0)) %>% 
     dplyr::arrange(.data$date)
+    
+  # --- Force evaluation to potentially resolve lazy-eval issues ---
+  force(daily_load_complete)
+  # --- End force eval ---
+    
+  # --- DEBUG REMOVED: Check daily_load_complete before pipeline ---
+  # message("--- Checking daily_load_complete structure and summary ---")
+  # print(utils::str(daily_load_complete))
+  # print(summary(daily_load_complete))
+  # --- End DEBUG ---
 
   if (nrow(daily_load_complete) < chronic_period) {
     warning("Not enough data points (after fetching) to calculate the full chronic period. Results may be unreliable.")
   }
+  
+  # --- DEBUG REMOVED: Pause before main calculation pipeline ---
+  # message("--- Pausing execution before main ACWR calculation pipeline. Type 'c' to continue or 'n' to step through the pipe. ---")
+  # browser()
+  # --- End DEBUG ---
 
   acwr_data <- daily_load_complete %>%
     dplyr::mutate(
+      # Ensure daily_load is numeric before rollmean
+      daily_load = as.numeric(.data$daily_load),
       acute_load = zoo::rollmean(.data$daily_load, k = acute_period, fill = NA, align = "right"),
       chronic_load = zoo::rollmean(.data$daily_load, k = chronic_period, fill = NA, align = "right")
-    ) %>% 
-    dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date) %>% 
+    ) %>%
+    # --- Add check/coercion for chronic_load before filtering/mutate ---
+    dplyr::mutate(chronic_load = as.numeric(.data$chronic_load)) %>% # Ensure numeric
+    dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date) %>%
     dplyr::mutate(
-      acwr = ifelse(.data$chronic_load > 0.01, .data$acute_load / .data$chronic_load, NA)
-    ) %>% 
+      # Explicitly handle potential NA in chronic_load within the condition
+      acwr = ifelse(!is.na(.data$chronic_load) & .data$chronic_load > 0.01, 
+                    .data$acute_load / .data$chronic_load, 
+                    NA)
+    ) %>%
+    # --- Ensure acwr is numeric before next rollmean ---
+    dplyr::mutate(acwr = as.numeric(.data$acwr)) %>% # Ensure numeric
     dplyr::mutate(
       acwr_smooth = zoo::rollmean(.data$acwr, k = smoothing_period, align = "right", fill = NA)
-    ) %>% 
-    dplyr::select(.data$date, .data$acwr, .data$acwr_smooth) %>% 
-    # Keep NAs for smoothing window at start, only drop if smooth is NA for other reasons (like missing ACWR)
-    # tidyr::drop_na(.data$acwr_smooth) # Optional: remove rows where smoothed value is NA
+    ) %>%
+    dplyr::select(.data$date, .data$acwr, .data$acwr_smooth)
     
   if (nrow(acwr_data) == 0) {
     stop("Could not calculate ACWR after processing. Check data availability and periods.")

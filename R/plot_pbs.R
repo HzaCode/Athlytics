@@ -2,8 +2,8 @@
 #'
 #' Visualizes the trend of personal best times for specific running distances.
 #'
-#' Fetches or uses pre-calculated PB data to create a ggplot showing the best effort
-#' times for selected distances over time. Points marking a new personal best are highlighted.
+#' Plots the trend of best efforts for specified distances, highlighting new PBs.
+#' Uses pre-calculated data or calls `calculate_pbs`.
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `pbs_df` is provided.
 #' @param activity_type Type(s) of activities to search (e.g., "Run"). Default "Run".
@@ -14,15 +14,11 @@
 #' @param pbs_df Optional. A pre-calculated data frame from `calculate_pbs`.
 #'   If provided, `stoken` and other calculation parameters are ignored.
 #'
-#' @return A ggplot object showing PB trends. If multiple distances are provided,
-#'   the plot is faceted by distance.
+#' @return A ggplot object showing PB trends, faceted by distance if multiple are plotted.
 #'
-#' @details This function visualizes the output of `calculate_pbs`. Each point represents
-#'   the best time achieved for that distance in a specific activity. Solid points indicate
-#'   that the effort set a new cumulative PB at that time. The y-axis is formatted as MM:SS.
-#'
-#'   If `pbs_df` is not supplied, the function first calls `calculate_pbs`, which can be slow
-#'   due to fetching detailed activity data.
+#' @details Visualizes data from `calculate_pbs`. Points show best efforts;
+#'   solid points mark new PBs. Y-axis is MM:SS.
+#'   If `pbs_df` is not provided, calls `calculate_pbs` first (can be slow).
 #'
 #' @importFrom rStrava get_activity_list get_activity
 #' @importFrom dplyr filter select mutate arrange group_by slice bind_rows summarise distinct rename %>% left_join

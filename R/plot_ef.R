@@ -4,8 +4,8 @@
 #'
 #' Visualizes the trend of Efficiency Factor (EF) over time.
 #'
-#' Calculates or uses pre-calculated Efficiency Factor data (Output/Input ratio,
-#' typically Pace/HR or Power/HR) and creates a ggplot showing the trend.
+#' Plots the Efficiency Factor (EF) trend over time. Uses pre-calculated data
+#' or calls `calculate_ef`.
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `ef_df` is provided.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
@@ -18,15 +18,11 @@
 #' @param ef_df Optional. A pre-calculated data frame from `calculate_ef`.
 #'   If provided, `stoken` and other calculation parameters are ignored.
 #'
-#' @return A ggplot object showing the EF trend. Higher values generally indicate
-#'   better aerobic efficiency.
+#' @return A ggplot object showing the EF trend.
 #'
-#' @details Efficiency Factor (EF) measures output (speed or power) relative to input (heart rate).
-#'   An upward trend often suggests improved aerobic fitness. This function plots EF calculated from
-#'   average values for each activity. Activities lacking the necessary data (HR, power/distance)
-#'   are excluded.
-#'
-#'   If `ef_df` is not supplied, the function first calls `calculate_ef`.
+#' @details Plots EF (output/HR based on activity averages). An upward trend
+#'   often indicates improved aerobic fitness. Points colored by activity type.
+#'   If `ef_df` is not provided, calls `calculate_ef` first.
 #'
 #' @importFrom rStrava get_activity_list
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when pull

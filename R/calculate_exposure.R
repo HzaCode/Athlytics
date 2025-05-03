@@ -4,10 +4,7 @@
 #'
 #' Calculates training load metrics like ATL, CTL, and ACWR from Strava data.
 #'
-#' Fetches activities within a specified date range, calculates daily load
-#' based on a chosen metric (e.g., duration, TSS, HRSS), and computes
-#' Acute Training Load (ATL), Chronic Training Load (CTL), and the
-#' Acute:Chronic Workload Ratio (ACWR).
+#' Calculates daily load, ATL, CTL, and ACWR from Strava activities based on the chosen metric and periods.
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`.
 #' @param activity_type Type(s) of activities to include (e.g., "Run", "Ride").
@@ -25,10 +22,8 @@
 #' @return A data frame with columns: `date`, `daily_load`, `atl` (Acute Load),
 #'   `ctl` (Chronic Load), and `acwr` (Acute:Chronic Ratio) for the analysis period.
 #'
-#' @details This function provides the data used by `plot_exposure`. It automatically
-#'   fetches activities for a longer period before the analysis start date to ensure
-#'   the initial CTL calculation is accurate. Depending on the chosen `load_metric`,
-#'   you may need to provide `user_ftp` (for TSS) or `user_max_hr` and `user_resting_hr` (for HRSS).
+#' @details Provides data for `plot_exposure`. Fetches extra prior data for
+#'   accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 #'
 #' @importFrom rStrava get_activity_list
 #' @importFrom dplyr filter select mutate arrange group_by summarise %>% left_join coalesce ungroup

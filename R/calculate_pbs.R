@@ -4,9 +4,8 @@
 #'
 #' Finds personal best times for specified distances from Strava activities.
 #'
-#' Fetches activities, extracts the relevant "best efforts" reported by Strava
-#' for each activity, and determines the cumulative personal best time for each
-#' distance up to the date of each effort.
+#' Fetches detailed activity data, extracts Strava's 'best efforts', and calculates
+#' cumulative PBs for specified distances.
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`.
 #' @param activity_type Type(s) of activities to search for PBs (e.g., "Run").
@@ -21,10 +20,8 @@
 #'   `cumulative_pb_seconds` (the PB for that distance as of that date), `is_pb` (TRUE if this effort set a new PB),
 #'   `distance_label` (e.g., "5k"), and `time_period` (formatted time).
 #'
-#' @details This function provides the data used by `plot_pbs`. It processes activities
-#'   chronologically to correctly identify when a new PB was set.
-#'   Requires fetching detailed data for each activity, which can be slow and is subject
-#'   to API rate limits (a 1-second delay is included between activity fetches).
+#' @details Provides data for `plot_pbs`. Processes activities chronologically.
+#'   Fetching detailed data is slow due to API limits (includes 1s delay per activity).
 #'
 #' @importFrom rStrava get_activity_list get_activity
 #' @importFrom dplyr filter select mutate arrange group_by ungroup bind_rows slice lead lag distinct %>%
@@ -124,6 +121,15 @@ calculate_pbs <- function(stoken,
   }
   message(sprintf("Found %d activities of type '%s' to process. Fetching details...", nrow(activities_to_process), paste(activity_type, collapse=", ")))
 
+  # --- Apply max_activities limit ---
+  if (nrow(activities_to_process) > max_activities) {
+    message(sprintf("Applying max_activities limit: Processing only the latest %d activities out of %d found.",
+                    max_activities, nrow(activities_to_process)))
+    # Ensure activities are sorted by date descending if not already guaranteed by get_activity_list
+    # activities_to_process <- activities_to_process %>% dplyr::arrange(desc(start_date_local))
+    activities_to_process <- activities_to_process %>%
+      dplyr::slice_head(n = max_activities)
+  }
 
   # --- 3. & 4. Loop, Get Details, Extract Best Efforts ---
   safe_get_activity <- purrr::possibly(rStrava::get_activity, otherwise = NULL, quiet = FALSE)

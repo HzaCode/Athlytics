@@ -94,7 +94,7 @@ While most functions rely on data directly available from Strava (like duration,
 
 These functions generate plots to analyze trends and performance, using data fetched and processed from Strava via the `stoken` you provide.
 
-**Important Note on API Usage and Performance:** Some functions, particularly `calculate_pbs` and `calculate_decoupling`, need to fetch detailed data (best efforts, streams) for multiple activities. This can be **slow** and may hit Strava API rate limits (leading to errors) if you analyze a large number of activities. Consider using the `max_activities` parameter in these functions or analyzing shorter date ranges if you encounter issues.
+**Important Note on API Usage and Performance:** Some functions, particularly `calculate_pbs` (which needs to fetch detailed data for each activity) and `calculate_decoupling` (which now uses `httr` to directly fetch detailed activity streams), can be **slow** and may hit Strava API rate limits (leading to errors) if you analyze a large number of activities. Consider using the `max_activities` parameter in these functions or analyzing shorter date ranges if you encounter issues.
 
 ### 1. Load Exposure
 
@@ -150,7 +150,7 @@ plot_exposure(
 
 ### 2. ACWR Trend
 
-With this analysis, you can monitor the rate of change in your training load over time, helping to identify periods of rapid increases that might lead to overtraining or heightened injury risk. It's a valuable tool for periodized training monitoring and risk management.
+With this analysis, you can monitor the rate of change in your training load over time, helping to identify periods of rapid increases that might lead to overtraining or heightened injury risk. It's a valuable tool for periodized training monitoring and risk management. *Note: While `calculate_exposure` also calculates ACWR as part of its output, this `calculate_acwr` function focuses specifically on the ACWR metric and its associated plot.*
 
 **Calculating Data:**
 To get the underlying ACWR data (date, acwr, acwr_smooth) as a data frame:
@@ -247,28 +247,37 @@ pb_data <- calculate_pbs(
 plot_pbs(
     stoken = stoken,
     distance_meters = c(1000, 5000, 10000), # Specify distances in meters (REQUIRED)
-    activity_type = "Run",                   # Specify activity type (currently only "Run" is fully supported)
-    max_activities = 100                    # Optional: Limit activities to check for speed/API limits
+    activity_type = "Run"                   # Specify activity type (currently only "Run" is fully supported)
+    # , max_activities = 100                  # Optional: Limit activities to check for speed/API limits
     # , date_range = NULL                   # Optional
 )
 
 ```
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&id=1cbfc401-a191-808d-a62b-faa76e4beb5f&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
+
+# ============================================================
+# Re-adding Decoupling Section
+# ============================================================
 ### 5. Decoupling Trend (Pace/Power vs HR)
 
-**Note:** This analysis requires fetching detailed stream data for each activity and can be very slow or hit API rate limits. Use the `max_activities` parameter to limit the scope.
+**Note:** This analysis requires fetching detailed stream data for each activity (`calculate_decoupling` uses `httr` for this) and can be very slow or hit API rate limits. Use the `max_activities` parameter to limit the scope.
 
 **Calculating Data:**
 To get the underlying decoupling data (date, decoupling) as a data frame:
 ```r
 # Ensure stoken is valid.
 # WARNING: Can be slow. Reduce max_activities for testing.
-decoupling_data <- calculate_decoupling(
-    stoken = stoken,
-    activity_type = "Run",
-    decouple_metric = "Pace_HR",
-    max_activities = 20 # Use a small number for example
-)
+de decoupling_data <- tryCatch({
+    calculate_decoupling(
+        stoken = stoken,
+        activity_type = "Run",
+        decouple_metric = "Pace_HR",
+        max_activities = 20 # Use a small number for example
+    )
+}, error = function(e) {
+    message("Error calculating decoupling: ", e$message)
+    NULL
+})
 # print(tail(decoupling_data)) # Uncomment to view
 ```
 
@@ -276,21 +285,30 @@ decoupling_data <- calculate_decoupling(
 ```r
 # Ensure stoken is valid.
 # WARNING: Can be slow. Reduce max_activities for plotting.
-plot_decoupling(
-    stoken = stoken,
-    activity_type = "Run",
-    decouple_metric = "Pace_HR",
-    max_activities = 20 # Use a small number for example
-    # , start_date = NULL
-    # , end_date = NULL
-    # , min_duration_mins = 45
-    # , add_trend_line = TRUE
-    # , smoothing_method = "loess"
-)
+# Example: Plot pre-calculated data if calculation succeeded
+if (!is.null(decoupling_data)) {
+    plot_decoupling(
+        decoupling_df = decoupling_data
+        # Optional params for plot_decoupling can be added here if needed,
+        # like add_trend_line = FALSE, etc.
+        # Since we provide decoupling_df, other calculation params are ignored by plot_decoupling.
+    )
+} else {
+    message("Skipping decoupling plot as calculation failed or returned no data.")
+}
+
+# Alternative: Let plot_decoupling handle the calculation (can be slow)
+# plot_decoupling(
+#     stoken = stoken,
+#     activity_type = "Run",
+#     decouple_metric = "Pace_HR",
+#     max_activities = 20 # Use a small number for example
+# )
 
 ```
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&id=1cbfc401-a191-80b5-8f1a-efda0eddf069&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
+# ============================================================
 
 ---
 

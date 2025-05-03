@@ -2,8 +2,7 @@
 
 #' Calculate Efficiency Factor (EF) Data
 #'
-#' Fetches Strava activity data, calculates a specified Efficiency Factor (EF)
-#' metric (Pace/HR or Power/HR), and returns the results as a data frame.
+#' Calculates Efficiency Factor (Pace/HR or Power/HR) from Strava activities.
 #'
 #' @param stoken A valid Strava token object obtained using \code{rStrava::strava_oauth()}.
 #' @param activity_type Character vector or single string specifying activity type(s).
@@ -15,8 +14,8 @@
 #' @return A data frame with columns: date, activity_type, ef_value.
 #'
 #' @details
-#' This function performs the data fetching and calculation steps used by \code{plot_ef},
-#' returning the underlying data frame.
+#' Fetches activity summaries and calculates EF (output/HR) for each.
+#' Provides the data used by `plot_ef`.
 #'
 #' @importFrom rStrava get_activity_list
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when pull
@@ -64,8 +63,8 @@ calculate_ef <- function(stoken,
 
   # --- Fetch Strava Activities ---
   fetch_start_date <- analysis_start_date
-  before_epoch <- as.numeric(lubridate::as_datetime(analysis_end_date + lubridate::days(1)))
-  after_epoch <- as.numeric(lubridate::as_datetime(fetch_start_date))
+  fetch_before_date <- analysis_end_date + lubridate::days(1)
+  fetch_after_date <- fetch_start_date
 
   message("Fetching activities from Strava...")
   activities_list <- list()
@@ -76,9 +75,9 @@ calculate_ef <- function(stoken,
 
   while (!fetched_all && page <= max_pages) {
     current_page_activities <- tryCatch({
-      rStrava::get_activity_list(stoken, before = before_epoch, after = after_epoch, page = page, per_page = 200)
+      rStrava::get_activity_list(stoken, before = fetch_before_date, after = fetch_after_date)
     }, error = function(e) {
-      message(sprintf("Error fetching page %d: %s", page, e$message))
+      message(sprintf("Error fetching activities: %s", e$message))
       return(NULL)
     })
 
@@ -87,8 +86,7 @@ calculate_ef <- function(stoken,
     } else if (length(current_page_activities) > 0) {
       activities_list <- c(activities_list, current_page_activities)
       activities_fetched_count <- activities_fetched_count + length(current_page_activities)
-      if (length(current_page_activities) < 200) fetched_all <- TRUE
-      page <- page + 1
+      fetched_all <- TRUE
     } else {
       fetched_all <- TRUE
     }

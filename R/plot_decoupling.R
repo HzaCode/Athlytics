@@ -4,9 +4,8 @@
 #'
 #' Visualizes the trend of aerobic decoupling over time.
 #'
-#' Calculates or uses pre-calculated aerobic decoupling data (heart rate drift
-#' relative to pace or power) and creates a ggplot showing the trend.
-#' Fetching the required data can be slow.
+#' Plots the aerobic decoupling trend over time. Uses pre-calculated data
+#' or calls `calculate_decoupling` (can be slow).
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `decoupling_df` is provided.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
@@ -20,16 +19,12 @@
 #' @param decoupling_df Optional. A pre-calculated data frame from `calculate_decoupling`.
 #'   If provided, `stoken` and other calculation parameters are ignored.
 #'
-#' @return A ggplot object showing the decoupling percentage trend. Lower values
-#'   generally indicate better aerobic endurance.
+#' @return A ggplot object showing the decoupling trend.
 #'
-#' @details Aerobic decoupling reflects changes in efficiency (Output/HR) during
-#'   an activity. It's calculated as: (EF_1st_half - EF_2nd_half) / EF_1st_half * 100.
-#'   Positive values indicate HR drift. A common reference threshold is 5%.
-#'
-#'   **Warning:** If data is not provided via `decoupling_df`, this function calls
-#'   `calculate_decoupling`, which fetches detailed activity streams from Strava.
-#'   This can be very slow and hit API rate limits.
+#' @details Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
+#'   Positive values mean HR drifted relative to output. A 5% threshold line is often
+#'   used as reference. If `decoupling_df` is not provided, calls `calculate_decoupling` first
+#'   (can be slow and hit API limits).
 #'
 #' @importFrom rStrava get_activity_list get_activity_streams
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when group_by summarise pull first last tibble

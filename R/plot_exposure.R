@@ -2,9 +2,8 @@
 #'
 #' Visualizes the relationship between Acute and Chronic Training Load.
 #'
-#' Calculates or uses pre-calculated training load data (ATL and CTL based on a
-#' chosen metric) to create a scatter plot showing ATL vs CTL over time.
-#' Optionally shades regions corresponding to different ACWR-based risk zones.
+#' Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
+#' pre-calculated data or calls `calculate_exposure`.
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `exposure_df` is provided.
 #' @param activity_type Type(s) of activities to include (e.g., "Run", "Ride"). Default uses common types.
@@ -21,15 +20,12 @@
 #'   If provided, `stoken` and other calculation parameters are ignored. Must contain
 #'   `date`, `atl`, `ctl` (and `acwr` if `risk_zones = TRUE`).
 #'
-#' @return A ggplot object visualizing ATL vs CTL, colored by date, with the latest point highlighted.
+#' @return A ggplot object showing ATL vs CTL.
 #'
-#' @details This plot, often called a Performance Management Chart (PMC) variation,
-#'   helps visualize training state. Points above the diagonal line (ACWR=1) indicate
-#'   acute load exceeds chronic load. If `risk_zones = TRUE`, lines representing ACWR
-#'   thresholds (e.g., 0.8, 1.3, 1.5) are added to delineate zones like "Sweet Spot"
-#'   and "High Risk".
-#'
-#'   If `exposure_df` is not supplied, the function first calls `calculate_exposure`.
+#' @details Visualizes training state by plotting ATL vs CTL (related to PMC charts).
+#'   Points are colored by date, latest point is highlighted (red triangle).
+#'   Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
+#'   If `exposure_df` is not provided, it calls `calculate_exposure` first.
 #'
 #' @importFrom rStrava get_activity_list get_activity
 #' @importFrom dplyr filter select mutate arrange group_by summarise ungroup lead lag rename recode full_join %>% coalesce
@@ -108,6 +104,16 @@ plot_exposure <- function(stoken,
   # Determine the actual end date used in calculation for subtitle
   plot_end_date <- max(load_ts$date)
 
+  # --- Define a user-friendly label for the metric ---
+  metric_label <- switch(load_metric,
+                         "duration_mins" = "Duration (mins)",
+                         "distance_km" = "Distance (km)",
+                         "tss" = "TSS",
+                         "hrss" = "HRSS",
+                         "elevation_gain_m" = "Elevation Gain (m)",
+                         load_metric # Default to the raw name
+                         )
+
   # Get the latest point for highlighting
   latest_point <- load_ts %>% dplyr::filter(.data$date == plot_end_date)
 
@@ -116,9 +122,9 @@ plot_exposure <- function(stoken,
     viridis::scale_color_viridis(option = "plasma", name = "Date") +
     ggplot2::geom_point(data = latest_point, ggplot2::aes(x = .data$ctl, y = .data$atl), color = "red", size = 4, shape = 17) + # Highlight latest point
     ggplot2::labs(
-      title = "Training Load Exposure (ATL vs CTL)",
-      subtitle = sprintf("Metric: %s | Acute: %d days, Chronic: %d days | End Date: %s",
-                       load_metric, acute_period, chronic_period, plot_end_date),
+      title = paste("Training Load Exposure (ATL vs CTL):", metric_label),
+      subtitle = sprintf("Acute: %d days, Chronic: %d days | End Date: %s",
+                       acute_period, chronic_period, plot_end_date),
       x = sprintf("Chronic Training Load (CTL - %d day avg)", chronic_period),
       y = sprintf("Acute Training Load (ATL - %d day avg)", acute_period),
       caption = "Data sourced from Strava via rStrava. Red triangle is latest data point."

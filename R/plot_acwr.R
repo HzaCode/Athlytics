@@ -4,9 +4,8 @@
 #'
 #' Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 #'
-#' This function calculates ACWR based on Strava activity data and a chosen load metric,
-#' then generates a ggplot showing the smoothed ACWR trend, optionally with typical
-#' risk zone shading.
+#' Plots the smoothed ACWR trend over time, optionally showing risk zones.
+#' Uses pre-calculated data or calls `calculate_acwr`.
 #'
 #' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `acwr_df` is provided.
 #' @param activity_type Optional. Filter activities by type (e.g., "Run", "Ride"). Default `NULL` includes all.
@@ -23,12 +22,11 @@
 #' @param acwr_df Optional. A pre-calculated data frame from `calculate_acwr`. If provided,
 #'   `stoken` and other calculation parameters are ignored.
 #'
-#' @return A ggplot object visualizing the smoothed ACWR trend.
+#' @return A ggplot object showing the smoothed ACWR trend.
 #'
-#' @details If `acwr_df` is not supplied, the function first calls `calculate_acwr`
-#'   to get the necessary data. It then plots the smoothed ACWR. Risk zone boundaries
-#'   (if `highlight_zones = TRUE`) are based on common conventions (e.g., 0.8-1.3 optimal,
-#'   >1.5 high risk) but may need adjustment based on individual context.
+#' @details Plots smoothed ACWR. Optional risk zone shading uses typical boundaries
+#'   (e.g., <0.8 Low, 0.8-1.3 Sweet Spot, 1.3-1.5 Caution, >1.5 High Risk).
+#'   If `acwr_df` is not provided, calls `calculate_acwr` first.
 #'
 #' @importFrom rStrava get_activity_list get_activity
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% rename left_join case_when
