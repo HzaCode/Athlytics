@@ -40,6 +40,22 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="athlytics-010">Athlytics 0.1.0<a class="anchor" aria-label="anchor" href="#athlytics-010"></a></h2>
+<div class="section level3">
+<h3 id="major-changes-0-1-0">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-1-0"></a></h3>
+<ul><li>
+<strong>Decoupling Calculation</strong>: Switched from <code><a href="https://rdrr.io/pkg/rStrava/man/get_activity_streams.html" class="external-link">rStrava::get_activity_streams</a></code> to direct Strava API calls using <code>httr</code> and <code>jsonlite</code> for fetching activity streams in <code>calculate_decoupling</code>. This aims to resolve previous errors but might impact performance and rate limiting.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes--improvements-0-1-0">Bug Fixes &amp; Improvements<a class="anchor" aria-label="anchor" href="#bug-fixes--improvements-0-1-0"></a></h3>
+<ul><li>Fixed <code>calculate_acwr</code> error (<code>condition has length &gt; 1</code>) by forcing evaluation before the dplyr pipe.</li>
+<li>Corrected <code>plot_pbs</code> usage in examples and test scripts to include the required <code>distance_meters</code> argument.</li>
+<li>Added missing dependencies (<code>httr</code>, <code>jsonlite</code>) to <code>DESCRIPTION</code> file.</li>
+<li>Improved error handling and messages in several functions.</li>
+<li>Simplified Roxygen documentation for core functions.</li>
+<li>Updated README examples and descriptions for clarity and consistency with code.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="previous-notes-initial-release-0-1-0">Previous Notes (Initial Release)<a class="anchor" aria-label="anchor" href="#previous-notes-initial-release-0-1-0"></a></h3>
 <ul><li>Initial release.</li>
 <li>Added core functions for calculating and plotting:
 <ul><li>Load Exposure (Acute vs. Chronic Load)</li>
@@ -50,7 +66,9 @@
 </ul></li>
 <li>Added Strava authentication helper based on <code>rStrava</code>.</li>
 </ul></div>
-  </main></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
