@@ -30,12 +30,6 @@ Alternatively, the development version from this repository can be installed as 
 remotes::install_github('HzaCode/Athlytics')
 ```
 
-You also need to install `rStrava` if you don't have it already:
-
-```r
-install.packages("rStrava")
-```
-
 ### Using Athlytics Functions
 
 ```r
@@ -255,9 +249,7 @@ plot_pbs(
 ```
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&id=1cbfc401-a191-808d-a62b-faa76e4beb5f&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 
-# ============================================================
-# Re-adding Decoupling Section
-# ============================================================
+
 ### 5. Decoupling Trend (Pace/Power vs HR)
 
 **Note:** This analysis requires fetching detailed stream data for each activity (`calculate_decoupling` uses `httr` for this) and can be very slow or hit API rate limits. Use the `max_activities` parameter to limit the scope.
@@ -308,7 +300,6 @@ if (!is.null(decoupling_data)) {
 ```
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&id=1cbfc401-a191-80b5-8f1a-efda0eddf069&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
-# ============================================================
 
 ---
 
