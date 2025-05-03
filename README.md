@@ -138,6 +138,9 @@ plot_exposure(
     # , end_date = Sys.Date()      # Optional
     # , risk_zones = TRUE          # Optional
 )
+
+# Alternatively, plot pre-calculated data:
+# plot_exposure(exposure_df = exposure_data)
 ```
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3Ada869625-0481-4b1d-af1a-a1785add2962%3Aimage.png?table=block&id=1c9fc401-a191-8045-aadf-cc29956870ef&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
@@ -178,6 +181,8 @@ plot_acwr(
     # , highlight_zones = TRUE     # Optional: Show background risk zone shading (defaults to TRUE)
 )
 
+# Alternatively, plot pre-calculated data:
+# plot_acwr(acwr_df = acwr_data)
 ```
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A3b50a271-b755-4eb5-9108-34f97e68b58b%3Aimage.png?table=block&id=1cafc401-a191-80e8-967a-fc60f6946af5&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
@@ -212,6 +217,8 @@ plot_ef(
     # , smoothing_method = "loess"    # Optional
 )
 
+# Alternatively, plot pre-calculated data:
+# plot_ef(ef_df = ef_data)
 ```
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A20a75be7-f255-43ce-a848-ad8e4213858e%3Aimage.png?table=block&id=1cdfc401-a191-806a-986a-d49ee4389a08&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
@@ -246,6 +253,8 @@ plot_pbs(
     # , date_range = NULL                   # Optional
 )
 
+# Alternatively, plot pre-calculated data:
+# plot_pbs(pbs_df = pb_data)
 ```
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&id=1cbfc401-a191-808d-a62b-faa76e4beb5f&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 
@@ -257,45 +266,31 @@ plot_pbs(
 To get the underlying decoupling data (date, decoupling) as a data frame:
 ```r
 # Ensure stoken is valid.
-# WARNING: Can be slow. Reduce max_activities for testing.
-de decoupling_data <- tryCatch({
-    calculate_decoupling(
-        stoken = stoken,
-        activity_type = "Run",
-        decouple_metric = "Pace_HR",
-        max_activities = 20 # Use a small number for example
-    )
-}, error = function(e) {
-    message("Error calculating decoupling: ", e$message)
-    NULL
-})
-# print(tail(decoupling_data)) # Uncomment to view
+
+decoupling_data <- calculate_decoupling(
+    stoken = stoken,
+    activity_type = "Run",
+    decouple_metric = "Pace_HR",
+    max_activities = 20 # Use a small number for example
+)
+
+# Check the result (it might be NULL or stop with an error if issues occurred)
+# print(tail(decoupling_data)) 
 ```
 
 **Plotting:**
 ```r
 # Ensure stoken is valid.
 # WARNING: Can be slow. Reduce max_activities for plotting.
-# Example: Plot pre-calculated data if calculation succeeded
-if (!is.null(decoupling_data)) {
-    plot_decoupling(
-        decoupling_df = decoupling_data
-        # Optional params for plot_decoupling can be added here if needed,
-        # like add_trend_line = FALSE, etc.
-        # Since we provide decoupling_df, other calculation params are ignored by plot_decoupling.
-    )
-} else {
-    message("Skipping decoupling plot as calculation failed or returned no data.")
-}
 
-# Alternative: Let plot_decoupling handle the calculation (can be slow)
-# plot_decoupling(
-#     stoken = stoken,
-#     activity_type = "Run",
-#     decouple_metric = "Pace_HR",
-#     max_activities = 20 # Use a small number for example
-# )
-
+ plot_decoupling(
+     stoken = stoken,
+     activity_type = "Run",
+     decouple_metric = "Pace_HR",
+     max_activities = 20 # Use a small number for example
+)
+# Alternatively, plot pre-calculated data (if 'decoupling_data' was successfully calculated earlier):
+# plot_decoupling(decoupling_df = decoupling_data)
 ```
 
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&id=1cbfc401-a191-80b5-8f1a-efda0eddf069&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
