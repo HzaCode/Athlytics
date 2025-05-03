@@ -30,12 +30,6 @@ Alternatively, the development version from this repository can be installed as 
 remotes::install_github('HzaCode/Athlytics')
 ```
 
-You also need to install `rStrava` if you don't have it already:
-
-```r
-install.packages("rStrava")
-```
-
 ### Using Athlytics Functions
 
 ```r
