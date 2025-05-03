@@ -81,7 +81,7 @@
 <h3 id="using-athlytics-functions">Using Athlytics Functions<a class="anchor" aria-label="anchor" href="#using-athlytics-functions"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HzaCode/Athlytics" class="external-link">Athlytics</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">Athlytics</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="authentication-with-strava-using-rstrava">Authentication with Strava (using <code>rStrava</code>)<a class="anchor" aria-label="anchor" href="#authentication-with-strava-using-rstrava"></a>
@@ -107,9 +107,9 @@
 </ul>
 </li>
 </ol>
+<p>Note: Running <code><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth()</a></code> may open a browser window for you to log in to Strava and authorize the application.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/HzaCode/Athlytics" class="external-link">Athlytics</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">Athlytics</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rStrava</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># Sys.setenv(STRAVA_CLIENT_ID = "YOUR_CLIENT_ID")</span></span>
@@ -123,8 +123,8 @@
 <span><span class="co"># Authenticate using rStrava and STORE the token object</span></span>
 <span><span class="co"># Make sure app_scope allows reading activities.</span></span>
 <span><span class="va">stoken</span> <span class="op">&lt;-</span> <span class="fu">rStrava</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth</a></span><span class="op">(</span><span class="va">app_name</span>,</span>
-<span>                                client_id <span class="op">=</span> <span class="va">client_id</span>,</span>
-<span>                                client_secret <span class="op">=</span> <span class="va">client_secret</span>,</span>
+<span>                                app_client_id <span class="op">=</span> <span class="va">client_id</span>, <span class="co"># Use app_client_id</span></span>
+<span>                                app_secret <span class="op">=</span> <span class="va">client_secret</span>, <span class="co"># Use app_secret</span></span>
 <span>                                app_scope <span class="op">=</span> <span class="st">"activity:read_all"</span>, <span class="co"># Or specific scope needed</span></span>
 <span>                                cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># IMPORTANT for reusing the token</span></span></code></pre></div>
 </div>
@@ -146,7 +146,7 @@
 <h3 id="example-analysis-visualizations">Example Analysis Visualizations<a class="anchor" aria-label="anchor" href="#example-analysis-visualizations"></a>
 </h3>
 <p>These functions generate plots to analyze trends and performance, using data fetched and processed from Strava via the <code>stoken</code> you provide.</p>
-<p><strong>Important Note on API Usage and Performance:</strong> Some functions, particularly <code>calculate_pbs</code> and <code>calculate_decoupling</code>, need to fetch detailed data (best efforts, streams) for multiple activities. This can be <strong>slow</strong> and may hit Strava API rate limits (leading to errors) if you analyze a large number of activities. Consider using the <code>max_activities</code> parameter in these functions or analyzing shorter date ranges if you encounter issues.</p>
+<p><strong>Important Note on API Usage and Performance:</strong> Some functions, particularly <code>calculate_pbs</code> (which needs to fetch detailed data for each activity) and <code>calculate_decoupling</code> (which now uses <code>httr</code> to directly fetch detailed activity streams), can be <strong>slow</strong> and may hit Strava API rate limits (leading to errors) if you analyze a large number of activities. Consider using the <code>max_activities</code> parameter in these functions or analyzing shorter date ranges if you encounter issues.</p>
 </div>
 <div class="section level3">
 <h3 id="id_1-load-exposure">1. Load Exposure<a class="anchor" aria-label="anchor" href="#id_1-load-exposure"></a>
@@ -198,7 +198,7 @@
 <div class="section level3">
 <h3 id="id_2-acwr-trend">2. ACWR Trend<a class="anchor" aria-label="anchor" href="#id_2-acwr-trend"></a>
 </h3>
-<p>With this analysis, you can monitor the rate of change in your training load over time, helping to identify periods of rapid increases that might lead to overtraining or heightened injury risk. It’s a valuable tool for periodized training monitoring and risk management.</p>
+<p>With this analysis, you can monitor the rate of change in your training load over time, helping to identify periods of rapid increases that might lead to overtraining or heightened injury risk. It’s a valuable tool for periodized training monitoring and risk management. <em>Note: While <code>calculate_exposure</code> also calculates ACWR as part of its output, this <code>calculate_acwr</code> function focuses specifically on the ACWR metric and its associated plot.</em></p>
 <p><strong>Calculating Data:</strong> To get the underlying ACWR data (date, acwr, acwr_smooth) as a data frame:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Ensure stoken is valid</span></span>
@@ -279,43 +279,76 @@
 <span><span class="fu"><a href="reference/plot_pbs.html">plot_pbs</a></span><span class="op">(</span></span>
 <span>    stoken <span class="op">=</span> <span class="va">stoken</span>,</span>
 <span>    distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">5000</span>, <span class="fl">10000</span><span class="op">)</span>, <span class="co"># Specify distances in meters (REQUIRED)</span></span>
-<span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>,                   <span class="co"># Specify activity type (currently only "Run" is fully supported)</span></span>
-<span>    max_activities <span class="op">=</span> <span class="fl">100</span>                    <span class="co"># Optional: Limit activities to check for speed/API limits</span></span>
+<span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>                   <span class="co"># Specify activity type (currently only "Run" is fully supported)</span></span>
+<span>    <span class="co"># , max_activities = 100                  # Optional: Limit activities to check for speed/API limits</span></span>
 <span>    <span class="co"># , date_range = NULL                   # Optional</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&amp;id=1cbfc401-a191-808d-a62b-faa76e4beb5f&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"> ### 5. Decoupling Trend (Pace/Power vs HR)</p>
-<p><strong>Note:</strong> This analysis requires fetching detailed stream data for each activity and can be very slow or hit API rate limits. Use the <code>max_activities</code> parameter to limit the scope.</p>
+<p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&amp;id=1cbfc401-a191-808d-a62b-faa76e4beb5f&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"></p>
+</div>
+</div>
+<div class="section level1">
+<h1 id="section">============================================================<a class="anchor" aria-label="anchor" href="#section"></a>
+</h1>
+</div>
+<div class="section level1">
+<h1 id="re-adding-decoupling-section">Re-adding Decoupling Section<a class="anchor" aria-label="anchor" href="#re-adding-decoupling-section"></a>
+</h1>
+</div>
+<div class="section level1">
+<h1 id="section-1">============================================================<a class="anchor" aria-label="anchor" href="#section-1"></a>
+</h1>
+<div class="section level3">
+<h3 id="id_5-decoupling-trend-pacepower-vs-hr">5. Decoupling Trend (Pace/Power vs HR)<a class="anchor" aria-label="anchor" href="#id_5-decoupling-trend-pacepower-vs-hr"></a>
+</h3>
+<p><strong>Note:</strong> This analysis requires fetching detailed stream data for each activity (<code>calculate_decoupling</code> uses <code>httr</code> for this) and can be very slow or hit API rate limits. Use the <code>max_activities</code> parameter to limit the scope.</p>
 <p><strong>Calculating Data:</strong> To get the underlying decoupling data (date, decoupling) as a data frame:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Ensure stoken is valid.</span></span>
-<span><span class="co"># WARNING: Can be slow. Reduce max_activities for testing.</span></span>
-<span><span class="va">decoupling_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span>
-<span>    stoken <span class="op">=</span> <span class="va">stoken</span>,</span>
-<span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
-<span>    decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span>
-<span>    max_activities <span class="op">=</span> <span class="fl">20</span> <span class="co"># Use a small number for example</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co"># print(tail(decoupling_data)) # Uncomment to view</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Ensure stoken is valid.</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co"># </span><span class="al">WARNING</span><span class="co">: Can be slow. Reduce max_activities for testing.</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>de decoupling_data <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>({</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>    <span class="fu">calculate_decoupling</span>(</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>        <span class="at">stoken =</span> stoken,</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>        <span class="at">activity_type =</span> <span class="st">"Run"</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>        <span class="at">decouple_metric =</span> <span class="st">"Pace_HR"</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>        <span class="at">max_activities =</span> <span class="dv">20</span> <span class="co"># Use a small number for example</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>    )</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>}, <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"Error calculating decoupling: "</span>, e<span class="sc">$</span>message)</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a>    <span class="cn">NULL</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a>})</span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co"># print(tail(decoupling_data)) # Uncomment to view</span></span></code></pre></div>
 <p><strong>Plotting:</strong></p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Ensure stoken is valid.</span></span>
 <span><span class="co"># WARNING: Can be slow. Reduce max_activities for plotting.</span></span>
-<span><span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span></span>
-<span>    stoken <span class="op">=</span> <span class="va">stoken</span>,</span>
-<span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
-<span>    decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span>
-<span>    max_activities <span class="op">=</span> <span class="fl">20</span> <span class="co"># Use a small number for example</span></span>
-<span>    <span class="co"># , start_date = NULL</span></span>
-<span>    <span class="co"># , end_date = NULL</span></span>
-<span>    <span class="co"># , min_duration_mins = 45</span></span>
-<span>    <span class="co"># , add_trend_line = TRUE</span></span>
-<span>    <span class="co"># , smoothing_method = "loess"</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&amp;id=1cbfc401-a191-80b5-8f1a-efda0eddf069&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"></p>
+<span><span class="co"># Example: Plot pre-calculated data if calculation succeeded</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">decoupling_data</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span></span>
+<span>        decoupling_df <span class="op">=</span> <span class="va">decoupling_data</span></span>
+<span>        <span class="co"># Optional params for plot_decoupling can be added here if needed,</span></span>
+<span>        <span class="co"># like add_trend_line = FALSE, etc.</span></span>
+<span>        <span class="co"># Since we provide decoupling_df, other calculation params are ignored by plot_decoupling.</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Skipping decoupling plot as calculation failed or returned no data."</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Alternative: Let plot_decoupling handle the calculation (can be slow)</span></span>
+<span><span class="co"># plot_decoupling(</span></span>
+<span><span class="co">#     stoken = stoken,</span></span>
+<span><span class="co">#     activity_type = "Run",</span></span>
+<span><span class="co">#     decouple_metric = "Pace_HR",</span></span>
+<span><span class="co">#     max_activities = 20 # Use a small number for example</span></span>
+<span><span class="co"># )</span></span></code></pre></div>
+<p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&amp;id=1cbfc401-a191-80b5-8f1a-efda0eddf069&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"> # ============================================================</p>
 <hr>
-<p><em>Note: Features are actively being developed and may change.</em></p>
+</div>
+<div class="section level3">
+<h3 id="development-status--potential-issues">Development Status &amp; Potential Issues<a class="anchor" aria-label="anchor" href="#development-status--potential-issues"></a>
+</h3>
+<p>Athlytics is under active development. While core functionalities are tested, variations in Strava data availability or unforeseen API interactions might occasionally lead to warnings or errors during execution. We appreciate bug reports and contributions to improve robustness!</p>
 </div>
 </div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
