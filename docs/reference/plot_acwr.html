@@ -121,17 +121,15 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A ggplot object visualizing the smoothed ACWR trend.</p>
+    <p>A ggplot object showing the smoothed ACWR trend.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function calculates ACWR based on Strava activity data and a chosen load metric,
-then generates a ggplot showing the smoothed ACWR trend, optionally with typical
-risk zone shading.</p>
-<p>If `acwr_df` is not supplied, the function first calls `calculate_acwr`
-  to get the necessary data. It then plots the smoothed ACWR. Risk zone boundaries
-  (if `highlight_zones = TRUE`) are based on common conventions (e.g., 0.8-1.3 optimal,
-  &gt;1.5 high risk) but may need adjustment based on individual context.</p>
+    <p>Plots the smoothed ACWR trend over time, optionally showing risk zones.
+Uses pre-calculated data or calls `calculate_acwr`.</p>
+<p>Plots smoothed ACWR. Optional risk zone shading uses typical boundaries
+  (e.g., &lt;0.8 Low, 0.8-1.3 Sweet Spot, 1.3-1.5 Caution, &gt;1.5 High Risk).
+  If `acwr_df` is not provided, calls `calculate_acwr` first.</p>
     </div>
 
     <div class="section level2">

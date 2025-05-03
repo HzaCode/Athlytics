@@ -45,23 +45,19 @@ If provided, `stoken` and other calculation parameters are ignored. Must contain
 `date`, `atl`, `ctl` (and `acwr` if `risk_zones = TRUE`).}
 }
 \value{
-A ggplot object visualizing ATL vs CTL, colored by date, with the latest point highlighted.
+A ggplot object showing ATL vs CTL.
 }
 \description{
 Visualizes the relationship between Acute and Chronic Training Load.
 }
 \details{
-Calculates or uses pre-calculated training load data (ATL and CTL based on a
-chosen metric) to create a scatter plot showing ATL vs CTL over time.
-Optionally shades regions corresponding to different ACWR-based risk zones.
+Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
+pre-calculated data or calls `calculate_exposure`.
 
-This plot, often called a Performance Management Chart (PMC) variation,
-  helps visualize training state. Points above the diagonal line (ACWR=1) indicate
-  acute load exceeds chronic load. If `risk_zones = TRUE`, lines representing ACWR
-  thresholds (e.g., 0.8, 1.3, 1.5) are added to delineate zones like "Sweet Spot"
-  and "High Risk".
-
-  If `exposure_df` is not supplied, the function first calls `calculate_exposure`.
+Visualizes training state by plotting ATL vs CTL (related to PMC charts).
+  Points are colored by date, latest point is highlighted (red triangle).
+  Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
+  If `exposure_df` is not provided, it calls `calculate_exposure` first.
 }
 \examples{
 \dontrun{

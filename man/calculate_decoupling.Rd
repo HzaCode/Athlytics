@@ -36,25 +36,19 @@ other fetching parameters. Must include columns: `time`, `heartrate`, and either
 `velocity_smooth`/`distance` (for Pace_HR) or `watts` (for Power_HR).}
 }
 \value{
-If `stream_df` is NOT provided: A data frame with columns `date` and
-  `decoupling` (percentage) for activities meeting the criteria.
-  If `stream_df` IS provided: A single numeric value representing the
-  decoupling percentage for that specific stream.
+Returns a data frame with `date` and `decoupling` [%] columns, OR
+  a single numeric decoupling value if `stream_df` is provided.
 }
 \description{
 Calculates aerobic decoupling for Strava activities.
 }
 \details{
-Analyzes heart rate and either pace or power data from activity streams
-to determine the percentage of decoupling, indicating aerobic fitness changes
-during an activity. Requires fetching detailed stream data via the Strava API,
-which can be slow.
+Calculates aerobic decoupling (HR drift relative to pace/power) using detailed
+Strava activity streams. Fetching streams via API can be slow.
 
-This function provides the data used by `plot_decoupling`.
-  It compares the efficiency factor (output/heart rate) between the first
-  and second halves of each activity. A positive decoupling percentage suggests
-  a decline in efficiency (i.e., heart rate drift).
-  Fetching streams from the Strava API can be time-consuming and subject to rate limits.
+Provides data for `plot_decoupling`. Compares output/HR efficiency
+  between first and second halves of activities. Positive values indicate
+  HR drift. Fetching streams via API using `httr` is slow and subject to rate limits.
 }
 \examples{
 \dontrun{

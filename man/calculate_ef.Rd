@@ -30,12 +30,11 @@ calculate_ef(
 A data frame with columns: date, activity_type, ef_value.
 }
 \description{
-Fetches Strava activity data, calculates a specified Efficiency Factor (EF)
-metric (Pace/HR or Power/HR), and returns the results as a data frame.
+Calculates Efficiency Factor (Pace/HR or Power/HR) from Strava activities.
 }
 \details{
-This function performs the data fetching and calculation steps used by \code{plot_ef},
-returning the underlying data frame.
+Fetches activity summaries and calculates EF (output/HR) for each.
+Provides the data used by `plot_ef`.
 }
 \examples{
 \dontrun{

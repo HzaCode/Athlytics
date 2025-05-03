@@ -3,7 +3,7 @@ pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   Athlytics-introduction: Athlytics-introduction.html
-last_built: 2025-05-03T09:58Z
+last_built: 2025-05-03T10:09Z
 urls:
   reference: https://hzaCode.github.io/Athlytics/reference
   article: https://hzaCode.github.io/Athlytics/articles

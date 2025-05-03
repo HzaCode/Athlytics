@@ -35,14 +35,11 @@ A data frame containing all found best efforts for the specified distances.
 Finds personal best times for specified distances from Strava activities.
 }
 \details{
-Fetches activities, extracts the relevant "best efforts" reported by Strava
-for each activity, and determines the cumulative personal best time for each
-distance up to the date of each effort.
+Fetches detailed activity data, extracts Strava's 'best efforts', and calculates
+cumulative PBs for specified distances.
 
-This function provides the data used by `plot_pbs`. It processes activities
-  chronologically to correctly identify when a new PB was set.
-  Requires fetching detailed data for each activity, which can be slow and is subject
-  to API rate limits (a 1-second delay is included between activity fetches).
+Provides data for `plot_pbs`. Processes activities chronologically.
+  Fetching detailed data is slow due to API limits (includes 1s delay per activity).
 }
 \examples{
 \dontrun{

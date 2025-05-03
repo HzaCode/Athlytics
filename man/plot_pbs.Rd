@@ -29,22 +29,18 @@ Relies on Strava's `best_efforts` data.}
 If provided, `stoken` and other calculation parameters are ignored.}
 }
 \value{
-A ggplot object showing PB trends. If multiple distances are provided,
-  the plot is faceted by distance.
+A ggplot object showing PB trends, faceted by distance if multiple are plotted.
 }
 \description{
 Visualizes the trend of personal best times for specific running distances.
 }
 \details{
-Fetches or uses pre-calculated PB data to create a ggplot showing the best effort
-times for selected distances over time. Points marking a new personal best are highlighted.
+Plots the trend of best efforts for specified distances, highlighting new PBs.
+Uses pre-calculated data or calls `calculate_pbs`.
 
-This function visualizes the output of `calculate_pbs`. Each point represents
-  the best time achieved for that distance in a specific activity. Solid points indicate
-  that the effort set a new cumulative PB at that time. The y-axis is formatted as MM:SS.
-
-  If `pbs_df` is not supplied, the function first calls `calculate_pbs`, which can be slow
-  due to fetching detailed activity data.
+Visualizes data from `calculate_pbs`. Points show best efforts;
+  solid points mark new PBs. Y-axis is MM:SS.
+  If `pbs_df` is not provided, calls `calculate_pbs` first (can be slow).
 }
 \examples{
 \dontrun{

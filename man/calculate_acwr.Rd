@@ -51,13 +51,10 @@ A data frame with columns: `date`, `acwr` (raw ACWR), and `acwr_smooth`
 Calculates the Acute:Chronic Workload Ratio (ACWR) from Strava data.
 }
 \details{
-This function fetches activities, calculates daily load using a chosen metric,
-computes Acute Training Load (ATL) and Chronic Training Load (CTL),
-and finally calculates the raw and smoothed ACWR.
+Calculates daily load, ATL, CTL, raw ACWR, and smoothed ACWR from Strava activities.
 
-This function provides the data used by `plot_acwr`. It fetches
-  activity data going back far enough to accurately calculate the initial
-  chronic load. Note that fetching data can be slow if the period is long.
+Provides data for `plot_acwr`. Fetches extra prior data for accurate
+  initial CTL. Fetching can be slow for long periods.
 }
 \examples{
 \dontrun{

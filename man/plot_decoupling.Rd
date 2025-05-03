@@ -40,24 +40,19 @@ plot_decoupling(
 If provided, `stoken` and other calculation parameters are ignored.}
 }
 \value{
-A ggplot object showing the decoupling percentage trend. Lower values
-  generally indicate better aerobic endurance.
+A ggplot object showing the decoupling trend.
 }
 \description{
 Visualizes the trend of aerobic decoupling over time.
 }
 \details{
-Calculates or uses pre-calculated aerobic decoupling data (heart rate drift
-relative to pace or power) and creates a ggplot showing the trend.
-Fetching the required data can be slow.
+Plots the aerobic decoupling trend over time. Uses pre-calculated data
+or calls `calculate_decoupling` (can be slow).
 
-Aerobic decoupling reflects changes in efficiency (Output/HR) during
-  an activity. It's calculated as: (EF_1st_half - EF_2nd_half) / EF_1st_half * 100.
-  Positive values indicate HR drift. A common reference threshold is 5%.
-
-  **Warning:** If data is not provided via `decoupling_df`, this function calls
-  `calculate_decoupling`, which fetches detailed activity streams from Strava.
-  This can be very slow and hit API rate limits.
+Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
+  Positive values mean HR drifted relative to output. A 5% threshold line is often
+  used as reference. If `decoupling_df` is not provided, calls `calculate_decoupling` first
+  (can be slow and hit API limits).
 }
 \examples{
 \dontrun{

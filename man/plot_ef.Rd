@@ -37,22 +37,18 @@ plot_ef(
 If provided, `stoken` and other calculation parameters are ignored.}
 }
 \value{
-A ggplot object showing the EF trend. Higher values generally indicate
-  better aerobic efficiency.
+A ggplot object showing the EF trend.
 }
 \description{
 Visualizes the trend of Efficiency Factor (EF) over time.
 }
 \details{
-Calculates or uses pre-calculated Efficiency Factor data (Output/Input ratio,
-typically Pace/HR or Power/HR) and creates a ggplot showing the trend.
+Plots the Efficiency Factor (EF) trend over time. Uses pre-calculated data
+or calls `calculate_ef`.
 
-Efficiency Factor (EF) measures output (speed or power) relative to input (heart rate).
-  An upward trend often suggests improved aerobic fitness. This function plots EF calculated from
-  average values for each activity. Activities lacking the necessary data (HR, power/distance)
-  are excluded.
-
-  If `ef_df` is not supplied, the function first calls `calculate_ef`.
+Plots EF (output/HR based on activity averages). An upward trend
+  often indicates improved aerobic fitness. Points colored by activity type.
+  If `ef_df` is not provided, calls `calculate_ef` first.
 }
 \examples{
 \dontrun{

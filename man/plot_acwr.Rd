@@ -49,20 +49,18 @@ plot_acwr(
 `stoken` and other calculation parameters are ignored.}
 }
 \value{
-A ggplot object visualizing the smoothed ACWR trend.
+A ggplot object showing the smoothed ACWR trend.
 }
 \description{
 Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 }
 \details{
-This function calculates ACWR based on Strava activity data and a chosen load metric,
-then generates a ggplot showing the smoothed ACWR trend, optionally with typical
-risk zone shading.
+Plots the smoothed ACWR trend over time, optionally showing risk zones.
+Uses pre-calculated data or calls `calculate_acwr`.
 
-If `acwr_df` is not supplied, the function first calls `calculate_acwr`
-  to get the necessary data. It then plots the smoothed ACWR. Risk zone boundaries
-  (if `highlight_zones = TRUE`) are based on common conventions (e.g., 0.8-1.3 optimal,
-  >1.5 high risk) but may need adjustment based on individual context.
+Plots smoothed ACWR. Optional risk zone shading uses typical boundaries
+  (e.g., <0.8 Low, 0.8-1.3 Sweet Spot, 1.3-1.5 Caution, >1.5 High Risk).
+  If `acwr_df` is not provided, calls `calculate_acwr` first.
 }
 \examples{
 \dontrun{

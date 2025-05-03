@@ -117,12 +117,9 @@ Default `NULL` includes all types.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function fetches activities, calculates daily load using a chosen metric,
-computes Acute Training Load (ATL) and Chronic Training Load (CTL),
-and finally calculates the raw and smoothed ACWR.</p>
-<p>This function provides the data used by `plot_acwr`. It fetches
-  activity data going back far enough to accurately calculate the initial
-  chronic load. Note that fetching data can be slow if the period is long.</p>
+    <p>Calculates daily load, ATL, CTL, raw ACWR, and smoothed ACWR from Strava activities.</p>
+<p>Provides data for `plot_acwr`. Fetches extra prior data for accurate
+  initial CTL. Fetching can be slow for long periods.</p>
     </div>
 
     <div class="section level2">
