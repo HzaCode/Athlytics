@@ -7,7 +7,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 [![R-CMD-check](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
-[![Website](https://img.shields.io/badge/website-Athlytics-blue)](https://hzaCode.github.io/Athlytics)
+[![Website](https://img.shields.io/badge/website-Athlytics-blue)](https://hezhiang.com/Athlytics/)
 ![R Journal: In Submission](https://img.shields.io/badge/R%20Journal-In%20Submission-orange)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/HzaCode/Athlytics/pulls)
 
@@ -42,7 +42,7 @@ library(Athlytics)
 `Athlytics` **requires** you to authenticate with Strava using the `rStrava` package. This generates a token that you then pass to `Athlytics` functions.
 
 1. **Create a Strava API Application:**
-    - Go to https://www.strava.com/settings/api.
+    - Go to the Strava API documentation page ([https://developers.strava.com/docs/reference/](https://developers.strava.com/docs/reference/)) and find instructions for creating an application (you'll likely need to navigate to your settings page once logged in).
     - Create a new API application (e.g., "My Athlytics Analysis").
     - Set the "Authorization Callback Domain" to `localhost`.
     - Note your **Client ID** and **Client Secret**.
@@ -283,11 +283,11 @@ decoupling_data <- calculate_decoupling(
 # Ensure stoken is valid.
 # WARNING: Can be slow. Reduce max_activities for plotting.
 
- plot_decoupling(
-     stoken = stoken,
-     activity_type = "Run",
-     decouple_metric = "Pace_HR",
-     max_activities = 20 # Use a small number for example
+plot_decoupling(
+    stoken = stoken,
+    activity_type = "Run",
+    decouple_metric = "Pace_HR",
+    max_activities = 20 # Use a small number for example
 )
 # Alternatively, plot pre-calculated data (if 'decoupling_data' was successfully calculated earlier):
 # plot_decoupling(decoupling_df = decoupling_data)
@@ -298,7 +298,7 @@ decoupling_data <- calculate_decoupling(
 
 ### Recent Updates
 
-For details on recent changes and version history, please see the [Changelog](https://hzaCode.github.io/Athlytics/news/index.html) on the package website.
+For details on recent changes and version history, please see the [Changelog](https://hezhiang.com/Athlytics/news/index.html) on the package website.
 
 ---
 

@@ -54,3 +54,14 @@
 # Ignore aspell configuration directory
 ^\.aspell$
 ^\.aspell/.*
+
+# Added paper directory to the ignore list
+^paper$
+
+# Ignore specific test scripts, keeping testthat
+^tests/test_direct_api_streams\.R$
+^doc$
+^Meta$
+^LICENSE\.md$
+^tests/manual_tests$
+^CRAN-SUBMISSION$

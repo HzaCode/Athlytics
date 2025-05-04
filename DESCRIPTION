@@ -25,7 +25,9 @@ Imports:
     viridis,
     zoo
 Suggests:
+    devtools,
     knitr,
+    pkgdown,
     rmarkdown,
     testthat (>= 3.0.0),
     mockery
