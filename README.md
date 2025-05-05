@@ -9,7 +9,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 [![Website](https://img.shields.io/badge/website-Athlytics-blue)](https://hezhiang.com/Athlytics/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/HzaCode/Athlytics/pulls)
-[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-F88A0B)](https://doi.org/YOUR_BIORXIV_DOI_HERE)
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-F88A0B)](https://www.biorxiv.org/content/10.1101/2025.05.01.651597v2)
 ### Overview
 
 This is the development repository for **Athlytics**, an R package designed to simplify the analysis of athletic performance and training load data sourced **directly from the Strava API**. The package provides functions for fetching your Strava data, calculating key metrics, and generating insightful visualizations for training monitoring.
