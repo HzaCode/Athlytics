@@ -5,7 +5,7 @@ Author: Ang [aut, cre]
 Maintainer: Ang <ang@hezhiang.com>
 Authors@R: 
     person("Ang", email = "ang@hezhiang.com", role = c("aut", "cre"))
-Description: Provides a suite of tools for advanced sports performance analysis and modeling, designed to work with activity data retrieved from 'Strava'. It focuses on applying established sports science models and statistical methods to gain deeper insights into training load, performance prediction, recovery status, and identifying key performance factors, extending basic data analysis capabilities.
+Description:Advanced sports performance analysis and modeling for activity data retrieved from 'Strava'. This package focuses on applying established sports science models and statistical methods to gain deeper insights into training load, performance prediction, recovery status, and identifying key performance factors, extending basic data analysis capabilities.
 License: MIT + file LICENSE
 URL: https://github.com/HzaCode/Athlytics 
 BugReports: https://github.com/HzaCode/Athlytics/issues 

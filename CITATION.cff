@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file. Also see the preprint."
+authors:
+  - family-names: "HE"
+    given-names: "Zhiang"
+title: "Athlytics"         
+version: 0.1.0             
+date-released: 2025-05
+url: "https://github.com/HzaCode/Athlytics"
+
+references:               
+  - type: article          
+    authors:               
+      - family-names: "HE"
+        given-names: "Zhiang"
+    
+    title: "Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology Metrics from Wearable Sensor Data" 
+    doi: "10.1101/2025.05.01.651597" 
+    journal: "bioRxiv"     
+    year: 2025           
+    # url: "https://doi.org/10.1101/2025.05.01.651597"
+    notes: "Preprint"     
