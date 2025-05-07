@@ -2,7 +2,6 @@
 .RData
 .aspell/defaults.R
 .Rbuildignore
-.Rbuildignore
 _pkgdown.yml
 Athlytics.Rcheck/00check.log
 cran-comments.md
@@ -15,9 +14,7 @@ tests/manual_test_script.R
 /tests/run_all_tests.R
 .httr-oauth
 tests/test_direct_api_streams.R
-.Rbuildignore
 .Rhistory
-/Meta/
-/paper
-/tests/manual_tests
-/doc
+coverage_report.html
+runnable_function_examples.html
+

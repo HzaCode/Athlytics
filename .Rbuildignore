@@ -43,6 +43,12 @@
 ^paper\\..*$
 ^references\\.bib$
 ^\.httr-oauth$
+^runnable_function_examples\\.Rmd$
+^runnable_function_examples\\.html$
+^coverage_report\\.html$
+^test_get_streams\\.R$ # If this root file needs to be ignored
+^test\\.r$ # If this root file needs to be ignored
+^lib$ # Add lib directory to ignore
 
 # Ignore the manual test script
 ^tests/manual_test_script\\.R$

@@ -33,30 +33,43 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Requires authentication first:
-#' # stoken <- rStrava::strava_oauth(..., cache = TRUE)
+#' # Example using simulated data
+#' data(Athlytics_sample_data)
+#' print(head(athlytics_sample_exposure))
 #'
-#' # Exposure using TSS for Rides
-#' ride_exposure_tss <- calculate_exposure(
-#'     stoken = stoken,
-#'     activity_type = "Ride",
-#'     load_metric = "tss",
-#'     user_ftp = 280,
-#'     acute_period = 7,
-#'     chronic_period = 28
-#' )
-#' print(head(ride_exposure_tss))
+#' \donttest{
+#' # Example using real data (requires authentication)
+#' # Replace YOUR_APP, YOUR_ID, YOUR_SECRET with your Strava application details
+#' # stoken_example <- rStrava::strava_oauth(app_name = "YOUR_APP",
+#' #                                client_id = "YOUR_ID",
+#' #                                client_secret = "YOUR_SECRET",
+#' #                                cache = TRUE)
 #'
-#' # Exposure using HRSS for Runs
-#' run_exposure_hrss <- calculate_exposure(
-#'     stoken = stoken,
-#'     activity_type = "Run",
-#'     load_metric = "hrss",
-#'     user_max_hr = 190,
-#'     user_resting_hr = 50
-#' )
-#' print(tail(run_exposure_hrss))
+#' # Calculate training load for Rides using TSS
+#' # Ensure stoken_example is defined and valid before running this part
+#' # if (exists("stoken_example") && inherits(stoken_example, "Token2.0")) {
+#' #   ride_exposure_tss <- calculate_exposure(
+#' #     stoken = stoken_example,
+#' #     activity_type = "Ride",
+#' #     load_metric = "tss",
+#' #     user_ftp = 280,
+#' #     acute_period = 7,
+#' #     chronic_period = 28
+#' #   )
+#' #   print(head(ride_exposure_tss))
+#' #
+#' #   # Calculate training load for Runs using HRSS
+#' #   run_exposure_hrss <- calculate_exposure(
+#' #       stoken = stoken_example,
+#' #       activity_type = "Run",
+#' #       load_metric = "hrss",
+#' #       user_max_hr = 190,
+#' #       user_resting_hr = 50
+#' #   )
+#' #   print(tail(run_exposure_hrss))
+#' # } else {
+#' #   message("stoken_example not created. Skipping real data examples for calculate_exposure.")
+#' # }
 #' }
 calculate_exposure <- function(stoken,
                                activity_type = c("Run", "Ride", "VirtualRide", "VirtualRun"),

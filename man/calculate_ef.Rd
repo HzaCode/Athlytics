@@ -37,16 +37,26 @@ Fetches activity summaries and calculates EF (output/HR) for each.
 Provides the data used by `plot_ef`.
 }
 \examples{
-\dontrun{
-# Requires authentication first:
-# stoken <- rStrava::strava_oauth(..., cache = TRUE)
+# Example using simulated data
+data(Athlytics_sample_data)
+print(head(athlytics_sample_ef))
 
-# Calculate Pace/HR EF data for Runs
-ef_data_run <- calculate_ef(stoken = stoken, activity_type = "Run", ef_metric = "Pace_HR")
-print(tail(ef_data_run))
+\donttest{
+# Example using real data (requires authentication)
+# To authenticate (replace with your details):
+# stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",
+#                                client_id = "YOUR_ID",
+#                                client_secret = "YOUR_SECRET",
+#                                cache = TRUE)
 
-# Calculate Power/HR EF data for Rides
-ef_data_ride <- calculate_ef(stoken = stoken, activity_type = "Ride", ef_metric = "Power_HR")
-print(tail(ef_data_ride))
+# Calculate Pace/HR efficiency factor for Runs
+# Ensure stoken is defined and valid before running this part
+# ef_data_run <- calculate_ef(stoken = stoken, activity_type = "Run", ef_metric = "Pace_HR")
+# print(tail(ef_data_run))
+
+# Calculate Power/HR efficiency factor for Rides
+# Ensure stoken is defined and valid before running this part
+# ef_data_ride <- calculate_ef(stoken = stoken, activity_type = "Ride", ef_metric = "Power_HR")
+# print(tail(ef_data_ride))
 }
 }

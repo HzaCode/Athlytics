@@ -60,23 +60,35 @@ Visualizes training state by plotting ATL vs CTL (related to PMC charts).
   If `exposure_df` is not provided, it calls `calculate_exposure` first.
 }
 \examples{
-\dontrun{
-# Requires authentication first:
-# stoken <- rStrava::strava_oauth(..., cache = TRUE)
+# Example using simulated data
+data(Athlytics_sample_data)
+# Ensure exposure_df is named and other necessary parameters like activity_type are provided
+p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
+print(p)
 
-# Plot exposure using duration for default activities
-plot_exposure(stoken = stoken)
+\donttest{
+# Example using real data (requires authentication)
+# stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
+#                                "YOUR_APP_CLIENT_ID",
+#                                "YOUR_APP_SECRET",
+#                                cache = TRUE)
 
-# Plot exposure using TSS for Rides (7/28 day periods)
-plot_exposure(stoken = stoken, activity_type = "Ride", load_metric = "tss",
-              user_ftp = 280, acute_period = 7, chronic_period = 28)
+# Plot Exposure trend for Runs (last 6 months)
+# plot_exposure(stoken = stoken, # Replace stoken with a valid token object
+#               activity_type = "Run",
+#               end_date = Sys.Date(), # For internal calculate_exposure: fetches prior data.
+#               # Note: start_date applies to the internal calculate_exposure call.
+#               user_ftp = 280) # Example, if load_metric = "tss"
 
-# Plot exposure using HRSS for Runs
-plot_exposure(stoken = stoken, activity_type = "Run", load_metric = "hrss",
-              user_max_hr = 190, user_resting_hr = 50)
+# Plot Exposure trend for Rides
+# plot_exposure(stoken = stoken, # Replace stoken with a valid token object
+#               activity_type = "Ride",
+#               user_ftp = 280) # Example, provide if load_metric = "tss"
 
-# Plot pre-calculated exposure data
-# exposure_results <- calculate_exposure(...)
-# plot_exposure(exposure_df = exposure_results)
+# Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)
+# plot_exposure(stoken = stoken, # Replace stoken with a valid token object
+#               activity_type = c("Run", "VirtualRun"),
+#               risk_zones = FALSE,
+#               user_ftp = 280) # Example, provide if load_metric = "tss"
 }
 }

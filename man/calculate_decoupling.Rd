@@ -51,21 +51,26 @@ Provides data for `plot_decoupling`. Compares output/HR efficiency
   HR drift. Fetching streams via API using `httr` is slow and subject to rate limits.
 }
 \examples{
-\dontrun{
-# Requires authentication first:
-# stoken <- rStrava::strava_oauth(..., cache = TRUE)
+# Example using simulated data
+data(Athlytics_sample_data)
+print(head(athlytics_sample_decoupling))
 
-# Calculate Pace/HR decoupling for recent Runs (limit to 10 for speed)
-run_decoupling <- calculate_decoupling(
-    stoken = stoken,
-    activity_type = "Run",
-    decouple_metric = "Pace_HR",
-    max_activities = 10
-)
-print(tail(run_decoupling))
+\donttest{
+# Example using real data (requires authentication)
+# To authenticate (replace with your details):
+# stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",
+#                                client_id = "YOUR_ID",
+#                                client_secret = "YOUR_SECRET",
+#                                cache = TRUE)
 
-# Example with pre-fetched stream data (replace ... with actual stream df)
-# single_activity_decoupling <- calculate_decoupling(stream_df = ... , decouple_metric = "Power_HR")
-# print(single_activity_decoupling)
+# Calculate Pace/HR decoupling for recent Runs (limit to 10 activities for speed)
+# Ensure stoken is defined and valid before running this part
+# run_decoupling <- calculate_decoupling(
+#     stoken = stoken,
+#     activity_type = "Run",
+#     decouple_metric = "Pace_HR",
+#     max_activities = 10
+# )
+# print(tail(run_decoupling))
 }
 }

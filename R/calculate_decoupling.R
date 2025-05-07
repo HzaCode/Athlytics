@@ -37,22 +37,27 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Requires authentication first:
-#' # stoken <- rStrava::strava_oauth(..., cache = TRUE)
+#' # Example using simulated data
+#' data(Athlytics_sample_data)
+#' print(head(athlytics_sample_decoupling))
 #'
-#' # Calculate Pace/HR decoupling for recent Runs (limit to 10 for speed)
-#' run_decoupling <- calculate_decoupling(
-#'     stoken = stoken,
-#'     activity_type = "Run",
-#'     decouple_metric = "Pace_HR",
-#'     max_activities = 10
-#' )
-#' print(tail(run_decoupling))
+#' \donttest{
+#' # Example using real data (requires authentication)
+#' # To authenticate (replace with your details):
+#' # stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",
+#' #                                client_id = "YOUR_ID",
+#' #                                client_secret = "YOUR_SECRET",
+#' #                                cache = TRUE)
 #'
-#' # Example with pre-fetched stream data (replace ... with actual stream df)
-#' # single_activity_decoupling <- calculate_decoupling(stream_df = ... , decouple_metric = "Power_HR")
-#' # print(single_activity_decoupling)
+#' # Calculate Pace/HR decoupling for recent Runs (limit to 10 activities for speed)
+#' # Ensure stoken is defined and valid before running this part
+#' # run_decoupling <- calculate_decoupling(
+#' #     stoken = stoken,
+#' #     activity_type = "Run",
+#' #     decouple_metric = "Pace_HR",
+#' #     max_activities = 10
+#' # )
+#' # print(tail(run_decoupling))
 #' }
 calculate_decoupling <- function(stoken,
                                  activity_type = c("Run", "Ride"),
@@ -191,8 +196,8 @@ calculate_decoupling <- function(stoken,
 
   # --- Fetch Streams and Calculate Decoupling ---
   decoupling_results <- list()
-  successful_calculations <- 0 # 初始化成功计算的计数器
-  target_successful_calculations <- 10 # 设置目标成功计算次数
+  successful_calculations <- 0 # Initialize counter for successful calculations
+  target_successful_calculations <- 10 # Set target for successful calculations
 
   pb <- utils::txtProgressBar(min = 0, max = length(activities_to_process_list), style = 3)
 
@@ -208,145 +213,80 @@ calculate_decoupling <- function(stoken,
     }
     
     message(sprintf("\n[%d/%d] Processing Activity ID: %s (%s) using direct API call", i, length(activities_to_process_list), act_id, act_date))
-    # --- MODIFIED: Direct API call using httr --- 
-    stream_df <- tryCatch({
-        # 1. Get Access Token from stoken
-        access_token <- stoken$credentials$access_token
-        if (is.null(access_token) || nchar(access_token) == 0) {
-            stop("Could not extract access token from stoken object.")
-        }
-        
-        # 2. Define required stream keys
-        stream_keys_to_request <- c("time", "heartrate")
-        if (decouple_metric == "Pace_HR") {
-            stream_keys_to_request <- c(stream_keys_to_request, "distance", "velocity_smooth")
-        } else {
-            stream_keys_to_request <- c(stream_keys_to_request, "watts")
-        }
-        keys_param <- paste(stream_keys_to_request, collapse = ",")
-        
-        # 3. Construct API URL
-        api_url <- sprintf("https://www.strava.com/api/v3/activities/%s/streams?keys=%s&key_by_type=true", 
-                           act_id, 
-                           keys_param)
-        message(sprintf("  Requesting URL: %s", api_url)) # Log URL
-        
-        # 4. Make the GET request with Authorization header
-        response <- httr::GET(
-            url = api_url,
-            config = httr::add_headers(Authorization = paste("Bearer", access_token))
-        )
-        
-        # 5. Check for HTTP errors
-        httr::stop_for_status(response, task = paste("fetch streams for activity", act_id))
-        message(sprintf("  API Response Status: %d", httr::status_code(response)))
+    Sys.sleep(1) # API rate limit
 
-        # 6. Parse JSON content
-        # Use simplifyVector=FALSE initially to better handle potentially missing streams
-        parsed_content <- httr::content(response, "text", encoding = "UTF-8")
-        streams_list <- jsonlite::fromJSON(parsed_content, simplifyVector = FALSE)
-        message(sprintf("  API response parsed. Available stream types: %s", paste(names(streams_list), collapse=", ")))
-        
-        # 7. Manually process the streams_list into stream_df (similar to previous attempt)
-        message("  Attempting to manually create stream_df from API response...")
-        
-        # Check if essential streams exist and have data
-        if (!("time" %in% names(streams_list)) || is.null(streams_list$time$data) || length(streams_list$time$data) == 0) stop("Missing, NULL, or empty time stream data in API response")
-        if (!("heartrate" %in% names(streams_list)) || is.null(streams_list$heartrate$data) || length(streams_list$heartrate$data) == 0) stop("Missing, NULL, or empty heartrate stream data in API response")
-        
-        # Ensure all returned stream data arrays have the same length as time
-        expected_length <- length(streams_list$time$data)
-        for(stream_name in names(streams_list)) {
-            if (length(streams_list[[stream_name]]$data) != expected_length) {
-                 warning(sprintf("Stream '%s' has length %d, expected %d based on time stream. Skipping this stream.", 
-                                stream_name, length(streams_list[[stream_name]]$data), expected_length))
-                 streams_list[[stream_name]] <- NULL # Remove inconsistent stream
-            }
-        }
-
-        # Initialize tibble with time and hr
-        # Use unlist() because fromJSON(..., simplifyVector=FALSE) returns lists
-        df <- dplyr::tibble(time = unlist(streams_list$time$data), hr = unlist(streams_list$heartrate$data))
-        
-        # Add distance/speed or power based on decouple_metric
-        if (decouple_metric == "Pace_HR") {
-            if ("velocity_smooth" %in% names(streams_list) && !is.null(streams_list$velocity_smooth$data)) {
-                 # Use unlist() here too
-                 df <- dplyr::mutate(df, speed = unlist(streams_list$velocity_smooth$data))
-                 message("  Added velocity_smooth stream as speed.")
-            } else if ("distance" %in% names(streams_list) && !is.null(streams_list$distance$data)) {
-                # Use unlist() here too
-                df <- dplyr::mutate(df, distance = unlist(streams_list$distance$data))
-                message("  Added distance stream. Speed will be calculated later if needed.")
-            } else {
-                stop("Missing required velocity_smooth or distance stream for Pace_HR in API response")
-            }
-        } else { # Power_HR
-            if ("watts" %in% names(streams_list) && !is.null(streams_list$watts$data)) {
-                # Use unlist() here too
-                df <- dplyr::mutate(df, power = unlist(streams_list$watts$data))
-                message("  Added watts stream as power.")
-            } else {
-                stop("Missing required watts stream for Power_HR in API response")
-            }
-        }
-        df # Return the created df
-
-    }, error = function(e) {
-        message(sprintf("  ERROR processing API response or creating stream_df for %s: %s", act_id, e$message))
-        NULL
-    })
-    # --- END OF DIRECT API CALL SECTION ---
+    message("  Fetching streams...")
     
-    utils::setTxtProgressBar(pb, i) # Move progress bar update after potential error
+    # Define required_streams INSIDE the tryCatch block to ensure scope
+    required_streams_local <- c("time", "heartrate")
+    if (decouple_metric == "Pace_HR") { 
+        required_streams_local <- c(required_streams_local, "distance") 
+    } else { 
+        required_streams_local <- c(required_streams_local, "watts") 
+    }
+    message(sprintf("  Requesting stream types: %s", paste(required_streams_local, collapse=", "))) 
 
-    if(is.null(stream_df)) {
+    # Correct usage based on author's example:
+    # Pass the full list to act_data and specify index with acts=i
+    streams <- tryCatch({ 
+        rStrava::get_activity_streams(
+          act_data = activities_to_process_list, 
+          acts = i, 
+          stoken = stoken, 
+          types = required_streams_local, # Use the locally defined variable
+          resolution = "medium"
+      )}, 
+      error = function(e) { message(sprintf("  ERROR fetching streams for %s: %s", act_id, e$message)); NULL })
+
+    utils::setTxtProgressBar(pb, i)
+
+    if(is.null(streams)) {
         message("  Failed to create stream_df from fetched streams. Skipping.")
         next
     }
-    message(sprintf("  Initial stream_df created via API with %d rows. Columns: %s", nrow(stream_df), paste(names(stream_df), collapse=", ")))
+    message(sprintf("  Initial stream_df created via API with %d rows. Columns: %s", nrow(streams), paste(names(streams), collapse=", ")))
 
     # Apply na.omit (important after manual creation)
-    stream_df <- tryCatch(stats::na.omit(stream_df), error = function(e) { message(sprintf("  ERROR during na.omit: %s", e$message)); NULL })
+    streams <- tryCatch(stats::na.omit(streams), error = function(e) { message(sprintf("  ERROR during na.omit: %s", e$message)); NULL })
 
-    if(is.null(stream_df) || nrow(stream_df) < 10) {
+    if(is.null(streams) || nrow(streams) < 10) {
         message(sprintf("  SKIPPING activity %s: Not enough valid rows (< 10) after na.omit or error during omit.", act_id))
         next
     }
-    message(sprintf("  stream_df has %d rows after na.omit.", nrow(stream_df)))
+    message(sprintf("  stream_df has %d rows after na.omit.", nrow(streams)))
 
     # Calculate speed if missing (this block should now correctly follow manual processing)
-    if(decouple_metric == "Pace_HR" && !"speed" %in% names(stream_df) && "distance" %in% names(stream_df)) {
+    if(decouple_metric == "Pace_HR" && !"speed" %in% names(streams) && "distance" %in% names(streams)) {
       message("  Calculating speed from distance...")
-      stream_df <- stream_df %>% 
+      streams <- streams %>% 
         dplyr::mutate(time_diff = c(0, diff(.data$time)), dist_diff = c(0, diff(.data$distance))) %>% 
         dplyr::mutate(speed = ifelse(.data$time_diff > 0, .data$dist_diff / .data$time_diff, 0)) %>% 
         dplyr::filter(.data$speed >= 0)
-      message(sprintf("  Calculated speed. stream_df now has %d rows.", nrow(stream_df)))
+      message(sprintf("  Calculated speed. stream_df now has %d rows.", nrow(streams)))
     }
     
     metric_col <- if(decouple_metric == "Pace_HR") "speed" else "power"
-    if (!metric_col %in% names(stream_df) || nrow(stream_df) < 10) {
+    if (!metric_col %in% names(streams) || nrow(streams) < 10) {
         message(sprintf("  SKIPPING activity %s: Metric column '%s' missing or insufficient rows (< 10) after processing.", act_id, metric_col))
         next
     }
     
     # Calculate Decoupling
     message("  Calculating decoupling...")
-    mid_point_index <- floor(nrow(stream_df) / 2)
+    mid_point_index <- floor(nrow(streams) / 2)
     if (mid_point_index < 5) {
         message(sprintf("  SKIPPING activity %s: Not enough rows for split-half analysis (< 5 in first half).", act_id))
         next
     }
 
-    first_half <- stream_df[1:mid_point_index, ]
-    second_half <- stream_df[(mid_point_index + 1):nrow(stream_df), ]
+    first_half <- streams[1:mid_point_index, ]
+    second_half <- streams[(mid_point_index + 1):nrow(streams), ]
 
-    # Ensure column name is 'hr' for consistency
-    stream_df <- stream_df %>% dplyr::rename(hr = "hr") 
+    # Calculate means using the original 'heartrate' column name
+    # streams <- streams %>% dplyr::rename(hr = "heartrate") # Remove rename
 
-    mean_hr1 <- mean(first_half$hr, na.rm = TRUE)
-    mean_hr2 <- mean(second_half$hr, na.rm = TRUE)
+    mean_hr1 <- mean(first_half$heartrate, na.rm = TRUE)
+    mean_hr2 <- mean(second_half$heartrate, na.rm = TRUE)
     mean_output1 <- mean(first_half[[metric_col]], na.rm = TRUE)
     mean_output2 <- mean(second_half[[metric_col]], na.rm = TRUE)
 
@@ -359,11 +299,11 @@ calculate_decoupling <- function(stoken,
 
     if (!is.na(decoupling_pct)) {
       decoupling_results[[act_id]] <- dplyr::tibble(date = act_date, decoupling = decoupling_pct)
-      successful_calculations <- successful_calculations + 1 # 增加成功计数器
+      successful_calculations <- successful_calculations + 1 # Increment success counter
       message(sprintf("  Successfully calculated decoupling for %d / %d target activities.", successful_calculations, target_successful_calculations))
       if (successful_calculations >= target_successful_calculations) {
         message(sprintf("  Reached target of %d successful calculations. Stopping stream processing.", target_successful_calculations))
-        break # 达到目标，退出循环
+        break # Target reached, exit loop
       }
     }
   }
@@ -376,7 +316,7 @@ calculate_decoupling <- function(stoken,
 
   plot_data <- dplyr::bind_rows(decoupling_results) %>% dplyr::arrange(.data$date)
 
-  message(sprintf("Calculation complete. Obtained decoupling data for %d activities.", nrow(plot_data))) # 更新最终消息
+  message(sprintf("Calculation complete. Obtained decoupling data for %d activities.", nrow(plot_data))) # Final update message
   return(plot_data)
 }
 

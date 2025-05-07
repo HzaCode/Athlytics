@@ -44,8 +44,8 @@ Default `NULL` includes all types.}
 \item{smoothing_period}{Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.}
 }
 \value{
-A data frame with columns: `date`, `acwr` (raw ACWR), and `acwr_smooth`
-  (smoothed ACWR) for the specified date range.
+A data frame with columns: `date`, `atl` (Acute Load), `ctl` (Chronic Load),
+`acwr` (raw ACWR), and `acwr_smooth` (smoothed ACWR) for the specified date range.
 }
 \description{
 Calculates the Acute:Chronic Workload Ratio (ACWR) from Strava data.
@@ -57,18 +57,33 @@ Provides data for `plot_acwr`. Fetches extra prior data for accurate
   initial CTL. Fetching can be slow for long periods.
 }
 \examples{
-\dontrun{
-# Requires authentication first:
-# stoken <- rStrava::strava_oauth(..., cache = TRUE)
+# Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
+data(Athlytics_sample_data)
+if (!is.null(athlytics_sample_acwr)) {
+  print(head(athlytics_sample_acwr))
+}
 
-# Calculate ACWR for Runs using duration
-run_acwr <- calculate_acwr(stoken = stoken, activity_type = "Run",
-                           load_metric = "duration_mins")
-print(tail(run_acwr))
-
-# Calculate ACWR for Rides using TSS (requires FTP)
-ride_acwr_tss <- calculate_acwr(stoken = stoken, activity_type = "Ride",
-                                load_metric = "tss", user_ftp = 280)
-print(tail(ride_acwr_tss))
+\donttest{
+# Example using real data (requires authentication and app setup)
+# Replace with your actual app_name, client_id, and secret or ensure stoken is pre-configured
+# stoken <- rStrava::strava_oauth(
+#   app_name = "YOUR_APP_NAME",
+#   client_id = "YOUR_CLIENT_ID",
+#   client_secret = "YOUR_SECRET",
+#   cache = TRUE 
+# )
+# if (interactive() && exists("stoken")) { # Proceed if stoken is available
+#   # Calculate ACWR for Runs (using duration)
+#   run_acwr <- calculate_acwr(stoken = stoken, activity_type = "Run",
+#                              load_metric = "duration_mins")
+#   print(tail(run_acwr))
+#
+#   # Calculate ACWR for Rides (using TSS, requires FTP)
+#   ride_acwr_tss <- calculate_acwr(stoken = stoken, activity_type = "Ride",
+#                                   load_metric = "tss", user_ftp = 280)
+#   print(tail(ride_acwr_tss))
+# } else {
+#   message("Strava token not available or not in interactive session, skipping real data example.")
+# }
 }
 }

@@ -20,8 +20,8 @@
 #' @param user_resting_hr Required if `load_metric = "hrss"`. Your resting heart rate.
 #' @param smoothing_period Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.
 #'
-#' @return A data frame with columns: `date`, `acwr` (raw ACWR), and `acwr_smooth`
-#'   (smoothed ACWR) for the specified date range.
+#' @return A data frame with columns: `date`, `atl` (Acute Load), `ctl` (Chronic Load),
+#' `acwr` (raw ACWR), and `acwr_smooth` (smoothed ACWR) for the specified date range.
 #'
 #' @details Provides data for `plot_acwr`. Fetches extra prior data for accurate
 #'   initial CTL. Fetching can be slow for long periods.
@@ -35,19 +35,34 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Requires authentication first:
-#' # stoken <- rStrava::strava_oauth(..., cache = TRUE)
+#' # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
+#' data(Athlytics_sample_data)
+#' if (!is.null(athlytics_sample_acwr)) {
+#'   print(head(athlytics_sample_acwr))
+#' }
 #'
-#' # Calculate ACWR for Runs using duration
-#' run_acwr <- calculate_acwr(stoken = stoken, activity_type = "Run",
-#'                            load_metric = "duration_mins")
-#' print(tail(run_acwr))
-#'
-#' # Calculate ACWR for Rides using TSS (requires FTP)
-#' ride_acwr_tss <- calculate_acwr(stoken = stoken, activity_type = "Ride",
-#'                                 load_metric = "tss", user_ftp = 280)
-#' print(tail(ride_acwr_tss))
+#' \donttest{
+#' # Example using real data (requires authentication and app setup)
+#' # Replace with your actual app_name, client_id, and secret or ensure stoken is pre-configured
+#' # stoken <- rStrava::strava_oauth(
+#' #   app_name = "YOUR_APP_NAME",
+#' #   client_id = "YOUR_CLIENT_ID",
+#' #   client_secret = "YOUR_SECRET",
+#' #   cache = TRUE 
+#' # )
+#' # if (interactive() && exists("stoken")) { # Proceed if stoken is available
+#' #   # Calculate ACWR for Runs (using duration)
+#' #   run_acwr <- calculate_acwr(stoken = stoken, activity_type = "Run",
+#' #                              load_metric = "duration_mins")
+#' #   print(tail(run_acwr))
+#' #
+#' #   # Calculate ACWR for Rides (using TSS, requires FTP)
+#' #   ride_acwr_tss <- calculate_acwr(stoken = stoken, activity_type = "Ride",
+#' #                                   load_metric = "tss", user_ftp = 280)
+#' #   print(tail(ride_acwr_tss))
+#' # } else {
+#' #   message("Strava token not available or not in interactive session, skipping real data example.")
+#' # }
 #' }
 calculate_acwr <- function(stoken,
                            activity_type = NULL,
@@ -136,14 +151,15 @@ calculate_acwr <- function(stoken,
     
     # Add index or ID for debugging
     act_id <- as.character(.x$id %||% "UNKNOWN_ID")
-    message(sprintf("  Processing activity %s...", act_id))
+    # message(sprintf("  Processing activity %s...", act_id)) # Keep messages commented out for now
     
-    activity_date <- lubridate::as_date(lubridate::ymd_hms(.x$start_date_local %||% NA))
+    # Correctly convert POSIXct to Date without trying to parse as string
+    activity_date <- lubridate::as_date(.x$start_date_local %||% NA)
     act_type <- .x$type %||% "Unknown"
-    message(sprintf("    Date: %s, Type: %s", activity_date, act_type))
+    # message(sprintf("    Date: %s, Type: %s", activity_date, act_type))
 
     if (is.na(activity_date) || activity_date < fetch_start_date || activity_date > analysis_end_date) {
-        message("    -> Filtered out by date.")
+        # message("    -> Filtered out by date.")
         return(NULL)
     }
     if (!is.null(activity_type) && !act_type %in% activity_type) {
@@ -254,7 +270,11 @@ calculate_acwr <- function(stoken,
   # browser()
   # --- End DEBUG ---
 
-  acwr_data <- daily_load_complete %>%
+  # --- DEBUG: Check colnames before the main pipeline ---
+  message("DEBUG: Colnames of daily_load_complete BEFORE main ACWR pipeline:")
+  print(colnames(daily_load_complete))
+
+  acwr_data_intermediate <- daily_load_complete %>%
     dplyr::mutate(
       # Ensure daily_load is numeric before rollmean
       daily_load = as.numeric(.data$daily_load),
@@ -263,20 +283,36 @@ calculate_acwr <- function(stoken,
     ) %>%
     # --- Add check/coercion for chronic_load before filtering/mutate ---
     dplyr::mutate(chronic_load = as.numeric(.data$chronic_load)) %>% # Ensure numeric
-    dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date) %>%
+    dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date)
+
+  # --- DEBUG: Check colnames after adding acute_load and chronic_load ---
+  message("DEBUG: Colnames AFTER adding acute/chronic load and filtering date:")
+  print(colnames(acwr_data_intermediate))
+
+  acwr_data_intermediate <- acwr_data_intermediate %>% # Continue pipe from intermediate result
     dplyr::mutate(
       # Explicitly handle potential NA in chronic_load within the condition
-      acwr = ifelse(!is.na(.data$chronic_load) & .data$chronic_load > 0.01, 
-                    .data$acute_load / .data$chronic_load, 
+      acwr = ifelse(!is.na(.data$chronic_load) & .data$chronic_load > 0.01,
+                    .data$acute_load / .data$chronic_load,
                     NA)
     ) %>%
     # --- Ensure acwr is numeric before next rollmean ---
     dplyr::mutate(acwr = as.numeric(.data$acwr)) %>% # Ensure numeric
     dplyr::mutate(
       acwr_smooth = zoo::rollmean(.data$acwr, k = smoothing_period, align = "right", fill = NA)
-    ) %>%
-    dplyr::select(.data$date, .data$acwr, .data$acwr_smooth)
-    
+    )
+
+  # --- DEBUG: Check colnames right BEFORE the final select ---
+  message("DEBUG: Colnames right BEFORE final select:")
+  print(colnames(acwr_data_intermediate))
+
+  acwr_data <- acwr_data_intermediate %>%
+    dplyr::select(.data$date, atl = .data$acute_load, ctl = .data$chronic_load, .data$acwr, .data$acwr_smooth)
+
+  # --- DEBUG: Check colnames AFTER the final select ---
+  message("DEBUG: Colnames AFTER final select (in acwr_data):")
+  print(colnames(acwr_data))
+
   if (nrow(acwr_data) == 0) {
     stop("Could not calculate ACWR after processing. Check data availability and periods.")
   }

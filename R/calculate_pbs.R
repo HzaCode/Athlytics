@@ -24,7 +24,7 @@
 #'   Fetching detailed data is slow due to API limits (includes 1s delay per activity).
 #'
 #' @importFrom rStrava get_activity_list get_activity
-#' @importFrom dplyr filter select mutate arrange group_by ungroup bind_rows slice lead lag distinct %>%
+#' @importFrom dplyr filter select mutate arrange group_by ungroup bind_rows slice_head lag distinct %>%
 #' @importFrom purrr map_dfr possibly
 #' @importFrom lubridate as_datetime ymd_hms seconds_to_period ymd
 #' @importFrom rlang .data %||%
@@ -32,19 +32,52 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Requires authentication first:
-#' # stoken <- rStrava::strava_oauth(..., cache = TRUE)
+#' # Example using simulated data
+#' data(Athlytics_sample_data)
+#' print(head(athlytics_sample_pbs))
 #'
-#' # Calculate PBs for 1k, 5k, 10k (checking fewer activities for speed)
-#' pb_data <- calculate_pbs(stoken = stoken, 
-#'                            distance_meters = c(1000, 5000, 10000),
-#'                            max_activities = 100)
-#' print(head(pb_data))
+#' \donttest{
+#' # Example using real data (requires authentication and YOUR credentials)
+#' # NOTE: The following rStrava::strava_oauth call is a placeholder.
+#' # You MUST replace "YOUR_APP_NAME", "YOUR_CLIENT_ID", "YOUR_CLIENT_SECRET"
+#' # with your actual Strava API credentials for this to work.
+#' # This is a placeholder and will likely require user interaction or fail
+#' # if not properly configured with actual credentials.
+#' # For R CMD check, the main thing is that the syntax is valid.
+#' tryCatch({
+#'   stoken_example <- rStrava::strava_oauth(
+#'     app_name = "YOUR_APP_NAME_PLACEHOLDER",
+#'     client_id = "YOUR_CLIENT_ID_PLACEHOLDER",
+#'     client_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",
+#'     cache = TRUE
+#'   )
 #'
-#' # Show only the efforts that set a new PB
-#' new_pbs <- pb_data[pb_data$is_pb, ]
-#' print(new_pbs)
+#'   # Proceed only if a token object is created
+#'   if (inherits(stoken_example, "Token2.0")) {
+#'     # Shortened message for line width
+#'     message("Placeholder stoken obtained. Real data features may not work.")
+#'     # Calculate PBs for 1k, 5k (limit activities for speed in example)
+#'     pb_data <- calculate_pbs(stoken = stoken_example,
+#'                              activity_type = "Run", 
+#'                              # Ensure activity_type matches your default or intended type
+#'                              distance_meters = c(1000, 5000, 10000),
+#'                              max_activities = 10) # Reduced for example speed
+#'     if (nrow(pb_data) > 0) {
+#'       print(head(pb_data))
+#'       # Show only new PB records
+#'       new_pbs <- pb_data[pb_data$is_pb, ]
+#'       print(new_pbs)
+#'     } else {
+#'       message("calculate_pbs example (placeholder token) returned no PB data.")
+#'     }
+#'   } else {
+#'     message("Placeholder stoken creation failed. Check rStrava setup.")
+#'   }
+#' }, error = function(e) {
+#'   # Shortened error messages as well
+#'   message("Error in rStrava::strava_oauth() example: ", e$message)
+#'   message("This can happen with placeholder credentials.")
+#' })
 #' }
 calculate_pbs <- function(stoken,
                           activity_type = "Run", # Default to Run as per original logic
@@ -60,7 +93,6 @@ calculate_pbs <- function(stoken,
   if (!inherits(stoken, "Token2.0")) {
     warning("stoken does not appear to be a Token2.0 object from rStrava. Trying anyway.")
   }
-  # Consider warning if activity_type is not Run, as logic is specific
   if(any(tolower(activity_type) != "run")) {
       warning("Current implementation primarily supports 'Run' for PB calculation based on best_efforts.")
   }
@@ -68,12 +100,10 @@ calculate_pbs <- function(stoken,
 
   message("Fetching activity list...")
   # --- 1. Get Activity List ---
-  per_page_limit <- 200
-  num_to_fetch <- min(max_activities, per_page_limit)
+  per_page_limit <- 200 # Your original variable
+  num_to_fetch <- min(max_activities, per_page_limit) # Your original variable
   activities_list <- tryCatch({
-    rStrava::get_activity_list(stoken) 
-    # If filtering by date range IS needed here, 'before' and 'after' Date objects would be added.
-    # Currently, it fetches the most recent activities up to rStrava's internal limit.
+    rStrava::get_activity_list(stoken)
   }, error = function(e) {
     message("Error fetching activity list: ", e$message)
     return(NULL)
@@ -83,11 +113,12 @@ calculate_pbs <- function(stoken,
     stop("Could not fetch activities or no activities found.")
   }
 
-   `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
+  # Assuming rlang::%||% is imported via @importFrom rlang .data %||%
+  # No local %||% definition needed here.
 
   activities_df <- purrr::map_dfr(activities_list, ~{
     data.frame(
-      id = as.character(.x$id %||% NA),
+      id = as.character(.x$id %||% NA), # Uses rlang::%||%
       type = .x$type %||% NA,
       start_date_local = .x$start_date_local %||% NA,
       stringsAsFactors = FALSE
@@ -113,7 +144,7 @@ calculate_pbs <- function(stoken,
   activities_to_process <- activities_df %>%
     dplyr::filter(.data$type %in% activity_type) %>%
     dplyr::select(.data$id, .data$start_date_local) %>%
-    dplyr::arrange(.data$start_date_local) # Process chronologically for cumulative PB calculation
+    dplyr::arrange(.data$start_date_local)
 
   if (nrow(activities_to_process) == 0) {
     stop(paste0("No activities of type '", paste(activity_type, collapse=", "), "' found",
@@ -122,13 +153,12 @@ calculate_pbs <- function(stoken,
   message(sprintf("Found %d activities of type '%s' to process. Fetching details...", nrow(activities_to_process), paste(activity_type, collapse=", ")))
 
   # --- Apply max_activities limit ---
+  # This section refers to `slice_head`.
   if (nrow(activities_to_process) > max_activities) {
-    message(sprintf("Applying max_activities limit: Processing only the latest %d activities out of %d found.",
+    message(sprintf("Applying max_activities limit: Processing only the earliest %d activities (after sorting by date ascending) out of %d found.",
                     max_activities, nrow(activities_to_process)))
-    # Ensure activities are sorted by date descending if not already guaranteed by get_activity_list
-    # activities_to_process <- activities_to_process %>% dplyr::arrange(desc(start_date_local))
     activities_to_process <- activities_to_process %>%
-      dplyr::slice_head(n = max_activities)
+      dplyr::slice_head(n = max_activities) # Takes first N after current sort (start_date_local ascending)
   }
 
   # --- 3. & 4. Loop, Get Details, Extract Best Efforts ---
@@ -140,22 +170,22 @@ calculate_pbs <- function(stoken,
   for (i in 1:nrow(activities_to_process)) {
     act_id <- activities_to_process$id[i]
     act_date <- activities_to_process$start_date_local[i]
-    Sys.sleep(1) # Be nice to API - Increased delay to 1 second
+    Sys.sleep(1)
 
     detailed_activity <- safe_get_activity(id = act_id, stoken = stoken)
 
     if (!is.null(detailed_activity) && !is.null(detailed_activity$best_efforts)) {
       best_efforts_df <- purrr::map_dfr(detailed_activity$best_efforts, ~{
-        effort_dist <- as.numeric(.x$distance %||% NA)
-        matched_dist <- distance_meters[abs(effort_dist - distance_meters) < 1] # 1m tolerance
+        effort_dist <- as.numeric(.x$distance %||% NA) # Uses rlang::%||%
+        matched_dist <- distance_meters[abs(effort_dist - distance_meters) < 1]
 
         if(length(matched_dist) > 0) {
           data.frame(
             activity_id = act_id,
             activity_date = act_date,
             distance = matched_dist[1],
-            elapsed_time = as.numeric(.x$elapsed_time %||% NA),
-            moving_time = as.numeric(.x$moving_time %||% NA),
+            elapsed_time = as.numeric(.x$elapsed_time %||% NA), # Uses rlang::%||%
+            moving_time = as.numeric(.x$moving_time %||% NA), # Uses rlang::%||%
             stringsAsFactors = FALSE
           )
         } else { NULL }
@@ -163,7 +193,7 @@ calculate_pbs <- function(stoken,
       if (nrow(best_efforts_df) > 0) {
         all_best_efforts[[as.character(act_id)]] <- best_efforts_df
       }
-    } # Add handling for errors or missing best_efforts if needed
+    }
      pb_counter <- pb_counter + 1
      utils::setTxtProgressBar(pb, pb_counter)
   }
@@ -176,23 +206,19 @@ calculate_pbs <- function(stoken,
   }
 
   pbs_df <- dplyr::bind_rows(all_best_efforts) %>%
-    dplyr::filter(!is.na(.data$elapsed_time), !is.na(.data$distance)) %>% 
+    dplyr::filter(!is.na(.data$elapsed_time), !is.na(.data$distance)) %>%
     dplyr::mutate(time_seconds = .data$elapsed_time)
 
   if (nrow(pbs_df) == 0) {
     stop("No valid best effort times found after processing details.")
   }
 
-  # Calculate actual PBs (fastest time for each distance up to that date)
   pbs_df <- pbs_df %>%
     dplyr::arrange(.data$distance, .data$activity_date) %>%
-    dplyr::group_by(.data$distance) %>% 
+    dplyr::group_by(.data$distance) %>%
     dplyr::mutate(
         cumulative_pb_seconds = cummin(.data$time_seconds),
-        # Mark PB only if it's strictly better than the previous cumulative PB
         is_pb = .data$time_seconds == .data$cumulative_pb_seconds & (is.na(dplyr::lag(.data$cumulative_pb_seconds)) | .data$time_seconds < dplyr::lag(.data$cumulative_pb_seconds))
-        # Alternative: Mark first occurrence of a time as PB
-        # is_pb = (.data$time_seconds == .data$cumulative_pb_seconds) & !duplicated(.data$cumulative_pb_seconds)
         ) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(
@@ -204,6 +230,3 @@ calculate_pbs <- function(stoken,
   message("Calculation complete.")
   return(pbs_df)
 }
-
-# Helper needed if not globally available
-# `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x 

@@ -23,65 +23,77 @@ plot_acwr(
 \arguments{
 \item{stoken}{A valid Strava token from `rStrava::strava_oauth()`. Required unless `acwr_df` is provided.}
 
-\item{activity_type}{Optional. Filter activities by type (e.g., "Run", "Ride"). Default `NULL` includes all.}
+\item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
-\item{load_metric}{Method for calculating daily load (e.g., "duration_mins", "tss", "hrss"). Default "duration_mins".}
+\item{load_metric}{Method for calculating daily load (e.g., "duration_mins", "distance_km", "tss", "hrss").}
 
-\item{acute_period}{Days for acute load window (e.g., 7).}
+\item{acute_period}{Days for the acute load window (e.g., 7).}
 
-\item{chronic_period}{Days for chronic load window (e.g., 28). Must be > `acute_period`.}
+\item{chronic_period}{Days for the chronic load window (e.g., 28). Must be greater than `acute_period`.}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.}
 
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
 
-\item{user_ftp}{Required if `load_metric = "tss"`. Your FTP.}
+\item{user_ftp}{Required if `load_metric = "tss"` and `acwr_df` is not provided. Your Functional Threshold Power.}
 
-\item{user_max_hr}{Required if `load_metric = "hrss"`. Your max HR.}
+\item{user_max_hr}{Required if `load_metric = "hrss"` and `acwr_df` is not provided. Your maximum heart rate.}
 
-\item{user_resting_hr}{Required if `load_metric = "hrss"`. Your resting HR.}
+\item{user_resting_hr}{Required if `load_metric = "hrss"` and `acwr_df` is not provided. Your resting heart rate.}
 
-\item{smoothing_period}{Days for smoothing the ACWR using a rolling mean. Default 7.}
+\item{smoothing_period}{Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.}
 
-\item{highlight_zones}{Add background shading for typical ACWR zones (low, optimal, high risk)? Default `TRUE`.}
+\item{highlight_zones}{Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default `TRUE`.}
 
-\item{acwr_df}{Optional. A pre-calculated data frame from `calculate_acwr`. If provided,
-`stoken` and other calculation parameters are ignored.}
+\item{acwr_df}{Optional. A pre-calculated data frame from `calculate_acwr`.
+If provided, `stoken` and other calculation parameters are ignored.}
 }
 \value{
-A ggplot object showing the smoothed ACWR trend.
+A ggplot object showing the ACWR trend.
 }
 \description{
 Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 }
 \details{
-Plots the smoothed ACWR trend over time, optionally showing risk zones.
-Uses pre-calculated data or calls `calculate_acwr`.
-
-Plots smoothed ACWR. Optional risk zone shading uses typical boundaries
-  (e.g., <0.8 Low, 0.8-1.3 Sweet Spot, 1.3-1.5 Caution, >1.5 High Risk).
-  If `acwr_df` is not provided, calls `calculate_acwr` first.
+Plots the ACWR trend over time. Uses pre-calculated data or calls `calculate_acwr` (can be slow).
+  ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
+  If `acwr_df` is not provided, calls `calculate_acwr` first (can be slow and hit API limits).
 }
 \examples{
-\dontrun{
-# Requires authentication first:
-# stoken <- rStrava::strava_oauth(..., cache = TRUE)
+# Example using simulated data
+data(Athlytics_sample_data)
+if (!is.null(athlytics_sample_acwr)) {
+  # Ensure acwr_df is named and other necessary parameters are provided if plot_acwr expects them
+  p <- plot_acwr(acwr_df = athlytics_sample_acwr)
+  print(p)
+}
 
-# Plot ACWR for Runs using duration
-plot_acwr(stoken = stoken, activity_type = "Run", load_metric = "duration_mins")
+\donttest{
+# Example using real data (requires authentication)
+# Please replace with your actual Strava application details for this to work.
+# stoken_example <- rStrava::strava_oauth(
+#   app_name = "YOUR_APP_NAME_PLACEHOLDER",
+#   client_id = "YOUR_CLIENT_ID_PLACEHOLDER",
+#   client_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",
+#   cache = TRUE
+# )
 
-# Plot ACWR for Rides using TSS (requires FTP)
-plot_acwr(stoken = stoken, activity_type = "Ride", load_metric = "tss", user_ftp = 280)
-
-# Plot ACWR for all activities using distance, with custom periods
-plot_acwr(stoken = stoken,
-          load_metric = "distance_km",
-          acute_period = 10,
-          chronic_period = 40,
-          smoothing_period = 10)
-
-# Plot pre-calculated ACWR data
-# acwr_results <- calculate_acwr(...) 
-# plot_acwr(acwr_df = acwr_results)
+# If you have a valid stoken_example, you can then use it:
+# Plot ACWR trend for Runs (using duration as load metric)
+# if (exists("stoken_example") && inherits(stoken_example, "Token2.0")) {
+#   plot_acwr(stoken = stoken_example,
+#             activity_type = "Run",
+#             load_metric = "duration_mins",
+#             acute_period = 7,
+#             chronic_period = 28)
+#
+#   # Plot ACWR trend for Rides (using TSS as load metric)
+#   plot_acwr(stoken = stoken_example,
+#             activity_type = "Ride",
+#             load_metric = "tss",
+#             user_ftp = 280)  # FTP value is required
+# } else {
+#  message("stoken_example not created or invalid. Skipping real data example for plot_acwr.")
+# }
 }
 }

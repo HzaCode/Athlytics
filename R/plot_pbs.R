@@ -11,6 +11,7 @@
 #'   Relies on Strava's `best_efforts` data.
 #' @param max_activities Max number of recent activities to check. Default 500. Reduce for speed.
 #' @param date_range Optional. Filter activities by date `c("YYYY-MM-DD", "YYYY-MM-DD")`.
+#' @param add_trend_line Logical. Whether to add a trend line to the plot. Default TRUE.
 #' @param pbs_df Optional. A pre-calculated data frame from `calculate_pbs`.
 #'   If provided, `stoken` and other calculation parameters are ignored.
 #'
@@ -31,32 +32,97 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Requires authentication first:
-#' # stoken <- rStrava::strava_oauth(..., cache = TRUE)
+#' # Example using simulated data
+#' data(Athlytics_sample_data)
+#' # athlytics_sample_pbs should contain the PBs to be plotted
+#' if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
+#'   sample_pbs_for_plot <- athlytics_sample_pbs
+#'   
+#'   # Ensure the date column is named 'activity_date' and is of Date type for plot_pbs
+#'   if ("date" %in% names(sample_pbs_for_plot) && !"activity_date" %in% names(sample_pbs_for_plot)) {
+#'     names(sample_pbs_for_plot)[names(sample_pbs_for_plot) == "date"] <- "activity_date"
+#'   }
+#'   if ("activity_date" %in% names(sample_pbs_for_plot)) {
+#'     sample_pbs_for_plot$activity_date <- as.Date(sample_pbs_for_plot$activity_date)
+#'   } else {
+#'     message("Relevant date column not found in sample PBs for example.")
+#'   }
+#'   
+#'   # plot_pbs requires distance_meters. Extract from sample data.
+#'   req_dist_meters <- NULL
+#'   if ("distance" %in% names(sample_pbs_for_plot)) {
+#'     req_dist_meters <- unique(sample_pbs_for_plot$distance)
+#'   } else if ("distance_target_m" %in% names(sample_pbs_for_plot)) {
+#'     req_dist_meters <- unique(sample_pbs_for_plot$distance_target_m)
+#'   }
+#'   
+#'   can_plot <- "activity_date" %in% names(sample_pbs_for_plot) && 
+#'               !is.null(req_dist_meters) && length(req_dist_meters) > 0
 #'
-#' # Plot PBs for 1k, 5k, 10k
-#' plot_pbs(stoken = stoken, distance_meters = c(1000, 5000, 10000))
-#'
-#' # Plot PBs for Mile and Half Marathon for 2023
-#' plot_pbs(stoken = stoken,
-#'          distance_meters = c(1609, 21097),
-#'          date_range = c("2023-01-01", "2023-12-31"))
-#'
-#' # Plot pre-calculated PB data
-#' # pb_results <- calculate_pbs(...)
-#' # plot_pbs(pbs_df = pb_results)
+#'   if (can_plot) {
+#'     p <- plot_pbs(pbs_df = sample_pbs_for_plot, activity_type = "Run", 
+#'                   distance_meters = req_dist_meters)
+#'     print(p)
+#'   } else {
+#'     message("Sample PBs data lacks required date or distance info for example.")
+#'   }
+#' } else {
+#'   message("athlytics_sample_pbs is empty or not found, skipping example plot.")
 #' }
+#'
+#' \donttest{
+#' # Example using real data (requires authentication)
+#' # Users should first authenticate and obtain a stoken, e.g.:
+#' # To authenticate (replace with your details):
+#' # stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",
+#' #                                client_id = "YOUR_ID",
+#' #                                client_secret = "YOUR_SECRET",
+#' #                                cache = TRUE)
+#'
+#' # Plot PBS trend for Runs (last 6 months)
+#' # Note: plot_pbs requires distance_meters. 
+#' # This example assumes you want to see all available from calculate_pbs.
+#' # For a specific plot, ensure calculate_pbs was run for those distances
+#' # or specify them here.
+#' # pb_data_run <- calculate_pbs(stoken = stoken, activity_type = "Run", 
+#' #                              distance_meters = c(1000,5000,10000), 
+#' #                              date_range = c(format(Sys.Date() - months(6)),
+#' #                                           format(Sys.Date())))
+#' # if(nrow(pb_data_run) > 0) {
+#' #   plot_pbs(pbs_df = pb_data_run, distance_meters = c(1000,5000,10000))
+#' # }
+#'
+#' # Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)
+#' # Ensure distance_meters are relevant for Ride PBs if your calculate_pbs handles them.
+#' # pb_data_ride <- calculate_pbs(stoken = stoken, activity_type = "Ride", 
+#' #                                distance_meters = c(10000, 20000))
+#' # if(nrow(pb_data_ride) > 0) {
+#' #    plot_pbs(pbs_df = pb_data_ride, distance_meters = c(10000, 20000))
+#' # }
+#'
+#' # Plot PBS trend for multiple Run types (no trend line)
+#' # Ensure distance_meters are specified
+#' # pb_data_multi <- calculate_pbs(stoken = stoken, 
+#' #                                activity_type = c("Run", "VirtualRun"), 
+#' #                                distance_meters = c(1000,5000))
+#' # if(nrow(pb_data_multi) > 0) {
+#' #   plot_pbs(pbs_df = pb_data_multi, distance_meters = c(1000,5000), 
+#' #            add_trend_line = FALSE)
+#' # }
+#' }
+
 plot_pbs <- function(stoken,
                      activity_type = "Run",
                      distance_meters,
                      max_activities = 500,
                      date_range = NULL,
+                     add_trend_line = TRUE,
                      pbs_df = NULL) {
 
   # --- Get Data ---
   if (is.null(pbs_df)) {
       if (missing(stoken)) stop("Either 'stoken' or 'pbs_df' must be provided.")
+      if (missing(distance_meters)) stop("`distance_meters` must be provided when `pbs_df` is not.")
       
       pbs_df <- calculate_pbs(
           stoken = stoken,
@@ -71,18 +137,31 @@ plot_pbs <- function(stoken,
       warning("No PB data available to plot.")
       return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No PB data available")) 
   }
+  
+  # Ensure distance_meters used for filtering/plotting are derived from pbs_df if it was passed directly
+  # Or ensure they are consistent if pbs_df was calculated
+  if(!missing(distance_meters) && !is.null(pbs_df)){
+    pbs_df <- pbs_df[pbs_df$distance %in% distance_meters,]
+    if(nrow(pbs_df) == 0){
+      warning("pbs_df does not contain data for the specified distance_meters after filtering.")
+      return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No PB data for specified distances"))
+    }
+  } else if (is.null(pbs_df) && missing(distance_meters)){
+     stop("If pbs_df is not provided, distance_meters must be specified for calculate_pbs call.")
+  }
 
-  # --- 6. Plotting ---
+  # --- Plotting ---
   message("Generating plot...")
 
   # Create the base plot
   p <- ggplot2::ggplot(pbs_df, ggplot2::aes(x = .data$activity_date, y = .data$time_seconds, color = .data$distance_label)) +
-    ggplot2::geom_line(alpha = 0.5) + # Line connecting all efforts for context
-    ggplot2::geom_point(ggplot2::aes(shape = .data$is_pb), size = 2.5) + # Points for all efforts, shape indicates PB
-    ggplot2::scale_shape_manual(values = c("TRUE" = 19, "FALSE" = 1), # Solid circle for PB, open for others
+    ggplot2::geom_line(alpha = 0.5) + 
+    ggplot2::geom_point(ggplot2::aes(shape = .data$is_pb), size = 2.5) + 
+    ggplot2::scale_shape_manual(values = c("TRUE" = 19, "FALSE" = 1), 
                        name = "Personal Best", labels = c("TRUE" = "Yes", "FALSE" = "No")) +
-    ggplot2::scale_y_continuous(labels = function(x) sprintf('%02d:%02d', floor(x/60), floor(x) %% 60)) + # Format y-axis as MM:SS
-    viridis::scale_color_viridis(discrete = TRUE, option = "C", name = "Distance") + # Color by distance
+    ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
+    ggplot2::scale_y_continuous(labels = function(x) sprintf('%02d:%02d', floor(x/60), floor(x) %% 60)) + 
+    viridis::scale_color_viridis(discrete = TRUE, option = "C", name = "Distance") + 
     ggplot2::labs(
       title = "Personal Best Running Times Trend",
       subtitle = "Showing best efforts for specified distances over time",
@@ -97,12 +176,14 @@ plot_pbs <- function(stoken,
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"),
       plot.subtitle = ggplot2::element_text(hjust = 0.5)
     ) +
-    ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 3))) # Make legend shape clearer
+    ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 3)))
 
-   # Add PB markers specifically (optional, points already do this with shape)
-   # p <- p + geom_point(data = filter(pbs_df, is_pb), aes(size = 2), shape = 19, show.legend = FALSE) # Emphasize PBs
+  # Add trend line if requested (though typically not used for PB plots)
+  if (add_trend_line) {
+    # Trend line might not be meaningful for PBs, but included for consistency
+    p <- p + ggplot2::geom_smooth(method = "loess", se = FALSE, aes(group = .data$distance_label), linewidth = 0.7)
+  }
 
-  # Add facetting if multiple distances are plotted for clarity
   if (length(unique(pbs_df$distance_label)) > 1) {
     p <- p + ggplot2::facet_wrap(~ .data$distance_label, scales = "free_y", ncol = 1) +
       ggplot2::theme(strip.text = ggplot2::element_text(face = "bold"))

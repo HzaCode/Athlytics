@@ -102,6 +102,12 @@ mock_activity_list_df$start_date_local <- as.POSIXct(mock_activity_list_df$start
 mock_activity_list_df$duration_mins <- mock_activity_list_df$elapsed_time / 60
 mock_activity_list_df$distance_km <- mock_activity_list_df$distance / 1000
 
+# Convert start_date_local to character string format before transposing
+mock_activity_list_df_for_list <- mock_activity_list_df %>%
+  dplyr::mutate(start_date_local = format(start_date_local, "%Y-%m-%d %H:%M:%S"))
+
+# Convert the modified data frame to a list of lists
+mock_activity_list_list <- purrr::transpose(mock_activity_list_df_for_list)
 
 # --- Placeholder for future mock data ---
 # e.g., mock_activity_streams_data <- ... 

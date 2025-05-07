@@ -38,24 +38,36 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Requires authentication first:
-#' # stoken <- rStrava::strava_oauth(..., cache = TRUE)
+#' # Example using simulated data
+#' data(Athlytics_sample_data)
+#' # Ensure exposure_df is named and other necessary parameters like activity_type are provided
+#' p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
+#' print(p)
 #'
-#' # Plot exposure using duration for default activities
-#' plot_exposure(stoken = stoken)
+#' \donttest{
+#' # Example using real data (requires authentication)
+#' # stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
+#' #                                "YOUR_APP_CLIENT_ID",
+#' #                                "YOUR_APP_SECRET",
+#' #                                cache = TRUE)
 #'
-#' # Plot exposure using TSS for Rides (7/28 day periods)
-#' plot_exposure(stoken = stoken, activity_type = "Ride", load_metric = "tss",
-#'               user_ftp = 280, acute_period = 7, chronic_period = 28)
+#' # Plot Exposure trend for Runs (last 6 months)
+#' # plot_exposure(stoken = stoken, # Replace stoken with a valid token object
+#' #               activity_type = "Run",
+#' #               end_date = Sys.Date(), # For internal calculate_exposure: fetches prior data.
+#' #               # Note: start_date applies to the internal calculate_exposure call.
+#' #               user_ftp = 280) # Example, if load_metric = "tss"
 #'
-#' # Plot exposure using HRSS for Runs
-#' plot_exposure(stoken = stoken, activity_type = "Run", load_metric = "hrss",
-#'               user_max_hr = 190, user_resting_hr = 50)
+#' # Plot Exposure trend for Rides
+#' # plot_exposure(stoken = stoken, # Replace stoken with a valid token object
+#' #               activity_type = "Ride",
+#' #               user_ftp = 280) # Example, provide if load_metric = "tss"
 #'
-#' # Plot pre-calculated exposure data
-#' # exposure_results <- calculate_exposure(...)
-#' # plot_exposure(exposure_df = exposure_results)
+#' # Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)
+#' # plot_exposure(stoken = stoken, # Replace stoken with a valid token object
+#' #               activity_type = c("Run", "VirtualRun"),
+#' #               risk_zones = FALSE,
+#' #               user_ftp = 280) # Example, provide if load_metric = "tss"
 #' }
 plot_exposure <- function(stoken,
                           activity_type = c("Run", "Ride", "VirtualRide", "VirtualRun"),
@@ -70,12 +82,9 @@ plot_exposure <- function(stoken,
                           exposure_df = NULL) {
 
   # --- Get Data --- 
-  # If exposure_df is not provided, calculate it
   if (is.null(exposure_df)) {
-      # Ensure stoken is provided if exposure_df is not
       if (missing(stoken)) stop("Either 'stoken' or 'exposure_df' must be provided.")
       
-      # Call the calculation function to get the data frame
       exposure_df <- calculate_exposure(
         stoken = stoken,
         activity_type = activity_type,
@@ -89,38 +98,33 @@ plot_exposure <- function(stoken,
       )
   }
   
-  # Check if exposure_df is empty or invalid
   if (!is.data.frame(exposure_df) || nrow(exposure_df) == 0 || !all(c("date", "atl", "ctl") %in% names(exposure_df))) {
       warning("No valid exposure data available to plot (or missing required columns).")
       return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No exposure data available"))
   }
   
-  # Rename for clarity
   load_ts <- exposure_df
 
   # --- Plotting ---
   message("Generating plot...")
   
-  # Determine the actual end date used in calculation for subtitle
   plot_end_date <- max(load_ts$date)
 
-  # --- Define a user-friendly label for the metric ---
   metric_label <- switch(load_metric,
                          "duration_mins" = "Duration (mins)",
                          "distance_km" = "Distance (km)",
                          "tss" = "TSS",
                          "hrss" = "HRSS",
                          "elevation_gain_m" = "Elevation Gain (m)",
-                         load_metric # Default to the raw name
+                         load_metric 
                          )
 
-  # Get the latest point for highlighting
   latest_point <- load_ts %>% dplyr::filter(.data$date == plot_end_date)
 
   p <- ggplot2::ggplot(load_ts, ggplot2::aes(x = .data$ctl, y = .data$atl)) +
-    ggplot2::geom_point(ggplot2::aes(color = .data$date), alpha = 0.7, size = 2) + # Color points by date
+    ggplot2::geom_point(ggplot2::aes(color = .data$date), alpha = 0.7, size = 2) + 
     viridis::scale_color_viridis(option = "plasma", name = "Date") +
-    ggplot2::geom_point(data = latest_point, ggplot2::aes(x = .data$ctl, y = .data$atl), color = "red", size = 4, shape = 17) + # Highlight latest point
+    ggplot2::geom_point(data = latest_point, ggplot2::aes(x = .data$ctl, y = .data$atl), color = "red", size = 4, shape = 17) + 
     ggplot2::labs(
       title = paste("Training Load Exposure (ATL vs CTL):", metric_label),
       subtitle = sprintf("Acute: %d days, Chronic: %d days | End Date: %s",
@@ -136,33 +140,26 @@ plot_exposure <- function(stoken,
         legend.position = "right"
     )
 
-  # Add Risk Zones based on ACWR if requested
   if (risk_zones) {
-      # Ensure acwr column exists (it should from calculate_exposure)
       if (!"acwr" %in% colnames(load_ts)) {
           warning("ACWR column not found in calculated data. Cannot add risk zones.")
       } else {
-          # Define typical ACWR zones (adjust thresholds as needed)
           sweet_spot_lower <- 0.8
           sweet_spot_upper <- 1.3
-          danger_zone_upper <- 1.5 # Anything above this is often considered high risk
+          danger_zone_upper <- 1.5 
           
-          # Find max CTL/ATL for plot limits, ensuring they are positive
           max_ctl_limit <- max(0, load_ts$ctl, na.rm = TRUE) * 1.1
           max_atl_limit <- max(0, load_ts$atl, na.rm = TRUE) * 1.1
           
-          # Prevent zero limits if data is all zero
           if (max_ctl_limit == 0) max_ctl_limit <- 1
           if (max_atl_limit == 0) max_atl_limit <- 1
           
-          # Create polygons for zones using geom_abline (relationship ATL = ACWR * CTL)
           p <- p + 
               ggplot2::geom_abline(intercept = 0, slope = sweet_spot_lower, linetype="dotted", color="blue") + 
               ggplot2::geom_abline(intercept = 0, slope = sweet_spot_upper, linetype="dotted", color="orange") + 
               ggplot2::geom_abline(intercept = 0, slope = danger_zone_upper, linetype="dotted", color="red") +
               ggplot2::coord_cartesian(xlim = c(0, max_ctl_limit), ylim = c(0, max_atl_limit), expand = FALSE)
           
-          # Add annotations (adjust positioning based on limits)
           p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.05, y = max_atl_limit * 0.95, label = sprintf("High Risk (>%.1f)", danger_zone_upper), hjust = 0, vjust = 1, color = "red", size = 3, alpha=0.8)
           p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.2, y = max_atl_limit * 0.7, label = sprintf("Caution (%.1f-%.1f)", sweet_spot_upper, danger_zone_upper), hjust = 0, vjust = 1, color = "orange", size = 3, alpha=0.8)
           p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.5, y = max_atl_limit * 0.5, label = sprintf("Sweet Spot (%.1f-%.1f)", sweet_spot_lower, sweet_spot_upper), hjust = 0, vjust = 1, color = "darkgreen", size = 3, alpha=0.8)

@@ -32,30 +32,35 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Requires authentication first:
-#' # stoken <- rStrava::strava_oauth(..., cache = TRUE)
+#' # Example using simulated data
+#' data(Athlytics_sample_data)
+#' # Explicitly name ef_df and provide activity_type
+#' p <- plot_ef(ef_df = athlytics_sample_ef, activity_type = "Run") 
+#' print(p)
 #'
-#' # Plot Pace/HR EF for Runs (last 6 months)
-#' plot_ef(stoken = stoken,
-#'         activity_type = "Run",
-#'         ef_metric = "Pace_HR",
-#'         start_date = Sys.Date() - months(6))
+#' \donttest{
+#' # Example using real data (requires authentication)
+#' # stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
+#' #                                "YOUR_APP_CLIENT_ID",
+#' #                                "YOUR_APP_SECRET",
+#' #                                cache = TRUE)
 #'
-#' # Plot Power/HR EF for Rides
-#' plot_ef(stoken = stoken,
-#'         activity_type = "Ride",
-#'         ef_metric = "Power_HR")
+#' # Plot Pace/HR EF trend for Runs (last 6 months)
+#' # plot_ef(stoken = stoken, # Replace stoken with a valid token object
+#' #         activity_type = "Run",
+#' #         ef_metric = "Pace_HR",
+#' #         start_date = Sys.Date() - months(6))
 #'
-#' # Plot Pace/HR EF for multiple run types, no trend line
-#' plot_ef(stoken = stoken,
-#'         activity_type = c("Run", "VirtualRun"),
-#'         ef_metric = "Pace_HR",
-#'         add_trend_line = FALSE)
+#' # Plot Power/HR EF trend for Rides
+#' # plot_ef(stoken = stoken, # Replace stoken with a valid token object
+#' #         activity_type = "Ride",
+#' #         ef_metric = "Power_HR")
 #'
-#' # Plot pre-calculated EF data
-#' # ef_results <- calculate_ef(...)
-#' # plot_ef(ef_df = ef_results)
+#' # Plot Pace/HR EF trend for multiple Run types (no trend line)
+#' # plot_ef(stoken = stoken, # Replace stoken with a valid token object
+#' #         activity_type = c("Run", "VirtualRun"),
+#' #         ef_metric = "Pace_HR",
+#' #         add_trend_line = FALSE)
 #' }
 plot_ef <- function(stoken,
                     activity_type = c("Run", "Ride"),
@@ -103,7 +108,7 @@ plot_ef <- function(stoken,
 
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$ef_value)) +
     ggplot2::geom_point(ggplot2::aes(color = .data$activity_type), alpha = 0.7, size = 2) +
-    ggplot2::scale_x_date(date_labels = "%b %Y", date_breaks = "3 months") + # Adjust breaks if needed
+    ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
     ggplot2::labs(
       title = "Efficiency Factor (EF) Trend",
       subtitle = paste("Metric:", ef_metric_label),

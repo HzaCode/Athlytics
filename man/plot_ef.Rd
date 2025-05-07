@@ -51,29 +51,34 @@ Plots EF (output/HR based on activity averages). An upward trend
   If `ef_df` is not provided, calls `calculate_ef` first.
 }
 \examples{
-\dontrun{
-# Requires authentication first:
-# stoken <- rStrava::strava_oauth(..., cache = TRUE)
+# Example using simulated data
+data(Athlytics_sample_data)
+# Explicitly name ef_df and provide activity_type
+p <- plot_ef(ef_df = athlytics_sample_ef, activity_type = "Run") 
+print(p)
 
-# Plot Pace/HR EF for Runs (last 6 months)
-plot_ef(stoken = stoken,
-        activity_type = "Run",
-        ef_metric = "Pace_HR",
-        start_date = Sys.Date() - months(6))
+\donttest{
+# Example using real data (requires authentication)
+# stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
+#                                "YOUR_APP_CLIENT_ID",
+#                                "YOUR_APP_SECRET",
+#                                cache = TRUE)
 
-# Plot Power/HR EF for Rides
-plot_ef(stoken = stoken,
-        activity_type = "Ride",
-        ef_metric = "Power_HR")
+# Plot Pace/HR EF trend for Runs (last 6 months)
+# plot_ef(stoken = stoken, # Replace stoken with a valid token object
+#         activity_type = "Run",
+#         ef_metric = "Pace_HR",
+#         start_date = Sys.Date() - months(6))
 
-# Plot Pace/HR EF for multiple run types, no trend line
-plot_ef(stoken = stoken,
-        activity_type = c("Run", "VirtualRun"),
-        ef_metric = "Pace_HR",
-        add_trend_line = FALSE)
+# Plot Power/HR EF trend for Rides
+# plot_ef(stoken = stoken, # Replace stoken with a valid token object
+#         activity_type = "Ride",
+#         ef_metric = "Power_HR")
 
-# Plot pre-calculated EF data
-# ef_results <- calculate_ef(...)
-# plot_ef(ef_df = ef_results)
+# Plot Pace/HR EF trend for multiple Run types (no trend line)
+# plot_ef(stoken = stoken, # Replace stoken with a valid token object
+#         activity_type = c("Run", "VirtualRun"),
+#         ef_metric = "Pace_HR",
+#         add_trend_line = FALSE)
 }
 }
