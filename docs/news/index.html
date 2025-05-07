@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,24 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1" id="athlytics-011">Athlytics 0.1.1<a class="anchor" aria-label="anchor" href="#athlytics-011"></a></h2>
+<div class="section level3">
+<h3 id="core-improvement-enhanced-reliability--testing-with-simulated-data-0-1-1">Core Improvement: Enhanced Reliability &amp; Testing with Simulated Data<a class="anchor" aria-label="anchor" href="#core-improvement-enhanced-reliability--testing-with-simulated-data-0-1-1"></a></h3>
+<p>This significant update enhances package reliability and ease of use by integrating <code>Athlytics_sample_data</code>. This enables all examples to run offline and ensures core functionalities have undergone more rigorous, reproducible testing.</p>
+<div class="section level4">
+<h4 id="key-changes-0-1-1">Key Changes:<a class="anchor" aria-label="anchor" href="#key-changes-0-1-1"></a></h4>
+<ul><li>
+<strong>Examples &amp; Vignettes</strong>: All Roxygen examples and key vignette examples now primarily use <code>Athlytics_sample_data</code> for offline execution and clarity. Network-dependent examples are clearly separated in <code>\donttest{}</code> blocks.</li>
+<li>
+<strong>Test Suite</strong>: Fundamentally refactored the test suite to extensively use <code>Athlytics_sample_data</code> and <code>mockery</code>, improving test robustness and parameter coverage.</li>
+<li>
+<strong>Strengthened Package Quality &amp; Compliance</strong>: Undertook thorough package validation, leading to key enhancements for overall robustness and adherence to R packaging standards. This involved: ensuring all <strong>function examples</strong> are correct and reliably executable (notably addressing <code>strava_oauth(...)</code> scenarios for offline/testing contexts); providing accurate and <strong>refined documentation for data objects</strong> in <code>R/data.R</code>; fixing <strong>Roxygen import directives</strong> for precise namespace definition; improving <strong>help file readability</strong> through Rd line width adjustments; and optimizing package data loading by adding <code>LazyData: true</code> to <code>DESCRIPTION</code>.</li>
+<li>
+<strong>Documentation</strong>: Minor improvements to documentation clarity and consistency (e.g., date formatting in plots, explicit naming of data frame arguments in examples).</li>
+</ul><hr></div>
+</div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="athlytics-010">Athlytics 0.1.0<a class="anchor" aria-label="anchor" href="#athlytics-010"></a></h2>
 <div class="section level3">
 <h3 id="major-changes-0-1-0">Major Changes<a class="anchor" aria-label="anchor" href="#major-changes-0-1-0"></a></h3>
@@ -55,7 +73,7 @@
 <li>Updated README examples and descriptions for clarity and consistency with code.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="previous-notes-initial-release-0-1-0">Previous Notes (Initial Release)<a class="anchor" aria-label="anchor" href="#previous-notes-initial-release-0-1-0"></a></h3>
+<h3 id="initial-release-0-1-0">Initial Release<a class="anchor" aria-label="anchor" href="#initial-release-0-1-0"></a></h3>
 <ul><li>Initial release.</li>
 <li>Added core functions for calculating and plotting:
 <ul><li>Load Exposure (Acute vs. Chronic Load)</li>
