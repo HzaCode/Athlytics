@@ -54,17 +54,15 @@ Alternatively, install the development version from GitHub:
 
 ## Authentication with Strava
 
-`Athlytics` requires a valid Strava API token to fetch data. This is handled using the `rStrava` package.
+`Athlytics` **requires** you to authenticate with Strava using the `rStrava` package. This generates a token that you then pass to `Athlytics` functions.
 
 1.  **Create a Strava API Application:**
-    *   Go to <https://developers.strava.com/> and navigate to "My API Application" under your settings, or follow their "Getting Started" guide to create an app.
-    *   Create an application (e.g., "My Athlytics App").
-    *   Set "Authorization Callback Domain" to `localhost`.
-    *   Note your **Client ID** and **Client Secret**.
-
-2.  **Authenticate in R:**
-    *   Use `rStrava::strava_oauth()`.
-    *   Using `cache = TRUE` is highly recommended to securely store the token and avoid re-authenticating every session.
+    -   Go to your Strava settings page for API applications (you can usually find this via your profile settings or by searching Strava's developer documentation, the direct link was previously `https://www.strava.com/settings/api` but requires login).
+    -   Create a new API application (e.g., "My Athlytics Analysis").
+    -   Set the "Authorization Callback Domain" to `localhost`.
+    -   Note your **Client ID** and **Client Secret**.
+2.  **Authenticate in R using `rStrava::strava_oauth()`:**
+    -   This function handles the OAuth2.0 flow, potentially opening a browser window for authorization.
 
 ```r
 # --- Example Authentication Code ---
@@ -204,13 +202,6 @@ decoupling_data_run <- calculate_decoupling(
 # Plot the trend
 plot_decoupling(decoupling_data = decoupling_data_run, add_trend_line = TRUE)
 ```
-
-### 2. Strava API Setup
-
-*   Sign up for a Strava account if you don't have one.
-*   Go to <https://developers.strava.com/> and navigate to "My API Application" under your settings or follow their "Getting Started" guide to create an app.
-*   When creating your app, you'll be asked for:
-    *   Application Name (e.g., `MyAthlyticsApp`)
 
 ## Further Information
 

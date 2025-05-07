@@ -71,19 +71,19 @@
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
-<dd><p>Optional. Filter activities by type (e.g., "Run", "Ride"). Default `NULL` includes all.</p></dd>
+<dd><p>Type(s) of activities to analyze (e.g., "Run", "Ride").</p></dd>
 
 
 <dt id="arg-load-metric">load_metric<a class="anchor" aria-label="anchor" href="#arg-load-metric"></a></dt>
-<dd><p>Method for calculating daily load (e.g., "duration_mins", "tss", "hrss"). Default "duration_mins".</p></dd>
+<dd><p>Method for calculating daily load (e.g., "duration_mins", "distance_km", "tss", "hrss").</p></dd>
 
 
 <dt id="arg-acute-period">acute_period<a class="anchor" aria-label="anchor" href="#arg-acute-period"></a></dt>
-<dd><p>Days for acute load window (e.g., 7).</p></dd>
+<dd><p>Days for the acute load window (e.g., 7).</p></dd>
 
 
 <dt id="arg-chronic-period">chronic_period<a class="anchor" aria-label="anchor" href="#arg-chronic-period"></a></dt>
-<dd><p>Days for chronic load window (e.g., 28). Must be &gt; `acute_period`.</p></dd>
+<dd><p>Days for the chronic load window (e.g., 28). Must be greater than `acute_period`.</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -94,67 +94,57 @@
 <dd><p>Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.</p></dd>
 
 
-<dt id="arg-user-ftp">user_ftp<a class="anchor" aria-label="anchor" href="#arg-user-ftp"></a></dt>
-<dd><p>Required if `load_metric = "tss"`. Your FTP.</p></dd>
-
-
-<dt id="arg-user-max-hr">user_max_hr<a class="anchor" aria-label="anchor" href="#arg-user-max-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"`. Your max HR.</p></dd>
-
-
-<dt id="arg-user-resting-hr">user_resting_hr<a class="anchor" aria-label="anchor" href="#arg-user-resting-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"`. Your resting HR.</p></dd>
-
-
 <dt id="arg-smoothing-period">smoothing_period<a class="anchor" aria-label="anchor" href="#arg-smoothing-period"></a></dt>
-<dd><p>Days for smoothing the ACWR using a rolling mean. Default 7.</p></dd>
-
-
-<dt id="arg-highlight-zones">highlight_zones<a class="anchor" aria-label="anchor" href="#arg-highlight-zones"></a></dt>
-<dd><p>Add background shading for typical ACWR zones (low, optimal, high risk)? Default `TRUE`.</p></dd>
+<dd><p>Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.</p></dd>
 
 
 <dt id="arg-acwr-df">acwr_df<a class="anchor" aria-label="anchor" href="#arg-acwr-df"></a></dt>
-<dd><p>Optional. A pre-calculated data frame from `calculate_acwr`. If provided,
-`stoken` and other calculation parameters are ignored.</p></dd>
+<dd><p>Optional. A pre-calculated data frame from `calculate_acwr`.
+If provided, `stoken` and other calculation parameters are ignored.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A ggplot object showing the smoothed ACWR trend.</p>
+    <p>A ggplot object showing the ACWR trend.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots the smoothed ACWR trend over time, optionally showing risk zones.
-Uses pre-calculated data or calls `calculate_acwr`.</p>
-<p>Plots smoothed ACWR. Optional risk zone shading uses typical boundaries
-  (e.g., &lt;0.8 Low, 0.8-1.3 Sweet Spot, 1.3-1.5 Caution, &gt;1.5 High Risk).
-  If `acwr_df` is not provided, calls `calculate_acwr` first.</p>
+    <p>Plots the ACWR trend over time. Uses pre-calculated data or calls `calculate_acwr` (can be slow).
+  ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
+  If `acwr_df` is not provided, calls `calculate_acwr` first (can be slow and hit API limits).</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Requires authentication first:</span></span></span>
-<span class="r-in"><span><span class="co"># stoken &lt;- rStrava::strava_oauth(..., cache = TRUE)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 使用模拟数据示例</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Athlytics_sample_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">athlytics_sample_acwr</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_acwr</span><span class="op">(</span>acwr_df <span class="op">=</span> <span class="va">athlytics_sample_acwr</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating plot...</span>
+<span class="r-plt img"><img src="plot_acwr-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot ACWR for Runs using duration</span></span></span>
-<span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span>, load_metric <span class="op">=</span> <span class="st">"duration_mins"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># 使用真实数据的示例（需要认证）</span></span></span>
+<span class="r-in"><span><span class="va">stoken</span> <span class="op">&lt;-</span> <span class="fu">rStrava</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth</a></span><span class="op">(</span><span class="va">...</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> '...' used in an incorrect context</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot ACWR for Rides using TSS (requires FTP)</span></span></span>
-<span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>, activity_type <span class="op">=</span> <span class="st">"Ride"</span>, load_metric <span class="op">=</span> <span class="st">"tss"</span>, user_ftp <span class="op">=</span> <span class="fl">280</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot ACWR for all activities using distance, with custom periods</span></span></span>
+<span class="r-in"><span><span class="co"># 绘制跑步的ACWR趋势（使用运动时长作为负荷指标）</span></span></span>
 <span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>,</span></span>
-<span class="r-in"><span>          load_metric <span class="op">=</span> <span class="st">"distance_km"</span>,</span></span>
-<span class="r-in"><span>          acute_period <span class="op">=</span> <span class="fl">10</span>,</span></span>
-<span class="r-in"><span>          chronic_period <span class="op">=</span> <span class="fl">40</span>,</span></span>
-<span class="r-in"><span>          smoothing_period <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span>          activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>          load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span></span>
+<span class="r-in"><span>          acute_period <span class="op">=</span> <span class="fl">7</span>,</span></span>
+<span class="r-in"><span>          chronic_period <span class="op">=</span> <span class="fl">28</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot pre-calculated ACWR data</span></span></span>
-<span class="r-in"><span><span class="co"># acwr_results &lt;- calculate_acwr(...) </span></span></span>
-<span class="r-in"><span><span class="co"># plot_acwr(acwr_df = acwr_results)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co"># 绘制骑行的ACWR趋势（使用TSS作为负荷指标）</span></span></span>
+<span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>,</span></span>
+<span class="r-in"><span>          activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
+<span class="r-in"><span>          load_metric <span class="op">=</span> <span class="st">"tss"</span>,</span></span>
+<span class="r-in"><span>          user_ftp <span class="op">=</span> <span class="fl">280</span><span class="op">)</span>  <span class="co"># 需要提供FTP值</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -57,7 +57,7 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="athlytics-">Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw=true" align="right" width="200"><a class="anchor" aria-label="anchor" href="#athlytics-"></a>
 </h1></div>
-<p><a href="https://www.repostatus.org/#active" class="external-link"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status"></a> <a href="https://CRAN.R-project.org/" class="external-link"><img src="https://img.shields.io/badge/CRAN%20status-pending%20review-orange.svg" alt="CRAN status: pending review"></a> <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml" class="external-link"><img src="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg" alt="R-CMD-check"></a> <img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg"><a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://hzaCode.github.io/Athlytics"><img src="https://img.shields.io/badge/website-Athlytics-blue" alt="Website"></a> <img src="https://img.shields.io/badge/R%20Journal-In%20Submission-orange" alt="R Journal: In Submission"><a href="https://github.com/HzaCode/Athlytics/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
+<p><a href="https://www.repostatus.org/#active" class="external-link"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status"></a> <a href="https://CRAN.R-project.org/" class="external-link"><img src="https://img.shields.io/badge/CRAN%20status-pending%20review-orange.svg" alt="CRAN status: pending review"></a> <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml" class="external-link"><img src="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg" alt="R-CMD-check"></a> <img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg"><a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://hezhiang.com/Athlytics/" class="external-link"><img src="https://img.shields.io/badge/website-Athlytics-blue" alt="Website"></a> <a href="https://github.com/HzaCode/Athlytics/pulls" class="external-link"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a></p>
 <div class="section level3">
 <h3 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h3>
@@ -88,7 +88,7 @@
 <li>
 <strong>Create a Strava API Application:</strong>
 <ul>
-<li>Go to <a href="https://www.strava.com/settings/api" class="external-link uri">https://www.strava.com/settings/api</a>.</li>
+<li>Go to the Strava API documentation page (<a href="https://developers.strava.com/docs/reference/" class="external-link">https://developers.strava.com/docs/reference/</a>) and find instructions for creating an application (you’ll likely need to navigate to your settings page once logged in).</li>
 <li>Create a new API application (e.g., “My Athlytics Analysis”).</li>
 <li>Set the “Authorization Callback Domain” to <code>localhost</code>.</li>
 <li>Note your <strong>Client ID</strong> and <strong>Client Secret</strong>.</li>
@@ -188,7 +188,10 @@
 <span>    chronic_period <span class="op">=</span> <span class="fl">42</span>            <span class="co"># Example: Longer chronic window</span></span>
 <span>    <span class="co"># , end_date = Sys.Date()      # Optional</span></span>
 <span>    <span class="co"># , risk_zones = TRUE          # Optional</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Alternatively, plot pre-calculated data:</span></span>
+<span><span class="co"># plot_exposure(exposure_df = exposure_data)</span></span></code></pre></div>
 <p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3Ada869625-0481-4b1d-af1a-a1785add2962%3Aimage.png?table=block&amp;id=1c9fc401-a191-8045-aadf-cc29956870ef&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"></p>
 </div>
 <div class="section level3">
@@ -222,7 +225,10 @@
 <span>    <span class="co"># , user_resting_hr = NULL     # Optional: Required if load_metric = "hrss"</span></span>
 <span>    <span class="co"># , smoothing_period = 7       # Optional: Days for smoothing the ACWR line (defaults to 7)</span></span>
 <span>    <span class="co"># , highlight_zones = TRUE     # Optional: Show background risk zone shading (defaults to TRUE)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Alternatively, plot pre-calculated data:</span></span>
+<span><span class="co"># plot_acwr(acwr_df = acwr_data)</span></span></code></pre></div>
 <p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3A3b50a271-b755-4eb5-9108-34f97e68b58b%3Aimage.png?table=block&amp;id=1cafc401-a191-80e8-967a-fc60f6946af5&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"></p>
 </div>
 <div class="section level3">
@@ -250,7 +256,10 @@
 <span>    <span class="co"># , min_duration_mins = 20        # Optional</span></span>
 <span>    <span class="co"># , add_trend_line = TRUE         # Optional</span></span>
 <span>    <span class="co"># , smoothing_method = "loess"    # Optional</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Alternatively, plot pre-calculated data:</span></span>
+<span><span class="co"># plot_ef(ef_df = ef_data)</span></span></code></pre></div>
 <p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3A20a75be7-f255-43ce-a848-ad8e4213858e%3Aimage.png?table=block&amp;id=1cdfc401-a191-806a-986a-d49ee4389a08&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"></p>
 </div>
 <div class="section level3">
@@ -278,7 +287,10 @@
 <span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>                   <span class="co"># Specify activity type (currently only "Run" is fully supported)</span></span>
 <span>    <span class="co"># , max_activities = 100                  # Optional: Limit activities to check for speed/API limits</span></span>
 <span>    <span class="co"># , date_range = NULL                   # Optional</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Alternatively, plot pre-calculated data:</span></span>
+<span><span class="co"># plot_pbs(pbs_df = pb_data)</span></span></code></pre></div>
 <p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3Af5624d35-ad3d-4242-aefc-7cf49881b777%3Aimage.png?table=block&amp;id=1cbfc401-a191-808d-a62b-faa76e4beb5f&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"></p>
 </div>
 <div class="section level3">
@@ -286,49 +298,37 @@
 </h3>
 <p><strong>Note:</strong> This analysis requires fetching detailed stream data for each activity (<code>calculate_decoupling</code> uses <code>httr</code> for this) and can be very slow or hit API rate limits. Use the <code>max_activities</code> parameter to limit the scope.</p>
 <p><strong>Calculating Data:</strong> To get the underlying decoupling data (date, decoupling) as a data frame:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Ensure stoken is valid.</span></span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="co"># </span><span class="al">WARNING</span><span class="co">: Can be slow. Reduce max_activities for testing.</span></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>de decoupling_data <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>({</span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>    <span class="fu">calculate_decoupling</span>(</span>
-<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>        <span class="at">stoken =</span> stoken,</span>
-<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>        <span class="at">activity_type =</span> <span class="st">"Run"</span>,</span>
-<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>        <span class="at">decouple_metric =</span> <span class="st">"Pace_HR"</span>,</span>
-<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>        <span class="at">max_activities =</span> <span class="dv">20</span> <span class="co"># Use a small number for example</span></span>
-<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>    )</span>
-<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>}, <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
-<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>    <span class="fu">message</span>(<span class="st">"Error calculating decoupling: "</span>, e<span class="sc">$</span>message)</span>
-<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>    <span class="cn">NULL</span></span>
-<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>})</span>
-<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co"># print(tail(decoupling_data)) # Uncomment to view</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Ensure stoken is valid.</span></span>
+<span></span>
+<span><span class="va">decoupling_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span>
+<span>    stoken <span class="op">=</span> <span class="va">stoken</span>,</span>
+<span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
+<span>    decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span>
+<span>    max_activities <span class="op">=</span> <span class="fl">20</span> <span class="co"># Use a small number for example</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check the result (it might be NULL or stop with an error if issues occurred)</span></span>
+<span><span class="co"># print(tail(decoupling_data)) </span></span></code></pre></div>
 <p><strong>Plotting:</strong></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Ensure stoken is valid.</span></span>
 <span><span class="co"># WARNING: Can be slow. Reduce max_activities for plotting.</span></span>
-<span><span class="co"># Example: Plot pre-calculated data if calculation succeeded</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">decoupling_data</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span></span>
-<span>        decoupling_df <span class="op">=</span> <span class="va">decoupling_data</span></span>
-<span>        <span class="co"># Optional params for plot_decoupling can be added here if needed,</span></span>
-<span>        <span class="co"># like add_trend_line = FALSE, etc.</span></span>
-<span>        <span class="co"># Since we provide decoupling_df, other calculation params are ignored by plot_decoupling.</span></span>
-<span>    <span class="op">)</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Skipping decoupling plot as calculation failed or returned no data."</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># Alternative: Let plot_decoupling handle the calculation (can be slow)</span></span>
-<span><span class="co"># plot_decoupling(</span></span>
-<span><span class="co">#     stoken = stoken,</span></span>
-<span><span class="co">#     activity_type = "Run",</span></span>
-<span><span class="co">#     decouple_metric = "Pace_HR",</span></span>
-<span><span class="co">#     max_activities = 20 # Use a small number for example</span></span>
-<span><span class="co"># )</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span></span>
+<span>    stoken <span class="op">=</span> <span class="va">stoken</span>,</span>
+<span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
+<span>    decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span>
+<span>    max_activities <span class="op">=</span> <span class="fl">20</span> <span class="co"># Use a small number for example</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># Alternatively, plot pre-calculated data (if 'decoupling_data' was successfully calculated earlier):</span></span>
+<span><span class="co"># plot_decoupling(decoupling_df = decoupling_data)</span></span></code></pre></div>
 <p><img src="https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&amp;id=1cbfc401-a191-80b5-8f1a-efda0eddf069&amp;spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&amp;width=1420&amp;userId=&amp;cache=v2"></p>
 </div>
 <div class="section level3">
 <h3 id="recent-updates">Recent Updates<a class="anchor" aria-label="anchor" href="#recent-updates"></a>
 </h3>
-<p>For details on recent changes and version history, please see the <a href="https://hzaCode.github.io/Athlytics/news/index.html">Changelog</a> on the package website.</p>
+<p>For details on recent changes and version history, please see the <a href="https://hezhiang.com/Athlytics/news/index.html" class="external-link">Changelog</a> on the package website.</p>
 <hr>
 </div>
 <div class="section level3">
@@ -348,9 +348,8 @@
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li>
-<a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a>
-</li>
+<li><a href="LICENSE.html">Full license</a></li>
+<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
 

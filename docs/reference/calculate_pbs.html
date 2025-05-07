@@ -97,20 +97,42 @@ cumulative PBs for specified distances.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Requires authentication first:</span></span></span>
-<span class="r-in"><span><span class="co"># stoken &lt;- rStrava::strava_oauth(..., cache = TRUE)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 使用模拟数据示例 (注意: 模拟数据本身已是计算结果, 此处仅作演示)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Athlytics_sample_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">athlytics_sample_pbs</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">athlytics_sample_pbs</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   activity_id activity_date       distance elapsed_time moving_time time_seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 12846473912 2022-01-11 <span style="color: #949494;">20:46:47</span>     <span style="text-decoration: underline;">1</span>000          326         326          326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 12846473209 2022-01-12 <span style="color: #949494;">20:51:44</span>     <span style="text-decoration: underline;">1</span>000          302         302          302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 12846472820 2022-01-13 <span style="color: #949494;">22:24:56</span>     <span style="text-decoration: underline;">1</span>000          315         315          315</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 6928788461  2022-02-04 <span style="color: #949494;">21:40:44</span>     <span style="text-decoration: underline;">1</span>000          348         348          348</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 6928788329  2022-02-04 <span style="color: #949494;">21:55:42</span>     <span style="text-decoration: underline;">1</span>000          592         592          592</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 6907736431  2022-02-12 <span style="color: #949494;">11:47:36</span>     <span style="text-decoration: underline;">1</span>000          314         314          314</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: cumulative_pb_seconds &lt;dbl&gt;, is_pb &lt;lgl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   distance_label &lt;fct&gt;, time_period &lt;Period&gt;</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Calculate PBs for 1k, 5k, 10k (checking fewer activities for speed)</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># 使用真实数据的示例（需要认证）</span></span></span>
+<span class="r-in"><span><span class="va">stoken</span> <span class="op">&lt;-</span> <span class="fu">rStrava</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth</a></span><span class="op">(</span><span class="va">...</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> '...' used in an incorrect context</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 计算1k, 5k, 10k的PB (限制活动数量以提高速度)</span></span></span>
 <span class="r-in"><span><span class="va">pb_data</span> <span class="op">&lt;-</span> <span class="fu">calculate_pbs</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>, </span></span>
 <span class="r-in"><span>                           distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">5000</span>, <span class="fl">10000</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                           max_activities <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pb_data</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'pb_data' not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Show only the efforts that set a new PB</span></span></span>
+<span class="r-in"><span><span class="co"># 仅显示创造新PB的成绩</span></span></span>
 <span class="r-in"><span><span class="va">new_pbs</span> <span class="op">&lt;-</span> <span class="va">pb_data</span><span class="op">[</span><span class="va">pb_data</span><span class="op">$</span><span class="va">is_pb</span>, <span class="op">]</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'pb_data' not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">new_pbs</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'new_pbs' not found</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

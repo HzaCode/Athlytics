@@ -127,25 +127,34 @@ pre-calculated data or calls `calculate_exposure`.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Requires authentication first:</span></span></span>
-<span class="r-in"><span><span class="co"># stoken &lt;- rStrava::strava_oauth(..., cache = TRUE)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 使用模拟数据示例</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Athlytics_sample_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">athlytics_sample_exposure</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_exposure</span><span class="op">(</span>exposure_df <span class="op">=</span> <span class="va">athlytics_sample_exposure</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating plot...</span>
+<span class="r-plt img"><img src="plot_exposure-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot exposure using duration for default activities</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># 使用真实数据的示例（需要认证）</span></span></span>
+<span class="r-in"><span><span class="va">stoken</span> <span class="op">&lt;-</span> <span class="fu">rStrava</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth</a></span><span class="op">(</span><span class="va">...</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> '...' used in an incorrect context</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 绘制默认活动的exposure图 (使用运动时长)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot exposure using TSS for Rides (7/28 day periods)</span></span></span>
+<span class="r-in"><span><span class="co"># 绘制骑行的exposure图 (使用TSS, 7/28天周期)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>, activity_type <span class="op">=</span> <span class="st">"Ride"</span>, load_metric <span class="op">=</span> <span class="st">"tss"</span>,</span></span>
 <span class="r-in"><span>              user_ftp <span class="op">=</span> <span class="fl">280</span>, acute_period <span class="op">=</span> <span class="fl">7</span>, chronic_period <span class="op">=</span> <span class="fl">28</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot exposure using HRSS for Runs</span></span></span>
+<span class="r-in"><span><span class="co"># 绘制跑步的exposure图 (使用HRSS)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span>, load_metric <span class="op">=</span> <span class="st">"hrss"</span>,</span></span>
 <span class="r-in"><span>              user_max_hr <span class="op">=</span> <span class="fl">190</span>, user_resting_hr <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot pre-calculated exposure data</span></span></span>
-<span class="r-in"><span><span class="co"># exposure_results &lt;- calculate_exposure(...)</span></span></span>
-<span class="r-in"><span><span class="co"># plot_exposure(exposure_df = exposure_results)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

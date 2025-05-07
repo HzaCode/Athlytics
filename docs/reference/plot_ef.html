@@ -114,31 +114,41 @@ or calls `calculate_ef`.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Requires authentication first:</span></span></span>
-<span class="r-in"><span><span class="co"># stoken &lt;- rStrava::strava_oauth(..., cache = TRUE)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 使用模拟数据示例</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Athlytics_sample_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">athlytics_sample_ef</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_ef</span><span class="op">(</span>ef_df <span class="op">=</span> <span class="va">athlytics_sample_ef</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating plot...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `geom_smooth()` using formula = 'y ~ x'</span>
+<span class="r-plt img"><img src="plot_ef-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot Pace/HR EF for Runs (last 6 months)</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># 使用真实数据的示例（需要认证）</span></span></span>
+<span class="r-in"><span><span class="va">stoken</span> <span class="op">&lt;-</span> <span class="fu">rStrava</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth</a></span><span class="op">(</span><span class="va">...</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> '...' used in an incorrect context</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 绘制跑步的Pace/HR EF趋势 (最近6个月)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_ef</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>,</span></span>
 <span class="r-in"><span>        activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
 <span class="r-in"><span>        ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span></span>
 <span class="r-in"><span>        start_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/weekday.POSIXt.html" class="external-link">months</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot Power/HR EF for Rides</span></span></span>
+<span class="r-in"><span><span class="co"># 绘制骑行的Power/HR EF趋势</span></span></span>
 <span class="r-in"><span><span class="fu">plot_ef</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>,</span></span>
 <span class="r-in"><span>        activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
 <span class="r-in"><span>        ef_metric <span class="op">=</span> <span class="st">"Power_HR"</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot Pace/HR EF for multiple run types, no trend line</span></span></span>
+<span class="r-in"><span><span class="co"># 绘制多种跑步类型的Pace/HR EF趋势 (无趋势线)</span></span></span>
 <span class="r-in"><span><span class="fu">plot_ef</span><span class="op">(</span>stoken <span class="op">=</span> <span class="va">stoken</span>,</span></span>
 <span class="r-in"><span>        activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"VirtualRun"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span></span>
 <span class="r-in"><span>        add_trend_line <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot pre-calculated EF data</span></span></span>
-<span class="r-in"><span><span class="co"># ef_results &lt;- calculate_ef(...)</span></span></span>
-<span class="r-in"><span><span class="co"># plot_ef(ef_df = ef_results)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

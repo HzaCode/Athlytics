@@ -115,11 +115,27 @@ The analysis period covers the `chronic_period` days ending on this date.</p></d
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Requires authentication first:</span></span></span>
-<span class="r-in"><span><span class="co"># stoken &lt;- rStrava::strava_oauth(..., cache = TRUE)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># 使用模拟数据示例 (注意: 模拟数据本身已是计算结果, 此处仅作演示)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Athlytics_sample_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">athlytics_sample_exposure</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">athlytics_sample_exposure</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   date       daily_load   ctl   atl  acwr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2025-03-27          0  5.98     0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2025-03-28          0  5.98     0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2025-03-29          0  5.44     0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2025-03-30          0  5.44     0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2025-03-31          0  5.44     0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2025-04-01          0  5.44     0     0</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Exposure using TSS for Rides</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># 使用真实数据的示例（需要认证）</span></span></span>
+<span class="r-in"><span><span class="va">stoken</span> <span class="op">&lt;-</span> <span class="fu">rStrava</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth</a></span><span class="op">(</span><span class="va">...</span>, cache <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> '...' used in an incorrect context</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 使用TSS计算骑行的训练负荷</span></span></span>
 <span class="r-in"><span><span class="va">ride_exposure_tss</span> <span class="op">&lt;-</span> <span class="fu">calculate_exposure</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    stoken <span class="op">=</span> <span class="va">stoken</span>,</span></span>
 <span class="r-in"><span>    activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
@@ -128,9 +144,11 @@ The analysis period covers the `chronic_period` days ending on this date.</p></d
 <span class="r-in"><span>    acute_period <span class="op">=</span> <span class="fl">7</span>,</span></span>
 <span class="r-in"><span>    chronic_period <span class="op">=</span> <span class="fl">28</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ride_exposure_tss</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'ride_exposure_tss' not found</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Exposure using HRSS for Runs</span></span></span>
+<span class="r-in"><span><span class="co"># 使用HRSS计算跑步的训练负荷</span></span></span>
 <span class="r-in"><span><span class="va">run_exposure_hrss</span> <span class="op">&lt;-</span> <span class="fu">calculate_exposure</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    stoken <span class="op">=</span> <span class="va">stoken</span>,</span></span>
 <span class="r-in"><span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
@@ -138,8 +156,10 @@ The analysis period covers the `chronic_period` days ending on this date.</p></d
 <span class="r-in"><span>    user_max_hr <span class="op">=</span> <span class="fl">190</span>,</span></span>
 <span class="r-in"><span>    user_resting_hr <span class="op">=</span> <span class="fl">50</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'stoken' not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">run_exposure_hrss</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'run_exposure_hrss' not found</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
