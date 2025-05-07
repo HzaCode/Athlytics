@@ -1,6 +1,6 @@
 Package: Athlytics
 Title: Advanced Sports Performance Analysis for 'Strava' Data
-Version: 0.1.0
+Version: 0.1.1
 Author: Ang [aut, cre]
 Maintainer: Ang <ang@hezhiang.com>
 Authors@R: 
@@ -10,6 +10,7 @@ License: MIT + file LICENSE
 URL: https://github.com/HzaCode/Athlytics 
 BugReports: https://github.com/HzaCode/Athlytics/issues 
 Encoding: UTF-8
+LazyData: true
 Depends: 
     R (>= 3.6.0) 
 Imports:
