@@ -2,6 +2,8 @@
 
 library(testthat)
 library(Athlytics)
+library(ggplot2) # Explicitly load for s3_class checks if not automatically available
+library(lubridate) # For seconds_to_period if used in manual_df
 
 # Load sample data from the package
 data(Athlytics_sample_data)
@@ -28,64 +30,118 @@ data(Athlytics_sample_data)
 #   skip("Skipping calculate_pbs tests until mocking/refactoring is done.")
 # })
 
-# --- Test plot_pbs (using pre-calculated data from Athlytics_sample_data) ---
+# --- Test plot_pbs using manually created, well-structured pbs_df ---
 
-test_that("plot_pbs returns a ggplot object with athlytics_sample_pbs data", {
-  # Check if the sample data subset exists
-  expect_true(exists("athlytics_sample_pbs"), "athlytics_sample_pbs not found in Athlytics_sample_data.")
-  expect_s3_class(athlytics_sample_pbs, "data.frame")
+test_that("plot_pbs returns a ggplot object with valid pbs_df input", {
+  # 1. Manually create a small, representative pbs_df
+  #    This data frame should have the exact column names and types
+  #    that calculate_pbs would output and plot_pbs expects.
+  manual_pbs_df <- data.frame(
+    activity_date = as.Date(c("2023-01-01", "2023-01-08", "2023-01-15", "2023-01-01", "2023-01-20")),
+    time_seconds = c(1200, 1180, 1190, 300, 1170),      # Example times
+    distance = c(5000, 5000, 5000, 1000, 5000),         # Example distances
+    is_pb = c(TRUE, TRUE, FALSE, TRUE, TRUE),          # Example PB flags
+    distance_label = factor(c("5k", "5k", "5k", "1k", "5k"), levels = c("1k", "5k")),
+    activity_id = as.character(1:5),
+    elapsed_time = c(1200, 1180, 1190, 300, 1170),
+    moving_time = c(1200, 1180, 1190, 300, 1170),
+    cumulative_pb_seconds = c(1200, 1180, 1180, 300, 1170),
+    # time_period is derived by plot_pbs if not present, or by calculate_pbs
+    # For a direct pbs_df input test, ensure it has what plot_pbs *uses* or can work without.
+    # calculate_pbs does output time_period.
+    stringsAsFactors = FALSE
+  )
+  # Add time_period for completeness matching calculate_pbs output
+  manual_pbs_df$time_period <- lubridate::seconds_to_period(manual_pbs_df$time_seconds)
+
+
+  # Ensure distance_meters argument for plot_pbs matches distances in manual_pbs_df
+  test_distance_meters <- unique(manual_pbs_df$distance)
+
+  # 2. Call plot_pbs with this manually created data
+  p <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = test_distance_meters)
   
-  # Ensure pbs_df has the expected columns for plotting
-  # calculate_pbs output includes: distance_target_m, best_time_seconds, date
-  # plot_pbs expects these, possibly others if it transforms data.
-  # Based on plot_pbs source, it expects at least: date, best_time_seconds, distance_target_m
-  expected_cols <- c("date", "best_time_seconds", "distance_target_m")
-  if (nrow(athlytics_sample_pbs) > 0) { # Only check columns if data exists
-    expect_true(all(expected_cols %in% names(athlytics_sample_pbs)), 
-                paste("athlytics_sample_pbs is missing one or more expected columns:", paste(expected_cols, collapse=", ")))
-  }
+  # 3. Perform assertions on the plot object 'p'
+  expect_s3_class(p, "ggplot")
+  
+  # Check for expected layers if possible (e.g., points, lines)
+  expect_true(length(p$layers) >= 2) # Expect at least geom_line and geom_point
+  
+  # Check labels (example)
+  expect_equal(p$labels$x, "Activity Date")
+  expect_equal(p$labels$y, "Best Time (MM:SS)")
+  expect_equal(p$labels$title, "Personal Best Running Times Trend")
 
-  # Test with actual data if it's not empty
-  if (nrow(athlytics_sample_pbs) > 0) {
-      expect_s3_class(plot_pbs(pbs_df = athlytics_sample_pbs), "ggplot")
-  } else {
-      # If athlytics_sample_pbs is empty, test the empty case handling
-      # This scenario is also covered by the next test explicitly
-      # but good to acknowledge if sample data might be empty.
-      # For now, assume athlytics_sample_pbs should ideally have data for this test.
-      # If it must be tested with potentially empty sample data, the warning/empty plot checks apply.
-      skip("athlytics_sample_pbs is empty, skipping main plot test.")
-  }
 })
 
 test_that("plot_pbs handles empty data frame input", {
-  # Create an empty data frame with the same structure as athlytics_sample_pbs
-  # Ensure all necessary columns for plot_pbs are present even if empty
-  empty_df_structure <- data.frame(
-    date = as.Date(character()),
-    best_time_seconds = numeric(),
-    distance_target_m = numeric(),
-    activity_id = character(), # Add other columns if plot_pbs uses them
-    activity_name = character(),
-    distance_actual_m = numeric(),
+  # Create an empty data frame with the correct column structure
+  empty_df <- data.frame(
+    activity_date = as.Date(character()),
+    time_seconds = numeric(),
+    distance = numeric(),
+    is_pb = logical(),
+    distance_label = factor(levels = c("1k", "5k")), # ensure factor levels if used
+    activity_id = character(),
+    elapsed_time = numeric(),
+    moving_time = numeric(),
+    cumulative_pb_seconds = numeric(),
+    time_period = lubridate::seconds_to_period(numeric()),
     stringsAsFactors = FALSE
   )
   
-  # Ensure the structure matches athlytics_sample_pbs if it's not empty, 
-  # otherwise use the defined structure.
-  if (exists("athlytics_sample_pbs") && nrow(athlytics_sample_pbs) > 0) {
-      empty_df <- athlytics_sample_pbs[0, ]
-  } else {
-      empty_df <- empty_df_structure
-  }
-  
+  # plot_pbs requires distance_meters to be specified, even if pbs_df is empty,
+  # because it uses it for filtering and potentially for calculate_pbs call.
+  # However, if pbs_df is empty, the internal calculate_pbs won't be called.
+  # The warning comes from `pbs_df[pbs_df$distance %in% distance_meters,]` if it results in empty or 
+  # directly from the `nrow(pbs_df) == 0` check.
   expect_warning(
-    p_empty <- plot_pbs(pbs_df = empty_df), 
-    regexp = "No PB data available to plot\\.|Input data frame is empty\\."
+    p_empty <- plot_pbs(pbs_df = empty_df, distance_meters = c(1000, 5000)), 
+    regexp = "No PB data available|pbs_df does not contain data for the specified distance_meters"
   )
   expect_s3_class(p_empty, "ggplot") 
-  # Check if the plot title indicates no data or is a base empty ggplot
-  expect_true(grepl("No PB data available", p_empty$labels$title, ignore.case = TRUE) || length(p_empty$layers) == 0)
+  expect_true(grepl("No PB data available|No PB data for specified distances", p_empty$labels$title, ignore.case = TRUE))
+})
+
+# Test for add_trend_line argument
+test_that("plot_pbs handles add_trend_line argument", {
+    manual_pbs_df <- data.frame(
+    activity_date = as.Date(c("2023-01-01", "2023-01-08", "2023-01-15")), 
+    time_seconds = c(1200, 1180, 1190), distance = c(5000, 5000, 5000),
+    is_pb = c(TRUE, TRUE, FALSE), distance_label = factor(c("5k", "5k", "5k")), 
+    activity_id = as.character(1:3), elapsed_time = c(1200,1180,1190),
+    moving_time = c(1200,1180,1190), cumulative_pb_seconds = c(1200,1180,1180),
+    stringsAsFactors = FALSE
+  )
+  manual_pbs_df$time_period <- lubridate::seconds_to_period(manual_pbs_df$time_seconds)
+  test_dist_meters <- unique(manual_pbs_df$distance)
+
+  p_trend <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = test_dist_meters, add_trend_line = TRUE)
+  p_no_trend <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = test_dist_meters, add_trend_line = FALSE)
+  
+  get_smooth_layers <- function(p) sum(sapply(p$layers, function(l) inherits(l$geom, "GeomSmooth")))
+  expect_equal(get_smooth_layers(p_trend), 1)
+  expect_equal(get_smooth_layers(p_no_trend), 0)
+})
+
+# Optional: Test faceting if multiple distances are present
+test_that("plot_pbs facets for multiple distances", {
+  manual_pbs_df_multi_dist <- data.frame(
+    activity_date = as.Date(c("2023-01-01", "2023-01-08", "2023-01-01")), 
+    time_seconds = c(1200, 1180, 300), distance = c(5000, 5000, 1000),
+    is_pb = c(TRUE, TRUE, TRUE), distance_label = factor(c("5k", "5k", "1k"), levels=c("1k", "5k")), 
+    activity_id = as.character(1:3), elapsed_time = c(1200,1180,300),
+    moving_time = c(1200,1180,300), cumulative_pb_seconds = c(1200,1180,300),
+    stringsAsFactors = FALSE
+  )
+  manual_pbs_df_multi_dist$time_period <- lubridate::seconds_to_period(manual_pbs_df_multi_dist$time_seconds)
+  test_dist_meters_multi <- unique(manual_pbs_df_multi_dist$distance)
+
+  p_multi <- plot_pbs(pbs_df = manual_pbs_df_multi_dist, distance_meters = test_dist_meters_multi)
+  
+  # Check if faceting is applied (presence of FacetWrap class in plot object)
+  is_faceted <- inherits(p_multi$facet, "FacetWrap")
+  expect_true(is_faceted)
 })
 
 # test_that("plot_pbs works with multiple distances", { # Covered by the first test

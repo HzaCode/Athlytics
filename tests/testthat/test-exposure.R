@@ -39,14 +39,14 @@ test_that("plot_exposure handles risk_zones argument with athlytics_sample_acwr"
   # Check for geom_rect layers (risk zones are often drawn with geom_rect for background bands)
   # or geom_hline/geom_vline if specific lines are used.
   # The original test checked for GeomAbline, let's adapt if needed or keep if appropriate.
-  # plot_exposure uses geom_hline for risk zones.
+  # plot_exposure uses geom_abline for risk zones.
   p_zones <- plot_exposure(exposure_df = athlytics_sample_acwr, risk_zones = TRUE)
   p_no_zones <- plot_exposure(exposure_df = athlytics_sample_acwr, risk_zones = FALSE)
   
-  get_hline_layers <- function(p) sum(sapply(p$layers, function(l) inherits(l$geom, "GeomHline")))
+  get_abline_layers <- function(p) sum(sapply(p$layers, function(l) inherits(l$geom, "GeomAbline")))
   
-  expect_gt(get_hline_layers(p_zones), 0) # Expect at least one hline for risk zones
-  expect_equal(get_hline_layers(p_no_zones), 0)
+  expect_equal(get_abline_layers(p_zones), 3)
+  expect_equal(get_abline_layers(p_no_zones), 0)
 })
 
 test_that("plot_exposure handles empty data frame input", {
@@ -68,7 +68,7 @@ test_that("plot_exposure handles empty data frame input", {
   
   expect_warning(
     p_empty <- plot_exposure(exposure_df = empty_df), 
-    regexp = "No valid exposure data available to plot\\.|Input data frame is empty\\."
+    regexp = "No valid exposure data available to plot \\(or missing required columns\\)."
   )
   expect_s3_class(p_empty, "ggplot") 
   expect_true(grepl("No exposure data available", p_empty$labels$title, ignore.case = TRUE) || length(p_empty$layers) == 0)
