@@ -61,6 +61,21 @@ jobs:
           _R_CHECK_CRAN_INCOMING_: false 
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate and Upload Coverage Report to Codecov
+        if: success() # Only run if R CMD check succeeds
+        shell: Rscript {0}
+        run: |
+          message("Installing package from tarball for coverage testing: ${{ steps.find_tarball.outputs.TARBALL_NAME }}")
+          if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+          devtools::install_local("${{ steps.find_tarball.outputs.TARBALL_NAME }}", force = TRUE, quiet = TRUE)
+
+          message("Ensuring covr and testthat are available for run_coverage.R")
+          if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")
+          if (!requireNamespace("testthat", quietly = TRUE)) install.packages("testthat")
+          
+          message("Executing run_coverage.R to generate and upload coverage...")
+          source("run_coverage.R")
+
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@v4

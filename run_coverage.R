@@ -38,4 +38,12 @@ cov <- covr::file_coverage(
 print(cov)
 
 # 生成报告
-covr::report(cov) 
+# covr::report(cov) # Commenting out local report generation if CI handles it or if not needed for upload
+
+# 上传到 Codecov
+if (!is.null(cov)) {
+  message("Uploading coverage data to Codecov...")
+  covr::codecov(coverage = cov)
+} else {
+  message("Coverage object is NULL, skipping upload.")
+} 
