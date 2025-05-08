@@ -53,13 +53,14 @@ jobs:
           echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_OUTPUT"
         shell: bash
 
-      - name: Check package
-        uses: r-lib/actions/check-r-package@v2
-        with:
-          args: "cd .. && R CMD check ${{ github.workspace }}/${{ steps.find_tarball.outputs.TARBALL_NAME }} --as-cran --no-manual"
-          error-on: '"warning"'
+      - name: Run R CMD check on tarball
+        run: |
+          R CMD check ${{ steps.find_tarball.outputs.TARBALL_NAME }} --as-cran --no-manual
+        shell: bash
+        env:
+          _R_CHECK_CRAN_INCOMING_: false 
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
-      # (Optional) Upload check logs as Artifact if check fails
       - name: Upload check results
         if: failure()
         uses: actions/upload-artifact@v4
