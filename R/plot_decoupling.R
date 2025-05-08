@@ -2,14 +2,21 @@
 
 # Helper function for explicit English month-year labels, avoiding locale issues
 explicit_english_month_year <- function(date_obj) {
-  # Ensure lubridate is available for month() and year()
-  # If lubridate is listed in Imports and these functions are used elsewhere,
-  # they might be available without direct ::, but being explicit is safer here.
+  # Handle NA inputs: return NA_character_ for each NA in date_obj
+  if (all(is.na(date_obj))) { # If all are NA (covers single NA and vector of all NAs)
+    return(rep(NA_character_, length(date_obj)))
+  }
+
   m <- lubridate::month(date_obj)
   y <- lubridate::year(date_obj)
   eng_months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  # Initial paste might produce "NA NA" for NA dates
   formatted_dates <- paste(eng_months[m], y)
+  
+  # Correctly set NA_character_ for positions where original date_obj was NA
+  formatted_dates[is.na(date_obj)] <- NA_character_
+  
   return(formatted_dates)
 }
 

@@ -5,9 +5,9 @@ library(Athlytics)
 library(mockery)
 # library(rStrava) # Not calling rStrava directly
 
-# Load mock data helpers
-data(Athlytics_sample_data) # Though not directly used here, good practice
-source(test_path("helpe-mockdata.R"), local = TRUE) # For mock_activity_list_list
+# Load data: sample data from package & mock API returns from helper
+data(Athlytics_sample_data)
+source(test_path("helper-mockdata.R"), local = TRUE)
 
 # Mock Strava token
 mock_stoken <- structure(list(token = list(access_token = "fake_token")), class = "Token2.0")
@@ -61,36 +61,37 @@ test_that("calculate_pbs throws error for zero or negative distance_meters", {
 # So, the mock needs to handle different `id` arguments if we want to simulate different efforts for different activities.
 # For simplicity, let's make it return the *same* set of efforts for any activity ID, but this means PBs will always come from the same mocked efforts.
 
+# Adjusted mock_efforts_data_for_activity to be a list of lists
 mock_efforts_data_for_activity <- list(
-  data.frame( # Effort 1
+  list( # Effort 1
     name = "Sprint to Tree",
     distance = 100, # meters
     elapsed_time = 15, # seconds
-    start_date = as.POSIXct("2023-10-01 10:00:00", tz = "UTC")
+    start_date_local = "2023-10-01T10:00:00Z" # Using start_date_local if that's what rStrava provides
   ),
-  data.frame( # Effort 2
+  list( # Effort 2
     name = "400m Dash",
     distance = 400, # meters
     elapsed_time = 60, # seconds
-    start_date = as.POSIXct("2023-10-01 10:05:00", tz = "UTC")
+    start_date_local = "2023-10-01T10:05:00Z"
   ),
-  data.frame( # Effort 3: close to 1k
+  list( # Effort 3: close to 1k
     name = "Near Kilometre",
     distance = 990, # meters
     elapsed_time = 180, # 3 mins
-    start_date = as.POSIXct("2023-10-01 10:10:00", tz = "UTC")
+    start_date_local = "2023-10-01T10:10:00Z"
   ),
-   data.frame( # Effort 4: another near 1k, slightly slower
+   list( # Effort 4: another near 1k, slightly slower
     name = "Another Near Kilometre",
     distance = 995, # meters
     elapsed_time = 185, # 3 mins 5s
-    start_date = as.POSIXct("2023-10-01 10:15:00", tz = "UTC")
+    start_date_local = "2023-10-01T10:15:00Z"
   ),
-  data.frame( # Effort 5: close to 5k
+  list( # Effort 5: close to 5k
     name = "Long Stretch",
     distance = 4950, # meters
     elapsed_time = 1200, # 20 mins
-    start_date = as.POSIXct("2023-10-01 10:20:00", tz = "UTC")
+    start_date_local = "2023-10-01T10:20:00Z"
   )
 )
 

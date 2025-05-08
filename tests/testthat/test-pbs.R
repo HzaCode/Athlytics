@@ -5,8 +5,9 @@ library(Athlytics)
 library(ggplot2) # Explicitly load for s3_class checks if not automatically available
 library(lubridate) # For seconds_to_period if used in manual_df
 
-# Load sample data from the package
+# Load data: sample data from package & mock API returns from helper
 data(Athlytics_sample_data)
+source(test_path("helper-mockdata.R"), local = TRUE)
 
 # NOTE: calculate_pbs tests are currently skipped because they require
 # either mocking rStrava API calls or significant refactoring of the function

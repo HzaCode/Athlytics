@@ -227,9 +227,13 @@ calculate_exposure <- function(stoken,
               }
             }
         } else if (load_metric == "tss") {
-            if (np_proxy > 0 && !is.null(user_ftp) && user_ftp > 0) {
+            # Check for NA before the condition
+            if (!is.na(np_proxy) && np_proxy > 0 && !is.null(user_ftp) && user_ftp > 0) {
               intensity_factor <- np_proxy / user_ftp
               load_value <- (duration_sec * np_proxy * intensity_factor) / (user_ftp * 3600) * 100
+            } else {
+              # If np_proxy is NA or <= 0, or ftp is NULL or <= 0, load is 0
+              load_value <- 0 
             }
         }
     } else {

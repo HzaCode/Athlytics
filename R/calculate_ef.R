@@ -11,7 +11,7 @@
 #' @param end_date Optional end date (YYYY-MM-DD string or Date object). Defaults to today.
 #' @param min_duration_mins Numeric, minimum activity duration in minutes. Default 20.
 #'
-#' @return A data frame with columns: date, activity_type, ef.
+#' @return A data frame with columns: date, activity_type, ef_value.
 #'
 #' @details
 #' Fetches activity summaries and calculates EF (output/HR) for each.
@@ -141,7 +141,7 @@ calculate_ef <- function(stoken,
       data.frame(
         date = activity_date,
         activity_type = act_type,
-        ef = ef_value,
+        ef_value = ef_value,
         stringsAsFactors = FALSE
       )
     } else {

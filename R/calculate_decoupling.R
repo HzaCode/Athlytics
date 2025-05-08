@@ -67,7 +67,6 @@ calculate_decoupling <- function(stoken,
                                  min_duration_mins = 45,
                                  max_activities = 50,
                                  stream_df = NULL) {
-
   # --- Input Validation ---
   decouple_metric <- match.arg(decouple_metric)
   if (is.null(stream_df)) {
@@ -271,40 +270,63 @@ calculate_decoupling <- function(stoken,
         next
     }
     
-    # Calculate Decoupling
-    message("  Calculating decoupling...")
-    mid_point_index <- floor(nrow(streams) / 2)
-    if (mid_point_index < 5) {
-        message(sprintf("  SKIPPING activity %s: Not enough rows for split-half analysis (< 5 in first half).", act_id))
-        next
+    # --- DEBUGGING: Print stream summary before internal calculation ---
+    message("---- DEBUG: Stream Summary Before Internal Calc ----")
+    message(sprintf("    Activity ID: %s, Date: %s", act_id, act_date))
+    message(sprintf("    Dimensions: %d rows, %d cols", nrow(streams), ncol(streams)))
+    if("heartrate" %in% names(streams)) message(sprintf("    Heartrate Summary: Min=%.1f, Mean=%.1f, Max=%.1f, NAs=%d", min(streams$heartrate, na.rm=T), mean(streams$heartrate, na.rm=T), max(streams$heartrate, na.rm=T), sum(is.na(streams$heartrate)))) else message("    Heartrate column missing!")
+    metric_col_for_debug <- if(decouple_metric == "Pace_HR") "speed" else "watts"
+    # Need to handle case where speed might not exist yet if only distance was provided
+    if(metric_col_for_debug == "speed" && !metric_col_for_debug %in% names(streams) && "velocity_smooth" %in% names(streams)) metric_col_for_debug <- "velocity_smooth"
+    if(metric_col_for_debug %in% names(streams)) message(sprintf("    %s Summary: Min=%.2f, Mean=%.2f, Max=%.2f, NAs=%d", metric_col_for_debug, min(streams[[metric_col_for_debug]], na.rm=T), mean(streams[[metric_col_for_debug]], na.rm=T), max(streams[[metric_col_for_debug]], na.rm=T), sum(is.na(streams[[metric_col_for_debug]])))) else message(sprintf("    %s column missing!", metric_col_for_debug))
+    message("-------------------------------------------------")
+    # --- END DEBUGGING ---
+
+    # Calculate decoupling using the SAME logic as the stream_df path
+    # This involves: calculating speed if needed, splitting halves, calculating means, calculating EFs, calculating decoupling_pct
+    # ... (省略详细计算代码) ...
+    # Assume the result is stored in 'activity_decoupling'
+    # Replicate the calculation logic here for clarity in debugging if needed
+    # --- Start Internal Calc Logic (Simplified Representation) ---
+    internal_stream_df <- streams # Use the potentially modified streams df
+    # Calculate speed if missing (replication of logic from stream_df path)
+    if(decouple_metric == "Pace_HR" && !"speed" %in% names(internal_stream_df) && !"velocity_smooth" %in% names(internal_stream_df) && "distance" %in% names(internal_stream_df)) {
+        message("  DEBUG: Calculating speed internally...")
+        internal_stream_df <- internal_stream_df %>%
+            dplyr::mutate(time_diff = c(0, diff(.data$time)), dist_diff = c(0, diff(.data$distance))) %>%
+            dplyr::mutate(speed = ifelse(.data$time_diff > 0, .data$dist_diff / .data$time_diff, 0)) %>%
+            dplyr::filter(.data$speed >= 0)
+    } else if (decouple_metric == "Pace_HR" && "velocity_smooth" %in% names(internal_stream_df)) {
+        internal_stream_df <- dplyr::rename(internal_stream_df, speed = "velocity_smooth")
     }
+    
+    internal_metric_col <- if(decouple_metric == "Pace_HR") "speed" else "watts"
+    
+    activity_decoupling <- NA # Default to NA
+    if (internal_metric_col %in% names(internal_stream_df) && nrow(internal_stream_df) >= 10) {
+        mid_point_index <- floor(nrow(internal_stream_df) / 2)
+        if(mid_point_index >= 5) {
+            first_half <- internal_stream_df[1:mid_point_index, ]
+            second_half <- internal_stream_df[(mid_point_index + 1):nrow(internal_stream_df), ]
+            mean_hr1 <- mean(first_half$heartrate, na.rm = TRUE)
+            mean_hr2 <- mean(second_half$heartrate, na.rm = TRUE)
+            mean_output1 <- mean(first_half[[internal_metric_col]], na.rm = TRUE)
+            mean_output2 <- mean(second_half[[internal_metric_col]], na.rm = TRUE)
+            ef1 <- if(mean_hr1 > 0) mean_output1 / mean_hr1 else 0
+            ef2 <- if(mean_hr2 > 0) mean_output2 / mean_hr2 else 0
+            activity_decoupling <- if (ef1 > 0 && mean_hr1 > 0 && mean_hr2 > 0) { (ef1 - ef2) / ef1 * 100 } else { NA }
+        } else { message("  DEBUG: mid_point_index < 5 after speed calc/rename. Skipping calc.") }
+    } else { message(sprintf("  DEBUG: Metric column '%s' missing or not enough rows (%d) after speed calc/rename. Skipping calc.", internal_metric_col, nrow(internal_stream_df))) }
+    # --- End Internal Calc Logic ---
 
-    first_half <- streams[1:mid_point_index, ]
-    second_half <- streams[(mid_point_index + 1):nrow(streams), ]
-
-    # Calculate means using the original 'heartrate' column name
-    # streams <- streams %>% dplyr::rename(hr = "heartrate") # Remove rename
-
-    mean_hr1 <- mean(first_half$heartrate, na.rm = TRUE)
-    mean_hr2 <- mean(second_half$heartrate, na.rm = TRUE)
-    mean_output1 <- mean(first_half[[metric_col]], na.rm = TRUE)
-    mean_output2 <- mean(second_half[[metric_col]], na.rm = TRUE)
-
-    ef1 <- if(mean_hr1 > 0) mean_output1 / mean_hr1 else 0
-    ef2 <- if(mean_hr2 > 0) mean_output2 / mean_hr2 else 0
-
-    decoupling_pct <- if (ef1 > 0 && mean_hr1 > 0 && mean_hr2 > 0) { (ef1 - ef2) / ef1 * 100 } else { NA }
-    message(sprintf("  Calculated Decoupling: %.2f %% (EF1=%.2f, EF2=%.2f, HR1=%.1f, HR2=%.1f, Out1=%.1f, Out2=%.1f)", 
-                    decoupling_pct, ef1, ef2, mean_hr1, mean_hr2, mean_output1, mean_output2))
-
-    if (!is.na(decoupling_pct)) {
-      decoupling_results[[act_id]] <- dplyr::tibble(date = act_date, decoupling = decoupling_pct)
-      successful_calculations <- successful_calculations + 1 # Increment success counter
-      message(sprintf("  Successfully calculated decoupling for %d / %d target activities.", successful_calculations, target_successful_calculations))
-      if (successful_calculations >= target_successful_calculations) {
-        message(sprintf("  Reached target of %d successful calculations. Stopping stream processing.", target_successful_calculations))
-        break # Target reached, exit loop
-      }
+    if(!is.na(activity_decoupling) && is.finite(activity_decoupling)){ # <--- 检查点 4：计算结果是否为 NA 或 Inf?
+        decoupling_results[[act_id]] <- dplyr::tibble(date = act_date, decoupling = activity_decoupling)
+        successful_calculations <- successful_calculations + 1 # Increment success counter
+        message(sprintf("  Successfully calculated decoupling for %d / %d target activities.", successful_calculations, target_successful_calculations))
+        if (successful_calculations >= target_successful_calculations) {
+          message(sprintf("  Reached target of %d successful calculations. Stopping stream processing.", target_successful_calculations))
+          break # Target reached, exit loop
+        }
     }
   }
   close(pb)
