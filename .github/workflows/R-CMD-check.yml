@@ -40,17 +40,26 @@ jobs:
           extra-packages: any::rcmdcheck, any::covr, any::devtools
           needs: check
 
-      - name: Install rcmdcheck explicitly
-        run: R -e "install.packages('rcmdcheck', repos = 'https://cloud.r-project.org')"
-        shell: bash
-
-      - name: Build Vignettes
-        run: R -e "devtools::build_vignettes()"
+      - name: Find R package tarball
+        id: find_tarball
+        run: |
+          # Try to find Athlytics specific tarball first, then any other .tar.gz
+          TARBALL_NAME=$(ls Athlytics*.tar.gz 2>/dev/null | head -n 1)
+          if [ -z "$TARBALL_NAME" ]; then
+            TARBALL_NAME=$(ls *.tar.gz 2>/dev/null | head -n 1)
+          fi
+          if [ -z "$TARBALL_NAME" ]; then
+            echo "Error: No .tar.gz file found in the root directory for R CMD check."
+            exit 1
+          fi
+          echo "Found R package tarball: $TARBALL_NAME"
+          echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_OUTPUT"
         shell: bash
 
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
+          package: ${{ steps.find_tarball.outputs.TARBALL_NAME }}
           error-on: '"warning"'
 
       # (Optional) Upload check logs as Artifact if check fails
