@@ -1,7 +1,7 @@
-# Athlytics 1.1.2
+# Athlytics 0.1.2
 
-*   **Testing**: Focused on increasing test coverage towards the goal of 85% across the package, with significant improvements made to `R/calculate_acwr.R`. Integrated Codecov for ongoing coverage monitoring.
-*   **Bug Fixes**: Addressed a bug in the test suite (`tests/testthat/test-acwr.R`) by correcting expectations for error handling in `calculate_acwr()` when invalid parameters are provided.
+*   **Testing**: Focused on increasing test coverage towards the goal of 85% across the package. Integrated Codecov for ongoing coverage monitoring.
+*   **Bug Fixes**
 
 ---
 
