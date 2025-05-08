@@ -51,14 +51,15 @@ fetch_strava_activities <- function(stoken,
       start_date_ts <- as.numeric(lubridate::as_datetime("2009-01-01 00:00:00", tz = "UTC"))
       # message("No start_date provided, attempting to fetch all activities since 2009. This may be very slow.")
   } else {
-      start_date <- tryCatch({
-          # Attempt to parse flexible date/datetime input
-          dt <- lubridate::as_datetime(start_date)
-          # Ensure it's UTC for the API timestamp conversion
-          lubridate::with_tz(dt, "UTC")
-      }, error = function(e) {
+      # Parse start_date and explicitly check for NA
+      start_date_parsed <- suppressWarnings(tryCatch({
+          lubridate::as_datetime(start_date)
+      }, error = function(e) NA )) # Return NA on error too
+      
+      if(is.na(start_date_parsed)){
           stop("Could not parse start_date. Please use YYYY-MM-DD format or a Date/POSIXct object.")
-      })
+      }
+      start_date <- lubridate::with_tz(start_date_parsed, "UTC")
       start_date_ts <- as.numeric(start_date)
   }
 
@@ -67,17 +68,19 @@ fetch_strava_activities <- function(stoken,
   if (is.null(end_date)) {
       end_date_ts <- as.numeric(lubridate::now(tzone = "UTC"))
   } else {
-       end_date <- tryCatch({
-          # Handle date or datetime, ensure end of day if only date is given
+      # Parse end_date and explicitly check for NA
+      end_date_parsed <- suppressWarnings(tryCatch({
           dt <- lubridate::as_datetime(end_date)
-          # If it looks like only a date was provided (time is midnight), set to end of that day
           if(format(dt, "%H:%M:%S") == "00:00:00"){
              dt <- lubridate::ymd_hms(paste(lubridate::as_date(dt), "23:59:59"), tz = lubridate::tz(dt))
           }
-          lubridate::with_tz(dt, "UTC")
-      }, error = function(e) {
+          dt
+      }, error = function(e) NA )) # Return NA on error too
+      
+      if(is.na(end_date_parsed)){
           stop("Could not parse end_date. Please use YYYY-MM-DD format or a Date/POSIXct object.")
-      })
+      }
+      end_date <- lubridate::with_tz(end_date_parsed, "UTC")
       end_date_ts <- as.numeric(end_date)
   }
 
@@ -217,15 +220,6 @@ fetch_strava_activities <- function(stoken,
                 detailed_data[[col]] <- NA
            }
        }
-       
-       # Convert types for joined columns - often details are numeric
-        for (col in required_cols) {
-           if (col %in% names(detailed_data) && !is.numeric(detailed_data[[col]])) {
-              suppressWarnings({ 
-                  detailed_data[[col]] <- as.numeric(detailed_data[[col]])
-              })
-           }
-        }
 
       # Join detailed data back to the base data frame
       # Ensure the 'id' column type matches before joining (should be numeric/integer)
@@ -270,3 +264,9 @@ fetch_strava_activities <- function(stoken,
 # 4. Consider optimizing the detailed fetching (e.g., only fetch if average_watts/average_heartrate is actually missing in the base data, though it usually is).
 # 5. Potentially add options to fetch streams data as well.
 # 6. Ensure the empty tibble returned when no activities are found matches the structure precisely. 
+
+#' @keywords internal
+#' @export 
+get_activity_list_stoken_direct <- function(stoken, before = NULL, after = NULL) {
+
+} 

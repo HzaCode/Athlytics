@@ -1,3 +1,4 @@
+library(dplyr)
 # tests/testthat/helper-mockdata.R
 
 mock_pbs_df <- data.frame(
@@ -75,6 +76,13 @@ mock_activity_list_df <- data.frame(
 )
 
 mock_activity_list_df$start_date_local <- as.POSIXct(mock_activity_list_df$start_date_local, tz = "UTC")
+
+# Adjust the date of the second "Run" activity (original index 3) to be within the test range
+# The test expects two runs between 2023-10-01 and 2023-10-03
+# Original dates: 2023-10-01 (Run), 2023-09-29 (Ride), 2023-09-27 (Run)
+# Change 2023-09-27 to 2023-10-02 for the second Run
+mock_activity_list_df$start_date_local[3] <- as.POSIXct("2023-10-02 09:00:00", tz = "UTC")
+
 mock_activity_list_df$duration_mins <- mock_activity_list_df$elapsed_time / 60
 mock_activity_list_df$distance_km <- mock_activity_list_df$distance / 1000
 

@@ -15,7 +15,7 @@ data(Athlytics_sample_data)
 # and is essential for testing the raw calculation logic of calculate_acwr.
 # Consider refactoring helper-mockdata.R to only contain truly raw API mocks if needed,
 # or integrate such mocks into a different structure if Athlytics_sample_data contains only processed data.
-source(test_path("helpe-mockdata.R"), local = TRUE) # Assuming this file name is correct and it defines mock_activity_list_list
+source(test_path("helper-mockdata.R"), local = TRUE) # Assuming this file name is correct and it defines mock_activity_list_list
 
 # Mock Strava token - use structure() to correctly set class attributes
 mock_stoken <- structure(
@@ -80,14 +80,11 @@ test_that("calculate_acwr output structure and basic numeric checks with mocked 
   # ACWR can be positive or NA/Inf if CTL is zero, already handled by is.finite
 })
 
-test_that("calculate_acwr handles invalid inputs", {
+test_that("calculate_acwr input parameter validations", {
+  # Existing invalid stoken test
   expect_error(calculate_acwr(stoken = "invalid"), ".*Token2.0 object.*")
 
-  local_mocked_bindings(
-    .package = "rStrava",
-    get_activity_list = function(...) mock_activity_list_list 
-  )
-
+  # Existing acute_period vs chronic_period test (ensure mock_stoken is used here)
   expect_error(
     calculate_acwr(
       stoken = mock_stoken,
@@ -97,6 +94,231 @@ test_that("calculate_acwr handles invalid inputs", {
       end_date = test_end_date
     ),
     message = "`acute_period` must be less than `chronic_period`."
+  )
+
+  # New tests
+  expect_error(
+    calculate_acwr(stoken = mock_stoken, acute_period = -1),
+    message = "`acute_period` must be a positive integer."
+  )
+  expect_error(
+    calculate_acwr(stoken = mock_stoken, chronic_period = 0),
+    message = "`chronic_period` must be a positive integer."
+  )
+  expect_error(
+    calculate_acwr(stoken = mock_stoken, load_metric = "tss", user_ftp = NULL),
+    message = "`user_ftp` is required when `load_metric` is 'tss'."
+  )
+  expect_error(
+    calculate_acwr(stoken = mock_stoken, load_metric = "hrss", user_max_hr = NULL, user_resting_hr = 100),
+    message = "`user_max_hr` and `user_resting_hr` are required when `load_metric` is 'hrss'."
+  )
+  expect_error(
+    calculate_acwr(stoken = mock_stoken, load_metric = "hrss", user_max_hr = 200, user_resting_hr = NULL),
+    message = "`user_max_hr` and `user_resting_hr` are required when `load_metric` is 'hrss'."
+  )
+  expect_error(
+    calculate_acwr(stoken = mock_stoken, load_metric = "invalid_metric"),
+    message = "Invalid `load_metric`."
+  )
+  expect_error(
+    calculate_acwr(stoken = mock_stoken, start_date = "2023-10-01", end_date = "2023-09-01"),
+    message = "start_date must be before end_date."
+  )
+})
+
+test_that("calculate_acwr works with load_metric = distance_km", {
+  expect_true(exists("mock_activity_list_list"))
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) mock_activity_list_list
+  )
+
+  result_df <- calculate_acwr(
+    stoken = mock_stoken,
+    load_metric = "distance_km", # Test distance metric
+    activity_type = NULL, 
+    acute_period = 7,
+    chronic_period = 14, # Use shorter periods for test
+    start_date = test_start_date,
+    end_date = test_end_date
+  )
+  
+  # Basic structure and type checks
+  expect_s3_class(result_df, "data.frame")
+  expect_named(result_df, c("date", "atl", "ctl", "acwr", "acwr_smooth"), ignore.order = TRUE)
+  expect_s3_class(result_df$date, "Date")
+  expect_true(is.numeric(result_df$atl))
+  expect_true(is.numeric(result_df$ctl))
+  # Add check for daily_load presence if it were returned, but it's not in the final output
+})
+
+test_that("calculate_acwr works with load_metric = hrss", {
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) mock_activity_list_list
+  )
+
+  # Scenario 1: Valid HRSS calculation
+  acwr_hrss_valid <- calculate_acwr(
+    stoken = mock_stoken,
+    load_metric = "hrss",
+    activity_type = "Run", # Mock data has HR for Runs
+    user_max_hr = 180,
+    user_resting_hr = 60,
+    start_date = test_start_date,
+    end_date = test_end_date,
+    acute_period = 7,
+    chronic_period = 14
+  )
+  expect_s3_class(acwr_hrss_valid, "data.frame")
+  expect_true(all(c("atl", "ctl", "acwr") %in% colnames(acwr_hrss_valid)))
+  # Check that some load was calculated (atl/ctl won't be all zero or NA)
+  # Given mock data, some activities should have valid HR to calculate HRSS
+  expect_true(any(acwr_hrss_valid$atl > 0, na.rm = TRUE) || any(acwr_hrss_valid$ctl > 0, na.rm = TRUE))
+
+  # Scenario 2: Invalid HR parameters (e.g., max_hr <= resting_hr)
+  # This should result in messages during calculation (not easily testable here) 
+  # and potentially 0 load for activities where HRSS cannot be calculated.
+  # The overall ACWR calculation should still run, possibly with more NAs or 0s in load.
+  expect_error(
+    calculate_acwr(
+      stoken = mock_stoken,
+      load_metric = "hrss",
+      user_max_hr = 60, # Invalid: max_hr <= resting_hr
+      user_resting_hr = 70,
+      start_date = test_start_date,
+      end_date = test_end_date
+    ),
+    regexp = "No activities found with valid load data for the specified criteria."
+  )
+})
+
+test_that("calculate_acwr works with load_metric = tss", {
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) mock_activity_list_list 
+  )
+
+  # Scenario 1: Valid TSS calculation (for activities with power data)
+  acwr_tss_valid <- calculate_acwr(
+    stoken = mock_stoken,
+    load_metric = "tss",
+    activity_type = "Ride", # Mock data has watts for some Rides
+    user_ftp = 250,
+    start_date = test_start_date,
+    end_date = test_end_date,
+    acute_period = 7,
+    chronic_period = 14
+  )
+  expect_s3_class(acwr_tss_valid, "data.frame")
+  expect_true(all(c("atl", "ctl", "acwr") %in% colnames(acwr_tss_valid)))
+  # Some rides in mock data have average_watts, so TSS should be calculable for them.
+  expect_true(any(acwr_tss_valid$atl > 0, na.rm = TRUE) || any(acwr_tss_valid$ctl > 0, na.rm = TRUE))
+
+  # Scenario 2: FTP is NULL (should error, but covered by input validation)
+  # Scenario 3: FTP is <= 0 (should result in 0 load or issues, similar to invalid HRSS)
+  expect_error(
+    calculate_acwr(
+      stoken = mock_stoken,
+      load_metric = "tss",
+      user_ftp = 0, # Invalid FTP
+      start_date = test_start_date,
+      end_date = test_end_date
+    ),
+    regexp = "No activities found with valid load data for the specified criteria."
+  )
+})
+
+test_that("calculate_acwr works with load_metric = elapsed_time_mins", {
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) mock_activity_list_list
+  )
+  acwr_elapsed_time <- calculate_acwr(
+    stoken = mock_stoken,
+    load_metric = "elapsed_time_mins",
+    start_date = test_start_date,
+    end_date = test_end_date
+  )
+  expect_s3_class(acwr_elapsed_time, "data.frame")
+  expect_true(all(c("atl", "ctl", "acwr") %in% colnames(acwr_elapsed_time)))
+  expect_true(any(acwr_elapsed_time$atl > 0, na.rm = TRUE) || any(acwr_elapsed_time$ctl > 0, na.rm = TRUE))
+})
+
+test_that("calculate_acwr works with load_metric = elevation_gain_m", {
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) mock_activity_list_list
+  )
+  acwr_elevation <- calculate_acwr(
+    stoken = mock_stoken,
+    load_metric = "elevation_gain_m",
+    start_date = test_start_date,
+    end_date = test_end_date
+  )
+  expect_s3_class(acwr_elevation, "data.frame")
+  expect_true(all(c("atl", "ctl", "acwr") %in% colnames(acwr_elevation)))
+  # Elevation gain can be 0 for some activities, but some should be > 0 in mock data
+  expect_true(any(acwr_elevation$atl > 0, na.rm = TRUE) || any(acwr_elevation$ctl > 0, na.rm = TRUE))
+})
+
+test_that("calculate_acwr handles empty activity list from API", {
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) list() # Simulate API returning no activities
+  )
+  expect_error(
+    calculate_acwr(
+      stoken = mock_stoken,
+      start_date = test_start_date,
+      end_date = test_end_date
+    ),
+    regexp = "Could not fetch activities or no relevant activities found"
+  )
+})
+
+test_that("calculate_acwr handles no valid load data after processing activities", {
+  # Simulate activities that will all result in zero or NA load
+  # For example, by filtering all out by type, or making all durations zero.
+  # Here, we'll use a non-matching activity_type with the existing mock_activity_list_list
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) mock_activity_list_list
+  )
+  expect_error(
+    calculate_acwr(
+      stoken = mock_stoken,
+      activity_type = "NonExistentType", # This type is not in mock_activity_list_list
+      start_date = test_start_date,
+      end_date = test_end_date
+    ),
+    regexp = "No activities found with valid load data for the specified criteria."
+  )
+
+  # Another scenario: activities exist but all have zero load (e.g. all moving_time = 0)
+  # Create a custom mock list for this specific scenario
+  mock_activities_zero_load_list <- lapply(mock_activity_list_list, function(act) {
+    act$moving_time <- 0
+    act$elapsed_time <- 0 # also make elapsed time 0 for elapsed_time_mins
+    act$distance <- 0 # also for distance_km
+    act$total_elevation_gain <- 0 # for elevation_gain_m
+    # For HRSS/TSS, if moving_time is 0, load should be 0.
+    return(act)
+  })
+
+  local_mocked_bindings(
+    .package = "rStrava",
+    get_activity_list = function(...) mock_activities_zero_load_list
+  )
+  expect_error(
+    calculate_acwr(
+      stoken = mock_stoken,
+      load_metric = "duration_mins", # or any other metric
+      start_date = test_start_date,
+      end_date = test_end_date
+    ),
+    regexp = "No activities found with valid load data for the specified criteria."
   )
 })
 

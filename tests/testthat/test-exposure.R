@@ -6,6 +6,11 @@ library(Athlytics)
 # Load sample data from the package
 data(Athlytics_sample_data)
 
+# Load mock data (if helper-mockdata.R contains mocks for direct use)
+source(test_path("helper-mockdata.R"), local = TRUE)
+
+# Mock Strava token (if needed for functions that might call API, though most tests here use sample_df)
+
 # --- Test plot_exposure (using pre-calculated ACWR data from Athlytics_sample_data) ---
 
 test_that("plot_exposure returns a ggplot object with athlytics_sample_acwr data", {
