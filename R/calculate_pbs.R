@@ -86,13 +86,21 @@ calculate_pbs <- function(stoken,
                           date_range = NULL) {
 
   # --- Input Validation ---
+  # Stoken checks first
   if (missing(stoken)) stop("Strava token 'stoken' is required.")
+  if (!inherits(stoken, "Token2.0")) {
+    stop(paste0("Assertion on 'stoken' failed: Must inherit from class 'Token2.0', but has class '", class(stoken)[1], "'."))
+  }
+
+  # Distance meters checks
   if (missing(distance_meters) || !is.numeric(distance_meters) || length(distance_meters) == 0) {
     stop("'distance_meters' must be a numeric vector of distances (e.g., c(1000, 5000)).")
   }
-  if (!inherits(stoken, "Token2.0")) {
-    warning("stoken does not appear to be a Token2.0 object from rStrava. Trying anyway.")
+  if (any(distance_meters <= 0)) {
+    stop("All 'distance_meters' must be positive.")
   }
+
+  # Other checks/warnings
   if(any(tolower(activity_type) != "run")) {
       warning("Current implementation primarily supports 'Run' for PB calculation based on best_efforts.")
   }
@@ -176,8 +184,8 @@ calculate_pbs <- function(stoken,
 
     if (!is.null(detailed_activity) && !is.null(detailed_activity$best_efforts)) {
       best_efforts_df <- purrr::map_dfr(detailed_activity$best_efforts, ~{
-        effort_dist <- as.numeric(.x$distance %||% NA) # Uses rlang::%||%
-        matched_dist <- distance_meters[abs(effort_dist - distance_meters) < 1]
+        effort_dist <- as.numeric(.x$distance %||% NA)
+        matched_dist <- distance_meters[abs(effort_dist - distance_meters) <= 50]
 
         if(length(matched_dist) > 0) {
           data.frame(

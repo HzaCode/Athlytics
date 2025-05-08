@@ -27,7 +27,7 @@ calculate_ef(
 \item{min_duration_mins}{Numeric, minimum activity duration in minutes. Default 20.}
 }
 \value{
-A data frame with columns: date, activity_type, ef_value.
+A data frame with columns: date, activity_type, ef.
 }
 \description{
 Calculates Efficiency Factor (Pace/HR or Power/HR) from Strava activities.
