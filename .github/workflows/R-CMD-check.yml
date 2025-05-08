@@ -21,8 +21,6 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      _R_CHECK_ARGS_: "--as-cran"
-
 
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +41,6 @@ jobs:
       - name: Find R package tarball
         id: find_tarball
         run: |
-          # Try to find Athlytics specific tarball first, then any other .tar.gz
           TARBALL_NAME=$(ls Athlytics*.tar.gz 2>/dev/null | head -n 1)
           if [ -z "$TARBALL_NAME" ]; then
             TARBALL_NAME=$(ls *.tar.gz 2>/dev/null | head -n 1)
@@ -59,7 +56,7 @@ jobs:
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
-          package: ${{ steps.find_tarball.outputs.TARBALL_NAME }}
+          args: "cd .. && R CMD check ${{ github.workspace }}/${{ steps.find_tarball.outputs.TARBALL_NAME }} --as-cran --no-manual"
           error-on: '"warning"'
 
       # (Optional) Upload check logs as Artifact if check fails
@@ -68,4 +65,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.os }}-r${{ matrix.config.r }}-results
-          path: check 
+          path: ${{ steps.find_tarball.outputs.TARBALL_NAME }}.Rcheck 
