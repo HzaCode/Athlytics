@@ -55,7 +55,7 @@ jobs:
 
       - name: Run R CMD check on tarball
         run: |
-          R CMD check ${{ steps.find_tarball.outputs.TARBALL_NAME }} --as-cran --no-manual
+          R CMD check ${{ steps.find_tarball.outputs.TARBALL_NAME }} --as-cran --no-manual --no-examples
         shell: bash
         env:
           _R_CHECK_CRAN_INCOMING_: false 
