@@ -42,7 +42,7 @@
 #'   print(p)
 #' }
 #'
-#' \donttest{
+#' \dontrun{
 #' # Example using real data (requires authentication)
 #' # Please replace with your actual Strava application details for this to work.
 #' # stoken_example <- rStrava::strava_oauth(

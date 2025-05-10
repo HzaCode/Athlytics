@@ -27,7 +27,7 @@ calculate_ef(
 \item{min_duration_mins}{Numeric, minimum activity duration in minutes. Default 20.}
 }
 \value{
-A data frame with columns: date, activity_type, ef.
+A data frame with columns: date, activity_type, ef_value.
 }
 \description{
 Calculates Efficiency Factor (Pace/HR or Power/HR) from Strava activities.
@@ -41,7 +41,7 @@ Provides the data used by `plot_ef`.
 data(Athlytics_sample_data)
 print(head(athlytics_sample_ef))
 
-\donttest{
+\dontrun{
 # Example using real data (requires authentication)
 # To authenticate (replace with your details):
 # stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",

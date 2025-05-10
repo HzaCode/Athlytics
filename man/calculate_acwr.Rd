@@ -63,7 +63,7 @@ if (!is.null(athlytics_sample_acwr)) {
   print(head(athlytics_sample_acwr))
 }
 
-\donttest{
+\dontrun{
 # Example using real data (requires authentication and app setup)
 # Replace with your actual app_name, client_id, and secret or ensure stoken is pre-configured
 # stoken <- rStrava::strava_oauth(

@@ -71,3 +71,5 @@
 ^LICENSE\.md$
 ^tests/manual_tests$
 ^CRAN-SUBMISSION$
+^Untitled\.R$
+^run_coverage\.R$

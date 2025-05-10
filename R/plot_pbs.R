@@ -70,7 +70,7 @@
 #'   message("athlytics_sample_pbs is empty or not found, skipping example plot.")
 #' }
 #'
-#' \donttest{
+#' \dontrun{
 #' # Example using real data (requires authentication)
 #' # Users should first authenticate and obtain a stoken, e.g.:
 #' # To authenticate (replace with your details):

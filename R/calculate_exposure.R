@@ -37,7 +37,7 @@
 #' data(Athlytics_sample_data)
 #' print(head(athlytics_sample_exposure))
 #'
-#' \donttest{
+#' \dontrun{
 #' # Example using real data (requires authentication)
 #' # Replace YOUR_APP, YOUR_ID, YOUR_SECRET with your Strava application details
 #' # stoken_example <- rStrava::strava_oauth(app_name = "YOUR_APP",

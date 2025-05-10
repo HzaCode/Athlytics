@@ -57,7 +57,7 @@ data(Athlytics_sample_data)
 p <- plot_ef(ef_df = athlytics_sample_ef, activity_type = "Run") 
 print(p)
 
-\donttest{
+\dontrun{
 # Example using real data (requires authentication)
 # stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
 #                                "YOUR_APP_CLIENT_ID",

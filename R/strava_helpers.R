@@ -266,7 +266,6 @@ fetch_strava_activities <- function(stoken,
 # 6. Ensure the empty tibble returned when no activities are found matches the structure precisely. 
 
 #' @keywords internal
-#' @export 
 get_activity_list_stoken_direct <- function(stoken, before = NULL, after = NULL) {
 
 } 
