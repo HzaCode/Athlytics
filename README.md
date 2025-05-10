@@ -303,6 +303,6 @@ plot_decoupling(
 
 ### Development Status & Potential Issues
 
-Athlytics is under active development. We encourage a welcoming and inclusive environment, please see our [Code of Conduct](CODE_OF_CONDUCT.md) for guidelines on community interaction. While core functionalities are tested, variations in Strava data availability or unforeseen API interactions might occasionally lead to warnings or errors during execution. We appreciate bug reports and contributions to improve robustness!
+Athlytics is under active development. We encourage a welcoming and inclusive environment, please see our [Contributing Guidelines](CONTRIBUTING.md) for guidelines on community interaction. While core functionalities are tested, variations in Strava data availability or unforeseen API interactions might occasionally lead to warnings or errors during execution. We appreciate bug reports and contributions to improve robustness!
 
 
