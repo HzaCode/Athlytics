@@ -1,5 +1,9 @@
 # Athlytics 0.1.2
 
+*   **CRAN Resubmission**: Carefully addressed feedback from CRAN by making detailed updates and modifications for package resubmission. This primarily involved refining examples (e.g., consistently using `\dontrun{}` as advised) and ensuring metadata files meet all CRAN standards.
+
+---
+
 *   **Testing**: Focused on increasing test coverage towards the goal of 85% across the package. Integrated Codecov for ongoing coverage monitoring.
 *   **Bug Fixes**
 
