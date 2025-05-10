@@ -20,3 +20,5 @@ runnable_function_examples.html
 paper/
 tests/manual_tests/
 
+/..Rcheck
+/docs

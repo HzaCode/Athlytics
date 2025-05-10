@@ -36,7 +36,7 @@
 #' data(Athlytics_sample_data)
 #' print(head(athlytics_sample_pbs))
 #'
-#' \donttest{
+#' \dontrun{
 #' # Example using real data (requires authentication and YOUR credentials)
 #' # NOTE: The following rStrava::strava_oauth call is a placeholder.
 #' # You MUST replace "YOUR_APP_NAME", "YOUR_CLIENT_ID", "YOUR_CLIENT_SECRET"

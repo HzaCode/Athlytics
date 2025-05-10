@@ -55,7 +55,7 @@ Provides data for `plot_decoupling`. Compares output/HR efficiency
 data(Athlytics_sample_data)
 print(head(athlytics_sample_decoupling))
 
-\donttest{
+\dontrun{
 # Example using real data (requires authentication)
 # To authenticate (replace with your details):
 # stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",

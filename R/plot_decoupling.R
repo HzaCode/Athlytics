@@ -70,7 +70,7 @@ explicit_english_month_year <- function(date_obj) {
 #'   print(p)
 #' }
 #'
-#' \donttest{
+#' \dontrun{
 #' # Example using real data (requires authentication)
 #' # NOTE: The following rStrava::strava_oauth call is a placeholder.
 #' # You MUST replace placeholders with your actual Strava API credentials.

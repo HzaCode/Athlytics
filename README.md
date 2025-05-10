@@ -10,11 +10,15 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 [![Website](https://img.shields.io/badge/website-Athlytics-blue)](https://hezhiang.com/Athlytics/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/HzaCode/Athlytics/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-F88A0B)](https://www.biorxiv.org/content/10.1101/2025.05.01.651597v2)
 ### Overview
 
 This is the development repository for **Athlytics**, an R package designed to simplify the analysis of athletic performance and training load data sourced **directly from the Strava API**. The package provides functions for fetching your Strava data, calculating key metrics, and generating insightful visualizations for training monitoring.
+
+### Recent Releases
+
+For details on recent changes and version history, please see the [Changelog](https://hezhiang.com/Athlytics/news/index.html) on the package website.
 
 ### Installation
 
@@ -297,12 +301,8 @@ plot_decoupling(
 ![](https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&id=1cbfc401-a191-80b5-8f1a-efda0eddf069&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2)
 
 
-### Recent Updates
-
-For details on recent changes and version history, please see the [Changelog](https://hezhiang.com/Athlytics/news/index.html) on the package website.
-
----
-
 ### Development Status & Potential Issues
 
-Athlytics is under active development. While core functionalities are tested, variations in Strava data availability or unforeseen API interactions might occasionally lead to warnings or errors during execution. We appreciate bug reports and contributions to improve robustness!
+Athlytics is under active development. We encourage a welcoming and inclusive environment, please see our [Code of Conduct](CODE_OF_CONDUCT.md) for guidelines on community interaction. While core functionalities are tested, variations in Strava data availability or unforeseen API interactions might occasionally lead to warnings or errors during execution. We appreciate bug reports and contributions to improve robustness!
+
+
