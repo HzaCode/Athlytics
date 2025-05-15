@@ -1,4 +1,3 @@
-
 ---
 title: 'Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology Metrics from Wearable Sensor Data'
 tags:
@@ -17,22 +16,21 @@ tags:
   - reproducibility
   - sports science
 authors:
-  - name: Zhiang HE
+  - name: Zhiang He
     orcid: 0009-0009-0171-4578
- 
-date: 12 May 2025 
+date: 15 May 2025
 bibliography: paper.bib
 ---
 
- Summary
+ # Summary
 
 The proliferation of wearable sensors and platforms like Strava has generated vast amounts of longitudinal physiological data, offering unprecedented opportunities to investigate dynamic human responses to exercise. However, translating this raw data into scientifically rigorous insights for exercise physiology research faces considerable methodological and computational challenges. `Athlytics` is an R [@R-base] package designed as a computational framework to streamline the acquisition, analysis, and visualization of key exercise physiology metrics directly from Strava API data. It enables researchers and practitioners to systematically quantify indicators such as Acute:Chronic Workload Ratio (ACWR) [@Gabbett2016; @Hulin2016], Efficiency Factor (EF) [@allen2019training], cardiovascular decoupling [@Maunder2021], and track personal bests (PBs). By providing standardized function interfaces adhering to `tidyverse` principles [@tidyverse-joss], `Athlytics` significantly lowers the technical barrier for conducting complex longitudinal analyses, thereby enhancing the feasibility, efficiency, and reproducibility of quantitative research utilizing widely available physiological sensor data.
 
- Statement of Need
+ # Statement of Need
 
 Understanding dynamic physiological responses to exercise is central to exercise science and personalized health [@Bourdon2017]. While wearable sensors generate rich data streams [@Weaving2021], established open-source workflows in R for systematically quantifying key physiological indicators (e.g., ACWR, EF, decoupling) from popular platform APIs like Strava are lacking. This often forces researchers to expend considerable effort on custom programming for data retrieval, metric calculation, and longitudinal visualization, limiting analytical scale, efficiency, and reproducibility [@Sanders2017]. `Athlytics` addresses this critical bottleneck by providing a dedicated R framework. It seamlessly integrates data acquisition (via the `rStrava` package [@R-rStrava]) with the calculation and visualization of these exercise physiology metrics. This empowers broader research applications by enabling researchers to efficiently test hypotheses regarding the dynamic interplay between training stimuli, physiological efficiency, and stress responses using ubiquitous data sources, while carefully considering the necessary approximations for certain composite load metrics.
 
- Key Functionalities
+ # Key Functionalities
 
 `Athlytics` offers a modular structure, generally featuring paired `calculate_*` and `plot_*` functions for each analytical task, built upon `dplyr` [@R-dplyr], `ggplot2` [@ggplot2-book], and other `tidyverse` packages.
 
@@ -53,7 +51,7 @@ Understanding dynamic physiological responses to exercise is central to exercise
     *   `calculate_decoupling`: Calculates heart rate/power (or pace/heart rate) decoupling by comparing the efficiency ratio of the first half of an activity to the second half, using detailed activity stream data.
     *   `plot_decoupling`: Visualizes decoupling percentages over time.
 
- Illustrative Example
+ # Illustrative Example
 
 The following example demonstrates how to generate an ACWR trend plot for running activities based on duration.
 
@@ -115,6 +113,6 @@ decoupling_plot <- plot_decoupling(
 
 (Note: The above R code for plot_acwr requires a valid stoken to fetch data and run. )
 
-Acknowledgments
+# Acknowledgments
 
 The development of Athlytics relied upon the R programming language [@R-base] and benefited from numerous open-source R packages, including rStrava [@R-rStrava], ggplot2 [@ggplot2-book], dplyr [@R-dplyr], tidyr [@tidyr], lubridate [@lubridate-jss], zoo [@zoo-jss], purrr [@R-purrr], and rlang [@R-rlang]. Access to data was made possible by the Strava API. We also acknowledge the preprint of this work on bioRxiv [@He2025AthlyticsPreprint].
