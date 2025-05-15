@@ -111,7 +111,7 @@ decoupling_plot <- plot_decoupling(
 # print(decoupling_plot) 
 ```
 
-(Note: The above R code for plot_acwr requires a valid stoken to fetch data and run. )
+(Note: The above R code for plot requires a valid stoken to fetch data and run. )
 
 # Acknowledgments
 
