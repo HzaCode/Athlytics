@@ -22,7 +22,7 @@ For details on recent changes and version history, please see the [Changelog](ht
 
 ### Installation
 
-You can install the released version of Athlytics from CRAN (once available) with:
+You can install the released version of Athlytics from CRAN with:
 
 ```r
 install.packages("Athlytics")
