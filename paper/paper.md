@@ -115,4 +115,4 @@ decoupling_plot <- plot_decoupling(
 
 # Acknowledgments
 
-The development of Athlytics relied upon the R programming language [@R-base] and benefited from numerous open-source R packages, including rStrava [@R-rStrava], ggplot2 [@ggplot2-book], dplyr [@R-dplyr], tidyr [@tidyr], lubridate [@lubridate-jss], zoo [@zoo-jss], purrr [@R-purrr], and rlang [@R-rlang]. Access to data was made possible by the Strava API. We also acknowledge the preprint of this work on bioRxiv [@He2025AthlyticsPreprint].
+The development of Athlytics [@R-Athlytics], which is now available from the Comprehensive R Archive Network (CRAN) (https://CRAN.R-project.org/package=Athlytics), relied upon the R programming language [@R-base] and benefited from numerous open-source R packages, including rStrava [@R-rStrava], ggplot2 [@ggplot2-book], dplyr [@R-dplyr], tidyr [@tidyr], lubridate [@lubridate-jss], zoo [@zoo-jss], purrr [@R-purrr], and rlang [@R-rlang]. Access to data was made possible by the Strava API. We also acknowledge the preprint of this work on bioRxiv [@He2025AthlyticsPreprint].
