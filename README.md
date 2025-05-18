@@ -3,8 +3,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 
 
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![CRAN status: pending review](https://img.shields.io/badge/CRAN%20status-pending%20review-orange.svg)](https://CRAN.R-project.org/)
-![](https://img.shields.io/badge/version-0.1.2-blue)
+[![CRAN status](https://www.r-pkg.org/badges/version/Athlytics)](https://CRAN.R-project.org/package=Athlytics)
 [![R-CMD-check](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
 [![codecov](https://codecov.io/gh/HzaCode/Athlytics/graph/badge.svg)](https://app.codecov.io/gh/HzaCode/Athlytics)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
@@ -19,14 +18,22 @@ This is the development repository for **Athlytics**, an R package designed to s
 ### Recent Releases
 
 For details on recent changes and version history, please see the [Changelog](https://hezhiang.com/Athlytics/news/index.html) on the package website.
+<div style="padding: 15px; border: 2px solid #0073B7; background-color: #f0f8ff; margin-bottom: 20px; border-radius: 5px;">
+  <h3 style="margin-top: 0; color: #005a8c;">🚀 Install Released Version from CRAN 📦</h3>
+  <p>
+    The <strong>stable, released version</strong> of <code>Athlytics</code> (currently <strong>0.1.2</strong>) is available on <a href="https://CRAN.R-project.org/package=Athlytics" target="_blank" rel="noopener noreferrer">CRAN</a>.
+  </p>
+  <p>
+    ✅ <strong>This is the highly recommended way to install <code>Athlytics</code> for most users:</strong>
+  </p>
+  <p>👉 Simply copy and paste the following line into your R console:</p>
+  <pre style="background-color: #e9ecef; padding: 10px; border: 1px solid #ced4da; overflow-x: auto; border-radius: 3px;"><code class="language-r" style="color: #212529;">install.packages("Athlytics")</code></pre>
+  <p style="font-size: 0.9em; color: #555;">
+ 
+  </p>
+</div>
 
-### Installation
 
-You can install the released version of Athlytics from CRAN (once available) with:
-
-```r
-install.packages("Athlytics")
-```
 
 Alternatively, the development version from this repository can be installed as follows:
 
