@@ -163,7 +163,7 @@ calculate_acwr <- function(stoken,
         return(NULL)
     }
     if (!is.null(activity_type) && !act_type %in% activity_type) {
-        message("    -> Filtered out by type.")
+        # message("    -> Filtered out by type.")
         return(NULL)
     }
 
@@ -175,12 +175,12 @@ calculate_acwr <- function(stoken,
     elevation_gain <- safe_as_numeric(.x$total_elevation_gain)
     # Use device_watts if available (direct power), otherwise fallback to average_watts (estimated power)
     np_proxy <- safe_as_numeric(.x$device_watts %||% .x$average_watts %||% 0) 
-    message(sprintf("    Duration: %.0f sec", duration_sec))
+    # message(sprintf("    Duration: %.0f sec", duration_sec))
 
     # --- Added Debugging and Refined Logic --- 
-    message(sprintf("    Inputs check: load_metric='%s', duration_sec=%.1f, distance_m=%.1f, avg_hr=%.1f, np_proxy=%.1f, user_ftp=%s, user_max_hr=%s, user_resting_hr=%s", 
-                    load_metric, duration_sec, distance_m, avg_hr, np_proxy, 
-                    deparse(user_ftp), deparse(user_max_hr), deparse(user_resting_hr)))
+    # message(sprintf("    Inputs check: load_metric='%s', duration_sec=%.1f, distance_m=%.1f, avg_hr=%.1f, np_proxy=%.1f, user_ftp=%s, user_max_hr=%s, user_resting_hr=%s", 
+    #                 load_metric, duration_sec, distance_m, avg_hr, np_proxy, 
+    #                 deparse(user_ftp), deparse(user_max_hr), deparse(user_resting_hr)))
     
     if (duration_sec > 0) {
       # Initialize load_value outside case_when to handle default case cleanly
@@ -202,7 +202,7 @@ calculate_acwr <- function(stoken,
             avg_hr_rel <- (avg_hr - user_resting_hr) / hr_reserve
             load_value <- (duration_sec / 60) * avg_hr_rel # Simplified TRIMP
           } else {
-              message("    Skipping HRSS calculation: Missing/invalid HR parameters or avg_hr out of range.")
+              # message("    Skipping HRSS calculation: Missing/invalid HR parameters or avg_hr out of range.")
           }
       } else if (load_metric == "tss") {
            # Check required FTP parameter before calculating
@@ -210,25 +210,25 @@ calculate_acwr <- function(stoken,
              intensity_factor <- np_proxy / user_ftp
              load_value <- (duration_sec * np_proxy * intensity_factor) / (user_ftp * 3600) * 100
            } else {
-               message("    Skipping TSS calculation: Missing/invalid FTP or power data (np_proxy).")
+               # message("    Skipping TSS calculation: Missing/invalid FTP or power data (np_proxy).")
            }
       }
       
-      message(sprintf("    Calculated load_value: %.2f", load_value))
+      # message(sprintf("    Calculated load_value: %.2f", load_value))
     } else {
-        message("    Duration <= 0, load is 0.")
+        # message("    Duration <= 0, load is 0.")
         load_value <- 0 # Ensure load_value is defined even if duration is 0
     }
 
     if (!is.na(load_value) && load_value > 0) {
-      message("    -> Activity PASSED filters, returning load data.")
+      # message("    -> Activity PASSED filters, returning load data.")
       data.frame(
         date = activity_date,
         load = load_value,
         stringsAsFactors = FALSE
       )
     } else {
-      message("    -> Activity FAILED final check (load NA or <= 0).")
+      # message("    -> Activity FAILED final check (load NA or <= 0).")
       NULL
     }
   })
@@ -272,7 +272,7 @@ calculate_acwr <- function(stoken,
 
   # --- DEBUG: Check colnames before the main pipeline ---
   message("DEBUG: Colnames of daily_load_complete BEFORE main ACWR pipeline:")
-  print(colnames(daily_load_complete))
+  # print(colnames(daily_load_complete))
 
   acwr_data_intermediate <- daily_load_complete %>%
     dplyr::mutate(
@@ -287,7 +287,7 @@ calculate_acwr <- function(stoken,
 
   # --- DEBUG: Check colnames after adding acute_load and chronic_load ---
   message("DEBUG: Colnames AFTER adding acute/chronic load and filtering date:")
-  print(colnames(acwr_data_intermediate))
+  # print(colnames(acwr_data_intermediate))
 
   acwr_data_intermediate <- acwr_data_intermediate %>% # Continue pipe from intermediate result
     dplyr::mutate(
@@ -304,14 +304,14 @@ calculate_acwr <- function(stoken,
 
   # --- DEBUG: Check colnames right BEFORE the final select ---
   message("DEBUG: Colnames right BEFORE final select:")
-  print(colnames(acwr_data_intermediate))
+  # print(colnames(acwr_data_intermediate))
 
   acwr_data <- acwr_data_intermediate %>%
     dplyr::select(.data$date, atl = .data$acute_load, ctl = .data$chronic_load, .data$acwr, .data$acwr_smooth)
 
   # --- DEBUG: Check colnames AFTER the final select ---
   message("DEBUG: Colnames AFTER final select (in acwr_data):")
-  print(colnames(acwr_data))
+  # print(colnames(acwr_data))
 
   if (nrow(acwr_data) == 0) {
     stop("Could not calculate ACWR after processing. Check data availability and periods.")
