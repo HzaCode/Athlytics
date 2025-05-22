@@ -17,8 +17,10 @@ tags:
   - sports science
 authors:
   - name: Zhiang He
-    orcid: 0009-0009-0171-4578
-affiliations: []    
+    affiliation: 1
+affiliations:
+  - name: Independent researcher
+    index: 1  
 date: 15 May 2025 
 bibliography: paper.bib
 repository: https://github.com/HzaCode/Athlytics 
