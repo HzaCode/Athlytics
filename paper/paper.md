@@ -72,28 +72,28 @@ This interactive example demonstrates how to use `Athlytics` to calculate ACWR f
 library(Athlytics)             
 library(dplyr); library(purrr); library(tidyr); library(lme4)
 
-mod <- read.csv("tokens_access.csv") %>%          # 1) Read OAuth access tokens for each athlete
+mod <- read.csv("tokens_access.csv") %>%          # 1. Read athlete tokens
 
-  # 2) Use purrr::map to apply calculate_acwr to each token, then unnest the results.
-  #    This pattern efficiently processes data for each athlete and combines it into a single data frame.
-  mutate(acw = map(access_token, calculate_acwr,  # For each token...
+  # 2. Calculate ACWR for each athlete using their token
+  mutate(acw = map(access_token, calculate_acwr,
                    activity_type = "Run",
                    load_metric   = "duration_mins",
                    acute_period  = 7,
                    chronic_period= 28)) %>%
-  unnest(acw) %>% # Expand the nested list-column of results
-
-  # 3) Wrangle the unified data frame to prepare for modeling.
-  group_by(athlete_id) %>% arrange(date) %>%
-  mutate(lag_ACWR = lag(acwr),                     # Create the predictor variable (lag-1 ACWR)
-         perf    = run_distance_m) %>%             # Create the response variable (same-day running distance)
+  unnest(acw) %>%
+  
+  # 3. Prepare data for modeling
+  group_by(athlete_id) %>% 
+  arrange(date) %>%
+  mutate(lag_ACWR = lag(acwr),       # Predictor: lag-1 ACWR
+         perf = run_distance_m) %>%   # Response: run distance
   drop_na(perf, lag_ACWR) %>%
 
-  # 4) Use lme4 to fit a mixed-effects model.
-  lmer(perf ~ lag_ACWR + (1 | athlete_id), data = .) # Model performance as a function of prior-day ACWR
+  # 4. Fit a mixed-effects model
+  lmer(perf ~ lag_ACWR + (1 | athlete_id), data = .)
 
-# 5) Print the model coefficients for analysis.
-print(summary(mod)$coefficients)                   # Extract statistics such as β, SE, t, and p-values
+# 5. Extract and print model coefficients
+print(summary(mod)$coefficients)      # Show β, SE, t, p-values
 ```
 
 ##  Acknowledgments
