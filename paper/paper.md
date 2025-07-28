@@ -99,3 +99,5 @@ print(summary(mod)$coefficients)      # Show β, SE, t, p-values
 ##  Acknowledgments
 
 The development of `Athlytics` [@R-Athlytics], which is now available from the Comprehensive R Archive Network (CRAN), relied upon the R programming language [@R-base] and benefited from numerous open-source R packages, including `rStrava` [@R-rStrava], `ggplot2` [@ggplot2], `dplyr` [@R-dplyr], `tidyr` [@tidyr], `lubridate` [@lubridate-jss], `zoo` [@zoo-jss], `purrr` [@R-purrr], and `rlang` [@R-rlang]. Access to data was made possible by the Strava API. We also acknowledge the preprint of this work on bioRxiv [@He2025AthlyticsPreprint].
+
+## References
