@@ -36,7 +36,7 @@ The proliferation of wearable sensors and platforms like Strava has generated va
 
 ## Statement of Need
 
-Understanding dynamic physiological responses to exercise is central to exercise science and personalized health [@Bourdon2017]. While wearable sensors generate rich data streams [@Hicks2019analyzing], established open-source workflows in R for systematically quantifying key physiological indicators (e.g., ACWR, EF, decoupling) from popular platform APIs like Strava are lacking. This often forces researchers to expend considerable effort on custom programming for data retrieval, metric calculation, and longitudinal visualization, limiting analytical scale, efficiency, and reproducibility [@Sanders2017]. `Athlytics` addresses this critical bottleneck by providing a dedicated R framework. It seamlessly integrates data acquisition (via the `rStrava` package [@R-rStrava]) with the calculation and visualization of these exercise physiology metrics. This empowers broader research applications by enabling researchers to efficiently test hypotheses regarding the dynamic interplay between training stimuli, physiological efficiency, and stress responses using ubiquitous data sources, while carefully considering the necessary approximations for certain composite load metrics.
+Understanding dynamic physiological responses to exercise is central to exercise science and personalized health [@Bourdon2017]. While wearable sensors generate rich data streams [@Hicks2019analyzing], and platforms like Strava serve as a de facto data repository for a vast population of athletes, established open-source workflows in R for systematically quantifying key physiological indicators (e.g., ACWR, EF, decoupling) from its API are lacking. This methodological gap often forces researchers to expend considerable effort on custom programming for data retrieval, metric calculation, and longitudinal visualization, limiting analytical scale, efficiency, and reproducibility [@Sanders2017]. Athlytics addresses this critical bottleneck by providing a dedicated R framework. By requiring only a one-time authentication token per athlete, it grants researchers programmatic and continuous access to longitudinal data, thereby overcoming a primary hurdle in data acquisition. The package seamlessly integrates data acquisition (via the rStrava package [@R-rStrava]) with the calculation and visualization of these exercise physiology metrics. This empowers broader research applications by enabling researchers to efficiently test hypotheses regarding the dynamic interplay between training stimuli, physiological efficiency, and stress responses using ubiquitous data sources, while carefully considering the necessary approximations for certain composite load metrics.
 
 ## Key Functionalities
 
@@ -61,71 +61,43 @@ Understanding dynamic physiological responses to exercise is central to exercise
 
 ## Comparison with Similar Software
 
-Within the R ecosystem for sports science analytics, `Athlytics` carves out a distinct niche through its integrated analytical workflow specifically designed for Strava API data and a curated set of physiological metrics. While the `rStrava` package [@R-rStrava] provides the essential channel for researchers to access Strava data, `Athlytics` builds a critical **analytical layer** upon it, directly transforming raw activity data into physiological insights suitable for longitudinal research. Compared to more broadly functional R packages like `trackeR` [@trackeR-jss]—which excels in handling diverse local sports tracking files (e.g., .tcx, .gpx) and offering general-purpose sports science analytics—`Athlytics` focuses on the direct utilization of Strava API data and provides **ready-to-use modules** for core physiological indicators of interest to researchers (such as ACWR, EF, and decoupling). This design obviates the need for researchers working with Strava data to undertake cumbersome data integration and workflow concatenation, as might be required when using multiple single-function R packages (e.g., a dedicated package for ACWR calculation like `ACWR` [@R-ACWR], or custom scripts). `Athlytics` offers a **coherent framework from data acquisition to the calculation and visualization of multi-dimensional physiological metrics**. Adhering to `tidyverse` design principles, it not only lowers the technical barrier for researchers conducting such specific analyses but, more importantly, significantly enhances the **reproducibility and methodological transparency** of exercise physiology research based on wearable device data by providing an open-source, standardized computational environment, directly addressing the core values of scientific software.
+Within the R ecosystem for sports science analytics, Athlytics carves out a distinct niche through its integrated analytical workflow specifically designed for Strava API data and a curated set of physiological metrics. While the rStrava package [@R-rStrava] provides the essential channel for researchers to access Strava data, Athlytics builds a critical analytical layer upon it, directly transforming raw activity data into physiological insights suitable for longitudinal research. Compared to more broadly functional R packages like trackeR [@trackeR-jss]—which excels in handling diverse local sports tracking files (e.g., .tcx, .gpx) and offering general-purpose sports science analytics—Athlytics focuses on the direct utilization of data from the Strava API, a platform that serves as the primary training log for a massive population of amateur and professional athletes. This design provides ready-to-use modules for core physiological indicators of interest to researchers (such as ACWR, EF, and decoupling). This design obviates the need for researchers working with Strava data to undertake cumbersome data integration and workflow concatenation, as might be required when using multiple single-function R packages (e.g., a dedicated package for ACWR calculation like ACWR [@R-ACWR], or custom scripts). Athlytics offers a coherent framework from data acquisition to the calculation and visualization of multi-dimensional physiological metrics. Adhering to tidyverse design principles, it not only lowers the technical barrier for researchers conducting such specific analyses but, more importantly, significantly enhances the reproducibility and methodological transparency of exercise physiology research based on wearable device data by providing an open-source, standardized computational environment, directly addressing the core values of scientific software.
 
 
 
 
-## Illustrative Example
+## Interactive Example
 
-The following example demonstrates how to generate an ACWR trend plot for running activities based on duration.
-
+This interactive example demonstrates how to use `Athlytics` to calculate ACWR for multiple athletes and how it interacts with other specialized packages in a scientific analysis workflow.
 
 ```R
 
-library(Athlytics)
-# Assume 'stoken' is a valid Strava token object.
-# Example: stoken <- rStrava::strava_oauth(YOUR_APP_NAME, YOUR_CLIENT_ID, YOUR_CLIENT_SECRET, app_scope="activity:read_all")
+library(Athlytics)             
+library(dplyr); library(purrr); library(tidyr); library(lme4)
 
-# 1. Plot ACWR Trend
-acwr_plot <- plot_acwr(
-  stoken = stoken,
-  activity_type = "Run",
-  load_metric = "duration_mins",
-  acute_period = 7,
-  chronic_period = 28
-)
-# print(acwr_plot) 
+mod <- read.csv("tokens_access.csv") %>%          # 1) Read OAuth access tokens for each athlete
 
-# 2. Plot Load Exposure
-exposure_plot <- plot_exposure(
-  stoken = stoken,
-  activity_type = "Ride",
-  load_metric = "tss", # Requires user_ftp if using "tss"
-  user_ftp = 280,      # Example FTP value
-  acute_period = 7,
-  chronic_period = 28
-)
-# print(exposure_plot) 
+  # 2) Call the calculate_acwr function from Athlytics.
+  mutate(acw = map(access_token, calculate_acwr,
+                   activity_type = "Run",
+                   load_metric   = "duration_mins",
+                   acute_period  = 7,
+                   chronic_period= 28)) %>%
 
-# 3. Plot Efficiency Factor (EF) Trend
-ef_plot <- plot_ef(
-  stoken = stoken,
-  activity_type = c("Run", "Ride"),
-  ef_metric = "Pace_HR", # Or "Power_HR"
-  min_duration_mins = 20
-)
-# print(ef_plot) 
+  # 3) Wrangle the output from the calculate_acwr function to prepare for modeling.
+  unnest(acw) %>%
+  group_by(athlete_id) %>% arrange(date) %>%
+  mutate(lag_ACWR = lag(acwr),                     #    Create the predictor variable (lag-1 ACWR)
+         perf    = run_distance_m) %>%             #    Create the response variable (same-day running distance)
+  drop_na(perf, lag_ACWR) %>%
 
-# 4. Plot Personal Bests (PBs) Progression
-pbs_plot <- plot_pbs(
-  stoken = stoken,
-  distance_meters = c(1000, 5000, 10000), # Example distances
-  activity_type = "Run"
-)
-# print(pbs_plot) 
+  # 4) Use the lme4 package to fit a mixed-effects model on the prepared data.
+  lmer(perf ~ lag_ACWR + (1 | athlete_id), data = .)
 
-# 5. Plot Decoupling Trend
-# Note: This function can be slow as it fetches detailed activity streams.
-decoupling_plot <- plot_decoupling(
-  stoken = stoken,
-  activity_type = "Run",
-  decouple_metric = "Pace_HR", # Or "Power_HR"
-  max_activities = 20 # Limit activities for example speed
-)
-# print(decoupling_plot) 
+# 5) Print the model coefficients for analysis.
+print(summary(mod)$coefficients)                   # Extract statistics such as β, SE, t, and p-values
 ```
 
 ##  Acknowledgments
 
-The development of Athlytics [@R-Athlytics], which is now available from the Comprehensive R Archive Network (CRAN) (https://CRAN.R-project.org/package=Athlytics), relied upon the R programming language [@R-base] and benefited from numerous open-source R packages, including rStrava [@R-rStrava], ggplot2 [@ggplot2, dplyr [@R-dplyr], tidyr [@tidyr], lubridate [@lubridate-jss], zoo [@zoo-jss], purrr [@R-purrr], and rlang [@R-rlang]. Access to data was made possible by the Strava API. We also acknowledge the preprint of this work on bioRxiv [@He2025AthlyticsPreprint].
+The development of Athlytics [@R-Athlytics], which is now available from the Comprehensive R Archive Network (CRAN) relied upon the R programming language [@R-base] and benefited from numerous open-source R packages, including rStrava [@R-rStrava], ggplot2 [@ggplot2, dplyr [@R-dplyr], tidyr [@tidyr], lubridate [@lubridate-jss], zoo [@zoo-jss], purrr [@R-purrr], and rlang [@R-rlang]. Access to data was made possible by the Strava API. We also acknowledge the preprint of this work on bioRxiv [@He2025AthlyticsPreprint].
