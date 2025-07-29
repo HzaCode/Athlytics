@@ -10,7 +10,7 @@ Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 [![Website](https://img.shields.io/badge/website-Athlytics-blue)](https://hezhiang.com/Athlytics/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-F88A0B)](https://www.biorxiv.org/content/10.1101/2025.05.01.651597v2)
+[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-F88A0B)](https://www.biorxiv.org/content/10.1101/2025.05.01.651597v3)
 
 
 **Athlytics** is an R package that provides a computational framework for the longitudinal analysis of exercise physiology metrics. It is specifically designed to streamline the acquisition, processing, and visualization of data directly from the Strava API. The package addresses a critical need in sports science research by providing a standardized, reproducible workflow to quantify key indicators of training load, performance, and physiological adaptation, such as the Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and cardiovascular decoupling. By interfacing directly with Strava—a nearly ubiquitous platform for athletes—`Athlytics` enables researchers to efficiently analyze rich, real-world data to investigate the dynamic interplay between training stimuli and human physiology.
