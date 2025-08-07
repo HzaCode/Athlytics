@@ -2,19 +2,19 @@
 
 context("ACWR Calculation and Plotting")
 
-library(Athlytics)
+library(athlytics)
 library(testthat)
 library(mockery)
 
 # Load sample data from the package
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 
 # Load mock activity list for testing calculate_acwr's internal processing
 # This specific mock is for simulating rStrava::get_activity_list output
-# Keep this source line if mock_activity_list_list is not part of Athlytics_sample_data
+# Keep this source line if mock_activity_list_list is not part of athlytics_sample_data
 # and is essential for testing the raw calculation logic of calculate_acwr.
-# Consider refactoring helper-mockdata.R to only contain truly raw API mocks if needed,
-# or integrate such mocks into a different structure if Athlytics_sample_data contains only processed data.
+  # Note: helper-mockdata.R contains raw API mocks
+# or integrate such mocks into a different structure if athlytics_sample_data contains only processed data.
 source(test_path("helper-mockdata.R"), local = TRUE) # Assuming this file name is correct and it defines mock_activity_list_list
 
 # Mock Strava token - use structure() to correctly set class attributes
@@ -178,7 +178,7 @@ test_that("calculate_acwr works with load_metric = hrss", {
   expect_true(any(acwr_hrss_valid$atl > 0, na.rm = TRUE) || any(acwr_hrss_valid$ctl > 0, na.rm = TRUE))
 
   # Scenario 2: Invalid HR parameters (e.g., max_hr <= resting_hr)
-  # This should result in messages during calculation (not easily testable here) 
+  # Results in calculation messages 
   # and potentially 0 load for activities where HRSS cannot be calculated.
   # The overall ACWR calculation should still run, possibly with more NAs or 0s in load.
   expect_error(
@@ -324,8 +324,8 @@ test_that("calculate_acwr handles no valid load data after processing activities
 
 # --- Test plot_acwr --- 
 
-test_that("plot_acwr returns a ggplot object using pre-calculated Athlytics_sample_data", {
-  # Ensure Athlytics_sample_data is loaded and contains athlytics_sample_acwr
+test_that("plot_acwr returns a ggplot object using pre-calculated athlytics_sample_data", {
+  # Check athlytics_sample_data is loaded and contains athlytics_sample_acwr
   expect_true(exists("athlytics_sample_acwr"))
   expect_s3_class(athlytics_sample_acwr, "data.frame")
   
@@ -351,7 +351,7 @@ test_that("plot_acwr correctly calls calculate_acwr and generates plot with mock
     start_date = test_start_date,
     end_date = test_end_date,
     acute_period = 7,
-    chronic_period = 14 # Ensure periods are consistent with calculate_acwr test if needed
+    chronic_period = 14 # Periods consistent with calculate_acwr test
   )
   expect_s3_class(p, "ggplot")
   # Further checks on p$data could be done here, e.g., expected columns from calculate_acwr

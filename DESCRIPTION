@@ -1,4 +1,4 @@
-Package: Athlytics
+Package: athlytics
 Title: Advanced Sports Performance Analysis for 'Strava' Data
 Version: 0.1.2
 Author: Ang [aut, cre]
@@ -7,8 +7,8 @@ Authors@R:
     person("Ang", email = "ang@hezhiang.com", role = c("aut", "cre"))
 Description:Advanced sports performance analysis and modeling for activity data retrieved from 'Strava'. This package focuses on applying established sports science models and statistical methods to gain deeper insights into training load, performance prediction, recovery status, and identifying key performance factors, extending basic data analysis capabilities.
 License: MIT + file LICENSE
-URL: https://hezhiang.com/Athlytics/, https://github.com/HzaCode/Athlytics
-BugReports: https://github.com/HzaCode/Athlytics/issues 
+URL: https://hezhiang.com/athlytics/, https://github.com/HzaCode/athlytics
+BugReports: https://github.com/HzaCode/athlytics/issues 
 Encoding: UTF-8
 LazyData: true
 Depends: 

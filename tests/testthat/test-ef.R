@@ -1,12 +1,12 @@
 # tests/testthat/test-ef.R
 
 library(testthat)
-library(Athlytics)
+library(athlytics)
 library(mockery)
 # library(rStrava) # Not calling real rStrava functions directly in this test file
 
 # Load sample data from the package
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 
 # Load mock activity list for testing calculate_ef's internal processing
 source(test_path("helper-mockdata.R"), local = TRUE) # Assuming this file defines mock_activity_list_list
@@ -19,7 +19,7 @@ mock_stoken <- structure(
 # --- Test calculate_ef (API Path Logic with Mocking) ---
 
 test_that("calculate_ef (API path) processes mocked Pace_HR data correctly", {
-  # Ensure necessary mock objects exist
+  # Check necessary mock objects exist
   expect_true(exists("mock_activity_list_list"), "mock_activity_list_list not found in helper.")
   expect_true(exists("mock_activity_streams"), "mock_activity_streams not found in helper.")
 
@@ -155,20 +155,20 @@ test_that("calculate_ef (API path) applies min_duration_mins filter correctly", 
   # A more robust test would be to check if any activity in result_high_min_duration
   # actually has a duration less than 45 minutes (it shouldn't).
   # This requires knowing the original durations, which are not directly in the EF output.
-  # For now, we rely on the function's internal logic which is harder to test from outside
+  # Test relies on function's internal logic
   # without more complex mocking of activity durations.
   
   # A simpler check: if the higher filter yields results, they should all meet the criteria.
   # But calculate_ef doesn't return duration.
-  # Let's assume for now the mocking of get_activity_list is sufficient.
+  # Assuming mocking of get_activity_list is sufficient.
 })
 
 
-# --- Test plot_ef (using pre-calculated data from Athlytics_sample_data) ---
+# --- Test plot_ef (using pre-calculated data from athlytics_sample_data) ---
 
 test_that("plot_ef returns a ggplot object with athlytics_sample_ef data", {
   # Check if the sample data subset exists
-  expect_true(exists("athlytics_sample_ef"), "athlytics_sample_ef not found in Athlytics_sample_data.")
+  expect_true(exists("athlytics_sample_ef"), "athlytics_sample_ef not found in athlytics_sample_data.")
   expect_s3_class(athlytics_sample_ef, "data.frame")
   
   # Print environment of the function being tested

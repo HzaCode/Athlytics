@@ -57,7 +57,7 @@ Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 # Explicitly name decoupling_df and provide activity_type
 if (!is.null(athlytics_sample_decoupling) && nrow(athlytics_sample_decoupling) > 0) {
   p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling, activity_type = "Run")
@@ -78,7 +78,7 @@ tryCatch({
   )
 
   if (inherits(stoken_example, "Token2.0")) {
-    message("Placeholder stoken_example created for Athlytics examples.")
+    message("Placeholder stoken_example created for athlytics examples.")
 
     # Example 1: Plot Decoupling trend for Runs (last 6 months)
     # This first calculates the data, then plots it.

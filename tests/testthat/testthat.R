@@ -1,4 +1,4 @@
 library(testthat)
-library(Athlytics)
+library(athlytics)
 
-# test_check("Athlytics", filter = "^(test-acwr|test-ef)") 
+# test_check("athlytics", filter = "^(test-acwr|test-ef)") 

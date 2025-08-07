@@ -1,7 +1,7 @@
 # tests/testthat/test-strava_helpers.R
 
 library(testthat)
-library(Athlytics)
+library(athlytics)
 library(mockery)
 library(lubridate)
 library(dplyr)
@@ -39,7 +39,7 @@ mock_rStrava_compile_activities <- function(act_list) {
   if (length(act_list) == 0) {
     return(tibble(
       id = integer(0), name = character(0), type = character(0), sport_type = character(0),
-      start_date_local = POSIXct(character(0), tz = "UTC"), # Ensure correct type
+      start_date_local = POSIXct(character(0), tz = "UTC"),
       start_date = POSIXct(character(0), tz = "UTC"), 
       distance = numeric(0), moving_time = integer(0), elapsed_time = integer(0)
     ))
@@ -99,7 +99,7 @@ test_that("fetch_strava_activities with fetch_details = TRUE works", {
 
   # required_cols by default is c("average_watts", "average_heartrate")
   # Our mock_rStrava_get_activity also returns max_heartrate and some_other_col
-  # Let's test with the default and then with custom required_cols
+  # Test with default and custom required_cols
 
   result_df_default_cols <- fetch_strava_activities(
     stoken = mock_stoken, 
@@ -194,7 +194,7 @@ test_that("fetch_strava_activities handles empty activity list from rStrava::get
   expected_cols_on_empty <- c("id", "name", "type", "sport_type", "start_date", 
                               "start_date_local", "date", "distance", "moving_time", "elapsed_time")
   expect_true(all(expected_cols_on_empty %in% names(result_df)))
-  expect_equal(length(names(result_df)), length(expected_cols_on_empty)) # Ensure no extra cols
+  expect_equal(length(names(result_df)), length(expected_cols_on_empty))
   
   # Check column types for the empty dataframe
   expect_type(result_df$id, "integer")
@@ -246,12 +246,12 @@ test_that("get_activity_list_stoken_direct basic path works (SKIPPED)", {
   )
   
   # Call the function AFTER setting up mocks
-  result_df <- Athlytics:::get_activity_list_stoken_direct(stoken = mock_stoken)
+  result_df <- athlytics:::get_activity_list_stoken_direct(stoken = mock_stoken)
   
   # Expectations 
   expect_s3_class(result_df, "tbl_df")
   expect_equal(nrow(result_df), 3)
-  # It should return the same base columns as fetch_strava_activities with fetch_details = FALSE
+  # Returns same base columns as fetch_strava_activities with fetch_details = FALSE
   # but without the additional NA columns for required_cols if that logic differs.
   # Based on get_activity_list_stoken_direct source, it just calls compile_activities and then the mutate block.
   expect_true(all(c("id", "name", "type", "sport_type", "start_date_local", "date", "distance", "moving_time", "elapsed_time") %in% names(result_df)))
@@ -269,7 +269,7 @@ test_that("get_activity_list_stoken_direct handles empty activity list (SKIPPED)
   )
 
   # Call the function AFTER setting up mocks
-  result_df <- Athlytics:::get_activity_list_stoken_direct(stoken = mock_stoken)
+  result_df <- athlytics:::get_activity_list_stoken_direct(stoken = mock_stoken)
 
   # Expectations
   expect_s3_class(result_df, "tbl_df")

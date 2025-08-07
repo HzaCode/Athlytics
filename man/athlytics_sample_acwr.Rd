@@ -3,7 +3,7 @@
 \docType{data}
 \name{athlytics_sample_acwr}
 \alias{athlytics_sample_acwr}
-\title{Sample ACWR Data for Athlytics}
+\title{Sample ACWR Data for athlytics}
 \format{
 A tibble with X rows and 5 variables:
 \describe{

@@ -47,12 +47,12 @@ Visualizes data from `calculate_pbs`. Points show best efforts;
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 # athlytics_sample_pbs should contain the PBs to be plotted
 if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
   sample_pbs_for_plot <- athlytics_sample_pbs
   
-  # Ensure the date column is named 'activity_date' and is of Date type for plot_pbs
+  # Note: date column should be named 'activity_date' and be of Date type
   if ("date" \%in\% names(sample_pbs_for_plot) && !"activity_date" \%in\% names(sample_pbs_for_plot)) {
     names(sample_pbs_for_plot)[names(sample_pbs_for_plot) == "date"] <- "activity_date"
   }
@@ -107,7 +107,7 @@ if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
 # }
 
 # Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)
-# Ensure distance_meters are relevant for Ride PBs if your calculate_pbs handles them.
+# Note: distance_meters should be relevant for Ride PBs if calculate_pbs handles them.
 # pb_data_ride <- calculate_pbs(stoken = stoken, activity_type = "Ride", 
 #                                distance_meters = c(10000, 20000))
 # if(nrow(pb_data_ride) > 0) {
@@ -115,7 +115,7 @@ if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
 # }
 
 # Plot PBS trend for multiple Run types (no trend line)
-# Ensure distance_meters are specified
+# Note: distance_meters should be specified
 # pb_data_multi <- calculate_pbs(stoken = stoken, 
 #                                activity_type = c("Run", "VirtualRun"), 
 #                                distance_meters = c(1000,5000))

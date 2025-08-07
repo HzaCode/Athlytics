@@ -35,9 +35,9 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_data)
 #' if (!is.null(athlytics_sample_acwr)) {
-#'   # Ensure acwr_df is named and other necessary parameters are provided if plot_acwr expects them
+  #'   # Note: acwr_df should be named and necessary parameters provided
 #'   p <- plot_acwr(acwr_df = athlytics_sample_acwr)
 #'   print(p)
 #' }
@@ -86,7 +86,7 @@ plot_acwr <- function(stoken,
   # --- Get Data --- 
   # If acwr_df is not provided, calculate it
   if (is.null(acwr_df)) {
-      # Ensure stoken is provided if acwr_df is not
+      # Check if stoken provided when acwr_df is not
       if (missing(stoken)) stop("Either 'stoken' or 'acwr_df' must be provided.")
       
       # Call the calculation function
@@ -106,7 +106,7 @@ plot_acwr <- function(stoken,
   } 
   
   # Check if acwr_df is empty or invalid after potentially calculating it
-  # Ensure the required 'acwr_smooth' column exists
+  # Check if required 'acwr_smooth' column exists
   if (!is.data.frame(acwr_df) || nrow(acwr_df) == 0 || !"acwr_smooth" %in% colnames(acwr_df)) {
       warning("No valid ACWR data available to plot (or missing 'acwr_smooth' column).")
       return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No ACWR data available")) 
@@ -195,7 +195,7 @@ plot_acwr <- function(stoken,
   return(p)
 }
 
-# TODO:
+
 # 1. Implement the actual Strava data fetching logic (replace placeholder).
 #    - Need a helper function `fetch_strava_activities`.
 #    - Handle pagination and potential API rate limits.

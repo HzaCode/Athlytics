@@ -36,7 +36,7 @@
 #'
 #' @examples
 #' # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_data)
 #' if (!is.null(athlytics_sample_acwr)) {
 #'   print(head(athlytics_sample_acwr))
 #' }
@@ -217,7 +217,7 @@ calculate_acwr <- function(stoken,
       # message(sprintf("    Calculated load_value: %.2f", load_value))
     } else {
         # message("    Duration <= 0, load is 0.")
-        load_value <- 0 # Ensure load_value is defined even if duration is 0
+        load_value <- 0 # Define load_value even if duration is 0
     }
 
     if (!is.na(load_value) && load_value > 0) {
@@ -276,13 +276,13 @@ calculate_acwr <- function(stoken,
 
   acwr_data_intermediate <- daily_load_complete %>%
     dplyr::mutate(
-      # Ensure daily_load is numeric before rollmean
+      # Convert daily_load to numeric before rollmean
       daily_load = as.numeric(.data$daily_load),
       acute_load = zoo::rollmean(.data$daily_load, k = acute_period, fill = NA, align = "right"),
       chronic_load = zoo::rollmean(.data$daily_load, k = chronic_period, fill = NA, align = "right")
     ) %>%
     # --- Add check/coercion for chronic_load before filtering/mutate ---
-    dplyr::mutate(chronic_load = as.numeric(.data$chronic_load)) %>% # Ensure numeric
+    dplyr::mutate(chronic_load = as.numeric(.data$chronic_load)) %>%
     dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date)
 
   # --- DEBUG: Check colnames after adding acute_load and chronic_load ---
@@ -297,7 +297,7 @@ calculate_acwr <- function(stoken,
                     NA)
     ) %>%
     # --- Ensure acwr is numeric before next rollmean ---
-    dplyr::mutate(acwr = as.numeric(.data$acwr)) %>% # Ensure numeric
+    dplyr::mutate(acwr = as.numeric(.data$acwr)) %>%
     dplyr::mutate(
       acwr_smooth = zoo::rollmean(.data$acwr, k = smoothing_period, align = "right", fill = NA)
     )

@@ -1,12 +1,12 @@
 # tests/testthat/test-pbs.R
 
 library(testthat)
-library(Athlytics)
+library(athlytics)
 library(ggplot2) # Explicitly load for s3_class checks if not automatically available
 library(lubridate) # For seconds_to_period if used in manual_df
 
 # Load data: sample data from package & mock API returns from helper
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 source(test_path("helper-mockdata.R"), local = TRUE)
 
 # NOTE: calculate_pbs tests are currently skipped because they require
@@ -56,7 +56,7 @@ test_that("plot_pbs returns a ggplot object with valid pbs_df input", {
   manual_pbs_df$time_period <- lubridate::seconds_to_period(manual_pbs_df$time_seconds)
 
 
-  # Ensure distance_meters argument for plot_pbs matches distances in manual_pbs_df
+  # distance_meters argument should match distances in manual_pbs_df
   test_distance_meters <- unique(manual_pbs_df$distance)
 
   # 2. Call plot_pbs with this manually created data
@@ -82,7 +82,7 @@ test_that("plot_pbs handles empty data frame input", {
     time_seconds = numeric(),
     distance = numeric(),
     is_pb = logical(),
-    distance_label = factor(levels = c("1k", "5k")), # ensure factor levels if used
+    distance_label = factor(levels = c("1k", "5k")),
     activity_id = character(),
     elapsed_time = numeric(),
     moving_time = numeric(),

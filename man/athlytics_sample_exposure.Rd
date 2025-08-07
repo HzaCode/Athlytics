@@ -3,7 +3,7 @@
 \docType{data}
 \name{athlytics_sample_exposure}
 \alias{athlytics_sample_exposure}
-\title{Sample Training Load Exposure Data for Athlytics}
+\title{Sample Training Load Exposure Data for athlytics}
 \format{
 A tibble with X rows and 5 variables:
 \describe{

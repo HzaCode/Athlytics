@@ -52,7 +52,7 @@ Provides data for `plot_decoupling`. Compares output/HR efficiency
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 print(head(athlytics_sample_decoupling))
 
 \dontrun{
@@ -64,7 +64,7 @@ print(head(athlytics_sample_decoupling))
 #                                cache = TRUE)
 
 # Calculate Pace/HR decoupling for recent Runs (limit to 10 activities for speed)
-# Ensure stoken is defined and valid before running this part
+# Note: stoken should be defined and valid
 # run_decoupling <- calculate_decoupling(
 #     stoken = stoken,
 #     activity_type = "Run",

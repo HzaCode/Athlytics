@@ -53,7 +53,7 @@ Provides data for `plot_exposure`. Fetches extra prior data for
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 print(head(athlytics_sample_exposure))
 
 \dontrun{
@@ -65,7 +65,7 @@ print(head(athlytics_sample_exposure))
 #                                cache = TRUE)
 
 # Calculate training load for Rides using TSS
-# Ensure stoken_example is defined and valid before running this part
+# Note: stoken_example should be defined and valid
 # if (exists("stoken_example") && inherits(stoken_example, "Token2.0")) {
 #   ride_exposure_tss <- calculate_exposure(
 #     stoken = stoken_example,

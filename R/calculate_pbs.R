@@ -33,7 +33,7 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_data)
 #' print(head(athlytics_sample_pbs))
 #'
 #' \dontrun{
@@ -59,7 +59,7 @@
 #'     # Calculate PBs for 1k, 5k (limit activities for speed in example)
 #'     pb_data <- calculate_pbs(stoken = stoken_example,
 #'                              activity_type = "Run", 
-#'                              # Ensure activity_type matches your default or intended type
+  #'                              # Note: activity_type should match your intended type
 #'                              distance_meters = c(1000, 5000, 10000),
 #'                              max_activities = 10) # Reduced for example speed
 #'     if (nrow(pb_data) > 0) {

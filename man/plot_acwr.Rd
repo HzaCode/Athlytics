@@ -61,9 +61,9 @@ Plots the ACWR trend over time. Uses pre-calculated data or calls `calculate_acw
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 if (!is.null(athlytics_sample_acwr)) {
-  # Ensure acwr_df is named and other necessary parameters are provided if plot_acwr expects them
+  # Note: acwr_df should be named and necessary parameters provided
   p <- plot_acwr(acwr_df = athlytics_sample_acwr)
   print(p)
 }

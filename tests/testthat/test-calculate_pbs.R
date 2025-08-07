@@ -1,12 +1,12 @@
 # tests/testthat/test-calculate_pbs.R
 
 library(testthat)
-library(Athlytics)
+library(athlytics)
 library(mockery)
 # library(rStrava) # Not calling rStrava directly
 
 # Load data: sample data from package & mock API returns from helper
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 source(test_path("helper-mockdata.R"), local = TRUE)
 
 # Mock Strava token
@@ -18,7 +18,7 @@ test_that("calculate_pbs throws error for non-Token2.0 stoken", {
   expect_error(
     calculate_pbs(stoken = data.frame(), distance_meters = 1000),
     # The error message might change with proper mocking if it gets past stoken check
-    # For now, assume it still checks stoken type first or fails on a subsequent rStrava call expectation
+    # Assumes stoken type check first
     regexp = "Assertion on 'stoken' failed: Must inherit from class 'Token2.0', but has class 'data.frame'\\."
   )
 })
@@ -51,9 +51,7 @@ test_that("calculate_pbs throws error for zero or negative distance_meters", {
 # Each data frame has columns like: id, resource_state, name, activity, athlete, elapsed_time, moving_time, start_date, start_date_local, distance, start_index, end_index, pr_rank, segment.id, segment.name, etc.
 # For calculate_pbs, we are interested in finding the best `elapsed_time` for a `distance` that is close to the target distances.
 # The function internally seems to look for `segment.distance` matching `distance_meters`.
-# Let's make our mock simpler: assume get_efforts_list returns a list of efforts, and each effort is a list/df with at least 'distance' and 'elapsed_time'.
-
-# For now, let's assume a mock that returns a list of efforts for *one* activity
+  # Mock returns list of efforts for one activity
 # To test calculate_pbs properly, we need to simulate get_efforts_list being called for *each* activity from get_activity_list
 
 # Mock for get_efforts_list: needs to be adaptable or we mock its caller if calculate_pbs has an internal helper.
@@ -148,7 +146,7 @@ test_that("calculate_pbs (API path) processes mocked data correctly", {
   # expect_equal(pb_5k_df$distance_actual_m, 4950) # 'distance_actual_m' is not in output
   
   # All activity IDs in results should be from mock_activity_list_list
-  # Ensure mock_activity_list_list items have 'id' and 'name' (for activity_name if it were present)
+  # Check mock_activity_list_list items have 'id' and 'name'
   # The current calculate_pbs output does not include 'activity_name'.
   mock_activity_ids <- sapply(mock_activity_list_list, function(x) x$id)
   expect_true(all(result_df$activity_id %in% mock_activity_ids))
@@ -209,7 +207,7 @@ test_that("calculate_pbs (API path) handles NULL activity list from mock", {
 # The existing test for unsupported activity_type = "Ride" might pass if the mock for 
 # get_activity_list returns activities that are not "Run", and then get_efforts_list
 # returns empty or non-matching efforts. Or it might fail if it expects only "Run" activities.
-# Let's update that test.
+  # Update test case
 test_that("calculate_pbs handles activity_type filter correctly with mock", {
   # Mock get_activity_list to return some activities, but none of the filtered type
   mock_activities_for_type_filter <- list(
@@ -237,7 +235,7 @@ test_that("calculate_pbs handles activity_type filter correctly with mock", {
   # Now test with "Ride" - should also lead to "No activities of type 'Ride' found..."
   # or "No best efforts..." if it proceeds further for rides.
   # The original test had an error here: "No best efforts found..."
-  # Let's keep it expecting an error, the exact message might depend on Ride handling logic
+  # Expect error for Ride handling logic
   expect_error(
     calculate_pbs(
       stoken = mock_stoken,
@@ -246,7 +244,7 @@ test_that("calculate_pbs handles activity_type filter correctly with mock", {
       max_activities = 5
     )
     # We will check the exact error for "Ride" in the next round if it still fails.
-    # For now, just ensuring it errors out is a step.
+    # Test error handling
     # regexp = "No best efforts found for the specified distances in the processed activities\."
   )
 }) 

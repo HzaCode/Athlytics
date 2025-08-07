@@ -1,24 +1,24 @@
 # tests/testthat/test-exposure.R
 
 library(testthat)
-library(Athlytics)
+library(athlytics)
 
 # Load sample data from the package
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 
 # Load mock data (if helper-mockdata.R contains mocks for direct use)
 source(test_path("helper-mockdata.R"), local = TRUE)
 
 # Mock Strava token (if needed for functions that might call API, though most tests here use sample_df)
 
-# --- Test plot_exposure (using pre-calculated ACWR data from Athlytics_sample_data) ---
+# --- Test plot_exposure (using pre-calculated ACWR data from athlytics_sample_data) ---
 
 test_that("plot_exposure returns a ggplot object with athlytics_sample_acwr data", {
   # Check if the sample ACWR data subset exists
-  expect_true(exists("athlytics_sample_acwr"), "athlytics_sample_acwr not found in Athlytics_sample_data.")
+  expect_true(exists("athlytics_sample_acwr"), "athlytics_sample_acwr not found in athlytics_sample_data.")
   expect_s3_class(athlytics_sample_acwr, "data.frame")
   
-  # Ensure athlytics_sample_acwr has the expected columns for plotting
+  # Check athlytics_sample_acwr has expected columns for plotting
   # plot_exposure typically uses date, acwr, atl, ctl.
   expected_cols <- c("date", "acwr", "atl", "ctl")
   if (nrow(athlytics_sample_acwr) > 0) { # Only check columns if data exists

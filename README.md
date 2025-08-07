@@ -1,42 +1,42 @@
-Athlytics <img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw=true" align="right" width="200"/>
+athlytics <img src="https://github.com/HzaCode/athlytics/blob/main/image.png?raw=true" align="right" width="200"/>
 =======================================================
 
 
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![CRAN status](https://www.r-pkg.org/badges/version/Athlytics)](https://CRAN.R-project.org/package=Athlytics)
-[![R-CMD-check](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
-[![codecov](https://codecov.io/gh/HzaCode/Athlytics/graph/badge.svg)](https://app.codecov.io/gh/HzaCode/Athlytics)
+[![CRAN status](https://www.r-pkg.org/badges/version/athlytics)](https://CRAN.R-project.org/package=athlytics)
+[![R-CMD-check](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml)
+[![codecov](https://codecov.io/gh/HzaCode/athlytics/graph/badge.svg)](https://app.codecov.io/gh/HzaCode/athlytics)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
-[![Website](https://img.shields.io/badge/website-Athlytics-blue)](https://hezhiang.com/Athlytics/)
+[![Website](https://img.shields.io/badge/website-athlytics-blue)](https://hezhiang.com/athlytics/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-F88A0B)](https://www.biorxiv.org/content/10.1101/2025.05.01.651597v3)
 
 
-**Athlytics** is an R package that provides a computational framework for the longitudinal analysis of exercise physiology metrics. It is specifically designed to streamline the acquisition, processing, and visualization of data directly from the Strava API. The package addresses a critical need in sports science research by providing a standardized, reproducible workflow to quantify key indicators of training load, performance, and physiological adaptation, such as the Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and cardiovascular decoupling. By interfacing directly with Strava—a nearly ubiquitous platform for athletes—`Athlytics` enables researchers to efficiently analyze rich, real-world data to investigate the dynamic interplay between training stimuli and human physiology.
+**athlytics** is an R package that provides a computational framework for the longitudinal analysis of exercise physiology metrics. It is specifically designed to streamline the acquisition, processing, and visualization of data directly from the Strava API. The package addresses a critical need in sports science research by providing a standardized, reproducible workflow to quantify key indicators of training load, performance, and physiological adaptation, such as the Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and cardiovascular decoupling. By interfacing directly with Strava—a nearly ubiquitous platform for athletes—`athlytics` enables researchers to efficiently analyze rich, real-world data to investigate the dynamic interplay between training stimuli and human physiology.
 
 ### Installation
 
-The stable version of `Athlytics` is available on CRAN and can be installed with:
+The stable version of `athlytics` is available on CRAN and can be installed with:
 ```r
-install.packages("Athlytics")
+install.packages("athlytics")
 ```
 
 Alternatively, the latest development version can be installed from GitHub:
 ```r
 # install.packages('remotes')
-remotes::install_github('HzaCode/Athlytics')
+remotes::install_github('HzaCode/athlytics')
 ```
 
 ### Authentication Protocol
 
-`Athlytics` leverages the `rStrava` package for handling the OAuth2.0 authentication process with the Strava API. This requires a one-time setup of a Strava API application to obtain a Client ID and Secret. The resulting token object is then passed to `Athlytics` functions to authorize data access.
+`athlytics` leverages the `rStrava` package for handling the OAuth2.0 authentication process with the Strava API. This requires a one-time setup of a Strava API application to obtain a Client ID and Secret. The resulting token object is then passed to `athlytics` functions to authorize data access.
 
 1.  **Create a Strava API Application:** Navigate to your Strava settings under "My API Application" ([https://www.strava.com/settings/api](https://www.strava.com/settings/api)). Set the "Authorization Callback Domain" to `localhost` and note your **Client ID** and **Client Secret**.
 2.  **Authenticate in R:** Use `rStrava::strava_oauth()` to generate the authentication token. It is highly recommended to use `cache = TRUE` to store the token securely, which ensures persistent authentication across sessions—a key feature for reproducible research workflows.
 
 ```r
-library(Athlytics)
+library(athlytics)
 library(rStrava)
 
 # --- Authentication Step ---
@@ -55,7 +55,7 @@ stoken <- strava_oauth(
 
 ### User-Defined Physiological Parameters
 
-For certain advanced metrics, user-specific physiological data is required. These parameters can be supplied directly to the relevant `Athlytics` functions:
+For certain advanced metrics, user-specific physiological data is required. These parameters can be supplied directly to the relevant `athlytics` functions:
 
 *   `user_ftp` (Numeric): Functional Threshold Power (Watts), required for calculating Training Stress Score (TSS).
 *   `user_max_hr` (Numeric): Maximum Heart Rate, required for calculating Heart Rate Stress Score (HRSS).
@@ -196,4 +196,4 @@ plot_decoupling(
 
 ### Development Status & Contribution
 
-Athlytics is under active development. We adhere to a code of conduct and encourage community contributions. Please see our [Contributing Guidelines](CONTRIBUTING.md) for more information. Bug reports and feature requests are welcome via GitHub Issues.
+athlytics is under active development. We adhere to a code of conduct and encourage community contributions. Please see our [Contributing Guidelines](CONTRIBUTING.md) for more information. Bug reports and feature requests are welcome via GitHub Issues.

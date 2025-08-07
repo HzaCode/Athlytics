@@ -1,11 +1,11 @@
 # tests/testthat/test-calculate_exposure.R
 
 library(testthat)
-library(Athlytics)
+library(athlytics)
 library(mockery)
 
 # Load data: sample data from package & mock API returns from helper
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 source(test_path("helper-mockdata.R"), local = TRUE)
 
 # Load mock activity list for testing calculate_exposure's internal processing
@@ -44,7 +44,7 @@ test_that("calculate_exposure throws error for missing hr parameters when load_m
 # --- Test Calculation Logic with Mocked API ---
 
 test_that("calculate_exposure calculates correctly with mock activity data", {
-  # Ensure mock activity list exists
+  # Check mock activity list exists
   expect_true(exists("mock_activity_list_list"))
 
   # Mock the rStrava function called internally
@@ -56,7 +56,7 @@ test_that("calculate_exposure calculates correctly with mock activity data", {
   # Determine end_date from mock data for consistency
   # Note: calculate_exposure needs to fetch data before start_date, 
   # so the effective range in mock_activity_list_list matters.
-  # Let's pick a range within the mock data timespan.
+  # Pick range within mock data timespan
   test_end_date <- lubridate::as_date("2023-10-01") 
   test_chronic_period <- 14 # Using shorter period for test based on limited mock data span
   test_acute_period <- 7
@@ -161,7 +161,7 @@ test_that("calculate_exposure works with load_metric = elevation_gain_m", {
 
 test_that("calculate_exposure works with load_metric = hrss", {
   expect_true(exists("mock_activity_list_list"))
-  # Ensure mock data has average_heartrate
+  # Check mock data has average_heartrate
   expect_true(any(sapply(mock_activity_list_list, function(x) !is.null(x$average_heartrate) && !is.na(x$average_heartrate))))
   
   local_mocked_bindings(
@@ -223,7 +223,7 @@ test_that("calculate_exposure works with load_metric = hrss", {
 
 test_that("calculate_exposure works with load_metric = tss", {
   expect_true(exists("mock_activity_list_list"))
-  # Ensure mock data has average_watts (used as proxy for NP if device_watts is null)
+  # Check mock data has average_watts (used as proxy for NP if device_watts is null)
   expect_true(any(sapply(mock_activity_list_list, function(x) !is.null(x$average_watts) && !is.na(x$average_watts))))
 
   local_mocked_bindings(
@@ -280,6 +280,6 @@ test_that("calculate_exposure works with load_metric = tss", {
   result_zero_power <- calculate_exposure(stoken = mock_stoken, load_metric = "tss", user_ftp = 250, end_date = "2023-10-01")
   # We expect the activity with zero power to contribute zero load.
   # The activity with positive power should contribute positive load.
-  expect_true(all(result_zero_power$daily_load >= 0)) # Ensure non-negative
-  expect_true(any(result_zero_power$daily_load > 0)) # Ensure at least one day has positive load from the other activity
+  expect_true(all(result_zero_power$daily_load >= 0)) # Non-negative values
+  expect_true(any(result_zero_power$daily_load > 0)) # At least one day has positive load
 }) 

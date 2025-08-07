@@ -34,7 +34,7 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_data)
 #' print(head(athlytics_sample_exposure))
 #'
 #' \dontrun{
@@ -46,7 +46,7 @@
 #' #                                cache = TRUE)
 #'
 #' # Calculate training load for Rides using TSS
-#' # Ensure stoken_example is defined and valid before running this part
+  #' # Note: stoken_example should be defined and valid
 #' # if (exists("stoken_example") && inherits(stoken_example, "Token2.0")) {
 #' #   ride_exposure_tss <- calculate_exposure(
 #' #     stoken = stoken_example,
@@ -125,7 +125,7 @@ calculate_exposure <- function(stoken,
 
   # Simplified loop: Call get_activity_list once, assuming it handles pagination or returns enough data
   # If full pagination is needed later, this loop needs to be redesigned based on how get_activity_list behaves.
-  # For now, focus on fixing the Date error.
+      # Fix Date error
   current_page_activities <- tryCatch({
       # Call rStrava::get_activity_list with Date objects
       rStrava::get_activity_list(stoken, before = fetch_before_date, after = fetch_after_date)
@@ -173,7 +173,7 @@ calculate_exposure <- function(stoken,
     act_type <- .x$type %||% "Unknown"
     message(paste("Activity Type:", act_type))
     
-    # Ensure date variables are Date objects before comparison
+    # Convert date variables to Date objects
     if (!inherits(fetch_start_date, "Date") || !inherits(analysis_end_date, "Date")) {
         stop("Internal error: fetch_start_date or analysis_end_date are not Date objects.")
     }

@@ -1,7 +1,7 @@
 # tests/testthat/test-utils.R
 
 library(testthat)
-library(Athlytics) # To make internal functions available if using devtools::load_all()
+library(athlytics) # To make internal functions available if using devtools::load_all()
 library(lubridate)
 
 context("Utility Functions")
@@ -27,10 +27,6 @@ test_that("english_month_year correctly formats dates", {
   empty_dates <- ymd(character(0))
   expect_equal(english_month_year(empty_dates), character(0))
   
-  # Test with NA date (should ideally handle gracefully, e.g., return NA_character_ or specific string)
-  # Current implementation will likely error or produce NA based on lubridate behavior. 
-  # Let's check what it does and decide if it needs adjustment or specific NA test.
-  # expect_equal(english_month_year(ymd(NA)), NA_character_) # or a specific string like "Invalid Date"
-  # For now, let's assume valid dates are the primary use case.
-  # If NA handling is critical, the function english_month_year might need an explicit check.
+  # Test with NA date
+  # expect_equal(english_month_year(ymd(NA)), NA_character_)
 }) 

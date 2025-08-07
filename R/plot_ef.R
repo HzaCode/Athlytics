@@ -33,7 +33,7 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_data)
 #' # Explicitly name ef_df and provide activity_type
 #' p <- plot_ef(ef_df = athlytics_sample_ef, activity_type = "Run") 
 #' print(p)
@@ -78,7 +78,7 @@ plot_ef <- function(stoken,
   # --- Get Data --- 
   # If ef_df is not provided, calculate it
   if (is.null(ef_df)) {
-      # Ensure stoken is provided if ef_df is not
+      # Check if stoken provided when ef_df is not
       if (missing(stoken)) stop("Either 'stoken' or 'ef_df' must be provided.")
       
       ef_df <- calculate_ef(

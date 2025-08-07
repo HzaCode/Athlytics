@@ -63,7 +63,7 @@ explicit_english_month_year <- function(date_obj) {
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_data)
 #' # Explicitly name decoupling_df and provide activity_type
 #' if (!is.null(athlytics_sample_decoupling) && nrow(athlytics_sample_decoupling) > 0) {
 #'   p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling, activity_type = "Run")
@@ -84,7 +84,7 @@ explicit_english_month_year <- function(date_obj) {
 #'   )
 #'
 #'   if (inherits(stoken_example, "Token2.0")) {
-#'     message("Placeholder stoken_example created for Athlytics examples.")
+#'     message("Placeholder stoken_example created for athlytics examples.")
 #'
 #'     # Example 1: Plot Decoupling trend for Runs (last 6 months)
 #'     # This first calculates the data, then plots it.
@@ -166,7 +166,7 @@ plot_decoupling <- function(stoken,
   # --- Get Data --- 
   # If decoupling_df is not provided, calculate it
   if (is.null(decoupling_df)) {
-      # Ensure stoken is provided if decoupling_df is not
+      # Check if stoken provided when decoupling_df is not
       if (missing(stoken)) stop("Either 'stoken' or 'decoupling_df' must be provided.")
       
       message("No pre-calculated decoupling_df provided. Calculating data now... (This may take a while)")
@@ -194,9 +194,9 @@ plot_decoupling <- function(stoken,
       )
   }
 
-  # Ensure 'date' is Date type for plotting
+  # Convert date to Date type
   plot_data <- decoupling_df %>%
-    dplyr::mutate(date = lubridate::as_date(.data$date)) # Ensure it's Date, not POSIXct for scale_x_date
+    dplyr::mutate(date = lubridate::as_date(.data$date))
   
   # --- Plotting ---
   message("Generating plot...")

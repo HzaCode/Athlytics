@@ -58,7 +58,7 @@ Provides data for `plot_acwr`. Fetches extra prior data for accurate
 }
 \examples{
 # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 if (!is.null(athlytics_sample_acwr)) {
   print(head(athlytics_sample_acwr))
 }

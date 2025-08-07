@@ -99,7 +99,7 @@ fetch_strava_activities <- function(stoken,
     message("No activities found in the specified date range.")
     # Return an empty tibble with expected basic columns from compile_activities
     # Need to know the exact columns compile_activities produces or handle this robustly
-    # For now, returning a minimal structure
+    # Return minimal structure
      return(dplyr::tibble(
         id = integer(0),
         name = character(0),
@@ -123,12 +123,12 @@ fetch_strava_activities <- function(stoken,
       stop("Failed to compile activity list into data frame: ", e$message)
   })
   
-  # Ensure required columns exist after compile_activities, potential issue if list was empty? No, handled above.
+  # Check required columns after compile_activities
   # Check types after compile_activities
    if (nrow(activities_base_df) > 0) {
        activities_base_df <- activities_base_df %>% 
            dplyr::mutate(
-               # Ensure start_date_local is datetime, handling potential different outputs
+               # Convert start_date_local to datetime
                start_date_local = lubridate::as_datetime(.data$start_date_local), 
                # start_date might also be useful
                start_date = lubridate::as_datetime(.data$start_date), 
@@ -202,7 +202,7 @@ fetch_strava_activities <- function(stoken,
                 activity_id = .x,
                 # Pass the original compiled data frame as act_data? Check get_activity docs
                 # It seems get_activity uses act_data just to find the id, might not be strictly needed if we pass id directly? 
-                # Let's pass it for safety based on signature. 
+                # Pass for safety 
                 act_data = activities_base_df, 
                 stoken = stoken,
                 delay = delay,
@@ -213,7 +213,7 @@ fetch_strava_activities <- function(stoken,
       # Combine list of tibbles into a single tibble
       detailed_data <- dplyr::bind_rows(detailed_data_list)
 
-      # Ensure all required columns exist in the final detailed_data tibble, even if map failed
+      # Add missing required columns
       for (col in required_cols) {
             if (!col %in% names(detailed_data)) {
                 # Assign appropriate NA type
@@ -222,7 +222,7 @@ fetch_strava_activities <- function(stoken,
        }
 
       # Join detailed data back to the base data frame
-      # Ensure the 'id' column type matches before joining (should be numeric/integer)
+      # Match id column types for joining
       activities_base_df$id <- as.numeric(activities_base_df$id)
       detailed_data$id <- as.numeric(detailed_data$id)
       
@@ -244,7 +244,7 @@ fetch_strava_activities <- function(stoken,
   if(nrow(activities_final_df) > 0) {
       # Define expected base cols + required detail cols for selection
       select_cols <- unique(c("id", "name", "type", "sport_type", "start_date_local", "date", "distance", "moving_time", "elapsed_time", required_cols))
-      # Ensure all select_cols actually exist in the final df before selecting
+      # Check column existence before selecting
       select_cols_exist <- select_cols[select_cols %in% names(activities_final_df)]
       
       activities_final_df <- activities_final_df %>% 
@@ -257,13 +257,7 @@ fetch_strava_activities <- function(stoken,
   return(activities_final_df)
 }
 
-# TODO:
-# 1. Thoroughly test date parsing and timezone handling for API calls.
-# 2. Investigate `get_activity_list` pagination limits and potentially use `get_pages` if necessary for very long histories.
-# 3. Add more robust error handling and logging, especially for the detailed fetching loop.
-# 4. Consider optimizing the detailed fetching (e.g., only fetch if average_watts/average_heartrate is actually missing in the base data, though it usually is).
-# 5. Potentially add options to fetch streams data as well.
-# 6. Ensure the empty tibble returned when no activities are found matches the structure precisely. 
+ 
 
 #' @keywords internal
 get_activity_list_stoken_direct <- function(stoken, before = NULL, after = NULL) {

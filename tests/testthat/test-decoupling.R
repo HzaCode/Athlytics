@@ -1,15 +1,15 @@
 # tests/testthat/test-decoupling.R
 
 library(testthat)
-library(Athlytics)
-library(lubridate) # Ensure lubridate is loaded for ymd in explicit_english_month_year tests
-# library(rStrava) # No longer needed directly if we use stream_df or Athlytics_sample_data
+library(athlytics)
+library(lubridate)
+# library(rStrava) # No longer needed directly if we use stream_df or athlytics_sample_data
 
 # Load main sample data for the package
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 
 # Load data from helper for direct use in tests
-# Ensure helper-mockdata.R is in the tests/testthat directory
+  # Check helper-mockdata.R is in tests/testthat directory
 source(test_path("helper-mockdata.R"), local = TRUE)
 
 # --- Test explicit_english_month_year --- 
@@ -18,37 +18,34 @@ source(test_path("helper-mockdata.R"), local = TRUE)
 test_that("explicit_english_month_year formats dates correctly", {
   # Need to source the file where explicit_english_month_year is defined, 
   # or make it available to the test environment if it's not exported.
-  # Assuming it's accessible after `library(Athlytics)` if R/plot_decoupling.R is part of the package build.
-  # If not, we might need to source it directly or use :::
-  # For now, let's assume it's available via Athlytics:::explicit_english_month_year or similar if not exported
-  # Or, if R/plot_decoupling.R is sourced by other test files, it might already be in the environment.
-  # Let's try accessing it directly first, assuming it's made available by package loading/sourcing.
+  # Assuming it's accessible after `library(athlytics)` if R/plot_decoupling.R is part of the package build.
+  # Assuming function is available via package loading
 
   # Test with a single date
   single_date <- ymd("2023-01-15")
-  expect_equal(Athlytics:::explicit_english_month_year(single_date), "Jan 2023")
+  expect_equal(athlytics:::explicit_english_month_year(single_date), "Jan 2023")
 
   # Test with multiple dates
   multiple_dates <- c(ymd("2023-03-10"), ymd("2024-11-05"))
-  expect_equal(Athlytics:::explicit_english_month_year(multiple_dates), c("Mar 2023", "Nov 2024"))
+  expect_equal(athlytics:::explicit_english_month_year(multiple_dates), c("Mar 2023", "Nov 2024"))
 
   # Test with dates spanning year-end
   year_end_dates <- c(ymd("2022-12-25"), ymd("2023-01-01"))
-  expect_equal(Athlytics:::explicit_english_month_year(year_end_dates), c("Dec 2022", "Jan 2023"))
+  expect_equal(athlytics:::explicit_english_month_year(year_end_dates), c("Dec 2022", "Jan 2023"))
 
   # Test with a leap year date
   leap_date <- ymd("2024-02-29")
-  expect_equal(Athlytics:::explicit_english_month_year(leap_date), "Feb 2024")
+  expect_equal(athlytics:::explicit_english_month_year(leap_date), "Feb 2024")
   
   # Test with an empty vector of dates
   empty_dates <- ymd(character(0))
-  expect_equal(Athlytics:::explicit_english_month_year(empty_dates), character(0))
+  expect_equal(athlytics:::explicit_english_month_year(empty_dates), character(0))
   
   # Test with NA date - depends on how lubridate::month/year handle NA
   # lubridate::month(NA) is NA_integer_, lubridate::year(NA) is NA_integer_
   # eng_months[NA_integer_] is NA_character_, paste(NA_character_, NA_integer_) is NA_character_
   na_date <- ymd(NA)
-  expect_equal(Athlytics:::explicit_english_month_year(na_date), NA_character_)
+  expect_equal(athlytics:::explicit_english_month_year(na_date), NA_character_)
 })
 
 # --- Test Cases for calculate_decoupling (using stream_df) ---
@@ -88,12 +85,12 @@ test_that("calculate_decoupling handles missing columns in stream_df", {
                  regexp = "Provided `stream_df` is invalid or missing required columns")
 })
 
-# --- Test Cases for plot_decoupling (using Athlytics_sample_data) ---
+# --- Test Cases for plot_decoupling (using athlytics_sample_data) ---
 
-test_that("plot_decoupling returns a ggplot object using Athlytics_sample_data", {
-  expect_true(exists("athlytics_sample_decoupling"), "athlytics_sample_decoupling not found in Athlytics_sample_data.")
+test_that("plot_decoupling returns a ggplot object using athlytics_sample_data", {
+  expect_true(exists("athlytics_sample_decoupling"), "athlytics_sample_decoupling not found in athlytics_sample_data.")
   expect_s3_class(athlytics_sample_decoupling, "data.frame")
-  # Ensure required columns for plotting are present in the sample data
+  # Check required columns for plotting are present
   expect_true(all(c("date", "decoupling") %in% names(athlytics_sample_decoupling)))
   
   # plot_decoupling requires decouple_metric for labeling if not directly derivable from decoupling_df
@@ -243,7 +240,7 @@ mock_rStrava_get_activity_streams_decoupling <- function(act_data, acts, stoken,
   # Use the existing mock_activity_streams, assuming it has the needed columns
   # In a real scenario, this might need to vary based on 'acts' or types requested
   if(exists("mock_activity_streams")) {
-    # Ensure the mock stream has the requested types
+    # Check mock stream has requested types
     if(all(types %in% names(mock_activity_streams))){
         return(mock_activity_streams[, types, drop = FALSE])
     } else {
@@ -257,7 +254,7 @@ mock_rStrava_get_activity_streams_decoupling <- function(act_data, acts, stoken,
 
 test_that("calculate_decoupling (API path) works with mocked API calls", {
   # Use mocks defined in test-strava_helpers.R or define similar ones here
-  # Ensure mock_activity_list_list is loaded from helper
+  # Check mock_activity_list_list is loaded from helper
   expect_true(exists("mock_activity_list_list"), "mock_activity_list_list not loaded from helper.")
   expect_true(exists("mock_activity_streams"), "mock_activity_streams not loaded from helper.") # Needed for stream mock
 
@@ -275,7 +272,7 @@ test_that("calculate_decoupling (API path) works with mocked API calls", {
     decouple_metric = "Pace_HR",
     start_date = "2023-10-01", 
     end_date = "2023-10-03", # Cover dates in mock data
-    min_duration_mins = 20, # Ensure mock runs (30min, 90min) are included
+    min_duration_mins = 20, # Include mock runs (30min, 90min)
     max_activities = 5 # Process all mock activities
   )
 
@@ -291,7 +288,7 @@ test_that("calculate_decoupling (API path) works with mocked API calls", {
   
   # Check specific decoupling values (optional, depends on stability of mock data calculation)
   # This requires running the decoupling logic manually on mock_activity_streams
-  # For now, checking structure and count is a good start.
+  # Check structure and count
 })
 
 # Test skipped as API call would fail without proper mocking or real token

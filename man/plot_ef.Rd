@@ -52,7 +52,7 @@ Plots EF (output/HR based on activity averages). An upward trend
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 # Explicitly name ef_df and provide activity_type
 p <- plot_ef(ef_df = athlytics_sample_ef, activity_type = "Run") 
 print(p)

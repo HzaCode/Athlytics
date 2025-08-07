@@ -38,7 +38,7 @@ Provides the data used by `plot_ef`.
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_data)
 print(head(athlytics_sample_ef))
 
 \dontrun{
@@ -50,12 +50,12 @@ print(head(athlytics_sample_ef))
 #                                cache = TRUE)
 
 # Calculate Pace/HR efficiency factor for Runs
-# Ensure stoken is defined and valid before running this part
+# Note: stoken should be defined and valid
 # ef_data_run <- calculate_ef(stoken = stoken, activity_type = "Run", ef_metric = "Pace_HR")
 # print(tail(ef_data_run))
 
 # Calculate Power/HR efficiency factor for Rides
-# Ensure stoken is defined and valid before running this part
+# Note: stoken should be defined and valid
 # ef_data_ride <- calculate_ef(stoken = stoken, activity_type = "Ride", ef_metric = "Power_HR")
 # print(tail(ef_data_ride))
 }

@@ -38,7 +38,7 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_data)
 #' print(head(athlytics_sample_decoupling))
 #'
 #' \dontrun{
@@ -50,7 +50,7 @@
 #' #                                cache = TRUE)
 #'
 #' # Calculate Pace/HR decoupling for recent Runs (limit to 10 activities for speed)
-#' # Ensure stoken is defined and valid before running this part
+  #' # Note: stoken should be defined and valid
 #' # run_decoupling <- calculate_decoupling(
 #' #     stoken = stoken,
 #' #     activity_type = "Run",
@@ -86,7 +86,7 @@ calculate_decoupling <- function(stoken,
           !any(metric_col %in% names(stream_df))) {
           stop("Provided `stream_df` is invalid or missing required columns (time, heartrate, and velocity_smooth/distance or watts).")
       }
-      # Ensure enough rows
+      # Check for enough rows
       if (nrow(stream_df) < 10) stop("Provided `stream_df` has too few rows (< 10) to calculate decoupling.")
   }
 
@@ -148,7 +148,7 @@ calculate_decoupling <- function(stoken,
   message("Fetching activity list...")
   activities_list <- tryCatch({
       # Call get_activity_list once without pagination arguments
-      # It should return a list of recent activities (number determined by rStrava)
+      # Returns list of recent activities
       rStrava::get_activity_list(stoken)
   }, error = function(e) {
       message("Error fetching activity list: ", e$message)
