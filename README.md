@@ -3,7 +3,7 @@ athlytics <img src="https://github.com/HzaCode/athlytics/blob/main/image.png?raw
 
 
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![CRAN status](https://www.r-pkg.org/badges/version/athlytics)](https://CRAN.R-project.org/package=athlytics)
+[![CRAN status](https://www.r-pkg.org/badges/version/athlytics)](https://cran.r-project.org/web/packages/Athlytics/index.html)
 [![R-CMD-check](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml)
 [![codecov](https://codecov.io/gh/HzaCode/athlytics/graph/badge.svg)](https://app.codecov.io/gh/HzaCode/athlytics)
 ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
