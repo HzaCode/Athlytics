@@ -38,13 +38,23 @@ jobs:
           extra-packages: any::rcmdcheck, any::covr, any::devtools
           needs: check
 
+      - name: Build source package
+        run: |
+          R CMD build .
+        shell: bash
+
+      - name: Get package name
+        id: pkg_info
+        run: |
+          PKG=$(awk -F': ' '/^Package:/{print $2}' DESCRIPTION | tr -d '\r')
+          echo "Package: $PKG"
+          echo "PKG=$PKG" >> "$GITHUB_OUTPUT"
+        shell: bash
+
       - name: Find R package tarball
         id: find_tarball
         run: |
-          TARBALL_NAME=$(ls Athlytics*.tar.gz 2>/dev/null | head -n 1)
-          if [ -z "$TARBALL_NAME" ]; then
-            TARBALL_NAME=$(ls *.tar.gz 2>/dev/null | head -n 1)
-          fi
+          TARBALL_NAME=$(ls *.tar.gz 2>/dev/null | head -n 1)
           if [ -z "$TARBALL_NAME" ]; then
             echo "Error: No .tar.gz file found in the root directory for R CMD check."
             exit 1
@@ -81,4 +91,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.os }}-r${{ matrix.config.r }}-results
-          path: ${{ steps.find_tarball.outputs.TARBALL_NAME }}.Rcheck 
+          path: ${{ steps.pkg_info.outputs.PKG }}.Rcheck
