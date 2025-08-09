@@ -38,7 +38,7 @@ install.packages("Athlytics")
 
 # GitHub (development)
 # install.packages("remotes")
-remotes::install_github("HzaCode/athlytics")
+remotes::install_github("HzaCode/Athlytics")
 ```
 
 <details>
