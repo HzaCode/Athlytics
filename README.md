@@ -34,7 +34,7 @@
 
 ```r
 # CRAN (stable)
-install.packages("athlytics")
+install.packages("Athlytics")
 
 # GitHub (development)
 # install.packages("remotes")
