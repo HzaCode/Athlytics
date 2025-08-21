@@ -1,9 +1,9 @@
 # Athlytics <img src="https://github.com/HzaCode/athlytics/blob/main/image.png?raw=true" align="right" width="180"/>
+![CRAN Version](https://img.shields.io/cran/v/Athlytics?style=for-the-badge&color=276DC3&logo=r&logoColor=white)
 
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![R-CMD-check](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml)
 [![codecov](https://codecov.io/gh/HzaCode/athlytics/graph/badge.svg)](https://app.codecov.io/gh/HzaCode/athlytics)
-![CRAN status](https://www.r-pkg.org/badges/version/Athlytics)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Website](https://img.shields.io/badge/website-athlytics-blue)](https://hezhiang.com/athlytics/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
