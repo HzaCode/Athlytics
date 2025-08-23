@@ -1,33 +1,63 @@
-# Athlytics <img src="https://github.com/HzaCode/athlytics/blob/main/image.png?raw=true" align="right" width="180"/>
-![CRAN Version](https://img.shields.io/cran/v/Athlytics?style=for-the-badge&color=276DC3&logo=r&logoColor=white)
+<div align="center">
 
-[![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-[![R-CMD-check](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml)
-[![codecov](https://codecov.io/gh/HzaCode/athlytics/graph/badge.svg)](https://app.codecov.io/gh/HzaCode/athlytics)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Website](https://img.shields.io/badge/website-athlytics-blue)](https://hezhiang.com/athlytics/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![bioRxiv](https://img.shields.io/badge/bioRxiv-Preprint-F88A0B)](https://www.biorxiv.org/content/10.1101/2025.05.01.651597v3)
+<img src="https://github.com/HzaCode/athlytics/blob/main/image.png?raw=true" width="220"/>
+
+# Athlytics
+
+*An R Framework for Longitudinal Analysis of Exercise Physiology*
+
+</div>
+
+<p align="center">
+    <a href="https://cran.r-project.org/package=Athlytics">
+        <img src="https://img.shields.io/cran/v/Athlytics?style=for-the-badge&color=276DC3&logo=r&logoColor=white" alt="CRAN Version">
+    </a>
+</p>
+
+<p align="center">
+    <a href="https://www.repostatus.org/#active">
+        <img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status" style="vertical-align: middle;">
+    </a>
+    <a href="https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml">
+        <img src="https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml/badge.svg" alt="R-CMD-check" style="vertical-align: middle;">
+    </a>
+    <a href="https://app.codecov.io/gh/HzaCode/athlytics">
+        <img src="https://codecov.io/gh/HzaCode/athlytics/graph/badge.svg" alt="Codecov" style="vertical-align: middle;">
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+        <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+    </a>
+</p>
+
+<p align="center">
+    <a href="https://hezhiang.com/athlytics/">
+        <img src="https://img.shields.io/badge/website-athlytics-blue" alt="Website">
+    </a>
+    <a href="CONTRIBUTING.md">
+        <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
+    </a>
+    <a href="https://www.biorxiv.org/content/10.1101/2025.05.01.651597v3">
+        <img src="https://img.shields.io/badge/bioRxiv-Preprint-F88A0B" alt="bioRxiv Preprint">
+    </a>
+</p>
 
 ---
 
 `Athlytics` is an R framework for the longitudinal analysis of exercise physiology using Strava data. It is designed to remove the primary bottleneck for sports scientists: the programmatic acquisition and consistent processing required to turn raw, high-frequency ecological data into quantitative insights.
 
 ---
+
 ### ✨ Core Features
 
-*   **📈 Longitudinal Quantification**
-    Automated calculation of configurable metrics (ACWR, EF). Enables longitudinal tracking of physiological adaptation.
+| Feature                       | Description                                                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **📈 Longitudinal Quantification** | Automated calculation of configurable metrics (ACWR, EF). Enables longitudinal tracking of physiological adaptation. |
+| **💔 High-Resolution Decoupling**  | Robust cardiovascular drift analysis from raw stream data. Methodologically superior to metrics from simple averages. |
+| **🧹 Tidy & Modeling-Ready Outputs** | Clean `tibbles` from every function. Eliminates data cleaning. Primed for `ggplot2` visualization and statistical modeling. |
+| **🔌 Reproducible Data Acquisition** | Programmatic Strava API workflow. Guarantees full methodological reproducibility and eliminates manual download errors. |
 
-*   **💔 High-Resolution Decoupling**
-    Robust cardiovascular drift analysis from raw stream data. Methodologically superior to metrics from simple averages.
-
-*   **🧹 Tidy & Modeling-Ready Outputs**
-    Clean `tibbles` from every function. Eliminates data cleaning. Primed for `ggplot2` visualization and statistical modeling.
-
-*   **🔌 Reproducible Data Acquisition**
-    Programmatic Strava API workflow. Guarantees full methodological reproducibility and eliminates manual download errors.
 ---
+
 ## 🚀 Quick Start
 
 **1. Installation**
@@ -43,13 +73,13 @@ remotes::install_github("HzaCode/Athlytics")
 
 <details>
   <summary><strong>2. Authentication with Strava (click to expand)</strong></summary>
-
+  <br>
 `athlytics` leverages the `rStrava` package for handling the OAuth 2.0 authentication process with the Strava API. This requires a one-time setup of a Strava API application to obtain a **Client ID** and **Client Secret**.
 
 **Steps**
 
-1. **Create a Strava API Application:** Go to your Strava settings → **My API Application** ([https://www.strava.com/settings/api](https://www.strava.com/settings/api)). Set the **Authorization Callback Domain** to `localhost`.
-2. **Authenticate in R:** Use `rStrava::strava_oauth()` to generate the token. Using `cache = TRUE` is highly recommended for reproducible workflows.
+1.  **Create a Strava API Application:** Go to your Strava settings → **My API Application** ([https://www.strava.com/settings/api](https://www.strava.com/settings/api)). Set the **Authorization Callback Domain** to `localhost`.
+2.  **Authenticate in R:** Use `rStrava::strava_oauth()` to generate the token. Using `cache = TRUE` is highly recommended for reproducible workflows.
 
 ```r
 library(athlytics)
@@ -67,14 +97,13 @@ stoken <- rStrava::strava_oauth(
   cache         = TRUE
 )
 ```
-
 </details>
 
 ---
 
 ## 📊 Compute → Plot
 
->**Note on Workflow:** Computation is decoupled from plotting. This design reduces API calls and accelerates analysis by allowing a single, computed data object to be used for multiple visualizations.
+> **Note on Workflow:** Computation is decoupled from plotting. This design reduces API calls and accelerates analysis by allowing a single, computed data object to be used for multiple visualizations.
 
 ### 1) ACWR — Load Ramp Monitoring
 
@@ -131,9 +160,8 @@ plot_decoupling(decoupling_df = decoupling_data, activity_type = "Run")
   <img src="https://gaudy-pipe-239.notion.site/image/attachment%3A13491597-6762-4ea3-843d-13005cf21e8a%3Aimage.png?table=block&id=1cbfc401-a191-80b5-8f1a-efda0eddf069&spaceId=1d079353-f9e2-45ba-8b15-cf2f96e168c5&width=1420&userId=&cache=v2" width="700">
 </p>
 
-## 🤝 Contributing
-
-Pull requests are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details and follow the code of conduct in `CODE_OF_CONDUCT.md`.
-
 ---
 
+### 🤝 Contributing
+
+Pull requests are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details and follow the code of conduct in `CODE_OF_CONDUCT.md`.
