@@ -66,7 +66,7 @@
 # CRAN (stable)
 install.packages("Athlytics")
 
-# GitHub (development)
+# GitHub (recommended for the latest features)
 # install.packages("remotes")
 remotes::install_github("HzaCode/Athlytics")
 ```
