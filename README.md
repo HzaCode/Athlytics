@@ -57,7 +57,7 @@
 | **🔌 Reproducible Data Acquisition** | Programmatic Strava API workflow. Guarantees full methodological reproducibility and eliminates manual download errors. |
 
 ---
-
+To see how these features come together in a full research case study, check out our *Complete Analysis Example*.
 ## 🚀 Quick Start
 
 **1. Installation**
