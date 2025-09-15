@@ -62,13 +62,15 @@ The proliferation of wearable sensors and consumer platforms like Strava has gen
 
 ## Comparison with Similar Software
 
-Within the R ecosystem for sports science analytics, *Athlytics* occupies a distinct niche through its integrated analytical workflow designed for Strava API data and a curated set of physiological metrics. The table below summarizes how it compares to related tools:
+Within the R ecosystem for sports science analytics, `Athlytics` occupies a distinct niche through its integrated analytical workflow designed for Strava API data and a curated set of physiological metrics. The comparison with related tools is summarized below:
 
-| Research Capability      | **Athlytics**                                                                                          | `rStrava`                           | `trackeR`                                   | Single-metric packages (e.g., `ACWR`) |
-| ------------------------ | ----------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------- | ------------------------------------- |
-| Data acquisition scope   | **Direct Strava API; handles both summary and stream-level physiological data**         | Strava API only (OAuth); raw activities and segments | Local files (GPX/TCX/JSON/DB3); no Strava API | User-provided load table only         |
-| Key physiological metrics| **ACWR (ATL/CTL), Efficiency Factor, aerobic decoupling, personal best tracking**                     | None                                | Generic performance summaries (speed, zones, W′) | ACWR only (EWMA/RAC/RAU)              |
-| Research reproducibility | **Integrated calculation + visualization in R; outputs tidy data for statistical modelling and meta-analysis** | No analysis layer                   | Data structuring + generic plots            | Single metric; must combine with other tools |
+**Athlytics** provides direct Strava API integration with comprehensive physiological metrics (ACWR, Efficiency Factor, aerobic decoupling, personal best tracking) and integrated calculation plus visualization capabilities for reproducible research workflows.
+
+**rStrava** offers Strava API access only for raw activities and segments, with no built-in analysis layer or physiological metrics.
+
+**trackeR** handles local files (GPX/TCX/JSON/DB3) without Strava API integration, providing generic performance summaries and basic data structuring with limited visualization.
+
+**Single-metric packages** (e.g., ACWR packages) focus on individual metrics only, requiring users to combine multiple tools and provide their own data tables.
 
 This design eliminates the need for researchers to piece together multiple single-function packages and supports reproducible longitudinal research directly from a widely-used data source.
 
