@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/HzaCode/athlytics/blob/main/image.png?raw=true" width="220"/>
+<img src="https://github.com/HzaCode/Athlytics/blob/main/image.png?raw=true" width="220"/>
 
 # Athlytics
 
@@ -18,17 +18,17 @@
 
 <p align="center">
     </a>
-    <a href="https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml">
-        <img src="https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml/badge.svg" alt="R-CMD-check" style="vertical-align: middle;">
+    <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
+        <img src="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg" alt="R-CMD-check" style="vertical-align: middle;">
     </a>
-    <a href="https://app.codecov.io/gh/HzaCode/athlytics">
-        <img src="https://codecov.io/gh/HzaCode/athlytics/graph/badge.svg" alt="Codecov" style="vertical-align: middle;">
+    <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
+        <img src="https://codecov.io/gh/HzaCode/Athlytics/graph/badge.svg" alt="Codecov" style="vertical-align: middle;">
     </a>
     <a href="https://opensource.org/licenses/MIT">
         <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
     </a>
-    <a href="https://hezhiang.com/athlytics/">
-        <img src="https://img.shields.io/badge/website-athlytics-blue" alt="Website">
+    <a href="https://hezhiang.com/Athlytics/">
+        <img src="https://img.shields.io/badge/website-Athlytics-blue" alt="Website">
     </a>
     <a href="CONTRIBUTING.md">
         <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
@@ -74,7 +74,7 @@ remotes::install_github("HzaCode/Athlytics")
 <details>
   <summary><strong>2. Authentication with Strava (click to expand)</strong></summary>
   <br>
-`athlytics` leverages the `rStrava` package for handling the OAuth 2.0 authentication process with the Strava API. This requires a one-time setup of a Strava API application to obtain a **Client ID** and **Client Secret**.
+`Athlytics` leverages the `rStrava` package for handling the OAuth 2.0 authentication process with the Strava API. This requires a one-time setup of a Strava API application to obtain a **Client ID** and **Client Secret**.
 
 **Steps**
 
@@ -82,7 +82,7 @@ remotes::install_github("HzaCode/Athlytics")
 2.  **Authenticate in R:** Use `rStrava::strava_oauth()` to generate the token. Using `cache = TRUE` is highly recommended for reproducible workflows.
 
 ```r
-library(athlytics)
+library(Athlytics)
 library(rStrava)
 
 # Recommended: keep secrets out of scripts

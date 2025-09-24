@@ -1,8 +1,8 @@
 ---
-title: "Introduction to athlytics"
+title: "Introduction to Athlytics"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introduction to athlytics}
+  %\VignetteIndexEntry{Introduction to Athlytics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -23,13 +23,13 @@ EVAL_EXAMPLES <- FALSE
 ```
 
 ```{r setup}
-library(athlytics)
+library(Athlytics)
 library(rStrava) # Required for authentication
 ```
 
 ## Introduction
 
-The `athlytics` R package simplifies advanced analysis of athletic performance and training load using data sourced directly from the Strava API. It provides functions to fetch Strava data (via the `rStrava` package), calculate key metrics based on sports science principles, and generate insightful visualizations for training monitoring.
+The `Athlytics` R package simplifies advanced analysis of athletic performance and training load using data sourced directly from the Strava API. It provides functions to fetch Strava data (via the `rStrava` package), calculate key metrics based on sports science principles, and generate insightful visualizations for training monitoring.
 
 This vignette covers:
 
@@ -39,26 +39,26 @@ This vignette covers:
 
 ## Installation
 
-You can install the released version of athlytics from CRAN (once available) with:
+You can install the released version of Athlytics from CRAN (once available) with:
 
 ```r
-# install.packages("athlytics") 
+# install.packages("Athlytics") 
 ```
 
 Alternatively, install the development version from GitHub:
 
 ```r
 # install.packages('remotes') # If needed
-# remotes::install_github('HzaCode/athlytics') 
+# remotes::install_github('HzaCode/Athlytics') 
 ```
 
 ## Authentication with Strava
 
-`athlytics` requires a valid Strava API token to fetch data. This is handled using the `rStrava` package.
+`Athlytics` requires a valid Strava API token to fetch data. This is handled using the `rStrava` package.
 
 1.  **Create a Strava API Application:**
     *   Go to <https://developers.strava.com/> and navigate to "My API Application" under your settings, or follow their "Getting Started" guide to create an app.
-    *   Create an application (e.g., "My athlytics App").
+    *   Create an application (e.g., "My Athlytics App").
     *   Set "Authorization Callback Domain" to `localhost`.
     *   Note your **Client ID** and **Client Secret**.
 
@@ -71,7 +71,7 @@ Alternatively, install the development version from GitHub:
 # (Do not run this block directly in the vignette build)
 
 # Replace with your actual credentials or use environment variables
-# app_name <- 'MyathlyticsApp' 
+# app_name <- 'MyAthlyticsApp' 
 # client_id <- "YOUR_CLIENT_ID" 
 # client_secret <- "YOUR_SECRET"
 
@@ -210,10 +210,10 @@ plot_decoupling(decoupling_data = decoupling_data_run, add_trend_line = TRUE)
 *   Sign up for a Strava account if you don't have one.
 *   Go to <https://developers.strava.com/> and navigate to "My API Application" under your settings or follow their "Getting Started" guide to create an app.
 *   When creating your app, you'll be asked for:
-    *   Application Name (e.g., `MyathlyticsApp`)
+    *   Application Name (e.g., `MyAthlyticsApp`)
 
 ## Further Information
 
 This vignette provides a basic overview. For details on specific functions, their parameters, and underlying calculations, please consult the function help pages (e.g., `?calculate_acwr`, `?plot_acwr`) in R.
 
-For bug reports or feature requests, please use the GitHub repository issues tracker: <https://github.com/HzaCode/athlytics/issues> 
+For bug reports or feature requests, please use the GitHub repository issues tracker: <https://github.com/HzaCode/Athlytics/issues> 
