@@ -7,16 +7,16 @@
 *An R Framework for Longitudinal Analysis of Exercise Physiology*
 
 </div>
-
 <p align="center">
     <a href="https://cran.r-project.org/package=Athlytics">
-        <img src="https://img.shields.io/cran/v/Athlytics?style=for-the-badge&color=276DC3&logo=r&logoColor=white" alt="CRAN Version">
+        <img src="https://img.shields.io/cran/v/Athlytics?color=orange&style=for-the-badge&logo=r" alt="CRAN Version">
+    </a>
+    <a href="https://cran.r-project.org/package=Athlytics">
+        <img src="https://img.shields.io/badge/downloads-2.2K-orange?style=for-the-badge&logo=download" alt="Downloads">
     </a>
 </p>
 
 <p align="center">
-    <a href="https://www.repostatus.org/#active">
-        <img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status" style="vertical-align: middle;">
     </a>
     <a href="https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml">
         <img src="https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml/badge.svg" alt="R-CMD-check" style="vertical-align: middle;">
@@ -27,9 +27,6 @@
     <a href="https://opensource.org/licenses/MIT">
         <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
     </a>
-</p>
-
-<p align="center">
     <a href="https://hezhiang.com/athlytics/">
         <img src="https://img.shields.io/badge/website-athlytics-blue" alt="Website">
     </a>
@@ -40,6 +37,8 @@
         <img src="https://img.shields.io/badge/bioRxiv-Preprint-F88A0B" alt="bioRxiv Preprint">
     </a>
 </p>
+
+
 
 ---
 
