@@ -38,45 +38,38 @@ jobs:
           extra-packages: any::rcmdcheck, any::covr, any::devtools
           needs: check
 
-      - name: Clean old tarballs
-        run: |
-          rm -f *.tar.gz || true
-        shell: bash
-
-      - name: Build source package
-        run: |
-          R CMD build .
-        shell: bash
-
-      - name: Get package name
+      - name: Get package name and version
         id: pkg_info
         run: |
           PKG=$(awk -F': ' '/^Package:/{print $2}' DESCRIPTION | tr -d '\r')
+          VERSION=$(awk -F': ' '/^Version:/{print $2}' DESCRIPTION | tr -d '\r')
           echo "Package: $PKG"
+          echo "Version: $VERSION"
           echo "PKG=$PKG" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
         shell: bash
 
-      - name: Find R package tarball
-        id: find_tarball
+      - name: Clean workspace and build fresh package
         run: |
-          PKG="${{ steps.pkg_info.outputs.PKG }}"
-          # Prefer newest tarball for the current package name
-          TARBALL_NAME=$(ls -t ${PKG}_*.tar.gz 2>/dev/null | head -n 1)
-          # Fallback: any newest tarball
-          if [ -z "$TARBALL_NAME" ]; then
-            TARBALL_NAME=$(ls -t *.tar.gz 2>/dev/null | head -n 1)
-          fi
-          if [ -z "$TARBALL_NAME" ]; then
-            echo "Error: No .tar.gz file found in the root directory for R CMD check."
+          # Remove any existing tarballs to ensure we test the fresh build
+          rm -f *.tar.gz || true
+          # Build the package from current source
+          R CMD build .
+          # Verify the expected tarball was created
+          EXPECTED_TARBALL="${{ steps.pkg_info.outputs.PKG }}_${{ steps.pkg_info.outputs.VERSION }}.tar.gz"
+          if [ ! -f "$EXPECTED_TARBALL" ]; then
+            echo "Error: Expected tarball $EXPECTED_TARBALL was not created"
+            ls -la *.tar.gz || echo "No .tar.gz files found"
             exit 1
           fi
-          echo "Found R package tarball: $TARBALL_NAME"
-          echo "TARBALL_NAME=$TARBALL_NAME" >> "$GITHUB_OUTPUT"
+          echo "Successfully built: $EXPECTED_TARBALL"
+          echo "TARBALL_NAME=$EXPECTED_TARBALL" >> "$GITHUB_OUTPUT"
+        id: build_package
         shell: bash
 
       - name: Run R CMD check on tarball
         run: |
-          R CMD check ${{ steps.find_tarball.outputs.TARBALL_NAME }} --as-cran --no-manual --no-examples
+          R CMD check ${{ steps.build_package.outputs.TARBALL_NAME }} --as-cran --no-manual --no-examples
         shell: bash
         env:
           _R_CHECK_CRAN_INCOMING_: false 
@@ -87,7 +80,7 @@ jobs:
         shell: Rscript {0}
         run: |
           pkg <- "${{ steps.pkg_info.outputs.PKG }}"
-          tarball <- "${{ steps.find_tarball.outputs.TARBALL_NAME }}"
+          tarball <- "${{ steps.build_package.outputs.TARBALL_NAME }}"
           message(sprintf("Installing package from tarball for coverage testing: %s", tarball))
           if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
           devtools::install_local(tarball, force = TRUE, quiet = TRUE)
