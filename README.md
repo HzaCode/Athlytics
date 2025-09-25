@@ -31,9 +31,7 @@
     <a href="https://hezhiang.com/Athlytics/">
         <img src="https://img.shields.io/badge/docs-passing-brightgreen" alt="Documentation">
     </a>
-    <a href="https://www.biorxiv.org/content/10.1101/2025.05.01.651597v3">
-        <img src="https://img.shields.io/badge/bioRxiv-Preprint-F88A0B" alt="bioRxiv Preprint">
-    </a>
+   
     
 </p>
 
