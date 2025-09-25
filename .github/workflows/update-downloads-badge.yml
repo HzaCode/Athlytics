@@ -1,0 +1,49 @@
+name: Update CRAN Downloads Badge
+
+on:
+  workflow_dispatch: # Allows manual triggering
+  schedule:
+    - cron: '0 8 * * *' # Runs every day at 8:00 UTC
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update CRAN Downloads Badge
+        run: |
+          # Extract package name from DESCRIPTION file for robustness
+          PKG_NAME=$(awk -F': ' '/^Package:/{print $2}' DESCRIPTION | tr -d '\r')
+          
+          # Fetch total downloads from the cranlogs API
+          DOWNLOADS_JSON=$(curl -s "https://cranlogs.r-pkg.org/downloads/grand-total/$PKG_NAME")
+          TOTAL_DOWNLOADS=$(echo "$DOWNLOADS_JSON" | grep -o -E '[0-9]+' | head -1)
+
+          # Format the number to be human-readable (e.g., 2.2K, 1.5M) with rounding
+          if (( TOTAL_DOWNLOADS >= 1000000 )); then
+            FORMATTED_DOWNLOADS=$(awk -v val=$TOTAL_DOWNLOADS 'BEGIN { printf "%.1fM", val / 1000000 }')
+          elif (( TOTAL_DOWNLOADS >= 1000 )); then
+            FORMATTED_DOWNLOADS=$(awk -v val=$TOTAL_DOWNLOADS 'BEGIN { printf "%.1fK", val / 1000 }')
+          else
+            FORMATTED_DOWNLOADS=$TOTAL_DOWNLOADS
+          fi
+          
+          # Define the old and new badge URLs
+          # The old URL pattern uses a wildcard '.*' to match any previous download count
+          OLD_BADGE_URL="https://img.shields.io/badge/downloads-.*-orange?style=for-the-badge&logo=download"
+          NEW_BADGE_URL="https://img.shields.io/badge/downloads-$FORMATTED_DOWNLOADS-orange?style=for-the-badge&logo=download"
+          
+          # Use sed to replace the badge URL in README.md
+          # Using a different delimiter '|' for sed because the URL contains '/'
+          sed -i "s|$OLD_BADGE_URL|$NEW_BADGE_URL|g" README.md
+          echo "Updated badge URL to: $NEW_BADGE_URL"
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: Update CRAN downloads badge"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
