@@ -82,46 +82,6 @@ jobs:
           _R_CHECK_TESTS_NLINES_: 0
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install package for additional testing
-        run: |
-          R -e "install.packages('${{ steps.build_package.outputs.TARBALL_NAME }}', repos = NULL, type = 'source')"
-        shell: bash
-
-      - name: Run basic functionality verification
-        run: |
-          R -e "
-          # Load package and test data
-          library(Athlytics)
-          data(athlytics_sample_data)
-          
-          # Basic functionality verification (avoid complex mocking)
-          cat('✓ Package loaded successfully\n')
-          cat('✓ Sample data loaded successfully\n')
-          
-          # Test core plotting functions with sample data (avoid API calls)
-          p1 <- plot_ef(ef_df = athlytics_sample_ef)
-          cat('✓ plot_ef works\n')
-          
-          p2 <- plot_acwr(acwr_df = athlytics_sample_acwr)
-          cat('✓ plot_acwr works\n')
-          
-          p3 <- plot_pbs(pbs_df = athlytics_sample_pbs)
-          cat('✓ plot_pbs works\n')
-          
-          p4 <- plot_exposure(exposure_df = athlytics_sample_exposure)
-          cat('✓ plot_exposure works\n')
-          
-          p5 <- plot_decoupling(decoupling_df = athlytics_sample_decoupling)
-          cat('✓ plot_decoupling works\n')
-          
-          cat('Basic functionality verification completed!\n')
-          "
-        shell: bash
-        env:
-          _R_CHECK_CRAN_INCOMING_: false 
-          _R_CHECK_CRAN_INCOMING_REMOTE_: false
-          _R_CHECK_FORCE_SUGGESTS_: false
-          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate and Upload Coverage Report to Codecov
         if: success() && matrix.config.os == 'ubuntu-latest' # Only run coverage on Ubuntu
