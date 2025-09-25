@@ -1,7 +1,7 @@
 # tests/testthat/test-decoupling.R
 
 library(testthat)
-library(athlytics)
+library(Athlytics)
 library(lubridate)
 # library(rStrava) # No longer needed directly if we use stream_df or athlytics_sample_data
 
@@ -18,7 +18,7 @@ source(test_path("helper-mockdata.R"), local = TRUE)
 test_that("explicit_english_month_year formats dates correctly", {
   # Need to source the file where explicit_english_month_year is defined, 
   # or make it available to the test environment if it's not exported.
-  # Assuming it's accessible after `library(athlytics)` if R/plot_decoupling.R is part of the package build.
+  # Assuming it's accessible after `library(Athlytics)` if R/plot_decoupling.R is part of the package build.
   # Assuming function is available via package loading
 
   # Test with a single date

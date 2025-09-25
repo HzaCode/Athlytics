@@ -2,7 +2,7 @@
 
 context("ACWR Calculation and Plotting")
 
-library(athlytics)
+library(Athlytics)
 library(testthat)
 library(mockery)
 

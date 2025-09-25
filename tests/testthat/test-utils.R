@@ -1,7 +1,7 @@
 # tests/testthat/test-utils.R
 
 library(testthat)
-library(athlytics) # To make internal functions available if using devtools::load_all()
+library(Athlytics) # To make internal functions available if using devtools::load_all()
 library(lubridate)
 
 context("Utility Functions")

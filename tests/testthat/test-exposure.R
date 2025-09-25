@@ -1,7 +1,7 @@
 # tests/testthat/test-exposure.R
 
 library(testthat)
-library(athlytics)
+library(Athlytics)
 
 # Load sample data from the package
 data(athlytics_sample_data)

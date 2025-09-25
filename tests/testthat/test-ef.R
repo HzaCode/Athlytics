@@ -1,7 +1,7 @@
 # tests/testthat/test-ef.R
 
 library(testthat)
-library(athlytics)
+library(Athlytics)
 library(mockery)
 # library(rStrava) # Not calling real rStrava functions directly in this test file
 

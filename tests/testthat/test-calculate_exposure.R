@@ -1,7 +1,7 @@
 # tests/testthat/test-calculate_exposure.R
 
 library(testthat)
-library(athlytics)
+library(Athlytics)
 library(mockery)
 
 # Load data: sample data from package & mock API returns from helper

@@ -1,7 +1,7 @@
 # tests/testthat/test-calculate_pbs.R
 
 library(testthat)
-library(athlytics)
+library(Athlytics)
 library(mockery)
 # library(rStrava) # Not calling rStrava directly
 

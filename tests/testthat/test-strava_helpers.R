@@ -1,7 +1,7 @@
 # tests/testthat/test-strava_helpers.R
 
 library(testthat)
-library(athlytics)
+library(Athlytics)
 library(mockery)
 library(lubridate)
 library(dplyr)

@@ -1,7 +1,7 @@
 # tests/testthat/test-pbs.R
 
 library(testthat)
-library(athlytics)
+library(Athlytics)
 library(ggplot2) # Explicitly load for s3_class checks if not automatically available
 library(lubridate) # For seconds_to_period if used in manual_df
 
