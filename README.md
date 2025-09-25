@@ -19,9 +19,7 @@
 <p align="center">
     </a>
     <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
-        <img src="https://img.shields.io/badge/R--CMD--check-grey?style=flat-square" alt="R-CMD-check" style="vertical-align: middle; margin-right: -4px;">
-        <img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Ubuntu-blue?style=flat-square" alt="Platforms" style="vertical-align: middle; margin-right: -4px;">
-        <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?branch=main&label=&style=flat-square" alt="Status" style="vertical-align: middle;">
+        <img src="https://img.shields.io/badge/R--CMD--check-grey?style=flat-square" alt="R-CMD-check" style="vertical-align: middle;"><img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Ubuntu-blue?style=flat-square" alt="Platforms" style="vertical-align: middle;"><img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?branch=main&label=&style=flat-square" alt="Status" style="vertical-align: middle;">
     </a>
     <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
         <img src="https://codecov.io/gh/HzaCode/Athlytics/graph/badge.svg" alt="Codecov" style="vertical-align: middle;">
