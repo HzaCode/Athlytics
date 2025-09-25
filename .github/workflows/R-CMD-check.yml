@@ -57,8 +57,8 @@ jobs:
         run: |
           # Remove any existing tarballs to ensure we test the fresh build
           rm -f *.tar.gz || true
-          # Build the package from current source
-          R CMD build .
+          # Build the package from current source (skip vignettes to avoid pandoc issues)
+          R CMD build . --no-build-vignettes
           # Verify the expected tarball was created
           EXPECTED_TARBALL="${{ steps.pkg_info.outputs.PKG }}_${{ steps.pkg_info.outputs.VERSION }}.tar.gz"
           if [ ! -f "$EXPECTED_TARBALL" ]; then

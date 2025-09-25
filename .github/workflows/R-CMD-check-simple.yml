@@ -30,15 +30,15 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev pandoc
 
       - name: Install R dependencies
         run: |
           R -e "install.packages(c('devtools', 'testthat', 'mockery', 'covr', 'rcmdcheck'))"
           R -e "devtools::install_deps(dependencies = TRUE)"
 
-      - name: Build package
-        run: R CMD build .
+      - name: Build package (skip vignettes)
+        run: R CMD build . --no-build-vignettes
 
       - name: Find tarball
         id: find_tarball

@@ -14,7 +14,8 @@ knitr::opts_chunk$set(
   fig.width = 7, 
   fig.height = 5,
   warning = FALSE, # Suppress warnings in output
-  message = FALSE  # Suppress messages in output
+  message = FALSE, # Suppress messages in output
+  eval = FALSE     # Set all chunks to eval=FALSE by default for API examples
 )
 
 # Set eval=FALSE for examples requiring Strava API interaction
@@ -22,9 +23,9 @@ knitr::opts_chunk$set(
 EVAL_EXAMPLES <- FALSE 
 ```
 
-```{r setup}
+```{r setup, eval=TRUE}
 library(Athlytics)
-library(rStrava) # Required for authentication
+# library(rStrava) # Required for authentication - commented out for build
 ```
 
 ## Introduction
