@@ -1,0 +1,73 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+name: R-CMD-check-simple
+
+jobs:
+  R-CMD-check:
+    runs-on: ubuntu-latest
+
+    name: Simple R Check
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      _R_CHECK_CRAN_INCOMING_: false
+      _R_CHECK_CRAN_INCOMING_REMOTE_: false
+      _R_CHECK_FORCE_SUGGESTS_: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+      - name: Install R dependencies
+        run: |
+          R -e "install.packages(c('devtools', 'testthat', 'mockery', 'covr', 'rcmdcheck'))"
+          R -e "devtools::install_deps(dependencies = TRUE)"
+
+      - name: Build package
+        run: R CMD build .
+
+      - name: Find tarball
+        id: find_tarball
+        run: |
+          TARBALL=$(ls *.tar.gz | head -1)
+          echo "TARBALL=$TARBALL" >> $GITHUB_OUTPUT
+          echo "Found tarball: $TARBALL"
+
+      - name: Install package
+        run: |
+          R -e "install.packages('${{ steps.find_tarball.outputs.TARBALL }}', repos = NULL, type = 'source')"
+
+      - name: Run tests
+        run: |
+          R -e "
+          library(testthat)
+          library(Athlytics)
+          library(mockery)
+          result <- test_dir('tests/testthat')
+          print(result)
+          "
+
+      - name: R CMD check
+        run: |
+          R CMD check ${{ steps.find_tarball.outputs.TARBALL }} --no-manual --no-build-vignettes
+
+      - name: Upload check results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-results
+          path: "*.Rcheck"

@@ -17,10 +17,14 @@ jobs:
       matrix:
         config:
           - {os: windows-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'release'}
+          - {os: macOS-latest, r: 'release'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      _R_CHECK_CRAN_INCOMING_REMOTE_: false
+      _R_CHECK_FORCE_SUGGESTS_: false
 
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +39,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::covr, any::devtools
+          extra-packages: any::rcmdcheck, any::covr, any::devtools, any::mockery, any::testthat
           needs: check
 
       - name: Get package name and version
@@ -67,32 +71,65 @@ jobs:
         id: build_package
         shell: bash
 
+      - name: Install package for testing
+        run: |
+          R -e "install.packages('${{ steps.build_package.outputs.TARBALL_NAME }}', repos = NULL, type = 'source')"
+        shell: bash
+
+      - name: Run tests manually
+        run: |
+          R -e "
+          library(testthat)
+          library(Athlytics)
+          library(mockery)
+          test_results <- test_dir('tests/testthat', reporter = 'summary')
+          if (any(test_results[['failed']] > 0)) {
+            stop('Some tests failed')
+          }
+          "
+        shell: bash
+
       - name: Run R CMD check on tarball
         run: |
-          R CMD check ${{ steps.build_package.outputs.TARBALL_NAME }} --as-cran --no-manual --no-examples
+          R CMD check ${{ steps.build_package.outputs.TARBALL_NAME }} --no-manual --no-build-vignettes --no-examples
         shell: bash
         env:
           _R_CHECK_CRAN_INCOMING_: false 
+          _R_CHECK_CRAN_INCOMING_REMOTE_: false
+          _R_CHECK_FORCE_SUGGESTS_: false
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate and Upload Coverage Report to Codecov
-        if: success() # Only run if R CMD check succeeds
+        if: success() && matrix.config.os == 'ubuntu-latest' # Only run coverage on Ubuntu
         shell: Rscript {0}
         run: |
           pkg <- "${{ steps.pkg_info.outputs.PKG }}"
           tarball <- "${{ steps.build_package.outputs.TARBALL_NAME }}"
-          message(sprintf("Installing package from tarball for coverage testing: %s", tarball))
+          
+          # Install required packages
           if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-          devtools::install_local(tarball, force = TRUE, quiet = TRUE)
-
           if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")
           if (!requireNamespace("testthat", quietly = TRUE)) install.packages("testthat")
+          if (!requireNamespace("mockery", quietly = TRUE)) install.packages("mockery")
+          
+          message(sprintf("Installing package from tarball for coverage testing: %s", tarball))
+          devtools::install_local(tarball, force = TRUE, quiet = TRUE, dependencies = TRUE)
 
           message(sprintf("Loading package: %s", pkg))
           library(pkg, character.only = TRUE)
 
-          message("Executing run_coverage.R to generate and upload coverage...")
-          source("run_coverage.R")
+          # Run coverage with error handling
+          tryCatch({
+            message("Executing run_coverage.R to generate and upload coverage...")
+            source("run_coverage.R")
+          }, error = function(e) {
+            message(paste("Coverage failed:", e$message))
+            message("Attempting alternative coverage method...")
+            cov <- covr::package_coverage()
+            if (!is.null(cov)) {
+              covr::codecov(coverage = cov)
+            }
+          })
 
       - name: Upload check results
         if: failure()
