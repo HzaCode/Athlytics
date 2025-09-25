@@ -98,12 +98,21 @@ jobs:
           cat('✓ Package loaded successfully\n')
           cat('✓ Sample data loaded successfully\n')
           
-          # Test core plotting functions
-          p1 <- plot_ef(athlytics_sample_ef)
+          # Test core plotting functions with sample data (avoid API calls)
+          p1 <- plot_ef(ef_df = athlytics_sample_ef)
           cat('✓ plot_ef works\n')
           
-          p2 <- plot_acwr(athlytics_sample_acwr)
+          p2 <- plot_acwr(acwr_df = athlytics_sample_acwr)
           cat('✓ plot_acwr works\n')
+          
+          p3 <- plot_pbs(pbs_df = athlytics_sample_pbs)
+          cat('✓ plot_pbs works\n')
+          
+          p4 <- plot_exposure(exposure_df = athlytics_sample_exposure)
+          cat('✓ plot_exposure works\n')
+          
+          p5 <- plot_decoupling(decoupling_df = athlytics_sample_decoupling)
+          cat('✓ plot_decoupling works\n')
           
           cat('Basic functionality verification completed!\n')
           "
