@@ -17,6 +17,7 @@
 </p>
 
 <p align="center">
+    <a href="https://joss.theoj.org/papers/d65ecdbea8f4c464c7ed106b63b9c703"><img src="https://joss.theoj.org/papers/d65ecdbea8f4c464c7ed106b63b9c703/status.svg"></a>
     </a>
     <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
         <img src="https://img.shields.io/badge/R--CMD--check-grey?style=flat-square" alt="R-CMD-check" style="vertical-align: middle;"><img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Ubuntu-blue?style=flat-square" alt="Platforms" style="vertical-align: middle;"><img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?branch=main&label=&style=flat-square" alt="Status" style="vertical-align: middle;">
@@ -33,6 +34,7 @@
     <a href="https://www.biorxiv.org/content/10.1101/2025.05.01.651597v3">
         <img src="https://img.shields.io/badge/bioRxiv-Preprint-F88A0B" alt="bioRxiv Preprint">
     </a>
+    
 </p>
 
 
