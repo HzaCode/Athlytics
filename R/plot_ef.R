@@ -109,6 +109,7 @@ plot_ef <- function(stoken,
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$ef_value)) +
     ggplot2::geom_point(ggplot2::aes(color = .data$activity_type), alpha = 0.7, size = 2) +
     ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
+    ggplot2::scale_color_viridis_d(option = "plasma", end = 0.8) +
     ggplot2::labs(
       title = "Efficiency Factor (EF) Trend",
       subtitle = paste("Metric:", ef_metric_label),
