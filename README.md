@@ -162,7 +162,7 @@ plot_decoupling(decoupling_df = decoupling_data, activity_type = "Run")
 ### 🤝 Contributing
 
 Pull requests are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details and follow the code of conduct in `CODE_OF_CONDUCT.md`.
-### License and Usage
+### 📜 License and Usage
 
 This software is intended for **research and non-commercial use only**.
 
