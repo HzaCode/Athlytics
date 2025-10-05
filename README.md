@@ -73,10 +73,6 @@ To see how these features come together in a full research case study, check out
 **1. Installation**
 
 ```r
-# CRAN (stable)
-install.packages("Athlytics")
-
-# GitHub (recommended for the latest features)
 # install.packages("remotes")
 remotes::install_github("HzaCode/Athlytics")
 ```
