@@ -4,6 +4,8 @@
 
 # Athlytics
 
+
+
 *An R Framework for Longitudinal Analysis of Exercise Physiology*
 
 </div>
@@ -11,28 +13,39 @@
     <a href="https://cran.r-project.org/package=Athlytics">
         <img src="https://img.shields.io/cran/v/Athlytics?color=orange&style=for-the-badge&logo=r" alt="CRAN Version">
     </a>
-    <a href="https://cran.r-project.org/package=Athlytics">
-        <img src="https://img.shields.io/badge/downloads-2.2K-orange?style=for-the-badge&logo=download" alt="Downloads">
-    </a>
-</p>
-
+  
 <p align="center">
-    <a href="https://joss.theoj.org/papers/d65ecdbea8f4c464c7ed106b63b9c703"><img src="https://joss.theoj.org/papers/d65ecdbea8f4c464c7ed106b63b9c703/status.svg"></a>
-    </a>
-    <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
-        <img src="https://img.shields.io/badge/R--CMD--check-grey?style=flat-square" alt="R-CMD-check" style="vertical-align: middle;"><img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Ubuntu-blue?style=flat-square" alt="Platforms" style="vertical-align: middle;"><img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?branch=main&label=&style=flat-square" alt="Status" style="vertical-align: middle;">
-    </a>
-    <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
-        <img src="https://codecov.io/gh/HzaCode/Athlytics/graph/badge.svg" alt="Codecov" style="vertical-align: middle;">
-    </a>
-    <a href="https://opensource.org/licenses/MIT">
-        <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
-    </a>
-    <a href="https://hezhiang.com/Athlytics/">
-        <img src="https://img.shields.io/badge/docs-passing-brightgreen" alt="Documentation">
-    </a>
-   
-    
+  <!-- JOSS DOI -->
+  <a href="https://joss.theoj.org/papers/d65ecdbea8f4c464c7ed106b63b9c703">
+    <img src="https://joss.theoj.org/papers/d65ecdbea8f4c464c7ed106b63b9c703/status.svg" alt="JOSS DOI" style="vertical-align: middle;">
+  </a>&nbsp;
+
+  <!-- R CMD check -->
+  <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
+    <img src="https://img.shields.io/badge/R--CMD--check-grey?style=flat-square" alt="R-CMD-check" style="vertical-align: middle;">
+    <img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Ubuntu-blue?style=flat-square" alt="Platforms" style="vertical-align: middle;">
+    <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?branch=main&label=&style=flat-square" alt="Status" style="vertical-align: middle;">
+  </a>&nbsp;
+
+  <!-- Codecov -->
+  <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
+    <img src="https://codecov.io/gh/HzaCode/Athlytics/graph/badge.svg" alt="Codecov" style="vertical-align: middle;">
+  </a>&nbsp;
+
+  <!-- License -->
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+  </a>&nbsp;
+
+  <!-- CRAN Downloads -->
+  <a href="https://CRAN.R-project.org/package=Athlytics">
+    <img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics" alt="CRAN total downloads" style="vertical-align: middle;">
+  </a>&nbsp;
+
+  <!-- Docs -->
+  <a href="https://hezhiang.com/Athlytics/">
+    <img src="https://img.shields.io/badge/docs-passing-brightgreen" alt="Documentation">
+  </a>
 </p>
 
 
