@@ -5,7 +5,7 @@
 \title{Calculate Training Load Exposure (ATL, CTL, ACWR)}
 \usage{
 calculate_exposure(
-  stoken,
+  activities_data,
   activity_type = c("Run", "Ride", "VirtualRide", "VirtualRun"),
   load_metric = "duration_mins",
   acute_period = 7,
@@ -17,7 +17,9 @@ calculate_exposure(
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from `rStrava::strava_oauth()`.}
+\item{activities_data}{A data frame of activities from `load_local_activities()`.
+Must contain columns: date, distance, moving_time, elapsed_time, 
+average_heartrate, average_watts, type, elevation_gain.}
 
 \item{activity_type}{Type(s) of activities to include (e.g., "Run", "Ride").
 Default includes common run/ride types.}
@@ -43,12 +45,12 @@ A data frame with columns: `date`, `daily_load`, `atl` (Acute Load),
   `ctl` (Chronic Load), and `acwr` (Acute:Chronic Ratio) for the analysis period.
 }
 \description{
-Calculates training load metrics like ATL, CTL, and ACWR from Strava data.
+Calculates training load metrics like ATL, CTL, and ACWR from local Strava data.
 }
 \details{
 Calculates daily load, ATL, CTL, and ACWR from Strava activities based on the chosen metric and periods.
 
-Provides data for `plot_exposure`. Fetches extra prior data for
+Provides data for `plot_exposure`. Requires extra prior data for
   accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 }
 \examples{
@@ -57,37 +59,28 @@ data(athlytics_sample_data)
 print(head(athlytics_sample_exposure))
 
 \dontrun{
-# Example using real data (requires authentication)
-# Replace YOUR_APP, YOUR_ID, YOUR_SECRET with your Strava application details
-# stoken_example <- rStrava::strava_oauth(app_name = "YOUR_APP",
-#                                client_id = "YOUR_ID",
-#                                client_secret = "YOUR_SECRET",
-#                                cache = TRUE)
+# Example using local Strava export data
+activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Calculate training load for Rides using TSS
-# Note: stoken_example should be defined and valid
-# if (exists("stoken_example") && inherits(stoken_example, "Token2.0")) {
-#   ride_exposure_tss <- calculate_exposure(
-#     stoken = stoken_example,
-#     activity_type = "Ride",
-#     load_metric = "tss",
-#     user_ftp = 280,
-#     acute_period = 7,
-#     chronic_period = 28
-#   )
-#   print(head(ride_exposure_tss))
-#
-#   # Calculate training load for Runs using HRSS
-#   run_exposure_hrss <- calculate_exposure(
-#       stoken = stoken_example,
-#       activity_type = "Run",
-#       load_metric = "hrss",
-#       user_max_hr = 190,
-#       user_resting_hr = 50
-#   )
-#   print(tail(run_exposure_hrss))
-# } else {
-#   message("stoken_example not created. Skipping real data examples for calculate_exposure.")
-# }
+ride_exposure_tss <- calculate_exposure(
+  activities_data = activities,
+  activity_type = "Ride",
+  load_metric = "tss",
+  user_ftp = 280,
+  acute_period = 7,
+  chronic_period = 28
+)
+print(head(ride_exposure_tss))
+
+# Calculate training load for Runs using HRSS
+run_exposure_hrss <- calculate_exposure(
+  activities_data = activities,
+  activity_type = "Run",
+  load_metric = "hrss",
+  user_max_hr = 190,
+  user_resting_hr = 50
+)
+print(tail(run_exposure_hrss))
 }
 }

@@ -1,240 +1,300 @@
 # R/calculate_pbs.R
 
-#' Calculate Personal Bests (PBs)
+#' Calculate Personal Bests (PBs) from Local Strava Data
 #'
-#' Finds personal best times for specified distances from Strava activities.
+#' Tracks personal best times for standard distances (1k, 5k, 10k, half marathon, marathon)
+#' by analyzing detailed activity files from Strava export data.
 #'
-#' Fetches detailed activity data, extracts Strava's 'best efforts', and calculates
-#' cumulative PBs for specified distances.
+#' @param activities_data A data frame of activities from `load_local_activities()`.
+#'   Must contain columns: date, type, filename, distance.
+#' @param export_dir Base directory of the Strava export containing the activities folder.
+#'   Default is "strava_export_data".
+#' @param activity_type Type of activities to analyze (typically "Run"). Default "Run".
+#' @param start_date Optional start date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).
+#' @param end_date Optional end date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).
+#' @param distances_m Target distances in meters to track. 
+#'   Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marathon.
 #'
-#' @param stoken A valid Strava token from `rStrava::strava_oauth()`.
-#' @param activity_type Type(s) of activities to search for PBs (e.g., "Run").
-#'   Note: Current logic relies on Strava's `best_efforts`, primarily available for Runs.
-#' @param distance_meters Numeric vector of distances (in meters) to find PBs for (e.g., `c(1000, 5000, 10000)`).
-#' @param max_activities Maximum number of recent activities to check. Default 500.
-#'   Reducing this can speed up the process and help avoid API rate limits.
-#' @param date_range Optional. Filter activities within a date range `c("YYYY-MM-DD", "YYYY-MM-DD")`.
+#' @return A data frame with columns: activity_id, activity_date, distance, 
+#'   elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb, 
+#'   distance_label, time_period
 #'
-#' @return A data frame containing all found best efforts for the specified distances.
-#'   Includes columns: `activity_id`, `activity_date`, `distance`, `time_seconds` (elapsed time),
-#'   `cumulative_pb_seconds` (the PB for that distance as of that date), `is_pb` (TRUE if this effort set a new PB),
-#'   `distance_label` (e.g., "5k"), and `time_period` (formatted time).
+#' @details
+#' This function analyzes detailed activity files (FIT/TCX/GPX) to find the fastest
+#' efforts at specified distances. It tracks cumulative personal bests over time,
+#' showing when new PBs are set.
 #'
-#' @details Provides data for `plot_pbs`. Processes activities chronologically.
-#'   Fetching detailed data is slow due to API limits (includes 1s delay per activity).
+#' **Note**: Requires detailed activity files from your Strava export. Activities
+#' must be long enough to contain the target distance segments.
 #'
-#' @importFrom rStrava get_activity_list get_activity
-#' @importFrom dplyr filter select mutate arrange group_by ungroup bind_rows slice_head lag distinct %>%
-#' @importFrom purrr map_dfr possibly
-#' @importFrom lubridate as_datetime ymd_hms seconds_to_period ymd
-#' @importFrom rlang .data %||%
-#' @importFrom utils txtProgressBar setTxtProgressBar
+#' @importFrom dplyr filter select mutate arrange %>% group_by
+#' @importFrom lubridate as_date period seconds_to_period
+#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
 #' # Example using simulated data
-#' data(athlytics_sample_data)
+#' data(athlytics_sample_pbs)
 #' print(head(athlytics_sample_pbs))
 #'
 #' \dontrun{
-#' # Example using real data (requires authentication and YOUR credentials)
-#' # NOTE: The following rStrava::strava_oauth call is a placeholder.
-#' # You MUST replace "YOUR_APP_NAME", "YOUR_CLIENT_ID", "YOUR_CLIENT_SECRET"
-#' # with your actual Strava API credentials for this to work.
-#' # This is a placeholder and will likely require user interaction or fail
-#' # if not properly configured with actual credentials.
-#' # For R CMD check, the main thing is that the syntax is valid.
-#' tryCatch({
-#'   stoken_example <- rStrava::strava_oauth(
-#'     app_name = "YOUR_APP_NAME_PLACEHOLDER",
-#'     client_id = "YOUR_CLIENT_ID_PLACEHOLDER",
-#'     client_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",
-#'     cache = TRUE
-#'   )
+#' # Load local activities
+#' activities <- load_local_activities("strava_export_data/activities.csv")
 #'
-#'   # Proceed only if a token object is created
-#'   if (inherits(stoken_example, "Token2.0")) {
-#'     # Shortened message for line width
-#'     message("Placeholder stoken obtained. Real data features may not work.")
-#'     # Calculate PBs for 1k, 5k (limit activities for speed in example)
-#'     pb_data <- calculate_pbs(stoken = stoken_example,
-#'                              activity_type = "Run", 
-  #'                              # Note: activity_type should match your intended type
-#'                              distance_meters = c(1000, 5000, 10000),
-#'                              max_activities = 10) # Reduced for example speed
-#'     if (nrow(pb_data) > 0) {
-#'       print(head(pb_data))
-#'       # Show only new PB records
-#'       new_pbs <- pb_data[pb_data$is_pb, ]
-#'       print(new_pbs)
-#'     } else {
-#'       message("calculate_pbs example (placeholder token) returned no PB data.")
-#'     }
-#'   } else {
-#'     message("Placeholder stoken creation failed. Check rStrava setup.")
-#'   }
-#' }, error = function(e) {
-#'   # Shortened error messages as well
-#'   message("Error in rStrava::strava_oauth() example: ", e$message)
-#'   message("This can happen with placeholder credentials.")
-#' })
+#' # Calculate PBs for standard running distances
+#' pbs_data <- calculate_pbs(
+#'   activities_data = activities,
+#'   export_dir = "strava_export_data",
+#'   activity_type = "Run"
+#' )
+#' print(head(pbs_data))
 #' }
-calculate_pbs <- function(stoken,
-                          activity_type = "Run", # Default to Run as per original logic
-                          distance_meters,
-                          max_activities = 500,
-                          date_range = NULL) {
+calculate_pbs <- function(activities_data,
+                          export_dir = "strava_export_data",
+                          activity_type = "Run",
+                          start_date = NULL,
+                          end_date = NULL,
+                          distances_m = c(1000, 5000, 10000, 21097.5, 42195)) {
 
   # --- Input Validation ---
-  # Stoken checks first
-  if (missing(stoken)) stop("Strava token 'stoken' is required.")
-  if (!inherits(stoken, "Token2.0")) {
-    stop(paste0("Assertion on 'stoken' failed: Must inherit from class 'Token2.0', but has class '", class(stoken)[1], "'."))
+  if (missing(activities_data) || is.null(activities_data)) {
+    stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
   }
 
-  # Distance meters checks
-  if (missing(distance_meters) || !is.numeric(distance_meters) || length(distance_meters) == 0) {
-    stop("'distance_meters' must be a numeric vector of distances (e.g., c(1000, 5000)).")
-  }
-  if (any(distance_meters <= 0)) {
-    stop("All 'distance_meters' must be positive.")
+  if (!is.data.frame(activities_data)) {
+    stop("`activities_data` must be a data frame.")
   }
 
-  # Other checks/warnings
-  if(any(tolower(activity_type) != "run")) {
-      warning("Current implementation primarily supports 'Run' for PB calculation based on best_efforts.")
+  if (!"filename" %in% names(activities_data)) {
+    stop("`activities_data` must include 'filename' column. Please use the latest version of load_local_activities().")
   }
 
+  if (!dir.exists(export_dir)) {
+    stop("Export directory not found: ", export_dir)
+  }
 
-  message("Fetching activity list...")
-  # --- 1. Get Activity List ---
-  per_page_limit <- 200 # Your original variable
-  num_to_fetch <- min(max_activities, per_page_limit) # Your original variable
-  activities_list <- tryCatch({
-    rStrava::get_activity_list(stoken)
-  }, error = function(e) {
-    message("Error fetching activity list: ", e$message)
-    return(NULL)
+  `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
+  
+  # --- Date Handling ---
+  analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
+  analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
+
+  message(sprintf("Calculating PBs from %s to %s.", analysis_start_date, analysis_end_date))
+  message(sprintf("Target distances: %s", paste(distances_m, "m", collapse = ", ")))
+
+  # --- Filter Activities ---
+  filtered_activities <- activities_data %>%
+    dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date)
+
+  if (!is.null(activity_type)) {
+    filtered_activities <- filtered_activities %>%
+      dplyr::filter(.data$type %in% activity_type)
+  }
+
+  # Filter out activities without files
+  filtered_activities <- filtered_activities %>%
+    dplyr::filter(!is.na(.data$filename) & .data$filename != "")
+
+  # Filter activities that are long enough for the smallest target distance
+  min_distance <- min(distances_m)
+  filtered_activities <- filtered_activities %>%
+    dplyr::filter(!is.na(.data$distance) & .data$distance >= min_distance)
+
+  if (nrow(filtered_activities) == 0) {
+    warning("No activities meet the criteria for PB analysis.")
+    return(data.frame(
+      activity_id = numeric(0),
+      activity_date = lubridate::as_datetime(character(0)),
+      distance = numeric(0),
+      elapsed_time = numeric(0),
+      moving_time = numeric(0),
+      time_seconds = numeric(0),
+      cumulative_pb_seconds = numeric(0),
+      is_pb = logical(0),
+      distance_label = character(0),
+      time_period = character(0)
+    ))
+  }
+
+  message(sprintf("Analyzing %d activities for PBs...", nrow(filtered_activities)))
+
+  # --- Calculate Best Efforts for Each Activity ---
+  all_efforts <- purrr::map_dfr(1:nrow(filtered_activities), function(i) {
+    activity <- filtered_activities[i, ]
+    
+    message(sprintf("Processing activity %d/%d: %s (%s)", 
+                    i, nrow(filtered_activities), activity$name, activity$date))
+
+    # Parse activity file
+    file_path <- file.path(export_dir, activity$filename)
+    stream_data <- parse_activity_file(file_path, export_dir)
+
+    if (is.null(stream_data) || nrow(stream_data) < 10) {
+      warning(sprintf("Insufficient data in file for activity %s", activity$id))
+      return(NULL)
+    }
+
+    # Check for distance data
+    if (!"distance" %in% names(stream_data) || all(is.na(stream_data$distance))) {
+      warning(sprintf("No distance data for activity %s", activity$id))
+      return(NULL)
+    }
+
+    # Calculate best efforts for each target distance
+    efforts <- purrr::map_dfr(distances_m, function(target_distance) {
+      best_effort <- find_best_effort(stream_data, target_distance)
+      
+      if (is.null(best_effort)) {
+        return(NULL)
+      }
+      
+      data.frame(
+        activity_id = activity$id,
+        activity_date = activity$start_date_local,
+        distance = target_distance,
+        time_seconds = best_effort$time_seconds,
+        start_distance = best_effort$start_distance,
+        end_distance = best_effort$end_distance,
+        stringsAsFactors = FALSE
+      )
+    })
+
+    return(efforts)
   })
 
-  if (is.null(activities_list) || length(activities_list) == 0) {
-    stop("Could not fetch activities or no activities found.")
+  if (is.null(all_efforts) || nrow(all_efforts) == 0) {
+    warning("No best efforts could be calculated.")
+    return(data.frame(
+      activity_id = numeric(0),
+      activity_date = lubridate::as_datetime(character(0)),
+      distance = numeric(0),
+      time_seconds = numeric(0),
+      cumulative_pb_seconds = numeric(0),
+      is_pb = logical(0),
+      distance_label = character(0),
+      time_period = character(0)
+    ))
   }
 
-  # Assuming rlang::%||% is imported via @importFrom rlang .data %||%
-  # No local %||% definition needed here.
+  # --- Track Personal Bests Over Time ---
+  all_efforts <- all_efforts %>%
+    dplyr::arrange(.data$activity_date, .data$distance)
 
-  activities_df <- purrr::map_dfr(activities_list, ~{
-    data.frame(
-      id = as.character(.x$id %||% NA), # Uses rlang::%||%
-      type = .x$type %||% NA,
-      start_date_local = .x$start_date_local %||% NA,
-      stringsAsFactors = FALSE
+  # For each distance, track cumulative PB
+  pb_results <- all_efforts %>%
+    dplyr::group_by(.data$distance) %>%
+    dplyr::arrange(.data$activity_date) %>%
+    dplyr::mutate(
+      cumulative_pb_seconds = cummin(.data$time_seconds),
+      is_pb = .data$time_seconds == .data$cumulative_pb_seconds
+    ) %>%
+    dplyr::ungroup()
+
+  # Add distance labels
+  distance_labels <- c(
+    "1000" = "1k",
+    "5000" = "5k",
+    "10000" = "10k",
+    "21097.5" = "Half Marathon",
+    "42195" = "Marathon"
+  )
+  
+  pb_results <- pb_results %>%
+    dplyr::mutate(
+      distance_label = dplyr::case_when(
+        .data$distance == 1000 ~ "1k",
+        .data$distance == 5000 ~ "5k",
+        .data$distance == 10000 ~ "10k",
+        .data$distance == 21097.5 ~ "Half Marathon",
+        .data$distance == 42195 ~ "Marathon",
+        TRUE ~ paste0(round(.data$distance), "m")
+      ),
+      distance_label = factor(.data$distance_label, 
+                             levels = c("1k", "5k", "10k", "Half Marathon", "Marathon")),
+      time_period = as.character(lubridate::seconds_to_period(.data$time_seconds))
     )
-  }) %>%
-    dplyr::filter(!is.na(.data$id), !is.na(.data$type), !is.na(.data$start_date_local)) %>%
-    dplyr::mutate(start_date_local = lubridate::ymd_hms(.data$start_date_local))
 
-  # --- Date Range Filtering ---
-  if (!is.null(date_range) && length(date_range) == 2) {
-    start_date_filter <- tryCatch(lubridate::ymd(date_range[1]), warning = function(w) NULL)
-    end_date_filter <- tryCatch(lubridate::ymd(date_range[2]), warning = function(w) NULL)
-    if(!is.null(start_date_filter) && !is.null(end_date_filter)) {
-      activities_df <- activities_df %>%
-        dplyr::filter(as.Date(.data$start_date_local) >= start_date_filter & as.Date(.data$start_date_local) <= end_date_filter)
-      message(sprintf("Filtering activities between %s and %s.", date_range[1], date_range[2]))
-    } else {
-      warning("Invalid date_range format. Should be c('YYYY-MM-DD', 'YYYY-MM-DD'). Ignoring date filter.")
+  # Add elapsed_time and moving_time (same as time_seconds for best efforts)
+  pb_results <- pb_results %>%
+    dplyr::mutate(
+      elapsed_time = .data$time_seconds,
+      moving_time = .data$time_seconds
+    )
+
+  # Select final columns
+  pb_results <- pb_results %>%
+    dplyr::select(.data$activity_id, .data$activity_date, .data$distance,
+                 .data$elapsed_time, .data$moving_time, .data$time_seconds,
+                 .data$cumulative_pb_seconds, .data$is_pb, 
+                 .data$distance_label, .data$time_period) %>%
+    dplyr::arrange(.data$activity_date, .data$distance)
+
+  message(sprintf("PB analysis complete. Found %d efforts, %d are new PBs.", 
+                  nrow(pb_results), sum(pb_results$is_pb)))
+  
+  return(pb_results)
+}
+
+#' Find Best Effort for Target Distance
+#' @keywords internal
+find_best_effort <- function(stream_data, target_distance) {
+  # Remove rows with missing distance or time
+  valid_data <- stream_data[!is.na(stream_data$distance) & !is.na(stream_data$time), ]
+  
+  if (nrow(valid_data) < 10) {
+    return(NULL)
+  }
+  
+  # Check if activity is long enough
+  max_distance <- max(valid_data$distance, na.rm = TRUE)
+  if (max_distance < target_distance) {
+    return(NULL)
+  }
+  
+  # Use sliding window to find fastest segment of target distance
+  # Allow 2% tolerance for distance matching
+  tolerance <- target_distance * 0.02
+  
+  best_time <- Inf
+  best_start_idx <- NA
+  best_end_idx <- NA
+  
+  # For each starting point, find the point where distance >= target
+  for (i in 1:(nrow(valid_data) - 1)) {
+    start_dist <- valid_data$distance[i]
+    target_dist <- start_dist + target_distance
+    
+    # Find first point that reaches or exceeds target distance
+    candidates <- which(valid_data$distance >= target_dist)
+    
+    if (length(candidates) == 0) {
+      break  # No more segments possible
     }
-  }
-
-  # --- 2. Filter by Activity Type ---
-  activities_to_process <- activities_df %>%
-    dplyr::filter(.data$type %in% activity_type) %>%
-    dplyr::select(.data$id, .data$start_date_local) %>%
-    dplyr::arrange(.data$start_date_local)
-
-  if (nrow(activities_to_process) == 0) {
-    stop(paste0("No activities of type '", paste(activity_type, collapse=", "), "' found",
-                if (!is.null(date_range)) " in the specified date range." else "."))
-  }
-  message(sprintf("Found %d activities of type '%s' to process. Fetching details...", nrow(activities_to_process), paste(activity_type, collapse=", ")))
-
-  # --- Apply max_activities limit ---
-  # This section refers to `slice_head`.
-  if (nrow(activities_to_process) > max_activities) {
-    message(sprintf("Applying max_activities limit: Processing only the earliest %d activities (after sorting by date ascending) out of %d found.",
-                    max_activities, nrow(activities_to_process)))
-    activities_to_process <- activities_to_process %>%
-      dplyr::slice_head(n = max_activities) # Takes first N after current sort (start_date_local ascending)
-  }
-
-  # --- 3. & 4. Loop, Get Details, Extract Best Efforts ---
-  safe_get_activity <- purrr::possibly(rStrava::get_activity, otherwise = NULL, quiet = FALSE)
-  all_best_efforts <- list()
-  pb_counter <- 0
-  pb <- utils::txtProgressBar(min = 0, max = nrow(activities_to_process), style = 3)
-
-  for (i in 1:nrow(activities_to_process)) {
-    act_id <- activities_to_process$id[i]
-    act_date <- activities_to_process$start_date_local[i]
-    Sys.sleep(1)
-
-    detailed_activity <- safe_get_activity(id = act_id, stoken = stoken)
-
-    if (!is.null(detailed_activity) && !is.null(detailed_activity$best_efforts)) {
-      best_efforts_df <- purrr::map_dfr(detailed_activity$best_efforts, ~{
-        effort_dist <- as.numeric(.x$distance %||% NA)
-        matched_dist <- distance_meters[abs(effort_dist - distance_meters) <= 50]
-
-        if(length(matched_dist) > 0) {
-          data.frame(
-            activity_id = act_id,
-            activity_date = act_date,
-            distance = matched_dist[1],
-            elapsed_time = as.numeric(.x$elapsed_time %||% NA), # Uses rlang::%||%
-            moving_time = as.numeric(.x$moving_time %||% NA), # Uses rlang::%||%
-            stringsAsFactors = FALSE
-          )
-        } else { NULL }
-      })
-      if (nrow(best_efforts_df) > 0) {
-        all_best_efforts[[as.character(act_id)]] <- best_efforts_df
+    
+    end_idx <- candidates[1]
+    actual_dist <- valid_data$distance[end_idx] - start_dist
+    
+    # Check if distance is within tolerance
+    if (abs(actual_dist - target_distance) <= tolerance) {
+      elapsed_time <- as.numeric(difftime(valid_data$time[end_idx], 
+                                          valid_data$time[i], 
+                                          units = "secs"))
+      
+      if (elapsed_time > 0 && elapsed_time < best_time) {
+        best_time <- elapsed_time
+        best_start_idx <- i
+        best_end_idx <- end_idx
       }
     }
-     pb_counter <- pb_counter + 1
-     utils::setTxtProgressBar(pb, pb_counter)
   }
-  close(pb)
-  message("\nFinished fetching details.")
-
-  # --- 5. Process and Aggregate Results ---
-  if (length(all_best_efforts) == 0) {
-    stop("No best efforts found for the specified distances in the processed activities.")
+  
+  if (is.infinite(best_time) || is.na(best_start_idx)) {
+    return(NULL)
   }
-
-  pbs_df <- dplyr::bind_rows(all_best_efforts) %>%
-    dplyr::filter(!is.na(.data$elapsed_time), !is.na(.data$distance)) %>%
-    dplyr::mutate(time_seconds = .data$elapsed_time)
-
-  if (nrow(pbs_df) == 0) {
-    stop("No valid best effort times found after processing details.")
-  }
-
-  pbs_df <- pbs_df %>%
-    dplyr::arrange(.data$distance, .data$activity_date) %>%
-    dplyr::group_by(.data$distance) %>%
-    dplyr::mutate(
-        cumulative_pb_seconds = cummin(.data$time_seconds),
-        is_pb = .data$time_seconds == .data$cumulative_pb_seconds & (is.na(dplyr::lag(.data$cumulative_pb_seconds)) | .data$time_seconds < dplyr::lag(.data$cumulative_pb_seconds))
-        ) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(
-        distance_label = factor(paste0(.data$distance / 1000, "k"),
-                               levels = paste0(sort(unique(.data$distance)) / 1000, "k")),
-        time_period = lubridate::seconds_to_period(.data$time_seconds)
-     )
-
-  message("Calculation complete.")
-  return(pbs_df)
+  
+  return(list(
+    time_seconds = best_time,
+    start_distance = valid_data$distance[best_start_idx],
+    end_distance = valid_data$distance[best_end_idx]
+  ))
 }

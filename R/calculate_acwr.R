@@ -6,7 +6,9 @@
 #'
 #' Calculates daily load, ATL, CTL, raw ACWR, and smoothed ACWR from Strava activities.
 #'
-#' @param stoken A valid Strava token from `rStrava::strava_oauth()`.
+#' @param activities_data A data frame of activities from `load_local_activities()`.
+#'   Must contain columns: date, distance, moving_time, elapsed_time, 
+#'   average_heartrate, average_watts, type, elevation_gain.
 #' @param activity_type Optional. Filter activities by type (e.g., "Run", "Ride").
 #'   Default `NULL` includes all types.
 #' @param load_metric Method for calculating daily load (e.g., "duration_mins",
@@ -23,10 +25,9 @@
 #' @return A data frame with columns: `date`, `atl` (Acute Load), `ctl` (Chronic Load),
 #' `acwr` (raw ACWR), and `acwr_smooth` (smoothed ACWR) for the specified date range.
 #'
-#' @details Provides data for `plot_acwr`. Fetches extra prior data for accurate
-#'   initial CTL. Fetching can be slow for long periods.
+#' @details Provides data for `plot_acwr`. Requires extra prior data for accurate
+#'   initial CTL (automatic buffering by chronic_period days).
 #'
-#' @importFrom rStrava get_activity_list
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
 #' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
 #' @importFrom zoo rollmean
@@ -42,29 +43,29 @@
 #' }
 #'
 #' \dontrun{
-#' # Example using real data (requires authentication and app setup)
-#' # Replace with your actual app_name, client_id, and secret or ensure stoken is pre-configured
-#' # stoken <- rStrava::strava_oauth(
-#' #   app_name = "YOUR_APP_NAME",
-#' #   client_id = "YOUR_CLIENT_ID",
-#' #   client_secret = "YOUR_SECRET",
-#' #   cache = TRUE 
-#' # )
-#' # if (interactive() && exists("stoken")) { # Proceed if stoken is available
-#' #   # Calculate ACWR for Runs (using duration)
-#' #   run_acwr <- calculate_acwr(stoken = stoken, activity_type = "Run",
-#' #                              load_metric = "duration_mins")
-#' #   print(tail(run_acwr))
-#' #
-#' #   # Calculate ACWR for Rides (using TSS, requires FTP)
-#' #   ride_acwr_tss <- calculate_acwr(stoken = stoken, activity_type = "Ride",
-#' #                                   load_metric = "tss", user_ftp = 280)
-#' #   print(tail(ride_acwr_tss))
-#' # } else {
-#' #   message("Strava token not available or not in interactive session, skipping real data example.")
-#' # }
+#' # Example using local Strava export data
+#' # Step 1: Download your Strava data export
+#' # Go to Strava.com > Settings > My Account > Download or Delete Your Account
+#' 
+#' # Step 2: Extract the zip file to a folder (e.g., "strava_export_data")
+#' 
+#' # Step 3: Load activities from the export
+#' activities <- load_local_activities("strava_export_data/activities.csv")
+#' 
+#' # Step 4: Calculate ACWR for Runs (using duration)
+#' run_acwr <- calculate_acwr(activities_data = activities, 
+#'                            activity_type = "Run",
+#'                            load_metric = "duration_mins")
+#' print(tail(run_acwr))
+#' 
+#' # Calculate ACWR for Rides (using TSS, requires FTP)
+#' ride_acwr_tss <- calculate_acwr(activities_data = activities,
+#'                                 activity_type = "Ride",
+#'                                 load_metric = "tss", 
+#'                                 user_ftp = 280)
+#' print(tail(ride_acwr_tss))
 #' }
-calculate_acwr <- function(stoken,
+calculate_acwr <- function(activities_data,
                            activity_type = NULL,
                            load_metric = "duration_mins",
                            acute_period = 7,
@@ -77,8 +78,12 @@ calculate_acwr <- function(stoken,
                            smoothing_period = 7) {
 
   # --- Input Validation ---
-  if (!inherits(stoken, "Token2.0")) {
-    stop("`stoken` must be a valid Token2.0 object from rStrava::strava_oauth().")
+  if (missing(activities_data) || is.null(activities_data)) {
+    stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
+  }
+  
+  if (!is.data.frame(activities_data)) {
+    stop("`activities_data` must be a data frame (e.g., from load_local_activities()).")
   }
   if (!is.numeric(acute_period) || acute_period <= 0) stop("`acute_period` must be a positive integer.")
   if (!is.numeric(chronic_period) || chronic_period <= 0) stop("`chronic_period` must be a positive integer.")
@@ -98,83 +103,47 @@ calculate_acwr <- function(stoken,
   message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type %||% "All", collapse=", ")))
   message(sprintf("Acute period: %d days, Chronic period: %d days", acute_period, chronic_period))
 
-  # --- Fetch Strava Activities ---
+  # --- Get Activities Data (Local Only) ---
   fetch_start_buffer_days <- chronic_period
   fetch_start_date <- analysis_start_date - lubridate::days(fetch_start_buffer_days)
-  fetch_before_date <- analysis_end_date + lubridate::days(1)
-  fetch_after_date <- fetch_start_date
-
-  message("Fetching activities from Strava...")
-  activities_list <- list()
-  page <- 1
-  fetched_all <- FALSE
-  max_pages <- 20
-  activities_fetched_count <- 0
-
-  while (!fetched_all && page <= max_pages) {
-    current_page_activities <- tryCatch({
-      rStrava::get_activity_list(stoken, before = fetch_before_date, after = fetch_after_date)
-    }, error = function(e) {
-      message(sprintf("Error fetching activities: %s", e$message))
-      return(NULL)
-    })
-
-    if (is.null(current_page_activities)) {
-      fetched_all <- TRUE
-    } else if (length(current_page_activities) > 0) {
-      activities_list <- c(activities_list, current_page_activities)
-      activities_fetched_count <- activities_fetched_count + length(current_page_activities)
-      fetched_all <- TRUE
-    } else {
-      fetched_all <- TRUE
-    }
-    if (!fetched_all) Sys.sleep(0.5)
+  
+  # Use local activities data
+  message("Processing local activities data...")
+  activities_df_filtered <- activities_data %>%
+    dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
+  
+  if (!is.null(activity_type)) {
+    activities_df_filtered <- activities_df_filtered %>%
+      dplyr::filter(.data$type %in% activity_type)
   }
-
-  if (length(activities_list) == 0) {
-    stop("Could not fetch activities or no relevant activities found in the required date range (", fetch_start_date, " to ", analysis_end_date,").")
+  
+  activities_fetched_count <- nrow(activities_df_filtered)
+  message(sprintf("Loaded %d activities from local data.", activities_fetched_count))
+  
+  if (activities_fetched_count == 0) {
+    stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date,").")
   }
-  message(sprintf("Fetched %d activities in total.", activities_fetched_count))
 
   # --- Process Activities into Daily Load ---
   `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
   safe_as_numeric <- function(x) { as.numeric(x %||% 0) }
 
-  daily_load_df <- purrr::map_dfr(activities_list, ~{
-    # --- DEBUG REMOVED: Remove browser() call ---
-    # if (!exists("debug_invoked_acwr", where = .GlobalEnv)) { 
-    #     message("DEBUG: Entering map_dfr function body for the first time. Invoking browser().")
-    #     browser() # <<< PAUSES EXECUTION HERE FOR INTERACTIVE DEBUGGING >>>
-    #     assign("debug_invoked_acwr", TRUE, envir = .GlobalEnv) # Prevent browser() on subsequent loops
-    # }
-    # --- End DEBUG ---
-    
-    # Add index or ID for debugging
-    act_id <- as.character(.x$id %||% "UNKNOWN_ID")
-    # message(sprintf("  Processing activity %s...", act_id)) # Keep messages commented out for now
-    
-    # Correctly convert POSIXct to Date without trying to parse as string
-    activity_date <- lubridate::as_date(.x$start_date_local %||% NA)
-    act_type <- .x$type %||% "Unknown"
-    # message(sprintf("    Date: %s, Type: %s", activity_date, act_type))
+  # Convert data frame to list format for processing
+  daily_load_df <- purrr::map_dfr(1:nrow(activities_df_filtered), function(i) {
+    activity <- activities_df_filtered[i, ]
+    # Get activity date and type
+    activity_date <- activity$date
+    act_type <- activity$type %||% "Unknown"
 
-    if (is.na(activity_date) || activity_date < fetch_start_date || activity_date > analysis_end_date) {
-        # message("    -> Filtered out by date.")
-        return(NULL)
-    }
-    if (!is.null(activity_type) && !act_type %in% activity_type) {
-        # message("    -> Filtered out by type.")
-        return(NULL)
-    }
-
-    duration_sec <- safe_as_numeric(.x$moving_time)
-    distance_m <- safe_as_numeric(.x$distance)
-    elapsed_sec <- safe_as_numeric(.x$elapsed_time)
-    avg_hr <- safe_as_numeric(.x$average_heartrate)
-    avg_power <- safe_as_numeric(.x$average_watts)
-    elevation_gain <- safe_as_numeric(.x$total_elevation_gain)
-    # Use device_watts if available (direct power), otherwise fallback to average_watts (estimated power)
-    np_proxy <- safe_as_numeric(.x$device_watts %||% .x$average_watts %||% 0) 
+    # Extract metrics from data frame columns
+    duration_sec <- safe_as_numeric(activity$moving_time)
+    distance_m <- safe_as_numeric(activity$distance)
+    elapsed_sec <- safe_as_numeric(activity$elapsed_time)
+    avg_hr <- safe_as_numeric(activity$average_heartrate)
+    avg_power <- safe_as_numeric(activity$average_watts)
+    elevation_gain <- safe_as_numeric(activity$elevation_gain)
+    # Use weighted_average_watts if available, otherwise average_watts
+    np_proxy <- safe_as_numeric(activity$weighted_average_watts %||% activity$average_watts %||% 0) 
     # message(sprintf("    Duration: %.0f sec", duration_sec))
 
     # --- Added Debugging and Refined Logic --- 

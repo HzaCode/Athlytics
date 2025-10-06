@@ -21,7 +21,7 @@
 #'   solid points mark new PBs. Y-axis is MM:SS.
 #'   If `pbs_df` is not provided, calls `calculate_pbs` first (can be slow).
 #'
-#' @importFrom rStrava get_activity_list get_activity
+#' 
 #' @importFrom dplyr filter select mutate arrange group_by slice bind_rows summarise distinct rename %>% left_join
 #' @importFrom purrr map_dfr map_chr possibly quietly
 #' @importFrom tidyr unnest pivot_longer

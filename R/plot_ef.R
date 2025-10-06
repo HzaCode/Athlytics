@@ -24,7 +24,7 @@
 #'   often indicates improved aerobic fitness. Points colored by activity type.
 #'   If `ef_df` is not provided, calls `calculate_ef` first.
 #'
-#' @importFrom rStrava get_activity_list
+#' 
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when pull
 #' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal scale_x_date theme element_text scale_color_viridis_d

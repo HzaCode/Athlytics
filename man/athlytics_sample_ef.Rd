@@ -3,7 +3,7 @@
 \docType{data}
 \name{athlytics_sample_ef}
 \alias{athlytics_sample_ef}
-\title{Sample Efficiency Factor (EF) Data for athlytics}
+\title{Sample Efficiency Factor (EF) Data for Athlytics}
 \format{
 A data.frame with X rows and 3 variables:
 \describe{

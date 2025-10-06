@@ -47,7 +47,7 @@ explicit_english_month_year <- function(date_obj) {
 #'   used as reference. If `decoupling_df` is not provided, calls `calculate_decoupling` first
 #'   (can be slow and hit API limits).
 #'
-#' @importFrom rStrava get_activity_list get_activity_streams
+#' 
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when group_by summarise pull first last tibble
 #' @importFrom lubridate as_date
 #' @importFrom lubridate date

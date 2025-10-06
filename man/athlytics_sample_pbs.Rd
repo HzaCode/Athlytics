@@ -3,7 +3,7 @@
 \docType{data}
 \name{athlytics_sample_pbs}
 \alias{athlytics_sample_pbs}
-\title{Sample Personal Bests (PBs) Data for athlytics}
+\title{Sample Personal Bests (PBs) Data for Athlytics}
 \format{
 A tibble with X rows and 10 variables:
 \describe{

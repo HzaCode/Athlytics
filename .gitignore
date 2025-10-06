@@ -22,3 +22,8 @@ tests/manual_tests/
 
 /..Rcheck
 /docs
+
+嗯嗯# User's private Strava data - DO NOT COMMIT
+strava_export_data/
+export_*.zip
+*.zip

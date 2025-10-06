@@ -2,91 +2,65 @@
 % Please edit documentation in R/calculate_pbs.R
 \name{calculate_pbs}
 \alias{calculate_pbs}
-\title{Calculate Personal Bests (PBs)}
+\title{Calculate Personal Bests (PBs) from Local Strava Data}
 \usage{
 calculate_pbs(
-  stoken,
+  activities_data,
+  export_dir = "strava_export_data",
   activity_type = "Run",
-  distance_meters,
-  max_activities = 500,
-  date_range = NULL
+  start_date = NULL,
+  end_date = NULL,
+  distances_m = c(1000, 5000, 10000, 21097.5, 42195)
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from `rStrava::strava_oauth()`.}
+\item{activities_data}{A data frame of activities from `load_local_activities()`.
+Must contain columns: date, type, filename, distance.}
 
-\item{activity_type}{Type(s) of activities to search for PBs (e.g., "Run").
-Note: Current logic relies on Strava's `best_efforts`, primarily available for Runs.}
+\item{export_dir}{Base directory of the Strava export containing the activities folder.
+Default is "strava_export_data".}
 
-\item{distance_meters}{Numeric vector of distances (in meters) to find PBs for (e.g., `c(1000, 5000, 10000)`).}
+\item{activity_type}{Type of activities to analyze (typically "Run"). Default "Run".}
 
-\item{max_activities}{Maximum number of recent activities to check. Default 500.
-Reducing this can speed up the process and help avoid API rate limits.}
+\item{start_date}{Optional start date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).}
 
-\item{date_range}{Optional. Filter activities within a date range `c("YYYY-MM-DD", "YYYY-MM-DD")`.}
+\item{end_date}{Optional end date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).}
+
+\item{distances_m}{Target distances in meters to track. 
+Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marathon.}
 }
 \value{
-A data frame containing all found best efforts for the specified distances.
-  Includes columns: `activity_id`, `activity_date`, `distance`, `time_seconds` (elapsed time),
-  `cumulative_pb_seconds` (the PB for that distance as of that date), `is_pb` (TRUE if this effort set a new PB),
-  `distance_label` (e.g., "5k"), and `time_period` (formatted time).
+A data frame with columns: activity_id, activity_date, distance, 
+  elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb, 
+  distance_label, time_period
 }
 \description{
-Finds personal best times for specified distances from Strava activities.
+Tracks personal best times for standard distances (1k, 5k, 10k, half marathon, marathon)
+by analyzing detailed activity files from Strava export data.
 }
 \details{
-Fetches detailed activity data, extracts Strava's 'best efforts', and calculates
-cumulative PBs for specified distances.
+This function analyzes detailed activity files (FIT/TCX/GPX) to find the fastest
+efforts at specified distances. It tracks cumulative personal bests over time,
+showing when new PBs are set.
 
-Provides data for `plot_pbs`. Processes activities chronologically.
-  Fetching detailed data is slow due to API limits (includes 1s delay per activity).
+**Note**: Requires detailed activity files from your Strava export. Activities
+must be long enough to contain the target distance segments.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_data)
+data(athlytics_sample_pbs)
 print(head(athlytics_sample_pbs))
 
 \dontrun{
-# Example using real data (requires authentication and YOUR credentials)
-# NOTE: The following rStrava::strava_oauth call is a placeholder.
-# You MUST replace "YOUR_APP_NAME", "YOUR_CLIENT_ID", "YOUR_CLIENT_SECRET"
-# with your actual Strava API credentials for this to work.
-# This is a placeholder and will likely require user interaction or fail
-# if not properly configured with actual credentials.
-# For R CMD check, the main thing is that the syntax is valid.
-tryCatch({
-  stoken_example <- rStrava::strava_oauth(
-    app_name = "YOUR_APP_NAME_PLACEHOLDER",
-    client_id = "YOUR_CLIENT_ID_PLACEHOLDER",
-    client_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",
-    cache = TRUE
-  )
+# Load local activities
+activities <- load_local_activities("strava_export_data/activities.csv")
 
-  # Proceed only if a token object is created
-  if (inherits(stoken_example, "Token2.0")) {
-    # Shortened message for line width
-    message("Placeholder stoken obtained. Real data features may not work.")
-    # Calculate PBs for 1k, 5k (limit activities for speed in example)
-    pb_data <- calculate_pbs(stoken = stoken_example,
-                             activity_type = "Run", 
-                             # Note: activity_type should match your intended type
-                             distance_meters = c(1000, 5000, 10000),
-                             max_activities = 10) # Reduced for example speed
-    if (nrow(pb_data) > 0) {
-      print(head(pb_data))
-      # Show only new PB records
-      new_pbs <- pb_data[pb_data$is_pb, ]
-      print(new_pbs)
-    } else {
-      message("calculate_pbs example (placeholder token) returned no PB data.")
-    }
-  } else {
-    message("Placeholder stoken creation failed. Check rStrava setup.")
-  }
-}, error = function(e) {
-  # Shortened error messages as well
-  message("Error in rStrava::strava_oauth() example: ", e$message)
-  message("This can happen with placeholder credentials.")
-})
+# Calculate PBs for standard running distances
+pbs_data <- calculate_pbs(
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = "Run"
+)
+print(head(pbs_data))
 }
 }

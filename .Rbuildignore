@@ -73,3 +73,25 @@
 ^CRAN-SUBMISSION$
 ^Untitled\.R$
 ^run_coverage\.R$
+
+# User's private data - exclude from R package build
+^strava_export_data$
+^export_.*\.zip$
+^.*\.zip$
+^batch_update_calculate_functions\.py$
+^generate_plot_example\.R$
+^test_local_data_loading\.R$
+^test_package\.R$
+^update_calculate_functions_local_only\.R$
+^take_screenshots\.bat$
+^screenshots$
+^README_NEW\.md$
+^README_old\.md$
+^MIGRATION_SUMMARY\.md$
+^Rplots\.pdf$
+^google_search_demo\.js$
+^node_modules$
+^package\.json$
+^package-lock\.json$
+^strava_api.*\.md$
+^提交指南.*\.md$

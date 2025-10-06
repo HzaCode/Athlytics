@@ -3,7 +3,7 @@
 \docType{data}
 \name{athlytics_sample_decoupling}
 \alias{athlytics_sample_decoupling}
-\title{Sample Aerobic Decoupling Data for athlytics}
+\title{Sample Aerobic Decoupling Data for Athlytics}
 \format{
 A tibble with X rows and 2 variables:
 \describe{

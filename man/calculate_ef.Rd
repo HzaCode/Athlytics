@@ -5,7 +5,7 @@
 \title{Calculate Efficiency Factor (EF) Data}
 \usage{
 calculate_ef(
-  stoken,
+  activities_data,
   activity_type = c("Run", "Ride"),
   ef_metric = c("Pace_HR", "Power_HR"),
   start_date = NULL,
@@ -14,7 +14,8 @@ calculate_ef(
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token object obtained using \code{rStrava::strava_oauth()}.}
+\item{activities_data}{A data frame of activities from `load_local_activities()`.
+Must contain columns: date, type, moving_time, distance, average_heartrate, average_watts.}
 
 \item{activity_type}{Character vector or single string specifying activity type(s).}
 
@@ -33,7 +34,7 @@ A data frame with columns: date, activity_type, ef_value.
 Calculates Efficiency Factor (Pace/HR or Power/HR) from Strava activities.
 }
 \details{
-Fetches activity summaries and calculates EF (output/HR) for each.
+Calculates EF (output/HR) for each activity from local export data.
 Provides the data used by `plot_ef`.
 }
 \examples{
@@ -42,21 +43,19 @@ data(athlytics_sample_data)
 print(head(athlytics_sample_ef))
 
 \dontrun{
-# Example using real data (requires authentication)
-# To authenticate (replace with your details):
-# stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",
-#                                client_id = "YOUR_ID",
-#                                client_secret = "YOUR_SECRET",
-#                                cache = TRUE)
+# Example using local Strava export data
+activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Calculate Pace/HR efficiency factor for Runs
-# Note: stoken should be defined and valid
-# ef_data_run <- calculate_ef(stoken = stoken, activity_type = "Run", ef_metric = "Pace_HR")
-# print(tail(ef_data_run))
+ef_data_run <- calculate_ef(activities_data = activities, 
+                             activity_type = "Run", 
+                             ef_metric = "Pace_HR")
+print(tail(ef_data_run))
 
 # Calculate Power/HR efficiency factor for Rides
-# Note: stoken should be defined and valid
-# ef_data_ride <- calculate_ef(stoken = stoken, activity_type = "Ride", ef_metric = "Power_HR")
-# print(tail(ef_data_ride))
+ef_data_ride <- calculate_ef(activities_data = activities,
+                              activity_type = "Ride",
+                              ef_metric = "Power_HR")
+print(tail(ef_data_ride))
 }
 }

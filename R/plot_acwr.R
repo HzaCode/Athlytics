@@ -25,7 +25,7 @@
 #'   ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
 #'   If `acwr_df` is not provided, calls `calculate_acwr` first (can be slow and hit API limits).
 #'
-#' @importFrom rStrava get_activity_list
+#' 
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
 #' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
 #' @importFrom zoo rollmean
@@ -83,15 +83,21 @@ plot_acwr <- function(stoken,
                       smoothing_period = 7,
                       highlight_zones = TRUE,
                       acwr_df = NULL) {
+  # --- Deprecation Warning ---
+  warning("plot_acwr() is deprecated and uses old API methods. ",
+          "Please use calculate_acwr(activities_data = ...) directly and create plots with ggplot2.",
+          call. = FALSE)
+  
   # --- Get Data --- 
   # If acwr_df is not provided, calculate it
   if (is.null(acwr_df)) {
       # Check if stoken provided when acwr_df is not
-      if (missing(stoken)) stop("Either 'stoken' or 'acwr_df' must be provided.")
+      if (missing(stoken)) stop("Either 'stoken' or 'acwr_df' (from calculate_acwr with activities_data) must be provided.")
       
       # Call the calculation function
+      # This will fail as stoken is no longer supported
       acwr_df <- calculate_acwr(
-          stoken = stoken,
+          activities_data = stoken,  # Changed parameter name
           activity_type = activity_type,
           load_metric = load_metric,
           acute_period = acute_period,

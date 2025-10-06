@@ -2,75 +2,68 @@
 % Please edit documentation in R/calculate_decoupling.R
 \name{calculate_decoupling}
 \alias{calculate_decoupling}
-\title{Calculate Aerobic Decoupling}
+\title{Calculate Aerobic Decoupling from Local Strava Data}
 \usage{
 calculate_decoupling(
-  stoken,
+  activities_data,
+  export_dir = "strava_export_data",
   activity_type = c("Run", "Ride"),
-  decouple_metric = c("Pace_HR", "Power_HR"),
   start_date = NULL,
   end_date = NULL,
-  min_duration_mins = 45,
-  max_activities = 50,
-  stream_df = NULL
+  min_duration_mins = 40
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from `rStrava::strava_oauth()`.}
+\item{activities_data}{A data frame of activities from `load_local_activities()`.
+Must contain columns: date, type, filename.}
 
-\item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
+\item{export_dir}{Base directory of the Strava export containing the activities folder.
+Default is "strava_export_data".}
 
-\item{decouple_metric}{Basis for calculation: "Pace_HR" or "Power_HR".}
+\item{activity_type}{Type of activities to analyze (e.g., "Run", "Ride").}
 
-\item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.}
+\item{start_date}{Optional start date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).}
 
-\item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
+\item{end_date}{Optional end date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).}
 
-\item{min_duration_mins}{Minimum activity duration (minutes) to include. Default 45.}
-
-\item{max_activities}{Maximum number of recent activities to analyze. Default 50.}
-
-\item{stream_df}{Optional. A pre-fetched data frame for a *single* activity's stream.
-If provided, calculates decoupling for this data directly, ignoring `stoken` and
-other fetching parameters. Must include columns: `time`, `heartrate`, and either
-`velocity_smooth`/`distance` (for Pace_HR) or `watts` (for Power_HR).}
+\item{min_duration_mins}{Minimum activity duration in minutes to include. Default 40.}
 }
 \value{
-Returns a data frame with `date` and `decoupling` [%] columns, OR
-  a single numeric decoupling value if `stream_df` is provided.
+A data frame with columns: date, activity_id, decoupling_percent
 }
 \description{
-Calculates aerobic decoupling for Strava activities.
+Calculates cardiovascular (aerobic) decoupling by analyzing the relationship
+between normalized power/pace and heart rate. Decoupling indicates cardiovascular
+drift, where heart rate rises relative to power/pace output during sustained efforts.
 }
 \details{
-Calculates aerobic decoupling (HR drift relative to pace/power) using detailed
-Strava activity streams. Fetching streams via API can be slow.
+Aerobic decoupling is calculated by comparing the first and second halves of an activity:
+\itemize{
+  \item Runs: Pace/HR ratio between first and second half
+  \item Rides: Power/HR ratio between first and second half
+}
+A decoupling > 5\% typically indicates cardiovascular drift or inadequate aerobic fitness
+for the given intensity.
 
-Provides data for `plot_decoupling`. Compares output/HR efficiency
-  between first and second halves of activities. Positive values indicate
-  HR drift. Fetching streams via API using `httr` is slow and subject to rate limits.
+**Note**: This function requires detailed activity files (FIT/TCX/GPX) from your
+Strava export to extract second-by-second heart rate and power/pace data.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_data)
+data(athlytics_sample_decoupling)
 print(head(athlytics_sample_decoupling))
 
 \dontrun{
-# Example using real data (requires authentication)
-# To authenticate (replace with your details):
-# stoken <- rStrava::strava_oauth(app_name = "YOUR_APP",
-#                                client_id = "YOUR_ID",
-#                                client_secret = "YOUR_SECRET",
-#                                cache = TRUE)
+# Load local activities
+activities <- load_local_activities("strava_export_data/activities.csv")
 
-# Calculate Pace/HR decoupling for recent Runs (limit to 10 activities for speed)
-# Note: stoken should be defined and valid
-# run_decoupling <- calculate_decoupling(
-#     stoken = stoken,
-#     activity_type = "Run",
-#     decouple_metric = "Pace_HR",
-#     max_activities = 10
-# )
-# print(tail(run_decoupling))
+# Calculate decoupling for long runs
+decoupling_data <- calculate_decoupling(
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = "Run",
+  min_duration_mins = 60
+)
+print(head(decoupling_data))
 }
 }

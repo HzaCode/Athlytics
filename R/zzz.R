@@ -6,9 +6,9 @@
   pkg_version <- pkg_desc$Version
   
   startup_msg <- paste0(
-    "\nLoading athlytics version ", pkg_version, ".\n",
-    "Analyze your Strava data with ease!\n",
-    "Remember to authenticate using rStrava::strava_oauth() first.\n",
+    "\nLoading Athlytics version ", pkg_version, ".\n",
+    "Analyze your Strava data locally with ease!\n",
+    "Use load_local_activities() to get started.\n",
     "For documentation, see: https://hzacode.github.io/athlytics/"
   )
 
