@@ -9,6 +9,7 @@
 *An R Framework for Longitudinal Analysis of Exercise Physiology*
 
 </div>
+</div>
 <p align="center">
     <a href="https://cran.r-project.org/package=Athlytics">
         <img src="https://img.shields.io/cran/v/Athlytics?color=orange&style=for-the-badge&logo=r" alt="CRAN Version">
@@ -21,11 +22,13 @@
   </a>&nbsp;
 
   <!-- R CMD check -->
+  <!--
   <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
     <img src="https://img.shields.io/badge/R--CMD--check-grey?style=flat-square" alt="R-CMD-check" style="vertical-align: middle;">
     <img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Ubuntu-blue?style=flat-square" alt="Platforms" style="vertical-align: middle;">
     <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?branch=main&label=&style=flat-square" alt="Status" style="vertical-align: middle;">
   </a>&nbsp;
+  -->
 
   <!-- Codecov -->
   <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
