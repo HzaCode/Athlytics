@@ -28,13 +28,11 @@
     <img src="https://img.shields.io/badge/Windows%20%7C%20macOS%20%7C%20Ubuntu-blue?style=flat-square" alt="Platforms" style="vertical-align: middle;">
     <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?branch=main&label=&style=flat-square" alt="Status" style="vertical-align: middle;">
   </a>&nbsp;
-  -->
 
-  <!-- Codecov -->
   <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
     <img src="https://codecov.io/gh/HzaCode/Athlytics/graph/badge.svg" alt="Codecov" style="vertical-align: middle;">
   </a>&nbsp;
-
+ -->
   <!-- License -->
   <a href="https://opensource.org/licenses/MIT">
     <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
