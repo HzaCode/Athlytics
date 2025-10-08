@@ -56,7 +56,7 @@
 `Athlytics` is an R framework for the longitudinal analysis of exercise physiology using Strava data. It is designed to remove the primary bottleneck for sports scientists: the programmatic acquisition and consistent processing required to turn raw, high-frequency ecological data into quantitative insights.
 
 ---
-
+> **⚠️ Important Notice:** Future versions of Athlytics will focus exclusively on local Strava data export analysis and **will discontinue API-based data acquisition support**. This strategic shift enables unlimited batch processing across multiple athletes, complete historical data access, and enhanced privacy compliance without API rate limits or authentication complexity. We strongly recommend transitioning to Strava's official [bulk data export feature](https://support.strava.com/hc/en-us/articles/216918437-Exporting-your-Data-and-Bulk-Export) for your workflows.
 ### ✨ Core Features
 
 | Feature                       | Description                                                                                             |
