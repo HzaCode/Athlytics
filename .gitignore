@@ -9,7 +9,14 @@ CRAN-SUBMISSION
 /Athlytics.Rcheck/00_pkg_src/Athlytics/.aspell
 /Athlytics.Rcheck/00_pkg_src/Athlytics
 /Athlytics.Rcheck
+# Archive files
 *.gz
+*.tar.gz
+*.zip
+*.tar
+*.rar
+*.7z
+*.Rcheck.tar.gz
 /tests/run_all_tests.R
 .httr-oauth
 tests/test_direct_api_streams.R
@@ -31,7 +38,6 @@ tests/manual_tests/
 
 # User's private Strava data - DO NOT COMMIT
 strava_export_data/
-export_*.zip
 
 # Temporary test files
 test-*.html
