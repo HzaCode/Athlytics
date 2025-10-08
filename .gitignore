@@ -17,7 +17,14 @@ tests/test_direct_api_streams.R
 coverage_report.html
 runnable_function_examples.html
 
+# Documentation files (not for GitHub)
+README.md
+NEWS.md
 paper/
+vignettes/
+docs/
+analysis_output/
+export_data/
 tests/manual_tests/
 
 /..Rcheck
