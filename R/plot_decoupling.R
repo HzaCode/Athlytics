@@ -158,27 +158,32 @@ plot_decoupling <- function(stoken,
                             max_activities = 50,
                             add_trend_line = TRUE,
                             smoothing_method = "loess",
-                            decoupling_df = NULL) {
+                            decoupling_df = NULL,
+                            group_var = NULL,
+                            group_colors = NULL) {
 
   # Match arg for decouple_metric to ensure only one is used internally if multiple are provided
   decouple_metric_label <- match.arg(decouple_metric)
+
+  # --- Check if first argument is already decoupling data frame ---
+  if (is.data.frame(stoken) && any(c("decoupling_pct", "decoupling_percent", "decoupling") %in% colnames(stoken))) {
+    decoupling_df <- stoken
+  }
 
   # --- Get Data --- 
   # If decoupling_df is not provided, calculate it
   if (is.null(decoupling_df)) {
       # Check if stoken provided when decoupling_df is not
-      if (missing(stoken)) stop("Either 'stoken' or 'decoupling_df' must be provided.")
+      if (missing(stoken)) stop("Either provide decoupling data frame from calculate_decoupling() as first argument, or provide activities_data.")
       
       message("No pre-calculated decoupling_df provided. Calculating data now... (This may take a while)")
       # Call the calculation function
       decoupling_df <- calculate_decoupling(
-          stoken = stoken,
+          activities_data = stoken,
           activity_type = activity_type, # Can be a vector
-          decouple_metric = decouple_metric_label, # Use the matched, single metric
           start_date = start_date,
           end_date = end_date,
-          min_duration_mins = min_duration_mins,
-          max_activities = max_activities
+          min_duration_mins = min_duration_mins
       )
   }
 
@@ -198,15 +203,14 @@ plot_decoupling <- function(stoken,
   plot_data <- decoupling_df %>%
     dplyr::mutate(date = lubridate::as_date(.data$date))
   
+  # --- Check for group variable ---
+  has_groups <- !is.null(group_var) && group_var %in% colnames(plot_data)
+  
   # --- Plotting ---
   message("Generating plot...")
   y_axis_label <- paste("Decoupling (", gsub("_", "/", decouple_metric_label), ") [%]")
   
   # Determine activity type label for the plot title/subtitle
-  # If activity_type was a parameter to calculate_decoupling, it might not be in decoupling_df
-  # If decoupling_df is provided, it might or might not have an activity_type column.
-  # For simplicity, if `activity_type` arg to `plot_decoupling` is length 1, use it.
-  # Otherwise, use a generic term or extract from data if present.
   plot_activity_type_label <- if (length(activity_type) == 1) {
       activity_type
   } else if ("activity_type" %in% names(plot_data) && length(unique(plot_data$activity_type)) == 1) {
@@ -215,26 +219,74 @@ plot_decoupling <- function(stoken,
       "Selected Activities" # Generic if multiple or not clearly defined
   }
 
-
-  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling)) +
-    ggplot2::geom_point(alpha = 0.8, size = 2.5, color = "dodgerblue") +
-    ggplot2::geom_hline(yintercept = 5, linetype="dashed", color="grey70") +
-    ggplot2::annotate("text", x = min(plot_data$date, na.rm = TRUE), y = 5.5, label="5% threshold", hjust=0, vjust=0, size=3, color="grey50") +
-    ggplot2::scale_x_date(labels = explicit_english_month_year, date_breaks = "3 months") +
-    ggplot2::scale_y_continuous(labels = function(x) paste0(x, "%")) +
-    ggplot2::labs(
-      title = paste("Aerobic Decoupling Trend for", plot_activity_type_label),
-      subtitle = paste("Metric:", decouple_metric_label, "(Lower is generally better)"),
-      x = "Date",
-      y = y_axis_label
-    ) +
-    ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-                   plot.title = ggplot2::element_text(face = "bold"))
-
-  if (add_trend_line && nrow(plot_data) >= 2) { # geom_smooth needs at least 2 points
-    p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "firebrick", linewidth = 0.8)
+  if (has_groups) {
+    # Multi-group plotting
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling, 
+                                                  color = .data[[group_var]])) +
+      ggplot2::geom_point(alpha = 0.7, size = 2.5) +
+      ggplot2::geom_hline(yintercept = 5, linetype="dashed", color="grey70") +
+      ggplot2::annotate("text", x = min(plot_data$date, na.rm = TRUE), y = 5.5, 
+                       label="5% threshold", hjust=0, vjust=0, size=3, color="grey50") +
+      ggplot2::scale_x_date(labels = explicit_english_month_year, date_breaks = "3 months") +
+      ggplot2::scale_y_continuous(labels = function(x) paste0(x, "%"))
+    
+    # Apply custom colors if provided
+    if (!is.null(group_colors)) {
+      p <- p + ggplot2::scale_color_manual(values = group_colors, name = group_var)
+    } else {
+      p <- p + ggplot2::scale_color_manual(
+        values = c("#E64B35", "#4DBBD5", "#00A087", "#3C5488", "#F39B7F", "#8491B4"),
+        name = group_var
+      )
+    }
+    
+    p <- p +
+      ggplot2::labs(
+        title = paste("Aerobic Decoupling Trend for", plot_activity_type_label),
+        subtitle = paste("Metric:", decouple_metric_label, "| Grouped by:", group_var, "(Lower is better)"),
+        x = "Date",
+        y = y_axis_label
+      )
+    
+    if (add_trend_line && nrow(plot_data) >= 2) {
+      p <- p + ggplot2::geom_smooth(ggplot2::aes(group = .data[[group_var]]), 
+                                    method = smoothing_method, se = FALSE, linewidth = 0.8)
+    }
+    
+  } else {
+    # Single group plotting (original logic)
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling)) +
+      ggplot2::geom_point(alpha = 0.8, size = 2.5, color = "dodgerblue") +
+      ggplot2::geom_hline(yintercept = 5, linetype="dashed", color="grey70") +
+      ggplot2::annotate("text", x = min(plot_data$date, na.rm = TRUE), y = 5.5, 
+                       label="5% threshold", hjust=0, vjust=0, size=3, color="grey50") +
+      ggplot2::scale_x_date(labels = explicit_english_month_year, date_breaks = "3 months") +
+      ggplot2::scale_y_continuous(labels = function(x) paste0(x, "%")) +
+      ggplot2::labs(
+        title = paste("Aerobic Decoupling Trend for", plot_activity_type_label),
+        subtitle = paste("Metric:", decouple_metric_label, "(Lower is generally better)"),
+        x = "Date",
+        y = y_axis_label
+      )
+    
+    if (add_trend_line && nrow(plot_data) >= 2) {
+      p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "firebrick", linewidth = 0.8)
+    }
   }
+  
+  p <- p +
+    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = ggplot2::element_text(size = 10),
+      axis.title = ggplot2::element_text(size = 11, face = "bold"),
+      plot.title = ggplot2::element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 10)),
+      plot.subtitle = ggplot2::element_text(size = 10, color = "gray40", margin = ggplot2::margin(b = 15)),
+      panel.grid.minor = ggplot2::element_blank(),
+      legend.position = if(has_groups) "bottom" else "none",
+      legend.title = ggplot2::element_text(face = "bold", size = 10),
+      legend.text = ggplot2::element_text(size = 9)
+    )
 
   return(p)
 } 

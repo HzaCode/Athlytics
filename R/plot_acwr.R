@@ -82,22 +82,25 @@ plot_acwr <- function(stoken,
                       user_resting_hr = NULL,
                       smoothing_period = 7,
                       highlight_zones = TRUE,
-                      acwr_df = NULL) {
-  # --- Deprecation Warning ---
-  warning("plot_acwr() is deprecated and uses old API methods. ",
-          "Please use calculate_acwr(activities_data = ...) directly and create plots with ggplot2.",
-          call. = FALSE)
+                      acwr_df = NULL,
+                      group_var = NULL,
+                      group_colors = NULL) {
+  
+  # --- Check if first argument is already ACWR data frame ---
+  # This allows backward compatibility: plot_acwr(acwr_result)
+  if (is.data.frame(stoken) && "acwr_smooth" %in% colnames(stoken)) {
+    acwr_df <- stoken
+  }
   
   # --- Get Data --- 
   # If acwr_df is not provided, calculate it
   if (is.null(acwr_df)) {
       # Check if stoken provided when acwr_df is not
-      if (missing(stoken)) stop("Either 'stoken' or 'acwr_df' (from calculate_acwr with activities_data) must be provided.")
+      if (missing(stoken)) stop("Either provide ACWR data frame from calculate_acwr() as first argument, or provide activities_data.")
       
-      # Call the calculation function
-      # This will fail as stoken is no longer supported
+      # stoken should be activities_data in new usage
       acwr_df <- calculate_acwr(
-          activities_data = stoken,  # Changed parameter name
+          activities_data = stoken,
           activity_type = activity_type,
           load_metric = load_metric,
           acute_period = acute_period,
@@ -127,9 +130,21 @@ plot_acwr <- function(stoken,
     return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No smoothed ACWR data available"))
   }
 
+  # --- Check for group variable ---
+  has_groups <- !is.null(group_var) && group_var %in% colnames(plot_data)
+  
   # --- Plotting ---
   message("Generating plot...")
-  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$acwr_smooth))
+  
+  if (has_groups) {
+    # Multi-group plotting
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$acwr_smooth, 
+                                                  color = .data[[group_var]], 
+                                                  group = .data[[group_var]]))
+  } else {
+    # Single group plotting
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$acwr_smooth))
+  }
 
   # Add risk zone shading
   if (highlight_zones) {
@@ -140,13 +155,13 @@ plot_acwr <- function(stoken,
 
     p <- p +
       # High Risk Zone (e.g., > 1.5)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = high_risk_min, ymax = Inf), fill = "red", alpha = 0.1) +
+      ggplot2::geom_ribbon(ggplot2::aes(ymin = high_risk_min, ymax = Inf), fill = "#E64B35", alpha = 0.15) +
       # Caution Zone (e.g., 1.3 - 1.5)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_max, ymax = high_risk_min), fill = "orange", alpha = 0.1) +
+      ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_max, ymax = high_risk_min), fill = "#F39B7F", alpha = 0.15) +
       # Sweet Spot (e.g., 0.8 - 1.3)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_min, ymax = sweet_spot_max), fill = "green", alpha = 0.1) +
+      ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_min, ymax = sweet_spot_max), fill = "#00A087", alpha = 0.15) +
        # Low Load / Undertraining Zone (e.g., < 0.8)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = -Inf, ymax = sweet_spot_min), fill = "lightblue", alpha = 0.1)
+      ggplot2::geom_ribbon(ggplot2::aes(ymin = -Inf, ymax = sweet_spot_min), fill = "#4DBBD5", alpha = 0.15)
       
       # Add annotations only if there's enough space/range
       plot_date_range <- range(plot_data$date)
@@ -154,20 +169,35 @@ plot_acwr <- function(stoken,
       annotation_x_pos <- plot_date_range[1] + lubridate::days(round(as.numeric(diff(plot_date_range)) * 0.05))
       
       if(plot_y_range[2] > high_risk_min) {
-        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], high_risk_min + 0.2), label = "High Risk", hjust = 0, vjust = 1, size = 3, color = "red4", alpha = 0.7)
+        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], high_risk_min + 0.2), label = "High Risk", hjust = 0, vjust = 1, size = 3, color = "#E64B35", alpha = 0.8, fontface = "bold")
       }
        if(plot_y_range[2] > sweet_spot_max) {
-        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], (sweet_spot_max + high_risk_min)/2), label = "Caution", hjust = 0, vjust = 0.5, size = 3, color = "orange4", alpha = 0.7)
+        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], (sweet_spot_max + high_risk_min)/2), label = "Caution", hjust = 0, vjust = 0.5, size = 3, color = "#F39B7F", alpha = 0.8, fontface = "bold")
        }
-       p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = (sweet_spot_min + sweet_spot_max) / 2, label = "Sweet Spot", hjust = 0, vjust = 0.5, size = 3, color = "green4", alpha = 0.7)
+       p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = (sweet_spot_min + sweet_spot_max) / 2, label = "Sweet Spot", hjust = 0, vjust = 0.5, size = 3, color = "#00A087", alpha = 0.8, fontface = "bold")
        if(plot_y_range[1] < sweet_spot_min) {
-        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = max(plot_y_range[1], sweet_spot_min - 0.1), label = "Low Load", hjust = 0, vjust = 0, size = 3, color = "blue4", alpha = 0.7)
+        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = max(plot_y_range[1], sweet_spot_min - 0.1), label = "Low Load", hjust = 0, vjust = 0, size = 3, color = "#4DBBD5", alpha = 0.8, fontface = "bold")
       }
 
   }
 
-  # Add ACWR line
-  p <- p + ggplot2::geom_line(color = "black", linewidth = 1)
+  # Add ACWR line(s)
+  if (has_groups) {
+    p <- p + ggplot2::geom_line(linewidth = 1.2, alpha = 0.8)
+    
+    # Apply custom colors if provided
+    if (!is.null(group_colors)) {
+      p <- p + ggplot2::scale_color_manual(values = group_colors, name = group_var)
+    } else {
+      # Use default Nature palette colors
+      p <- p + ggplot2::scale_color_manual(
+        values = c("#E64B35", "#4DBBD5", "#00A087", "#3C5488", "#F39B7F", "#8491B4"),
+        name = group_var
+      )
+    }
+  } else {
+    p <- p + ggplot2::geom_line(color = "#3C5488", linewidth = 1.2)
+  }
 
   # Define y-limits and breaks for better scaling
   y_max_limit <- max(plot_data$acwr_smooth, ifelse(highlight_zones, high_risk_min + 0.2, 1.5), na.rm = TRUE)
@@ -194,9 +224,19 @@ plot_acwr <- function(stoken,
     ) +
     ggplot2::scale_y_continuous(limits = c(0, y_max_limit), breaks = y_breaks) +
     ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-                   plot.title = ggplot2::element_text(face = "bold"))
+    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = ggplot2::element_text(size = 10),
+      axis.title = ggplot2::element_text(size = 11, face = "bold"),
+      plot.title = ggplot2::element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 10)),
+      plot.subtitle = ggplot2::element_text(size = 10, color = "gray40", margin = ggplot2::margin(b = 15)),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.grid.major = ggplot2::element_line(color = "gray90", linewidth = 0.3),
+      legend.position = if(has_groups) "bottom" else "none",
+      legend.title = ggplot2::element_text(face = "bold", size = 10),
+      legend.text = ggplot2::element_text(size = 9)
+    )
                    
   return(p)
 }

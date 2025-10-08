@@ -70,19 +70,26 @@ plot_ef <- function(stoken,
                     min_duration_mins = 20,
                     add_trend_line = TRUE,
                     smoothing_method = "loess",
-                    ef_df = NULL) {
+                    ef_df = NULL,
+                    group_var = NULL,
+                    group_colors = NULL) {
 
   # Match arg here as it's needed for plot labels
   ef_metric_label <- match.arg(ef_metric)
+
+  # --- Check if first argument is already EF data frame ---
+  if (is.data.frame(stoken) && all(c("date", "ef_value") %in% colnames(stoken))) {
+    ef_df <- stoken
+  }
 
   # --- Get Data --- 
   # If ef_df is not provided, calculate it
   if (is.null(ef_df)) {
       # Check if stoken provided when ef_df is not
-      if (missing(stoken)) stop("Either 'stoken' or 'ef_df' must be provided.")
+      if (missing(stoken)) stop("Either provide EF data frame from calculate_ef() as first argument, or provide activities_data.")
       
       ef_df <- calculate_ef(
-          stoken = stoken,
+          activities_data = stoken,
           activity_type = activity_type,
           ef_metric = ef_metric_label,
           start_date = start_date,
@@ -99,6 +106,9 @@ plot_ef <- function(stoken,
 
   # Rename for clarity
   plot_data <- ef_df
+  
+  # --- Check for group variable ---
+  has_groups <- !is.null(group_var) && group_var %in% colnames(plot_data)
 
   # --- Plotting ---
   message("Generating plot...")
@@ -106,25 +116,69 @@ plot_ef <- function(stoken,
                     "Pace_HR" = "Efficiency Factor (Speed [m/s] / HR)",
                     "Power_HR" = "Efficiency Factor (Power [W] / HR)")
 
-  p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$ef_value)) +
-    ggplot2::geom_point(ggplot2::aes(color = .data$activity_type), alpha = 0.7, size = 2) +
-    ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
-    ggplot2::scale_color_viridis_d(option = "plasma", end = 0.8) +
-    ggplot2::labs(
-      title = "Efficiency Factor (EF) Trend",
-      subtitle = paste("Metric:", ef_metric_label),
-      x = "Date",
-      y = y_label,
-      color = "Activity Type"
-    ) +
-    ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-                   plot.title = ggplot2::element_text(face = "bold"),
-                   legend.position = "bottom")
-
-  if (add_trend_line) {
-    p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
+  if (has_groups) {
+    # Multi-group plotting
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$ef_value, 
+                                                  color = .data[[group_var]])) +
+      ggplot2::geom_point(alpha = 0.7, size = 2.5) +
+      ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months")
+    
+    # Apply custom colors if provided
+    if (!is.null(group_colors)) {
+      p <- p + ggplot2::scale_color_manual(values = group_colors, name = group_var)
+    } else {
+      # Use default Nature palette colors
+      p <- p + ggplot2::scale_color_manual(
+        values = c("#E64B35", "#4DBBD5", "#00A087", "#3C5488", "#F39B7F", "#8491B4"),
+        name = group_var
+      )
+    }
+    
+    p <- p +
+      ggplot2::labs(
+        title = "Efficiency Factor (EF) Trend",
+        subtitle = paste("Metric:", ef_metric_label, "| Grouped by:", group_var),
+        x = "Date",
+        y = y_label
+      )
+    
+    if (add_trend_line) {
+      p <- p + ggplot2::geom_smooth(ggplot2::aes(group = .data[[group_var]]), 
+                                    method = smoothing_method, se = FALSE, linewidth = 0.8)
+    }
+    
+  } else {
+    # Single group plotting (original logic)
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$ef_value)) +
+      ggplot2::geom_point(ggplot2::aes(color = .data$activity_type), alpha = 0.7, size = 2) +
+      ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
+      ggplot2::scale_color_viridis_d(option = "plasma", end = 0.8) +
+      ggplot2::labs(
+        title = "Efficiency Factor (EF) Trend",
+        subtitle = paste("Metric:", ef_metric_label),
+        x = "Date",
+        y = y_label,
+        color = "Activity Type"
+      )
+    
+    if (add_trend_line) {
+      p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
+    }
   }
+  
+  p <- p +
+    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = ggplot2::element_text(size = 10),
+      axis.title = ggplot2::element_text(size = 11, face = "bold"),
+      plot.title = ggplot2::element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 10)),
+      plot.subtitle = ggplot2::element_text(size = 10, color = "gray40", margin = ggplot2::margin(b = 15)),
+      panel.grid.minor = ggplot2::element_blank(),
+      legend.position = "bottom",
+      legend.title = ggplot2::element_text(face = "bold", size = 10),
+      legend.text = ggplot2::element_text(size = 9)
+    )
 
   return(p)
 }

@@ -81,12 +81,17 @@ plot_exposure <- function(stoken,
                           risk_zones = TRUE,
                           exposure_df = NULL) {
 
+  # --- Check if first argument is already exposure data frame ---
+  if (is.data.frame(stoken) && all(c("date", "atl", "ctl") %in% colnames(stoken))) {
+    exposure_df <- stoken
+  }
+
   # --- Get Data --- 
   if (is.null(exposure_df)) {
-      if (missing(stoken)) stop("Either 'stoken' or 'exposure_df' must be provided.")
+      if (missing(stoken)) stop("Either provide exposure data frame from calculate_exposure() as first argument, or provide activities_data.")
       
       exposure_df <- calculate_exposure(
-        stoken = stoken,
+        activities_data = stoken,
         activity_type = activity_type,
         load_metric = load_metric,
         acute_period = acute_period,

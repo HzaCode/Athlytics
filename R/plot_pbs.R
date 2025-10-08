@@ -119,17 +119,27 @@ plot_pbs <- function(stoken,
                      add_trend_line = TRUE,
                      pbs_df = NULL) {
 
+  # --- Check if first argument is already PBS data frame ---
+  if (is.data.frame(stoken) && any(c("pb_improvement_pct", "distance", "time") %in% colnames(stoken))) {
+    pbs_df <- stoken
+  }
+
   # --- Get Data ---
   if (is.null(pbs_df)) {
-      if (missing(stoken)) stop("Either 'stoken' or 'pbs_df' must be provided.")
-      if (missing(distance_meters)) stop("`distance_meters` must be provided when `pbs_df` is not.")
+      if (missing(stoken)) stop("Either provide PBS data frame from calculate_pbs() as first argument, or provide activities_data.")
+      
+      # Only require distance_meters if we need to calculate
+      if (missing(distance_meters)) {
+        distance_meters <- c(1000, 5000, 10000)  # Use defaults
+        message("Using default distances: 1km, 5km, 10km")
+      }
       
       pbs_df <- calculate_pbs(
-          stoken = stoken,
+          activities_data = stoken,
           activity_type = activity_type,
-          distance_meters = distance_meters,
-          max_activities = max_activities,
-          date_range = date_range
+          distances_m = distance_meters,
+          start_date = if (!is.null(date_range) && length(date_range) >= 1) date_range[1] else NULL,
+          end_date = if (!is.null(date_range) && length(date_range) >= 2) date_range[2] else NULL
       )
   }
   
