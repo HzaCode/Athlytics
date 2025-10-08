@@ -21,9 +21,16 @@ paper/
 tests/manual_tests/
 
 /..Rcheck
-/docs
 
-嗯嗯# User's private Strava data - DO NOT COMMIT
+# User's private Strava data - DO NOT COMMIT
 strava_export_data/
 export_*.zip
-*.zip
+
+# Temporary test files
+test-*.html
+test-*.md
+
+# Node modules (if accidentally created)
+node_modules/
+package.json
+package-lock.json

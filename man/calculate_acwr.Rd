@@ -69,16 +69,18 @@ if (!is.null(athlytics_sample_acwr)) {
 # Example using local Strava export data
 # Step 1: Download your Strava data export
 # Go to Strava.com > Settings > My Account > Download or Delete Your Account
+# You'll receive a ZIP file via email (e.g., export_12345678.zip)
 
-# Step 2: Extract the zip file to a folder (e.g., "strava_export_data")
+# Step 2: Load activities directly from ZIP (no extraction needed!)
+activities <- load_local_activities("export_12345678.zip")
 
-# Step 3: Load activities from the export
+# Or from extracted CSV
 activities <- load_local_activities("strava_export_data/activities.csv")
 
-# Step 4: Calculate ACWR for Runs (using duration)
+# Step 3: Calculate ACWR for Runs (using distance)
 run_acwr <- calculate_acwr(activities_data = activities, 
                            activity_type = "Run",
-                           load_metric = "duration_mins")
+                           load_metric = "distance")
 print(tail(run_acwr))
 
 # Calculate ACWR for Rides (using TSS, requires FTP)
@@ -87,5 +89,8 @@ ride_acwr_tss <- calculate_acwr(activities_data = activities,
                                 load_metric = "tss", 
                                 user_ftp = 280)
 print(tail(ride_acwr_tss))
+
+# Plot the results
+plot_acwr(run_acwr, highlight_zones = TRUE)
 }
 }

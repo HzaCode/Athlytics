@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_local_activities.R
 \name{load_local_activities}
 \alias{load_local_activities}
-\title{Load Activities from Local Strava Export CSV}
+\title{Load Activities from Local Strava Export}
 \usage{
 load_local_activities(
   csv_path = "strava_export_data/activities.csv",
@@ -12,7 +12,9 @@ load_local_activities(
 )
 }
 \arguments{
-\item{csv_path}{Path to the activities.csv file from Strava export.
+\item{csv_path}{Path to the activities.csv file OR a .zip archive from Strava export.
+If a .zip file is provided, the function will automatically extract and read
+the activities.csv file from within the archive.
 Default is "strava_export_data/activities.csv".}
 
 \item{start_date}{Optional. Start date (YYYY-MM-DD or Date/POSIXct) for filtering activities.
@@ -42,9 +44,10 @@ A tibble of activity data with standardized column names compatible
   }
 }
 \description{
-Reads and processes activity data from a local Strava export CSV file,
-converting it to a format compatible with Athlytics analysis functions.
-This function is designed to work with Strava's official data export
+Reads and processes activity data from a local Strava export, supporting both
+direct CSV files and compressed ZIP archives. This function converts Strava export
+data to a format compatible with all Athlytics analysis functions.
+Designed to work with Strava's official bulk data export
 (Settings > My Account > Download or Delete Your Account > Get Started).
 }
 \details{
@@ -66,11 +69,15 @@ with Strava's API Agreement and data usage policies.
 }
 \examples{
 \dontrun{
-# Load all activities from local export
-activities <- load_local_activities()
+# Load all activities from local CSV
+activities <- load_local_activities("strava_export_data/activities.csv")
+
+# Load directly from ZIP archive (no need to extract manually!)
+activities <- load_local_activities("export_12345678.zip")
 
 # Load only running activities from 2023
 activities <- load_local_activities(
+  csv_path = "export_12345678.zip",
   start_date = "2023-01-01",
   end_date = "2023-12-31",
   activity_types = "Run"
@@ -78,6 +85,11 @@ activities <- load_local_activities(
 
 # Use with Athlytics functions
 acwr_data <- calculate_acwr(activities, load_metric = "distance")
+plot_acwr(acwr_data, highlight_zones = TRUE)
+
+# Multi-metric analysis
+ef_data <- calculate_ef(activities, ef_metric = "Pace_HR")
+plot_ef(ef_data, add_trend_line = TRUE)
 }
 
 }
