@@ -12,6 +12,10 @@ calculate_decoupling(
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 40,
+  min_steady_minutes = 40,
+  steady_cv_threshold = 0.08,
+  min_hr_coverage = 0.9,
+  quality_control = c("off", "flag", "filter"),
   stream_df = NULL,
   stoken = NULL
 )
@@ -32,6 +36,18 @@ Default is "strava_export_data".}
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
 
 \item{min_duration_mins}{Minimum activity duration (minutes) to include. Default 40.}
+
+\item{min_steady_minutes}{Minimum duration (minutes) for steady-state segment (default: 40).
+Activities shorter than this are automatically rejected for decoupling calculation.}
+
+\item{steady_cv_threshold}{Coefficient of variation threshold for steady-state (default: 0.08 = 8\%).
+Activities with higher variability are rejected as non-steady-state.}
+
+\item{min_hr_coverage}{Minimum HR data coverage threshold (default: 0.9 = 90\%).
+Activities with lower HR coverage are rejected as insufficient data quality.}
+
+\item{quality_control}{Quality control mode: "off" (no filtering), "flag" (mark issues),
+or "filter" (exclude flagged data). Default "filter" for scientific rigor.}
 
 \item{stream_df}{Optional. A pre-fetched data frame for a \emph{single} activity's stream.
 If provided, calculates decoupling for this data directly, ignoring other parameters.

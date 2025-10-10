@@ -95,7 +95,11 @@ aerobic base development and training effectiveness.</p>
 <span>  ef_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span>, <span class="st">"Pace_HR"</span>, <span class="st">"Power_HR"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  min_duration_mins <span class="op">=</span> <span class="fl">20</span></span>
+<span>  min_duration_mins <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  min_steady_minutes <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  steady_cv_threshold <span class="op">=</span> <span class="fl">0.08</span>,</span>
+<span>  min_hr_coverage <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  quality_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"off"</span>, <span class="st">"flag"</span>, <span class="st">"filter"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -139,6 +143,26 @@ Defaults to current date (Sys.Date()).</p></dd>
 in analysis (default: 20). Filters out very short activities that may not
 represent steady-state aerobic efforts.</p></dd>
 
+
+<dt id="arg-min-steady-minutes">min_steady_minutes<a class="anchor" aria-label="anchor" href="#arg-min-steady-minutes"></a></dt>
+<dd><p>Numeric. Minimum duration (minutes) for steady-state segment (default: 20).
+Activities shorter than this are automatically rejected for EF calculation.</p></dd>
+
+
+<dt id="arg-steady-cv-threshold">steady_cv_threshold<a class="anchor" aria-label="anchor" href="#arg-steady-cv-threshold"></a></dt>
+<dd><p>Numeric. Coefficient of variation threshold for steady-state (default: 0.08 = 8%).
+Activities with higher variability are rejected as non-steady-state.</p></dd>
+
+
+<dt id="arg-min-hr-coverage">min_hr_coverage<a class="anchor" aria-label="anchor" href="#arg-min-hr-coverage"></a></dt>
+<dd><p>Numeric. Minimum HR data coverage threshold (default: 0.9 = 90%).
+Activities with lower HR coverage are rejected as insufficient data quality.</p></dd>
+
+
+<dt id="arg-quality-control">quality_control<a class="anchor" aria-label="anchor" href="#arg-quality-control"></a></dt>
+<dd><p>Character. Quality control mode: "off" (no filtering), "flag" (mark issues),
+or "filter" (exclude flagged data). Default "filter" for scientific rigor.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -154,7 +178,8 @@ Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.</p></dd>
 
 <dt>status</dt>
 <dd><p>Character. "ok" for successful calculation, "non_steady" if steady-state
-criteria not met, "insufficient_data" if data quality issues. (Only if quality checks enabled)</p></dd>
+criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
+"insufficient_hr_data" if HR coverage below threshold.</p></dd>
 
 
 </dl></div>

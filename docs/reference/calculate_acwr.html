@@ -73,7 +73,7 @@ helps identify periods of rapid training load increases that may elevate injury 
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calculate_acwr</span><span class="op">(</span></span>
 <span>  <span class="va">activities_data</span>,</span>
-<span>  activity_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
 <span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span>
 <span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span>
 <span>  chronic_period <span class="op">=</span> <span class="fl">28</span>,</span>
@@ -97,8 +97,8 @@ Must contain columns: <code>date</code>, <code>distance</code>, <code>moving_tim
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
-<dd><p>Optional character vector. Filter activities by type
-(e.g., <code>"Run"</code>, <code>"Ride"</code>, <code>c("Run", "Ride")</code>). Default <code>NULL</code> includes all types.</p></dd>
+<dd><p><strong>Required</strong> character vector. Filter activities by type
+(e.g., <code>"Run"</code>, <code>"Ride"</code>). <strong>Must specify</strong> to avoid mixing incompatible load metrics.</p></dd>
 
 
 <dt id="arg-load-metric">load_metric<a class="anchor" aria-label="anchor" href="#arg-load-metric"></a></dt>

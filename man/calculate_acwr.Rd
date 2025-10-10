@@ -6,7 +6,7 @@
 \usage{
 calculate_acwr(
   activities_data,
-  activity_type = NULL,
+  activity_type = c("Run", "Ride"),
   load_metric = "duration_mins",
   acute_period = 7,
   chronic_period = 28,
@@ -23,8 +23,8 @@ calculate_acwr(
 Must contain columns: \code{date}, \code{distance}, \code{moving_time}, \code{elapsed_time},
 \code{average_heartrate}, \code{average_watts}, \code{type}, \code{elevation_gain}.}
 
-\item{activity_type}{Optional character vector. Filter activities by type
-(e.g., \code{"Run"}, \code{"Ride"}, \code{c("Run", "Ride")}). Default \code{NULL} includes all types.}
+\item{activity_type}{\strong{Required} character vector. Filter activities by type
+(e.g., \code{"Run"}, \code{"Ride"}). \strong{Must specify} to avoid mixing incompatible load metrics.}
 
 \item{load_metric}{Character string specifying the load calculation method:
 \itemize{
