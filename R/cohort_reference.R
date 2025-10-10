@@ -60,7 +60,7 @@
 #' # Calculate ACWR for each athlete
 #' cohort_acwr <- cohort_data %>%
 #'   group_by(athlete_id) %>%
-#'   do(calculate_acwr_ewma(.))
+#'   group_modify(~calculate_acwr_ewma(.x))
 #'
 #' # Calculate reference percentiles
 #' reference <- cohort_reference(
