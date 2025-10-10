@@ -1,0 +1,86 @@
+url: https://hezhiang.com/Athlytics/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+
+navbar:
+  structure:
+    left: [intro, reference, articles, changelog]
+    right: [search, github]
+  components:
+    articles:
+      text: Articles
+      menu:
+      - text: Getting Started
+      - text: Introduction to Athlytics
+        href: articles/Athlytics-introduction.html
+      - text: -------
+      - text: Advanced Topics
+      - text: Advanced Features
+        href: articles/advanced-features.html
+
+reference:
+  - title: Data Loading
+    desc: Functions for loading and parsing local Strava data
+    contents:
+    - load_local_activities
+    - parse_activity_file
+    - parse_fit_file
+    - parse_gpx_file
+    - parse_tcx_file
+    
+  - title: Core Metrics Calculation
+    desc: Calculate key physiological metrics
+    contents:
+    - calculate_acwr
+    - calculate_acwr_ewma
+    - calculate_ef
+    - calculate_decoupling
+    - calculate_exposure
+    - calculate_pbs
+    
+  - title: Visualization
+    desc: Plot and visualize training metrics
+    contents:
+    - plot_acwr
+    - plot_acwr_enhanced
+    - plot_acwr_comparison
+    - plot_ef
+    - plot_decoupling
+    - plot_exposure
+    - plot_pbs
+    - plot_with_reference
+    
+  - title: Advanced Analysis
+    desc: Cohort analysis and quality control
+    contents:
+    - cohort_reference
+    - add_reference_bands
+    - flag_quality
+    - quality_summary
+    
+  - title: Themes and Colors
+    desc: Visualization customization
+    contents:
+    - theme_athlytics
+    - scale_athlytics
+    - starts_with("athlytics_colors")
+    - starts_with("athlytics_palette")
+    
+  - title: Sample Data
+    desc: Example datasets for testing and learning
+    contents:
+    - starts_with("athlytics_sample")
+
+articles:
+  - title: Getting Started
+    navbar: ~
+    contents:
+    - Athlytics-introduction
+    
+  - title: Advanced Usage
+    navbar: ~
+    contents:
+    - advanced-features
+
