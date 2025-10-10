@@ -50,6 +50,10 @@
 #' @param min_duration_mins Numeric. Minimum activity duration in minutes to include
 #'   in analysis (default: 20). Filters out very short activities that may not
 #'   represent steady-state aerobic efforts.
+#' @param min_steady_minutes Numeric. Minimum duration (minutes) for steady-state segment (default: 20).
+#'   Activities shorter than this are automatically rejected for EF calculation.
+#' @param steady_cv_threshold Numeric. Coefficient of variation threshold for steady-state (default: 0.08 = 8%).
+#'   Activities with higher variability are rejected as non-steady-state.
 #'
 #' @return A tibble with the following columns:
 #' \describe{
@@ -58,7 +62,7 @@
 #'   \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
 #'     Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.}
 #'   \item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state 
-#'     criteria not met, "insufficient_data" if data quality issues. (Only if quality checks enabled)}
+#'     criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes.}
 #' }
 #'
 #' @details
@@ -138,7 +142,9 @@ calculate_ef <- function(activities_data,
                          ef_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
                          start_date = NULL,
                          end_date = NULL,
-                         min_duration_mins = 20) {
+                         min_duration_mins = 20,
+                         min_steady_minutes = 20,
+                         steady_cv_threshold = 0.08) {
 
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
@@ -155,6 +161,12 @@ calculate_ef <- function(activities_data,
   ef_metric <- tolower(ef_metric)
   if (!is.numeric(min_duration_mins) || min_duration_mins < 0) {
     stop("`min_duration_mins` must be a non-negative number.")
+  }
+  if (!is.numeric(min_steady_minutes) || min_steady_minutes < 0) {
+    stop("`min_steady_minutes` must be a non-negative number.")
+  }
+  if (!is.numeric(steady_cv_threshold) || steady_cv_threshold <= 0 || steady_cv_threshold > 1) {
+    stop("`steady_cv_threshold` must be between 0 and 1.")
   }
 
   # --- Date Handling ---
@@ -201,6 +213,17 @@ calculate_ef <- function(activities_data,
     if (!act_type %in% activity_type) return(NULL)
     if (duration_sec < (min_duration_mins * 60)) return(NULL)
     if (is.na(avg_hr) || avg_hr <= 0) return(NULL)
+    
+    # Steady-state gating: check minimum duration
+    if (duration_sec < (min_steady_minutes * 60)) {
+      return(data.frame(
+        date = activity_date,
+        activity_type = act_type,
+        ef_value = NA_real_,
+        status = "too_short",
+        stringsAsFactors = FALSE
+      ))
+    }
 
     ef_value <- NA
 
@@ -221,10 +244,17 @@ calculate_ef <- function(activities_data,
         date = activity_date,
         activity_type = act_type,
         ef_value = ef_value,
+        status = "ok",
         stringsAsFactors = FALSE
       )
     } else {
-      NULL
+      data.frame(
+        date = activity_date,
+        activity_type = act_type,
+        ef_value = NA_real_,
+        status = "insufficient_data",
+        stringsAsFactors = FALSE
+      )
     }
   })
 

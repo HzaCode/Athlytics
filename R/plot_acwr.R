@@ -81,7 +81,7 @@ plot_acwr <- function(stoken,
                       user_max_hr = NULL,
                       user_resting_hr = NULL,
                       smoothing_period = 7,
-                      highlight_zones = FALSE,
+                      highlight_zones = TRUE,
                       acwr_df = NULL,
                       group_var = NULL,
                       group_colors = NULL) {

@@ -16,6 +16,10 @@
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #' @param min_duration_mins Minimum activity duration (minutes) to include. Default 40.
+#' @param min_steady_minutes Minimum duration (minutes) for steady-state segment (default: 40).
+#'   Activities shorter than this are automatically rejected for decoupling calculation.
+#' @param steady_cv_threshold Coefficient of variation threshold for steady-state (default: 0.08 = 8%).
+#'   Activities with higher variability are rejected as non-steady-state.
 #' @param stream_df Optional. A pre-fetched data frame for a *single* activity's stream.
 #'   If provided, calculates decoupling for this data directly, ignoring other parameters.
 #'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance` 
@@ -78,6 +82,8 @@ calculate_decoupling <- function(activities_data = NULL,
                                  start_date = NULL,
                                  end_date = NULL,
                                  min_duration_mins = 40,
+                                 min_steady_minutes = 40,
+                                 steady_cv_threshold = 0.08,
                                  stream_df = NULL,
                                  stoken = NULL) {
   
@@ -106,6 +112,12 @@ calculate_decoupling <- function(activities_data = NULL,
   
   if (!is.numeric(min_duration_mins) || min_duration_mins <= 0) {
     stop("`min_duration_mins` must be a positive number.")
+  }
+  if (!is.numeric(min_steady_minutes) || min_steady_minutes <= 0) {
+    stop("`min_steady_minutes` must be a positive number.")
+  }
+  if (!is.numeric(steady_cv_threshold) || steady_cv_threshold <= 0 || steady_cv_threshold > 1) {
+    stop("`steady_cv_threshold` must be between 0 and 1.")
   }
   
   # --- Date Handling ---
