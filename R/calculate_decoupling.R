@@ -20,6 +20,8 @@
 #'   Activities shorter than this are automatically rejected for decoupling calculation.
 #' @param steady_cv_threshold Coefficient of variation threshold for steady-state (default: 0.08 = 8%).
 #'   Activities with higher variability are rejected as non-steady-state.
+#' @param min_hr_coverage Minimum HR data coverage threshold (default: 0.9 = 90%).
+#'   Activities with lower HR coverage are rejected as insufficient data quality.
 #' @param stream_df Optional. A pre-fetched data frame for a *single* activity's stream.
 #'   If provided, calculates decoupling for this data directly, ignoring other parameters.
 #'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance` 
@@ -84,6 +86,7 @@ calculate_decoupling <- function(activities_data = NULL,
                                  min_duration_mins = 40,
                                  min_steady_minutes = 40,
                                  steady_cv_threshold = 0.08,
+                                 min_hr_coverage = 0.9,
                                  stream_df = NULL,
                                  stoken = NULL) {
   
@@ -118,6 +121,9 @@ calculate_decoupling <- function(activities_data = NULL,
   }
   if (!is.numeric(steady_cv_threshold) || steady_cv_threshold <= 0 || steady_cv_threshold > 1) {
     stop("`steady_cv_threshold` must be between 0 and 1.")
+  }
+  if (!is.numeric(min_hr_coverage) || min_hr_coverage <= 0 || min_hr_coverage > 1) {
+    stop("`min_hr_coverage` must be between 0 and 1.")
   }
   
   # --- Date Handling ---

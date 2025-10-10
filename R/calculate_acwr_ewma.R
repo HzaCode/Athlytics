@@ -141,6 +141,20 @@ calculate_acwr_ewma <- function(activities_data,
     stop("start_date must be before end_date.")
   }
   
+  # Validate load_metric and required parameters
+  valid_load_metrics <- c("duration_mins", "distance_km", "elapsed_time_mins", "tss", "hrss", "elevation_gain_m")
+  if (!load_metric %in% valid_load_metrics) {
+    stop("Invalid `load_metric`. Choose from: ", paste(valid_load_metrics, collapse = ", "))
+  }
+  
+  if (load_metric == "tss" && is.null(user_ftp)) {
+    stop("`user_ftp` is required when `load_metric` is 'tss'.")
+  }
+  
+  if (load_metric == "hrss" && (is.null(user_max_hr) || is.null(user_resting_hr))) {
+    stop("`user_max_hr` and `user_resting_hr` are required when `load_metric` is 'hrss'.")
+  }
+  
   message(sprintf("Calculating ACWR (%s) from %s to %s.", 
                   toupper(method), analysis_start_date, analysis_end_date))
   message(sprintf("Load metric: %s, Activity types: %s", 
