@@ -3,11 +3,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,9 +18,7 @@
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/Athlytics-introduction.html">Introduction to Athlytics</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="../articles/index.html">All vignettes</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/advanced-features.html">Advanced Features</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -39,7 +37,65 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.2" id="athlytics-012">Athlytics 0.1.2<a class="anchor" aria-label="anchor" href="#athlytics-012"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.0.0" id="athlytics-100">Athlytics 1.0.0<a class="anchor" aria-label="anchor" href="#athlytics-100"></a></h2>
+<p>This major release transitions from Strava API to <strong>local data export processing</strong>, prioritizing user privacy and data ownership while eliminating API rate limits and authentication requirements.</p>
+<div class="section level3">
+<h3 id="breaking-changes--new-features-1-0-0">Breaking Changes &amp; New Features<a class="anchor" aria-label="anchor" href="#breaking-changes--new-features-1-0-0"></a></h3>
+<ul><li>
+<strong>Privacy-First Architecture</strong>: Complete shift from Strava API to local ZIP file processing
+<ul><li>New <code><a href="../reference/load_local_activities.html">load_local_activities()</a></code> function supports direct ZIP file loading (no manual extraction needed)</li>
+<li>Removed API dependencies and authentication requirements</li>
+<li>All data processing happens locally - no cloud services involved</li>
+</ul></li>
+<li>
+<strong>Enhanced Documentation</strong>: Comprehensive documentation improvements across all core functions
+<ul><li>Added detailed parameter explanations with recommended values</li>
+<li>Included interpretation guidelines and typical value ranges</li>
+<li>Added algorithm descriptions and best practices</li>
+<li>Expanded with academic references and cross-function links</li>
+<li>Enhanced <code><a href="../reference/calculate_acwr.html">calculate_acwr()</a></code>, <code><a href="../reference/calculate_ef.html">calculate_ef()</a></code>, and <code><a href="../reference/calculate_decoupling.html">calculate_decoupling()</a></code> documentation</li>
+</ul></li>
+<li>
+<strong>Multi-Athlete Cohort Analysis</strong>: Improved support for research and team analytics
+<ul><li>Better documentation for <code><a href="../reference/cohort_reference.html">cohort_reference()</a></code> and multi-athlete workflows</li>
+<li>Examples updated to show intervention/control group comparisons</li>
+<li>Proper use of <code><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by()</a></code> and <code><a href="https://dplyr.tidyverse.org/reference/do.html" class="external-link">do()</a></code> for batch processing</li>
+</ul></li>
+<li>
+<strong>README &amp; Package Updates</strong>
+<ul><li>Updated all code examples to reflect local data processing workflow</li>
+<li>Corrected function parameter names throughout (e.g., <code>activities_df</code> → <code>activities_data</code>)</li>
+<li>Added installation guidance emphasizing GitHub v1.0.0 as latest version</li>
+<li>Removed outdated API-related content</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="academic-paper-1-0-0">Academic Paper<a class="anchor" aria-label="anchor" href="#academic-paper-1-0-0"></a></h3>
+<ul><li>Added comprehensive JOSS-style paper (<code>paper/paper.md</code> and <code>paper/paper.bib</code>)
+<ul><li>Detailed comparison with related R packages (rStrava, trackeR, activatr, FITfileR, ACWR, injurytools)</li>
+<li>Updated methodology to reflect local data processing approach</li>
+<li>Enhanced reproducible examples using local exports</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="technical-improvements-1-0-0">Technical Improvements<a class="anchor" aria-label="anchor" href="#technical-improvements-1-0-0"></a></h3>
+<ul><li>Fixed encoding issues in BibTeX references</li>
+<li>Updated <code>.gitignore</code> to track README.md and paper/ directory</li>
+<li>Synchronized all documentation with actual function implementations</li>
+<li>Improved pkgdown website generation</li>
+</ul></div>
+<div class="section level3">
+<h3 id="migration-guide-1-0-0">Migration Guide<a class="anchor" aria-label="anchor" href="#migration-guide-1-0-0"></a></h3>
+<p>For users upgrading from 0.1.x:</p>
+<ol style="list-style-type: decimal"><li>Download your Strava bulk data export (Settings &gt; My Account &gt; Download Request)</li>
+<li>Replace <code>fetch_strava_activities()</code> calls with <code>load_local_activities("export.zip")</code>
+</li>
+<li>Update function calls: <code>activities_df</code> → <code>activities_data</code>, <code>plot_*()</code> now accepts data directly</li>
+<li>Remove Strava API authentication code</li>
+</ol><hr></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.2" id="athlytics-012">Athlytics 0.1.2<a class="anchor" aria-label="anchor" href="#athlytics-012"></a></h2><p class="text-muted">CRAN release: 2025-05-16</p>
 <ul><li>
 <strong>CRAN Resubmission</strong>: Carefully addressed feedback from CRAN by making detailed updates and modifications for package resubmission. This primarily involved refining examples (e.g., consistently using <code>\dontrun{}</code> as advised) and ensuring metadata files meet all CRAN standards.</li>
 </ul><hr><ul><li>
@@ -50,19 +106,19 @@
 <h2 class="pkg-version" data-toc-text="0.1.1" id="athlytics-011">Athlytics 0.1.1<a class="anchor" aria-label="anchor" href="#athlytics-011"></a></h2>
 <div class="section level3">
 <h3 id="core-improvement-enhanced-reliability--testing-with-simulated-data-0-1-1">Core Improvement: Enhanced Reliability &amp; Testing with Simulated Data<a class="anchor" aria-label="anchor" href="#core-improvement-enhanced-reliability--testing-with-simulated-data-0-1-1"></a></h3>
-<p>This significant update enhances package reliability and ease of use by integrating <code>Athlytics_sample_data</code>. This enables all examples to run offline and ensures core functionalities have undergone more rigorous, reproducible testing.</p>
-<div class="section level4">
-<h4 id="key-changes-0-1-1">Key Changes:<a class="anchor" aria-label="anchor" href="#key-changes-0-1-1"></a></h4>
+<p>This significant update enhances package reliability and ease of use by integrating <code>athlytics_sample_data</code>. This enables all examples to run offline and ensures core functionalities have undergone more rigorous, reproducible testing.</p>
+</div>
+<div class="section level3">
+<h3 id="key-changes-0-1-1">Key Changes<a class="anchor" aria-label="anchor" href="#key-changes-0-1-1"></a></h3>
 <ul><li>
-<strong>Examples &amp; Vignettes</strong>: All Roxygen examples and key vignette examples now primarily use <code>Athlytics_sample_data</code> for offline execution and clarity. Network-dependent examples are clearly separated in <code>\donttest{}</code> blocks.</li>
+<strong>Examples &amp; Vignettes</strong>: All Roxygen examples and key vignette examples now primarily use <code>athlytics_sample_data</code> for offline execution and clarity. Network-dependent examples are clearly separated in <code>\donttest{}</code> blocks.</li>
 <li>
-<strong>Test Suite</strong>: Fundamentally refactored the test suite to extensively use <code>Athlytics_sample_data</code> and <code>mockery</code>, improving test robustness and parameter coverage.</li>
+<strong>Test Suite</strong>: Fundamentally refactored the test suite to extensively use <code>athlytics_sample_data</code> and <code>mockery</code>, improving test robustness and parameter coverage.</li>
 <li>
 <strong>Strengthened Package Quality &amp; Compliance</strong>: Undertook thorough package validation, leading to key enhancements for overall robustness and adherence to R packaging standards. This involved: ensuring all <strong>function examples</strong> are correct and reliably executable (notably addressing <code>strava_oauth(...)</code> scenarios for offline/testing contexts); providing accurate and <strong>refined documentation for data objects</strong> in <code>R/data.R</code>; fixing <strong>Roxygen import directives</strong> for precise namespace definition; improving <strong>help file readability</strong> through Rd line width adjustments; and optimizing package data loading by adding <code>LazyData: true</code> to <code>DESCRIPTION</code>.</li>
 <li>
 <strong>Documentation</strong>: Minor improvements to documentation clarity and consistency (e.g., date formatting in plots, explicit naming of data frame arguments in examples).</li>
 </ul><hr></div>
-</div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="athlytics-010">Athlytics 0.1.0<a class="anchor" aria-label="anchor" href="#athlytics-010"></a></h2>
@@ -102,7 +158,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>

@@ -1,6 +1,6 @@
 ﻿<div align="center">
 
-<img src="image.png" alt="Athlytics Logo" width="200"/>
+<img src="man/figures/image.png" alt="Athlytics Logo" width="200"/>
 
 # Athlytics
 
@@ -19,7 +19,7 @@
 
 ### 📈 Package Adoption & Growth
 
-<img src="image/Athlytics_Final.png" alt="Athlytics Downloads Growth" width="650"/>
+<img src="man/figures/Athlytics_Final.png" alt="Athlytics Downloads Growth" width="650"/>
 
 *Trusted by researchers, coaches, and athletes worldwide*
 
@@ -172,7 +172,7 @@ plot_acwr(acwr_data, highlight_zones = TRUE)
 ```
 
 <p align="center">
-  <img src="analysis_output/01b_acwr_multi_group.png" alt="ACWR Analysis" width="750"/>
+  <img src="man/figures/01b_acwr_multi_group.png" alt="ACWR Analysis" width="750"/>
 </p>
 
 📖 [ACWR Methodology & Validation](https://hezhiang.com/Athlytics/reference/calculate_acwr.html)
@@ -198,7 +198,7 @@ plot_ef(ef_data, add_trend_line = TRUE)
 ```
 
 <p align="center">
-  <img src="analysis_output/02b_ef_multi_group.png" alt="Efficiency Factor" width="750"/>
+  <img src="man/figures/02b_ef_multi_group.png" alt="Efficiency Factor" width="750"/>
 </p>
 
 📖 [Efficiency Factor Theory](https://hezhiang.com/Athlytics/reference/calculate_ef.html)
@@ -224,7 +224,7 @@ plot_decoupling(decoupling_data, decouple_metric = "Pace_HR")
 ```
 
 <p align="center">
-  <img src="analysis_output/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"/>
+  <img src="man/figures/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"/>
 </p>
 
 📖 [Decoupling Analysis Guide](https://hezhiang.com/Athlytics/reference/calculate_decoupling.html)

@@ -6,17 +6,12 @@ template:
 
 navbar:
   structure:
-    left: [intro, reference, articles, changelog]
+    left: [intro, reference, articles, news]
     right: [search, github]
   components:
     articles:
       text: Articles
       menu:
-      - text: Getting Started
-      - text: Introduction to Athlytics
-        href: articles/Athlytics-introduction.html
-      - text: -------
-      - text: Advanced Topics
       - text: Advanced Features
         href: articles/advanced-features.html
 
@@ -74,11 +69,6 @@ reference:
     - starts_with("athlytics_sample")
 
 articles:
-  - title: Getting Started
-    navbar: ~
-    contents:
-    - Athlytics-introduction
-    
   - title: Advanced Usage
     navbar: ~
     contents:

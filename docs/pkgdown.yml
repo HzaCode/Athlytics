@@ -3,5 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   advanced-features: advanced-features.html
-  Athlytics-introduction: Athlytics-introduction.html
-last_built: 2025-10-10T01:27Z
+last_built: 2025-10-10T02:23Z
+urls:
+  reference: https://hezhiang.com/Athlytics/reference
+  article: https://hezhiang.com/Athlytics/articles

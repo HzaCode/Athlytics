@@ -4,96 +4,67 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Academic R Package for Sports Physiology Analysis from Local Strava Data • Athlytics</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
-<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Academic R Package for Sports Physiology Analysis from Local Strava Data">
+<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Academic R Package for Sports Physiology Analysis from Local Strava Data">
+<meta name="description" content="An open-source computational framework for longitudinal analysis of exercise physiology metrics using local Strava data exports. Designed for personal analysis and sports science applications, this package provides standardized functions to calculate and visualize key physiological indicators including Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and training load metrics.">
 <meta property="og:description" content="An open-source computational framework for longitudinal analysis of exercise physiology metrics using local Strava data exports. Designed for personal analysis and sports science applications, this package provides standardized functions to calculate and visualize key physiological indicators including Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and training load metrics.">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <div class="container template-home">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">Athlytics</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.0.0</span>
-      </span>
-    </div>
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="reference/index.html">Reference</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Articles
+    <a class="navbar-brand me-2" href="index.html">Athlytics</a>
 
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href="articles/advanced-features.html">Advanced Features: EWMA, Quality Control, and Cohort Analysis</a>
-    </li>
-    <li>
-      <a href="articles/Athlytics-introduction.html">Introduction to Athlytics</a>
-    </li>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/advanced-features.html">Advanced Features</a></li>
   </ul>
 </li>
-<li>
-  <a href="news/index.html">Changelog</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
-<ul class="nav navbar-nav navbar-right">
-<li>
-  <a href="https://github.com/HzaCode/Athlytics/" class="external-link">
-    <span class="fab fa-github fa-lg"></span>
-
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/HzaCode/Athlytics/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
-<!--/.nav-collapse -->
+
+
   </div>
-<!--/.container -->
-</div>
-<!--/.navbar -->
-
-
-
-      </header><div class="row">
-  <div class="contents col-md-9">
-
-<div align="center">
-<p><img src="image.png" alt="Athlytics Logo" width="200"></p>
+</nav><div class="container template-home">
+<div class="row">
+  <main id="main" class="col-md-9"><div align="center">
+<p><img src="reference/figures/image.png" alt="Athlytics Logo" width="200"></p>
 <div class="section level1">
 <div class="page-header"><h1 id="athlytics">Athlytics<a class="anchor" aria-label="anchor" href="#athlytics"></a>
 </h1></div>
 <p><em>A Comprehensive R Framework for Exercise Physiology Analytics</em></p>
-<p><a href="https://cran.r-project.org/package=Athlytics" class="external-link"><img src="https://img.shields.io/badge/CRAN-Athlytics-orange?style=flat-square" alt="CRAN Status"></a> <a href="https://cran.r-project.org/package=Athlytics" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?color=blue&amp;style=flat-square" alt="Total Downloads"></a> <a href="https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml" class="external-link"><img src="https://img.shields.io/github/actions/workflow/status/HzaCode/athlytics/R-CMD-check.yml?style=flat-square&amp;label=R-CMD-check" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/HzaCode/athlytics" class="external-link"><img src="https://img.shields.io/codecov/c/github/HzaCode/athlytics?style=flat-square" alt="Code Coverage"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a> <a href="https://hezhiang.com/Athlytics/" class="external-link"><img src="https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square" alt="Documentation"></a></p>
-<p><strong><a href="https://hezhiang.com/Athlytics/" class="external-link">📖 Documentation</a></strong> • <strong><a href="#quick-start">🚀 Quick Start</a></strong> • <strong><a href="#core-analyses">📊 Examples</a></strong> • <strong><a href="https://github.com/HzaCode/athlytics/issues" class="external-link">💬 Issues</a></strong></p>
+<p><a href="https://cran.r-project.org/package=Athlytics" class="external-link"><img src="https://img.shields.io/badge/CRAN-Athlytics-orange?style=flat-square" alt="CRAN Status"></a> <a href="https://cran.r-project.org/package=Athlytics" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?color=blue&amp;style=flat-square" alt="Total Downloads"></a> <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml" class="external-link"><img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&amp;label=R-CMD-check" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/HzaCode/Athlytics" class="external-link"><img src="https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square" alt="Code Coverage"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a> <a href="https://hezhiang.com/Athlytics/"><img src="https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square" alt="Documentation"></a></p>
+<p><strong><a href="https://hezhiang.com/Athlytics/">📖 Documentation</a></strong> • <strong><a href="#quick-start">🚀 Quick Start</a></strong> • <strong><a href="#core-analyses">📊 Examples</a></strong> • <strong><a href="https://github.com/HzaCode/Athlytics/issues" class="external-link">💬 Issues</a></strong></p>
 <p><br></p>
 <div class="section level3">
 <h3 id="chart_with_upwards_trend-package-adoption--growth">📈 Package Adoption &amp; Growth<a class="anchor" aria-label="anchor" href="#chart_with_upwards_trend-package-adoption--growth"></a>
 </h3>
-<p><img src="image/Athlytics_Final.png" alt="Athlytics Downloads Growth" width="650"></p>
+<p><img src="reference/figures/Athlytics_Final.png" alt="Athlytics Downloads Growth" width="650"></p>
 <p><em>Trusted by researchers, coaches, and athletes worldwide</em></p>
 </div>
 </div>
@@ -188,7 +159,7 @@
 </h3>
 <p><strong>🏃 Single Athlete Analysis</strong></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hezhiang.com/Athlytics/" class="external-link">Athlytics</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hezhiang.com/Athlytics/">Athlytics</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load data directly from ZIP (no extraction needed!)</span></span>
 <span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete1_export.zip"</span><span class="op">)</span></span>
@@ -216,7 +187,7 @@
 <span><span class="co"># Calculate ACWR for each athlete using group_by</span></span>
 <span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/do.html" class="external-link">do</a></span><span class="op">(</span><span class="fu">calculate_acwr_ewma</span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/do.html" class="external-link">do</a></span><span class="op">(</span><span class="fu"><a href="reference/calculate_acwr_ewma.html">calculate_acwr_ewma</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Calculate reference percentiles</span></span>
 <span><span class="va">reference_bands</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cohort_reference.html">cohort_reference</a></span><span class="op">(</span></span>
@@ -231,7 +202,7 @@
 <span>  individual <span class="op">=</span> <span class="va">individual_acwr</span>,</span>
 <span>  reference <span class="op">=</span> <span class="va">reference_bands</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>📚 <a href="https://hezhiang.com/Athlytics/articles/Athlytics-introduction.html" class="external-link">Complete Tutorial with Real Examples</a></p>
+<p>📚 <a href="https://hezhiang.com/Athlytics/articles/Athlytics-introduction.html">Complete Tutorial with Real Examples</a></p>
 <hr>
 </div>
 </div>
@@ -256,8 +227,8 @@ Acute Load (7-day) • Chronic Load (28-day) • ACWR Ratio • Risk zones (0.8-
 <span><span class="co"># Visualize with risk zones</span></span>
 <span><span class="fu"><a href="reference/plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">acwr_data</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p align="center">
-<img src="analysis_output/01b_acwr_multi_group.png" alt="ACWR Analysis" width="750"></p>
-<p>📖 <a href="https://hezhiang.com/Athlytics/reference/calculate_acwr.html" class="external-link">ACWR Methodology &amp; Validation</a></p>
+<img src="reference/figures/01b_acwr_multi_group.png" alt="ACWR Analysis" width="750"></p>
+<p>📖 <a href="https://hezhiang.com/Athlytics/reference/calculate_acwr.html">ACWR Methodology &amp; Validation</a></p>
 <hr>
 </div>
 <div class="section level3">
@@ -275,8 +246,8 @@ Pace/HR Ratio (runs) • Power/HR Ratio (cycling) • Normalized Power efficienc
 <span><span class="co"># Plot with trend line</span></span>
 <span><span class="fu"><a href="reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_data</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p align="center">
-<img src="analysis_output/02b_ef_multi_group.png" alt="Efficiency Factor" width="750"></p>
-<p>📖 <a href="https://hezhiang.com/Athlytics/reference/calculate_ef.html" class="external-link">Efficiency Factor Theory</a></p>
+<img src="reference/figures/02b_ef_multi_group.png" alt="Efficiency Factor" width="750"></p>
+<p>📖 <a href="https://hezhiang.com/Athlytics/reference/calculate_ef.html">Efficiency Factor Theory</a></p>
 <hr>
 </div>
 <div class="section level3">
@@ -294,8 +265,8 @@ First vs second half comparison • Decoupling percentage • Quality thresholds
 <span><span class="co"># Visualize trends</span></span>
 <span><span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_data</span>, decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span><span class="op">)</span></span></code></pre></div>
 <p align="center">
-<img src="analysis_output/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"></p>
-<p>📖 <a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html" class="external-link">Decoupling Analysis Guide</a></p>
+<img src="reference/figures/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"></p>
+<p>📖 <a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html">Decoupling Analysis Guide</a></p>
 <hr>
 </div>
 </div>
@@ -306,7 +277,7 @@ First vs second half comparison • Decoupling percentage • Quality thresholds
 Cohort comparison • Quality flagging • Statistical testing • Anomaly detection</p>
 <p><strong>🎯 Performance Tracking</strong><br>
 Personal bests (PR detection) • Training stress balance • Fitness-fatigue dynamics • Periodization tools</p>
-<p>📚 <a href="https://hezhiang.com/Athlytics/articles/advanced-features.html" class="external-link">Explore Advanced Features with Examples</a></p>
+<p>📚 <a href="https://hezhiang.com/Athlytics/articles/advanced-features.html">Explore Advanced Features with Examples</a></p>
 <hr>
 </div>
 <div class="section level2">
@@ -329,19 +300,16 @@ Personal bests (PR detection) • Training stress balance • Fitness-fatigue dy
 <h2 id="handshake-contributing">🤝 Contributing<a class="anchor" aria-label="anchor" href="#handshake-contributing"></a>
 </h2>
 <p>We welcome contributions from the community!</p>
-<p><strong>🐛 Report Issues</strong> → <a href="https://github.com/HzaCode/athlytics/issues" class="external-link">Open an Issue</a><br><strong>💡 Suggest Features</strong> → <a href="https://github.com/HzaCode/athlytics/discussions" class="external-link">Start a Discussion</a><br><strong>🔧 Submit Code</strong> → Read <a href="CONTRIBUTING.html">CONTRIBUTING.md</a><br><strong>📖 Guidelines</strong> → Follow our <a href="CODE_OF_CONDUCT.html">Code of Conduct</a></p>
+<p><strong>🐛 Report Issues</strong> → <a href="https://github.com/HzaCode/Athlytics/issues" class="external-link">Open an Issue</a><br><strong>💡 Suggest Features</strong> → <a href="https://github.com/HzaCode/Athlytics/discussions" class="external-link">Start a Discussion</a><br><strong>🔧 Submit Code</strong> → Read <a href="CONTRIBUTING.html">CONTRIBUTING.md</a><br><strong>📖 Guidelines</strong> → Follow our <a href="CODE_OF_CONDUCT.html">Code of Conduct</a></p>
 <hr>
 </div>
 <div class="section level2" align="center">
 <h2 id="link-links--resources">🔗 Links &amp; Resources<a class="anchor" aria-label="anchor" href="#link-links--resources"></a>
 </h2>
-<p><strong><a href="https://hezhiang.com/Athlytics/" class="external-link">📖 Documentation</a></strong> • <strong><a href="https://github.com/HzaCode/Athlytics" class="external-link">🐙 GitHub</a></strong> • <strong><a href="https://github.com/HzaCode/athlytics/issues" class="external-link">❓ Issues</a></strong> • <strong><a href="https://github.com/HzaCode/athlytics/discussions" class="external-link">💬 Discussions</a></strong> • <strong><a href="https://cran.r-project.org/package=Athlytics" class="external-link">📦 CRAN</a></strong></p>
+<p><strong><a href="https://hezhiang.com/Athlytics/">📖 Documentation</a></strong> • <strong><a href="https://github.com/HzaCode/Athlytics" class="external-link">🐙 GitHub</a></strong> • <strong><a href="https://github.com/HzaCode/Athlytics/issues" class="external-link">❓ Issues</a></strong> • <strong><a href="https://github.com/HzaCode/Athlytics/discussions" class="external-link">💬 Discussions</a></strong> • <strong><a href="https://cran.r-project.org/package=Athlytics" class="external-link">📦 CRAN</a></strong></p>
 </div>
 
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="links">
+  </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://cloud.r-project.org/package=Athlytics" class="external-link">View on CRAN</a></li>
@@ -353,8 +321,9 @@ Personal bests (PR detection) • Training stress balance • Fitness-fatigue dy
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li><a href="LICENSE.html">Full license</a></li>
-<li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
+<li>
+<a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a>
+</li>
 </ul>
 </div>
 
@@ -382,23 +351,20 @@ Personal bests (PR detection) • Training stress balance • Fitness-fatigue dy
 
 
 
-  </div>
+  </aside>
 </div>
 
 
-      <footer><div class="copyright">
-  <p></p>
-<p>Developed by Ang.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p>Developed by Ang.</p>
 </div>
 
-<div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+<div class="pkgdown-footer-right">
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
-
 
 
 
