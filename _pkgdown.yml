@@ -12,8 +12,10 @@ navbar:
     articles:
       text: Articles
       menu:
+      - text: Getting Started
+        href: articles/athlytics_introduction.html
       - text: Advanced Features
-        href: articles/advanced-features.html
+        href: articles/advanced_features.html
 
 reference:
   - title: Data Loading
@@ -69,8 +71,12 @@ reference:
     - starts_with("athlytics_sample")
 
 articles:
+  - title: Getting Started
+    navbar: ~
+    contents:
+    - athlytics_introduction
   - title: Advanced Usage
     navbar: ~
     contents:
-    - advanced-features
+    - advanced_features
 
