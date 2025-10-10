@@ -182,7 +182,8 @@ When provided, enables stream data analysis for more accurate steady-state detec
 Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.</p></dd>
 
 <dt>status</dt>
-<dd><p>Character. "ok" for successful calculation, "non_steady" if steady-state
+<dd><p>Character. "ok" for successful calculation with stream data, "no_streams" for
+activity-level calculation without stream data, "non_steady" if steady-state
 criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
 "insufficient_hr_data" if HR coverage below threshold.</p></dd>
 

@@ -103,7 +103,7 @@ calculate_decoupling <- function(activities_data = NULL,
   }
   
   # Otherwise, need activities_data
-  if (is.null(activities_data) || !is.data.frame(activities_data)) {
+  if (missing(activities_data) || is.null(activities_data) || !is.data.frame(activities_data)) {
     stop("`activities_data` must be provided as a data frame from load_local_activities().")
   }
   

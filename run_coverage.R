@@ -16,7 +16,6 @@ source_files <- c(
   "R/plot_ef.R",
   "R/plot_exposure.R",
   "R/plot_pbs.R",
-  "R/strava_helpers.R",
   "R/utils.R"
 )
 
@@ -25,12 +24,10 @@ test_files <- c(
   "tests/testthat/test-acwr.R",
   "tests/testthat/test-calculate_decoupling.R",
   "tests/testthat/test-calculate_exposure.R",
-  "tests/testthat/test-calculate_pbs.R",
   "tests/testthat/test-decoupling.R",
   "tests/testthat/test-exposure.R",
   "tests/testthat/test-pbs.R",
-  "tests/testthat/test-utils.R",
-  "tests/testthat/test-strava_helpers.R"
+  "tests/testthat/test-utils.R"
 )
 
 # Check if files exist

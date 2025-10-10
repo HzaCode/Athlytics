@@ -68,7 +68,8 @@ A tibble with the following columns:
 \item{activity_type}{Activity type (character: "Run" or "Ride")}
 \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
 Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.}
-\item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state
+\item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for
+activity-level calculation without stream data, "non_steady" if steady-state
 criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
 "insufficient_hr_data" if HR coverage below threshold.}
 }
