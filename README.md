@@ -8,12 +8,12 @@
 
 [![CRAN Status](https://img.shields.io/badge/CRAN-Athlytics-orange?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?color=blue&style=flat-square)](https://cran.r-project.org/package=Athlytics)
-[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/HzaCode/athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/HzaCode/athlytics/actions/workflows/R-CMD-check.yml)
-[![Code Coverage](https://img.shields.io/codecov/c/github/HzaCode/athlytics?style=flat-square)](https://app.codecov.io/gh/HzaCode/athlytics)
+[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
+[![Code Coverage](https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square)](https://app.codecov.io/gh/HzaCode/Athlytics)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://hezhiang.com/Athlytics/)
 
-**[📖 Documentation](https://hezhiang.com/Athlytics/)** • **[🚀 Quick Start](#quick-start)** • **[📊 Examples](#core-analyses)** • **[💬 Issues](https://github.com/HzaCode/athlytics/issues)**
+**[📖 Documentation](https://hezhiang.com/Athlytics/)** • **[🚀 Quick Start](#quick-start)** • **[📊 Examples](#core-analyses)** • **[💬 Issues](https://github.com/HzaCode/Athlytics/issues)**
 
 <br>
 
@@ -265,8 +265,8 @@ If you use **Athlytics** in your research, please cite:
 
 We welcome contributions from the community!
 
-**🐛 Report Issues** → [Open an Issue](https://github.com/HzaCode/athlytics/issues)  
-**💡 Suggest Features** → [Start a Discussion](https://github.com/HzaCode/athlytics/discussions)  
+**🐛 Report Issues** → [Open an Issue](https://github.com/HzaCode/Athlytics/issues)  
+**💡 Suggest Features** → [Start a Discussion](https://github.com/HzaCode/Athlytics/discussions)  
 **🔧 Submit Code** → Read [CONTRIBUTING.md](CONTRIBUTING.md)  
 **📖 Guidelines** → Follow our [Code of Conduct](CODE_OF_CONDUCT.md)
 
@@ -276,7 +276,7 @@ We welcome contributions from the community!
 
 ## 🔗 Links & Resources
 
-**[📖 Documentation](https://hezhiang.com/Athlytics/)** • **[🐙 GitHub](https://github.com/HzaCode/Athlytics)** • **[❓ Issues](https://github.com/HzaCode/athlytics/issues)** • **[💬 Discussions](https://github.com/HzaCode/athlytics/discussions)** • **[📦 CRAN](https://cran.r-project.org/package=Athlytics)**
+**[📖 Documentation](https://hezhiang.com/Athlytics/)** • **[🐙 GitHub](https://github.com/HzaCode/Athlytics)** • **[❓ Issues](https://github.com/HzaCode/Athlytics/issues)** • **[💬 Discussions](https://github.com/HzaCode/Athlytics/discussions)** • **[📦 CRAN](https://cran.r-project.org/package=Athlytics)**
 
 
 </div>
