@@ -14,9 +14,9 @@
 #'
 #' **EF Metrics:**
 #' \itemize{
-#'   \item **Pace_HR** (for running): Speed (m/s) / Average HR
+#'   \item **pace_hr** (for running): Speed (m/s) / Average HR
 #'     - Higher values = faster pace at same HR = better fitness
-#'   \item **Power_HR** (for cycling): Average Power (watts) / Average HR
+#'   \item **power_hr** (for cycling): Average Power (watts) / Average HR
 #'     - Higher values = more power at same HR = better fitness
 #' }
 #'
@@ -30,19 +30,18 @@
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
 #'   Must contain columns: `date`, `type`, `moving_time`, `distance`, 
-#'   `average_heartrate`, and `average_watts` (for Power_HR metric).
+#'   `average_heartrate`, and `average_watts` (for power_hr metric).
 #' @param activity_type Character vector or single string specifying activity type(s)
 #'   to analyze. Common values: `"Run"`, `"Ride"`, or `c("Run", "Ride")`.
 #'   Default: `c("Run", "Ride")`.
 #' @param ef_metric Character string specifying the efficiency metric:
 #'   \itemize{
-#'     \item `"pace_hr"` or `"Pace_HR"`: Pace-based efficiency (for running). 
+#'     \item `"pace_hr"`: Pace-based efficiency (for running). 
 #'       Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)
-#'     \item `"power_hr"` or `"Power_HR"`: Power-based efficiency (for cycling). 
+#'     \item `"power_hr"`: Power-based efficiency (for cycling). 
 #'       Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)
 #'   }
 #'   Default: `c("pace_hr", "power_hr")` (uses first matching metric for activity type).
-#'   Note: Older capitalized names ("Pace_HR", "Power_HR") are supported for backward compatibility.
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
 #'   Defaults to one year before `end_date`.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string, Date, or POSIXct).
@@ -76,14 +75,14 @@
 #' **Algorithm:**
 #' 1. Filter activities by type, date range, and minimum duration
 #' 2. For each activity, calculate:
-#'    - Pace_HR: (distance / moving_time) / average_heartrate
-#'    - Power_HR: average_watts / average_heartrate
+#'    - pace_hr: (distance / moving_time) / average_heartrate
+#'    - power_hr: average_watts / average_heartrate
 #' 3. Return one EF value per activity
 #'
 #' **Data Quality Considerations:**
 #' \itemize{
 #'   \item Requires heart rate data (activities without HR are excluded)
-#'   \item Power_HR requires power meter data (cycling with power)
+#'   \item power_hr requires power meter data (cycling with power)
 #'   \item Best for steady-state endurance efforts (tempo runs, long rides)
 #'   \item Interval workouts may give misleading EF values
 #'   \item Environmental factors (heat, altitude) can affect EF
@@ -97,7 +96,7 @@
 #'   \item **Sudden drop**: Check for illness, equipment change, or data quality
 #' }
 #'
-#' **Typical EF Ranges (Pace_HR for running):**
+#' **Typical EF Ranges (pace_hr for running):**
 #' \itemize{
 #'   \item Beginner: 0.01 - 0.015 (m/s per bpm)
 #'   \item Intermediate: 0.015 - 0.020
@@ -146,7 +145,7 @@
 #' }
 calculate_ef <- function(activities_data,
                          activity_type = c("Run", "Ride"),
-                         ef_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
+                         ef_metric = c("pace_hr", "power_hr"),
                          start_date = NULL,
                          end_date = NULL,
                          min_duration_mins = 20,

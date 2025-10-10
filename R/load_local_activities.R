@@ -72,7 +72,7 @@
 #' plot_acwr(acwr_data, highlight_zones = TRUE)
 #' 
 #' # Multi-metric analysis
-#' ef_data <- calculate_ef(activities, ef_metric = "Pace_HR")
+#' ef_data <- calculate_ef(activities, ef_metric = "pace_hr")
 #' plot_ef(ef_data, add_trend_line = TRUE)
 #' }
 #'

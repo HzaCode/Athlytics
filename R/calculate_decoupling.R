@@ -12,7 +12,7 @@
 #'   Default is "strava_export_data".
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
 #' @param decouple_metric Basis for calculation: "pace_hr" or "power_hr" 
-#'   (legacy "Pace_HR"/"Power_HR" also supported).
+#'   (legacy "pace_hr"/"power_hr" also supported).
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #' @param min_duration_mins Minimum activity duration (minutes) to include. Default 40.
@@ -27,7 +27,7 @@
 #' @param stream_df Optional. A pre-fetched data frame for a *single* activity's stream.
 #'   If provided, calculates decoupling for this data directly, ignoring other parameters.
 #'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance` 
-#'   (for Pace_HR) or `watts` (for Power_HR).
+#'   (for pace_hr) or `watts` (for power_hr).
 #'
 #' @return Returns a data frame with columns:
 #'   \describe{
@@ -81,7 +81,7 @@
 calculate_decoupling <- function(activities_data = NULL,
                                  export_dir = "strava_export_data",
                                  activity_type = c("Run", "Ride"),
-                                 decouple_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
+                                 decouple_metric = c("pace_hr", "power_hr"),
                                  start_date = NULL,
                                  end_date = NULL,
                                  min_duration_mins = 40,
@@ -190,7 +190,7 @@ calculate_decoupling <- function(activities_data = NULL,
     
     # Calculate decoupling for this activity
     decoupling_result <- tryCatch({
-      calculate_single_decoupling(stream_data, decouple_metric, quality_control)
+      calculate_single_decoupling(stream_data, decouple_metric, quality_control, min_steady_minutes, steady_cv_threshold, min_hr_coverage)
     }, error = function(e) {
       message(sprintf("  Error calculating decoupling: %s", e$message))
       return(list(value = NA_real_, status = "calculation_error"))
@@ -227,7 +227,7 @@ calculate_decoupling <- function(activities_data = NULL,
 #' Internal: Calculate Decoupling for Single Activity Stream
 #' @keywords internal
 #' @noRd
-calculate_single_decoupling <- function(stream_df, decouple_metric, quality_control = "filter") {
+calculate_single_decoupling <- function(stream_df, decouple_metric, quality_control = "filter", min_steady_minutes = 40, steady_cv_threshold = 0.08, min_hr_coverage = 0.9) {
   
   # Validate stream_df structure
   required_cols <- c("time", "heartrate")
@@ -305,7 +305,7 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   
   # Calculate HR coverage
   hr_coverage <- sum(!is.na(stream_clean$heartrate) & stream_clean$heartrate > 0) / nrow(stream_clean)
-  if (hr_coverage < 0.9) {  # Default min_hr_coverage threshold
+  if (hr_coverage < min_hr_coverage) {
     return(list(value = NA_real_, status = "insufficient_hr_data"))
   }
   
@@ -323,9 +323,9 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
         velocity_cv = .data$velocity_rollsd / .data$velocity_rollmean
       )
     
-    # Find steady-state periods (CV < 8% threshold)
+    # Find steady-state periods (CV < threshold)
     steady_periods <- stream_clean %>%
-      dplyr::filter(!is.na(.data$velocity_cv), .data$velocity_cv < 0.08)
+      dplyr::filter(!is.na(.data$velocity_cv), .data$velocity_cv < steady_cv_threshold)
     
   } else {
     # Calculate rolling CV for power
@@ -337,9 +337,17 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
         watts_cv = .data$watts_rollsd / .data$watts_rollmean
       )
     
-    # Find steady-state periods (CV < 8% threshold)
+    # Find steady-state periods (CV < threshold)
     steady_periods <- stream_clean %>%
-      dplyr::filter(!is.na(.data$watts_cv), .data$watts_cv < 0.08)
+      dplyr::filter(!is.na(.data$watts_cv), .data$watts_cv < steady_cv_threshold)
+  }
+  
+  # Check minimum duration for steady-state periods
+  if (nrow(steady_periods) > 0) {
+    steady_duration_minutes <- (max(steady_periods$time, na.rm = TRUE) - min(steady_periods$time, na.rm = TRUE)) / 60
+    if (steady_duration_minutes < min_steady_minutes) {
+      return(list(value = NA_real_, status = "insufficient_steady_duration"))
+    }
   }
   
   if (nrow(steady_periods) < 100) {
