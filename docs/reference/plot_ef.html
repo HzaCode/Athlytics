@@ -64,7 +64,8 @@
 
 
 <dl><dt id="arg-stoken">stoken<a class="anchor" aria-label="anchor" href="#arg-stoken"></a></dt>
-<dd><p>A valid Strava token from `rStrava::strava_oauth()`. Required unless `ef_df` is provided.</p></dd>
+<dd><p><strong>Recommended: Pass pre-calculated data via <code>ef_df</code> (local export preferred).</strong>
+For legacy API usage: A Strava token from <code><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">rStrava::strava_oauth()</a></code>. This parameter is deprecated.</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
@@ -88,7 +89,7 @@
 
 
 <dt id="arg-add-trend-line">add_trend_line<a class="anchor" aria-label="anchor" href="#arg-add-trend-line"></a></dt>
-<dd><p>Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.</p></dd>
+<dd><p>Add a smoothed trend line (<code>geom_smooth</code>)? Default <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-smoothing-method">smoothing_method<a class="anchor" aria-label="anchor" href="#arg-smoothing-method"></a></dt>
@@ -96,8 +97,8 @@
 
 
 <dt id="arg-ef-df">ef_df<a class="anchor" aria-label="anchor" href="#arg-ef-df"></a></dt>
-<dd><p>Optional. A pre-calculated data frame from `calculate_ef`.
-If provided, `stoken` and other calculation parameters are ignored.</p></dd>
+<dd><p><strong>Recommended.</strong> A pre-calculated data frame from <code><a href="calculate_ef.html">calculate_ef()</a></code>.
+When provided, analysis uses local data only (no API calls).</p></dd>
 
 
 <dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
@@ -114,11 +115,11 @@ If provided, `stoken` and other calculation parameters are ignored.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots the Efficiency Factor (EF) trend over time. Uses pre-calculated data
-or calls `calculate_ef`.</p>
+    <p>Plots the Efficiency Factor (EF) trend over time. <strong>Recommended workflow: Use local data via <code>ef_df</code>.</strong></p>
 <p>Plots EF (output/HR based on activity averages). An upward trend
-  often indicates improved aerobic fitness. Points colored by activity type.
-  If `ef_df` is not provided, calls `calculate_ef` first.</p>
+often indicates improved aerobic fitness. Points colored by activity type.
+<strong>Best practice: Use <code><a href="load_local_activities.html">load_local_activities()</a></code> + <code><a href="calculate_ef.html">calculate_ef()</a></code> + this function.</strong>
+Legacy API mode is maintained for backward compatibility only.</p>
     </div>
 
     <div class="section level2">

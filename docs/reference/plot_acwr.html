@@ -68,7 +68,8 @@
 
 
 <dl><dt id="arg-stoken">stoken<a class="anchor" aria-label="anchor" href="#arg-stoken"></a></dt>
-<dd><p>A valid Strava token from <code><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">rStrava::strava_oauth()</a></code>. Required unless <code>acwr_df</code> is provided.</p></dd>
+<dd><p><strong>Recommended: Pass pre-calculated data via <code>acwr_df</code> (local export preferred).</strong>
+For legacy API usage: A Strava token from <code><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">rStrava::strava_oauth()</a></code>. This parameter is deprecated.</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
@@ -116,8 +117,8 @@
 
 
 <dt id="arg-acwr-df">acwr_df<a class="anchor" aria-label="anchor" href="#arg-acwr-df"></a></dt>
-<dd><p>Optional. A pre-calculated data frame from <code>calculate_acwr</code>.
-If provided, <code>stoken</code> and other calculation parameters are ignored.</p></dd>
+<dd><p><strong>Recommended.</strong> A pre-calculated data frame from <code><a href="calculate_acwr.html">calculate_acwr()</a></code> or <code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma()</a></code>.
+When provided, analysis uses local data only (no API calls).</p></dd>
 
 
 <dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
@@ -134,9 +135,9 @@ If provided, <code>stoken</code> and other calculation parameters are ignored.</
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots the ACWR trend over time. Uses pre-calculated data or calls <code>calculate_acwr</code> (can be slow).
+    <p>Plots the ACWR trend over time. <strong>Best practice: Use <code><a href="load_local_activities.html">load_local_activities()</a></code> + <code><a href="calculate_acwr.html">calculate_acwr()</a></code> + this function.</strong>
 ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
-If <code>acwr_df</code> is not provided, calls <code>calculate_acwr</code> first (can be slow and hit API limits).</p>
+Legacy API mode (via <code>stoken</code>) is maintained for backward compatibility only.</p>
     </div>
 
     <div class="section level2">

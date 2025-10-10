@@ -162,12 +162,34 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hezhiang.com/Athlytics/">Athlytics</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Load data directly from ZIP (no extraction needed!)</span></span>
+<span><span class="co"># 1) Load Strava export ZIP (no manual extraction needed)</span></span>
 <span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete1_export.zip"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Calculate and visualize training load</span></span>
-<span><span class="va">acwr_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">acwr_data</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># 2) Training Load (ACWR)</span></span>
+<span><span class="va">acwr_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span></span>
+<span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span>
+<span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>   <span class="co"># Consistent with documentation</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co"># Scientific neutrality: risk zones off by default (thresholds are debated)</span></span>
+<span><span class="fu"><a href="reference/plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">acwr_data</span>, highlight_zones <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 3) Aerobic Efficiency (EF)</span></span>
+<span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
+<span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span>
+<span>  ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span>           <span class="co"># Unified lowercase naming</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_data</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 4) Cardiovascular Decoupling</span></span>
+<span><span class="va">decoupling_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span>
+<span>  activities_data <span class="op">=</span> <span class="va">activities</span></span>
+<span>  <span class="co"># If stream data error occurs, specify export_dir for unzipped export</span></span>
+<span>  <span class="co"># export_dir = "path/to/unzipped_export_dir"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_data</span>, decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></code></pre></div>
+<blockquote>
+<p><strong>Note:</strong> EF/Decoupling analysis requires <strong>steady-state conditions</strong>. Activities not meeting steady-state thresholds will be automatically skipped or flagged (quality checks recommended before interpreting results).</p>
+</blockquote>
 <p><strong>👥 Multi-Athlete Cohort Studies</strong></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
@@ -185,16 +207,17 @@
 <span><span class="co"># Combine data</span></span>
 <span><span class="va">cohort_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">athlete1</span>, <span class="va">athlete2</span>, <span class="va">athlete3</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Calculate ACWR for each athlete using group_by</span></span>
+<span><span class="co"># Calculate ACWR for each athlete (modern dplyr workflow)</span></span>
 <span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/do.html" class="external-link">do</a></span><span class="op">(</span><span class="fu"><a href="reference/calculate_acwr_ewma.html">calculate_acwr_ewma</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span><span class="va">.x</span>, load_metric <span class="op">=</span> <span class="st">"duration_mins"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Calculate reference percentiles</span></span>
+<span><span class="co"># Calculate reference percentiles by group</span></span>
 <span><span class="va">reference_bands</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cohort_reference.html">cohort_reference</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">cohort_acwr</span>,</span>
+<span>  data   <span class="op">=</span> <span class="va">cohort_acwr</span>,</span>
 <span>  metric <span class="op">=</span> <span class="st">"acwr_smooth"</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"group"</span><span class="op">)</span></span>
+<span>  by     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"group"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compare individual athlete against cohort</span></span>
@@ -242,7 +265,7 @@ Pace/HR Ratio (runs) • Power/HR Ratio (cycling) • Normalized Power efficienc
 🏃 Aerobic base development • 📊 Training effectiveness • 🎯 Periodization monitoring</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate Efficiency Factor</span></span>
-<span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span><span class="op">)</span></span>
+<span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot with trend line</span></span>
 <span><span class="fu"><a href="reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_data</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
@@ -264,7 +287,7 @@ First vs second half comparison • Decoupling percentage • Quality thresholds
 <span><span class="va">decoupling_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Visualize trends</span></span>
-<span><span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_data</span>, decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_data</span>, decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></code></pre></div>
 <p align="center">
 <img src="reference/figures/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"></p>
 <p>📖 <a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html">Decoupling Analysis Guide</a></p>

@@ -177,11 +177,12 @@ rolling mean (default: 7). Reduces day-to-day noise for clearer trend visualizat
     <p>Computes the Acute:Chronic Workload Ratio (ACWR) from local Strava activity data
 using rolling average methods. ACWR is a key metric for monitoring training load
 and injury risk in athletes (Gabbett, 2016; Hulin et al., 2016).</p>
-<p><strong>Algorithm:</strong></p><ol><li><p>Aggregate activities by date to compute daily load</p></li>
-<li><p>Calculate acute load: rolling mean over <code>acute_period</code> days</p></li>
-<li><p>Calculate chronic load: rolling mean over <code>chronic_period</code> days</p></li>
-<li><p>Compute ACWR: ATL / CTL (set to NA when CTL &lt; 0.01)</p></li>
-<li><p>Apply smoothing: rolling mean over <code>smoothing_period</code> days</p></li>
+<p><strong>Algorithm:</strong></p><ol><li><p><strong>Daily Aggregation</strong>: Sum all activities by date to compute daily load</p></li>
+<li><p><strong>Complete Time Series</strong>: Fill missing days with zero load (critical for ACWR accuracy)</p></li>
+<li><p><strong>Acute Load (ATL)</strong>: Rolling mean over <code>acute_period</code> days (default: 7)</p></li>
+<li><p><strong>Chronic Load (CTL)</strong>: Rolling mean over <code>chronic_period</code> days (default: 28)</p></li>
+<li><p><strong>ACWR Calculation</strong>: ATL / CTL (set to NA when CTL &lt; 0.01 to avoid division by zero)</p></li>
+<li><p><strong>Smoothing</strong>: Optional rolling mean over <code>smoothing_period</code> days for visualization</p></li>
 </ol><p><strong>Data Requirements:</strong>
 The function automatically fetches additional historical data (chronic_period days
 before start_date) to ensure accurate chronic load calculations at the analysis
@@ -243,7 +244,7 @@ high chronic workload may decrease injury risk in elite rugby league players.
 <span class="r-in"><span><span class="co"># Step 3: Calculate ACWR for Runs (using distance)</span></span></span>
 <span class="r-in"><span><span class="va">run_acwr</span> <span class="op">&lt;-</span> <span class="fu">calculate_acwr</span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, </span></span>
 <span class="r-in"><span>                           activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
-<span class="r-in"><span>                           load_metric <span class="op">=</span> <span class="st">"distance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                           load_metric <span class="op">=</span> <span class="st">"distance_km"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">run_acwr</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate ACWR for Rides (using TSS, requires FTP)</span></span></span>
