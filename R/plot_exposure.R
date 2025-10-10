@@ -27,7 +27,7 @@
 #'   Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
 #'   If `exposure_df` is not provided, it calls `calculate_exposure` first.
 #'
-#' 
+#' @importFrom rStrava get_activity_list get_activity
 #' @importFrom dplyr filter select mutate arrange group_by summarise ungroup lead lag rename recode full_join %>% coalesce
 #' @importFrom purrr map_dfr possibly
 #' @importFrom lubridate ymd_hms as_date days floor_date ceiling_date interval duration
@@ -38,12 +38,13 @@
 #' @export
 #'
 #' @examples
-#' # Example using pre-calculated sample data
-#' data("athlytics_sample_exposure", package = "Athlytics")
-#' p <- plot_exposure(athlytics_sample_exposure)
+#' # Example using simulated data
+#' data(Athlytics_sample_data)
+#' # Ensure exposure_df is named and other necessary parameters like activity_type are provided
+#' p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
 #' print(p)
 #'
-#' \dontrun{
+#' \donttest{
 #' # Example using real data (requires authentication)
 #' # stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
 #' #                                "YOUR_APP_CLIENT_ID",
@@ -80,17 +81,12 @@ plot_exposure <- function(stoken,
                           risk_zones = TRUE,
                           exposure_df = NULL) {
 
-  # --- Check if first argument is already exposure data frame ---
-  if (is.data.frame(stoken) && all(c("date", "atl", "ctl") %in% colnames(stoken))) {
-    exposure_df <- stoken
-  }
-
   # --- Get Data --- 
   if (is.null(exposure_df)) {
-      if (missing(stoken)) stop("Either provide exposure data frame from calculate_exposure() as first argument, or provide activities_data.")
+      if (missing(stoken)) stop("Either 'stoken' or 'exposure_df' must be provided.")
       
       exposure_df <- calculate_exposure(
-        activities_data = stoken,
+        stoken = stoken,
         activity_type = activity_type,
         load_metric = load_metric,
         acute_period = acute_period,

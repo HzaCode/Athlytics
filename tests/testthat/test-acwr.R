@@ -145,16 +145,16 @@ test_that("plot_acwr works with pre-calculated data", {
 })
 
 test_that("plot_acwr validates input", {
-  # Test with non-data.frame - may warn instead of error
-  expect_warning(
+  # Test with non-data.frame - should error
+  expect_error(
     plot_acwr("not_a_dataframe"),
-    "No valid ACWR data"
+    "activities_data.*must be a data frame"
   )
   
-  # Test with missing required columns - may warn instead of error
+  # Test with missing required columns - should error or warn
   bad_df <- data.frame(x = 1:10, y = 1:10)
-  expect_warning(
+  expect_error(
     plot_acwr(bad_df),
-    "No valid ACWR data|missing"
+    "date.*not found|missing"
   )
 })

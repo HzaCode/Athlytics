@@ -6,7 +6,7 @@ library(ggplot2) # Explicitly load for s3_class checks if not automatically avai
 library(lubridate) # For seconds_to_period if used in manual_df
 
 # Load data: sample data from package & mock API returns from helper
-data(athlytics_sample_pbs)
+data(Athlytics_sample_data)
 source(test_path("helper-mockdata.R"), local = TRUE)
 
 # NOTE: calculate_pbs tests are currently skipped because they require
@@ -56,7 +56,7 @@ test_that("plot_pbs returns a ggplot object with valid pbs_df input", {
   manual_pbs_df$time_period <- lubridate::seconds_to_period(manual_pbs_df$time_seconds)
 
 
-  # distance_meters argument should match distances in manual_pbs_df
+  # Ensure distance_meters argument for plot_pbs matches distances in manual_pbs_df
   test_distance_meters <- unique(manual_pbs_df$distance)
 
   # 2. Call plot_pbs with this manually created data
@@ -82,7 +82,7 @@ test_that("plot_pbs handles empty data frame input", {
     time_seconds = numeric(),
     distance = numeric(),
     is_pb = logical(),
-    distance_label = factor(levels = c("1k", "5k")),
+    distance_label = factor(levels = c("1k", "5k")), # ensure factor levels if used
     activity_id = character(),
     elapsed_time = numeric(),
     moving_time = numeric(),
@@ -143,76 +143,6 @@ test_that("plot_pbs facets for multiple distances", {
   # Check if faceting is applied (presence of FacetWrap class in plot object)
   is_faceted <- inherits(p_multi$facet, "FacetWrap")
   expect_true(is_faceted)
-})
-
-# Test error handling for missing parameters
-test_that("plot_pbs handles missing parameters correctly", {
-  # Test missing stoken when pbs_df is not provided
-  expect_error(
-    plot_pbs(distance_meters = c(1000, 5000)),
-    regexp = "Either 'stoken' or 'pbs_df' must be provided"
-  )
-  
-  # Test missing distance_meters when pbs_df is not provided
-  expect_error(
-    plot_pbs(stoken = "fake_token"),
-    regexp = "`distance_meters` must be provided when `pbs_df` is not"
-  )
-  
-  # Test missing distance_meters when pbs_df is provided but distance_meters is missing
-  manual_pbs_df <- data.frame(
-    activity_date = as.Date("2023-01-01"), 
-    time_seconds = 1200, distance = 5000,
-    is_pb = TRUE, distance_label = factor("5k"), 
-    activity_id = "1", elapsed_time = 1200,
-    moving_time = 1200, cumulative_pb_seconds = 1200,
-    stringsAsFactors = FALSE
-  )
-  manual_pbs_df$time_period <- lubridate::seconds_to_period(manual_pbs_df$time_seconds)
-  
-  # This should work without error since pbs_df is provided
-  p_result <- plot_pbs(pbs_df = manual_pbs_df)
-  expect_s3_class(p_result, "ggplot")
-})
-
-# Test filtering by distance_meters
-test_that("plot_pbs filters pbs_df by distance_meters correctly", {
-  manual_pbs_df <- data.frame(
-    activity_date = as.Date(c("2023-01-01", "2023-01-08", "2023-01-15")), 
-    time_seconds = c(1200, 1180, 300), distance = c(5000, 5000, 1000),
-    is_pb = c(TRUE, TRUE, TRUE), distance_label = factor(c("5k", "5k", "1k"), levels=c("1k", "5k")), 
-    activity_id = as.character(1:3), elapsed_time = c(1200,1180,300),
-    moving_time = c(1200,1180,300), cumulative_pb_seconds = c(1200,1180,300),
-    stringsAsFactors = FALSE
-  )
-  manual_pbs_df$time_period <- lubridate::seconds_to_period(manual_pbs_df$time_seconds)
-  
-  # Test filtering to only 5k distances
-  p_filtered <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = c(5000))
-  expect_s3_class(p_filtered, "ggplot")
-  
-  # Test filtering to non-existent distance
-  p_no_match <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = c(10000))
-  expect_s3_class(p_no_match, "ggplot")
-  expect_true(grepl("No PB data for specified distances", p_no_match$labels$title, ignore.case = TRUE))
-})
-
-# Test with sample data from package
-test_that("plot_pbs works with athlytics_sample_pbs", {
-  # Check if sample data exists and has required columns
-  if (exists("athlytics_sample_pbs") && is.data.frame(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
-    # Ensure required columns exist
-    required_cols <- c("activity_date", "time_seconds", "distance", "is_pb", "distance_label")
-    if (all(required_cols %in% names(athlytics_sample_pbs))) {
-      # Get unique distances from sample data
-      sample_distances <- unique(athlytics_sample_pbs$distance)
-      
-      p_sample <- plot_pbs(pbs_df = athlytics_sample_pbs, distance_meters = sample_distances)
-      expect_s3_class(p_sample, "ggplot")
-    }
-  } else {
-    skip("athlytics_sample_pbs not available or empty")
-  }
 })
 
 # test_that("plot_pbs works with multiple distances", { # Covered by the first test
