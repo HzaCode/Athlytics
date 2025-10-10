@@ -198,7 +198,7 @@ calculate_decoupling <- function(activities_data = NULL,
     
     # Calculate decoupling for this activity
     decoupling_value <- tryCatch({
-      calculate_single_decoupling(stream_data, decouple_metric)
+      calculate_single_decoupling(stream_data, decouple_metric, quality_control)
     }, error = function(e) {
       message(sprintf("  Error calculating decoupling: %s", e$message))
       return(NA_real_)
@@ -229,7 +229,7 @@ calculate_decoupling <- function(activities_data = NULL,
 #' Internal: Calculate Decoupling for Single Activity Stream
 #' @keywords internal
 #' @noRd
-calculate_single_decoupling <- function(stream_df, decouple_metric) {
+calculate_single_decoupling <- function(stream_df, decouple_metric, quality_control = "filter") {
   
   # Validate stream_df structure
   required_cols <- c("time", "heartrate")
@@ -281,6 +281,31 @@ calculate_single_decoupling <- function(stream_df, decouple_metric) {
   
   if (nrow(stream_clean) < 100) {
     stop("Insufficient valid data after filtering (need at least 100 points with positive values).")
+  }
+  
+  # Apply quality control and steady-state gating
+  if (quality_control != "off") {
+    # For now, we use simplified quality checks since we don't have full flag_quality integration
+    # In a full implementation, we would call flag_quality() here
+    
+    # Basic quality gates
+    if (decouple_metric == "pace_hr") {
+      # Check for reasonable velocity values
+      stream_clean <- stream_clean %>%
+        dplyr::filter(.data$velocity > 0.5, .data$velocity < 15)  # 0.5-15 m/s reasonable range
+    } else {
+      # Check for reasonable power values
+      stream_clean <- stream_clean %>%
+        dplyr::filter(.data$watts > 0, .data$watts < 2000)  # 0-2000W reasonable range
+    }
+    
+    # Check for reasonable HR values
+    stream_clean <- stream_clean %>%
+      dplyr::filter(.data$heartrate > 50, .data$heartrate < 220)
+    
+    if (nrow(stream_clean) < 100) {
+      stop("Insufficient data after quality filtering (need at least 100 points).")
+    }
   }
   
   # Split into two halves
