@@ -241,6 +241,27 @@ calculate_ef <- function(activities_data,
       ))
     }
     
+    # Quality control integration
+    if (quality_control != "off") {
+      # For now, we use simplified quality checks since we don't have stream data
+      # In a full implementation, we would parse stream files and call flag_quality()
+      # This is a placeholder for the quality control framework
+      
+      # Check for reasonable HR values (basic quality gate)
+      if (avg_hr < 50 || avg_hr > 220) {
+        if (quality_control == "filter") {
+          return(data.frame(
+            date = activity_date,
+            activity_type = act_type,
+            ef_value = NA_real_,
+            status = "poor_hr_quality",
+            stringsAsFactors = FALSE
+          ))
+        }
+        # If "flag", we continue but mark the status
+      }
+    }
+    
     # Steady-state gating: check minimum duration
     if (duration_sec < (min_steady_minutes * 60)) {
       return(data.frame(

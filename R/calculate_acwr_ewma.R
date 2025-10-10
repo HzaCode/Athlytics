@@ -155,6 +155,13 @@ calculate_acwr_ewma <- function(activities_data,
     stop("`user_max_hr` and `user_resting_hr` are required when `load_metric` is 'hrss'.")
   }
   
+  # Force explicit activity_type specification to prevent mixing incompatible sports
+  if (is.null(activity_type) || length(activity_type) == 0) {
+    stop("`activity_type` must be explicitly specified (e.g., 'Run' or 'Ride'). ",
+         "Mixing different activity types can lead to incompatible load metrics. ",
+         "Please specify the activity type(s) you want to analyze.")
+  }
+  
   message(sprintf("Calculating ACWR (%s) from %s to %s.", 
                   toupper(method), analysis_start_date, analysis_end_date))
   message(sprintf("Load metric: %s, Activity types: %s", 

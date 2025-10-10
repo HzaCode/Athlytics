@@ -30,8 +30,8 @@
 #'     \item `"duration_mins"`: Training duration in minutes (default)
 #'     \item `"distance_km"`: Distance in kilometers
 #'     \item `"elapsed_time_mins"`: Total elapsed time including stops
-#'     \item `"tss"`: Training Stress Score (requires `user_ftp`)
-#'     \item `"hrss"`: Heart Rate Stress Score (requires `user_max_hr` and `user_resting_hr`)
+#'     \item `"tss"`: Training Stress Score approximation using NP/FTP ratio (requires `user_ftp`)
+#'     \item `"hrss"`: Heart Rate Stress Score approximation using simplified TRIMP (requires `user_max_hr` and `user_resting_hr`)
 #'     \item `"elevation_gain_m"`: Elevation gain in meters
 #'   }
 #' @param acute_period Integer. Number of days for the acute load window (default: 7).
@@ -75,6 +75,14 @@
 #' The function automatically fetches additional historical data (chronic_period days
 #' before start_date) to ensure accurate chronic load calculations at the analysis
 #' start point. Ensure your Strava export contains sufficient historical activities.
+#'
+#' **Load Metric Implementations:**
+#' - `"tss"`: Uses normalized power (NP) and FTP to approximate Training Stress Score.
+#'   Formula: `(duration * NP * (NP/FTP)^2) / (FTP * 3600) * 100`. This is an approximation
+#'   and may differ from TrainingPeaks' official TSS calculation.
+#' - `"hrss"`: Uses simplified TRIMP (Training Impulse) based on heart rate reserve.
+#'   Formula: `duration * (HR - resting_HR) / (max_HR - resting_HR)`. This is a simplified
+#'   version and may differ from other HRSS implementations.
 #'
 #' **Interpretation Guidelines:**
 #' \itemize{
@@ -145,7 +153,7 @@
 #' plot_acwr(run_acwr, highlight_zones = TRUE)
 #' }
 calculate_acwr <- function(activities_data,
-                           activity_type = c("Run", "Ride"),
+                           activity_type = NULL,
                            load_metric = "duration_mins",
                            acute_period = 7,
                            chronic_period = 28,
@@ -172,6 +180,13 @@ calculate_acwr <- function(activities_data,
   valid_load_metrics <- c("duration_mins", "distance_km", "elapsed_time_mins", "tss", "hrss", "elevation_gain_m")
   if (!load_metric %in% valid_load_metrics) stop("Invalid `load_metric`. Choose from: ", paste(valid_load_metrics, collapse = ", "))
   if (load_metric == "hrss" && (is.null(user_max_hr) || is.null(user_resting_hr))) stop("`user_max_hr` and `user_resting_hr` are required when `load_metric` is 'hrss'.")
+  
+  # Force explicit activity_type specification to prevent mixing incompatible sports
+  if (is.null(activity_type) || length(activity_type) == 0) {
+    stop("`activity_type` must be explicitly specified (e.g., 'Run' or 'Ride'). ",
+         "Mixing different activity types can lead to incompatible load metrics. ",
+         "Please specify the activity type(s) you want to analyze.")
+  }
 
   # --- Date Handling ---
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
