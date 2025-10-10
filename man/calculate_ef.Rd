@@ -138,7 +138,7 @@ rather than absolute comparisons with other athletes.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_data)
+data(athlytics_sample_ef)
 print(head(athlytics_sample_ef))
 
 \dontrun{

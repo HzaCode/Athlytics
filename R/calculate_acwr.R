@@ -119,10 +119,8 @@
 #'
 #' @examples
 #' # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
-#' data(athlytics_sample_data)
-#' if (!is.null(athlytics_sample_acwr)) {
-#'   print(head(athlytics_sample_acwr))
-#' }
+#' data(athlytics_sample_acwr)
+#' print(head(athlytics_sample_acwr))
 #'
 #' \dontrun{
 #' # Example using local Strava export data

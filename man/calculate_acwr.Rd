@@ -6,7 +6,7 @@
 \usage{
 calculate_acwr(
   activities_data,
-  activity_type = c("Run", "Ride"),
+  activity_type = NULL,
   load_metric = "duration_mins",
   acute_period = 7,
   chronic_period = 28,
@@ -31,8 +31,8 @@ Must contain columns: \code{date}, \code{distance}, \code{moving_time}, \code{el
 \item \code{"duration_mins"}: Training duration in minutes (default)
 \item \code{"distance_km"}: Distance in kilometers
 \item \code{"elapsed_time_mins"}: Total elapsed time including stops
-\item \code{"tss"}: Training Stress Score (requires \code{user_ftp})
-\item \code{"hrss"}: Heart Rate Stress Score (requires \code{user_max_hr} and \code{user_resting_hr})
+\item \code{"tss"}: Training Stress Score approximation using NP/FTP ratio (requires \code{user_ftp})
+\item \code{"hrss"}: Heart Rate Stress Score approximation using simplified TRIMP (requires \code{user_max_hr} and \code{user_resting_hr})
 \item \code{"elevation_gain_m"}: Elevation gain in meters
 }}
 
@@ -106,6 +106,16 @@ The function automatically fetches additional historical data (chronic_period da
 before start_date) to ensure accurate chronic load calculations at the analysis
 start point. Ensure your Strava export contains sufficient historical activities.
 
+\strong{Load Metric Implementations:}
+\itemize{
+\item \code{"tss"}: Uses normalized power (NP) and FTP to approximate Training Stress Score.
+Formula: \code{(duration * NP * (NP/FTP)^2) / (FTP * 3600) * 100}. This is an approximation
+and may differ from TrainingPeaks' official TSS calculation.
+\item \code{"hrss"}: Uses simplified TRIMP (Training Impulse) based on heart rate reserve.
+Formula: \code{duration * (HR - resting_HR) / (max_HR - resting_HR)}. This is a simplified
+version and may differ from other HRSS implementations.
+}
+
 \strong{Interpretation Guidelines:}
 \itemize{
 \item ACWR < 0.8: May indicate detraining or insufficient load
@@ -120,10 +130,8 @@ For cohort analyses, add an \code{athlete_id} column before calculation and use
 }
 \examples{
 # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
-data(athlytics_sample_data)
-if (!is.null(athlytics_sample_acwr)) {
-  print(head(athlytics_sample_acwr))
-}
+data(athlytics_sample_acwr)
+print(head(athlytics_sample_acwr))
 
 \dontrun{
 # Example using local Strava export data

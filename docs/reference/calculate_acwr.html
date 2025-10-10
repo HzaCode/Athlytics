@@ -73,7 +73,7 @@ helps identify periods of rapid training load increases that may elevate injury 
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calculate_acwr</span><span class="op">(</span></span>
 <span>  <span class="va">activities_data</span>,</span>
-<span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
+<span>  activity_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span>
 <span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span>
 <span>  chronic_period <span class="op">=</span> <span class="fl">28</span>,</span>
@@ -105,8 +105,8 @@ Must contain columns: <code>date</code>, <code>distance</code>, <code>moving_tim
 <dd><p>Character string specifying the load calculation method:</p><ul><li><p><code>"duration_mins"</code>: Training duration in minutes (default)</p></li>
 <li><p><code>"distance_km"</code>: Distance in kilometers</p></li>
 <li><p><code>"elapsed_time_mins"</code>: Total elapsed time including stops</p></li>
-<li><p><code>"tss"</code>: Training Stress Score (requires <code>user_ftp</code>)</p></li>
-<li><p><code>"hrss"</code>: Heart Rate Stress Score (requires <code>user_max_hr</code> and <code>user_resting_hr</code>)</p></li>
+<li><p><code>"tss"</code>: Training Stress Score approximation using NP/FTP ratio (requires <code>user_ftp</code>)</p></li>
+<li><p><code>"hrss"</code>: Heart Rate Stress Score approximation using simplified TRIMP (requires <code>user_max_hr</code> and <code>user_resting_hr</code>)</p></li>
 <li><p><code>"elevation_gain_m"</code>: Elevation gain in meters</p></li>
 </ul></dd>
 
@@ -187,7 +187,13 @@ and injury risk in athletes (Gabbett, 2016; Hulin et al., 2016).</p>
 The function automatically fetches additional historical data (chronic_period days
 before start_date) to ensure accurate chronic load calculations at the analysis
 start point. Ensure your Strava export contains sufficient historical activities.</p>
-<p><strong>Interpretation Guidelines:</strong></p><ul><li><p>ACWR &lt; 0.8: May indicate detraining or insufficient load</p></li>
+<p><strong>Load Metric Implementations:</strong></p><ul><li><p><code>"tss"</code>: Uses normalized power (NP) and FTP to approximate Training Stress Score.
+Formula: <code>(duration * NP * (NP/FTP)^2) / (FTP * 3600) * 100</code>. This is an approximation
+and may differ from TrainingPeaks' official TSS calculation.</p></li>
+<li><p><code>"hrss"</code>: Uses simplified TRIMP (Training Impulse) based on heart rate reserve.
+Formula: <code>duration * (HR - resting_HR) / (max_HR - resting_HR)</code>. This is a simplified
+version and may differ from other HRSS implementations.</p></li>
+</ul><p><strong>Interpretation Guidelines:</strong></p><ul><li><p>ACWR &lt; 0.8: May indicate detraining or insufficient load</p></li>
 <li><p>ACWR 0.8-1.3: "Sweet spot" - optimal training stimulus with lower injury risk</p></li>
 <li><p>ACWR 1.3-1.5: Caution zone - monitor for fatigue</p></li>
 <li><p>ACWR &gt; 1.5: High risk zone - consider load management</p></li>
@@ -214,20 +220,17 @@ high chronic workload may decrease injury risk in elite rugby league players.
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">athlytics_sample_data</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set 'athlytics_sample_data' not found</span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">athlytics_sample_acwr</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">athlytics_sample_acwr</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">athlytics_sample_acwr</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">athlytics_sample_acwr</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   date         atl   ctl  acwr acwr_smooth</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2023-01-01  63.7  63.7     1          <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2023-01-02  54.4  54.4     1          <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2023-01-03  54.6  54.6     1          <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2023-01-04  55.5  55.5     1          <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-01-05  55.8  55.8     1          <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-01-06  55.2  55.2     1          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2023-01-01  49.8  40.0  1.25          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2023-01-02  49.8  40.2  1.24          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2023-01-03  50.7  39.9  1.27          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2023-01-04  50.8  40.2  1.26          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-01-05  51.0  40.1  1.27          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-01-06  51.9  40.9  1.27          <span style="color: #BB0000;">NA</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>

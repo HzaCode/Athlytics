@@ -55,7 +55,7 @@ accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_data)
+data(athlytics_sample_exposure)
 print(head(athlytics_sample_exposure))
 
 \dontrun{
