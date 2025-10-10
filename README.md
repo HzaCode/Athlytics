@@ -167,7 +167,7 @@ plot_with_reference(
 )
 ```
 
-📚 [Complete Tutorial with Real Examples](https://hezhiang.com/Athlytics/articles/Athlytics-introduction.html)
+📚 [Complete Tutorial with Real Examples](https://hezhiang.com/Athlytics/articles/athlytics_introduction.html)
 
 ---
 
@@ -261,7 +261,7 @@ Cohort comparison • Quality flagging • Statistical testing • Anomaly detec
 **🎯 Performance Tracking**  
 Personal bests (PR detection) • Training stress balance • Fitness-fatigue dynamics • Periodization tools
 
-📚 [Explore Advanced Features with Examples](https://hezhiang.com/Athlytics/articles/advanced-features.html)
+📚 [Explore Advanced Features with Examples](https://hezhiang.com/Athlytics/articles/advanced_features.html)
 
 ---
 
