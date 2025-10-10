@@ -5,7 +5,7 @@
 \title{Plot ACWR Trend}
 \usage{
 plot_acwr(
-  stoken,
+  data,
   activity_type = NULL,
   load_metric = "duration_mins",
   acute_period = 7,
@@ -23,8 +23,8 @@ plot_acwr(
 )
 }
 \arguments{
-\item{stoken}{\strong{Recommended: Pass pre-calculated data via \code{acwr_df} (local export preferred).}
-For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This parameter is deprecated.}
+\item{data}{\strong{Recommended: Pass pre-calculated data via \code{acwr_df} (local export preferred).}
+A data frame from \code{calculate_acwr()} or activities data from \code{load_local_activities()}.}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
@@ -64,7 +64,6 @@ Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 \details{
 Plots the ACWR trend over time. \strong{Best practice: Use \code{load_local_activities()} + \code{calculate_acwr()} + this function.}
 ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
-Legacy API mode (via \code{stoken}) is maintained for backward compatibility only.
 }
 \examples{
 # Example using pre-calculated sample data
@@ -73,31 +72,20 @@ p <- plot_acwr(athlytics_sample_acwr)
 print(p)
 
 \dontrun{
-# Example using real data (requires authentication)
-# Please replace with your actual Strava application details for this to work.
-# stoken_example <- rStrava::strava_oauth(
-#   app_name = "YOUR_APP_NAME_PLACEHOLDER",
-#   client_id = "YOUR_CLIENT_ID_PLACEHOLDER",
-#   client_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",
-#   cache = TRUE
-# )
+# Example using local Strava export data
+activities <- load_local_activities("strava_export_data/activities.csv")
 
-# If you have a valid stoken_example, you can then use it:
 # Plot ACWR trend for Runs (using duration as load metric)
-# if (exists("stoken_example") && inherits(stoken_example, "Token2.0")) {
-#   plot_acwr(stoken = stoken_example,
-#             activity_type = "Run",
-#             load_metric = "duration_mins",
-#             acute_period = 7,
-#             chronic_period = 28)
-#
-#   # Plot ACWR trend for Rides (using TSS as load metric)
-#   plot_acwr(stoken = stoken_example,
-#             activity_type = "Ride",
-#             load_metric = "tss",
-#             user_ftp = 280)  # FTP value is required
-# } else {
-#  message("stoken_example not created or invalid. Skipping real data example for plot_acwr.")
-# }
+plot_acwr(data = activities,
+          activity_type = "Run",
+          load_metric = "duration_mins",
+          acute_period = 7,
+          chronic_period = 28)
+
+# Plot ACWR trend for Rides (using TSS as load metric)
+plot_acwr(data = activities,
+          activity_type = "Ride",
+          load_metric = "tss",
+          user_ftp = 280)  # FTP value is required
 }
 }

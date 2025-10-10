@@ -34,7 +34,7 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_pbs)
 #' # athlytics_sample_pbs should contain the PBs to be plotted
 #' if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
 #'   sample_pbs_for_plot <- athlytics_sample_pbs

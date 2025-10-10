@@ -48,7 +48,7 @@
 <span>  activities_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  export_dir <span class="op">=</span> <span class="st">"strava_export_data"</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
-<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span>, <span class="st">"Pace_HR"</span>, <span class="st">"Power_HR"</span><span class="op">)</span>,</span>
+<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">40</span>,</span>
@@ -56,8 +56,7 @@
 <span>  steady_cv_threshold <span class="op">=</span> <span class="fl">0.08</span>,</span>
 <span>  min_hr_coverage <span class="op">=</span> <span class="fl">0.9</span>,</span>
 <span>  quality_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"off"</span>, <span class="st">"flag"</span>, <span class="st">"filter"</span><span class="op">)</span>,</span>
-<span>  stream_df <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  stoken <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  stream_df <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,7 +79,7 @@ Default is "strava_export_data".</p></dd>
 
 <dt id="arg-decouple-metric">decouple_metric<a class="anchor" aria-label="anchor" href="#arg-decouple-metric"></a></dt>
 <dd><p>Basis for calculation: "pace_hr" or "power_hr"
-(legacy "Pace_HR"/"Power_HR" also supported).</p></dd>
+(legacy "pace_hr"/"power_hr" also supported).</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -119,11 +118,7 @@ or "filter" (exclude flagged data). Default "filter" for scientific rigor.</p></
 <dd><p>Optional. A pre-fetched data frame for a <em>single</em> activity's stream.
 If provided, calculates decoupling for this data directly, ignoring other parameters.
 Must include columns: <code>time</code>, <code>heartrate</code>, and either <code>velocity_smooth</code>/<code>distance</code>
-(for Pace_HR) or <code>watts</code> (for Power_HR).</p></dd>
-
-
-<dt id="arg-stoken">stoken<a class="anchor" aria-label="anchor" href="#arg-stoken"></a></dt>
-<dd><p><strong>Deprecated.</strong> Legacy Strava token parameter maintained for backward compatibility only.</p></dd>
+(for pace_hr) or <code>watts</code> (for power_hr).</p></dd>
 
 </dl></div>
     <div class="section level2">

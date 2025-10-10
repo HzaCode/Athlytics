@@ -8,7 +8,7 @@ calculate_decoupling(
   activities_data = NULL,
   export_dir = "strava_export_data",
   activity_type = c("Run", "Ride"),
-  decouple_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
+  decouple_metric = c("pace_hr", "power_hr"),
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 40,
@@ -16,8 +16,7 @@ calculate_decoupling(
   steady_cv_threshold = 0.08,
   min_hr_coverage = 0.9,
   quality_control = c("off", "flag", "filter"),
-  stream_df = NULL,
-  stoken = NULL
+  stream_df = NULL
 )
 }
 \arguments{
@@ -29,7 +28,7 @@ Default is "strava_export_data".}
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
 \item{decouple_metric}{Basis for calculation: "pace_hr" or "power_hr"
-(legacy "Pace_HR"/"Power_HR" also supported).}
+(legacy "pace_hr"/"power_hr" also supported).}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.}
 
@@ -52,9 +51,7 @@ or "filter" (exclude flagged data). Default "filter" for scientific rigor.}
 \item{stream_df}{Optional. A pre-fetched data frame for a \emph{single} activity's stream.
 If provided, calculates decoupling for this data directly, ignoring other parameters.
 Must include columns: \code{time}, \code{heartrate}, and either \code{velocity_smooth}/\code{distance}
-(for Pace_HR) or \code{watts} (for Power_HR).}
-
-\item{stoken}{\strong{Deprecated.} Legacy Strava token parameter maintained for backward compatibility only.}
+(for pace_hr) or \code{watts} (for power_hr).}
 }
 \value{
 Returns a data frame with columns:

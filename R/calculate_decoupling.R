@@ -89,8 +89,7 @@ calculate_decoupling <- function(activities_data = NULL,
                                  steady_cv_threshold = 0.08,
                                  min_hr_coverage = 0.9,
                                  quality_control = c("off", "flag", "filter"),
-                                 stream_df = NULL,
-) {
+                                 stream_df = NULL) {
   
   # --- Input Validation ---
   decouple_metric <- match.arg(decouple_metric)

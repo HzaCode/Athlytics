@@ -45,7 +45,7 @@ mock_ef_df <- data.frame(
   date = lubridate::ymd(c("2023-01-01", "2023-01-15", "2023-02-01", "2023-02-15", "2023-03-01")),
   activity_type = rep("Run", 5),
   ef_value = round(rnorm(5, 1.5, 0.1), 2), 
-  ef_metric = rep("Pace_HR", 5),
+  ef_metric = rep("pace_hr", 5),
   stringsAsFactors = FALSE
 )
 

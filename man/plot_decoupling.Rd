@@ -5,7 +5,7 @@
 \title{Plot Aerobic Decoupling Trend}
 \usage{
 plot_decoupling(
-  stoken,
+  data,
   activity_type = c("Run", "Ride"),
   decouple_metric = c("pace_hr", "power_hr"),
   start_date = NULL,
@@ -17,8 +17,8 @@ plot_decoupling(
 )
 }
 \arguments{
-\item{stoken}{\strong{Recommended: Pass pre-calculated data via \code{decoupling_df} (local export preferred).}
-For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This parameter is deprecated.}
+\item{data}{\strong{Recommended: Pass pre-calculated data via \code{decoupling_df} (local export preferred).}
+A data frame from \code{calculate_decoupling()} or activities data from \code{load_local_activities()}.}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
@@ -50,94 +50,43 @@ Plots the aerobic decoupling trend over time. \strong{Recommended workflow: Use 
 Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
 Positive values mean HR drifted relative to output. A 5\\\% threshold line is often
 used as reference. \strong{Best practice: Use \code{load_local_activities()} + \code{calculate_decoupling()} + this function.}
-Legacy API mode is maintained for backward compatibility only.
 }
 \examples{
-# Example using simulated data
-data(Athlytics_sample_data)
-# Explicitly name decoupling_df and provide activity_type
-if (!is.null(athlytics_sample_decoupling) && nrow(athlytics_sample_decoupling) > 0) {
-  p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling, activity_type = "Run")
-  print(p)
-}
+# Example using pre-calculated sample data
+data("athlytics_sample_decoupling", package = "Athlytics")
+p <- plot_decoupling(athlytics_sample_decoupling)
+print(p)
 
-\donttest{
-# Example using real data (requires authentication)
-# NOTE: The following rStrava::strava_oauth call is a placeholder.
-# You MUST replace placeholders with your actual Strava API credentials.
-tryCatch({
-  stoken_example <- rStrava::strava_oauth(
-    app_name = "YOUR_APP_NAME_PLACEHOLDER",
-    app_client_id = "YOUR_CLIENT_ID_PLACEHOLDER",     # CORRECTED
-    app_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",  # CORRECTED
-    cache = TRUE,
-    app_scope = "activity:read_all" # Recommended scope
-  )
+\dontrun{
+# Example using local Strava export data
+activities <- load_local_activities("strava_export_data/activities.csv")
 
-  if (inherits(stoken_example, "Token2.0")) {
-    message("Placeholder stoken_example created for Athlytics examples.")
+# Example 1: Plot Decoupling trend for Runs (last 6 months)
+decoupling_runs_6mo <- calculate_decoupling(
+    activities_data = activities,
+    export_dir = "strava_export_data",
+    activity_type = "Run",
+    decouple_metric = "pace_hr",
+    start_date = Sys.Date() - months(6)
+)
+plot_decoupling(decoupling_runs_6mo)
 
-    # Example 1: Plot Decoupling trend for Runs (last 6 months)
-    # This first calculates the data, then plots it.
-    message("Calculating decoupling for Runs (last 6 months) - may take a moment...")
-    decoupling_runs_6mo <- tryCatch({
-        calculate_decoupling(
-            stoken = stoken_example,
-            activity_type = "Run",
-            decouple_metric = "pace_hr",
-            date_range = c(format(Sys.Date() - lubridate::months(6), "\%Y-\%m-\%d"), 
-                           format(Sys.Date(), "\%Y-\%m-\%d")),
-            max_activities = 5 # Keep low for example
-        )
-    }, error = function(e_calc) {
-        message(paste("Could not calculate decoupling data in example:", e_calc$message))
-        return(dplyr::tibble()) # Return empty tibble on error
-    })
+# Example 2: Plot Decoupling trend for Rides
+decoupling_rides <- calculate_decoupling(
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = "Ride",
+  decouple_metric = "power_hr"
+)
+plot_decoupling(decoupling_rides)
 
-    if (nrow(decoupling_runs_6mo) > 0 && "decoupling" \%in\% names(decoupling_runs_6mo)) {
-      p_runs_6mo <- plot_decoupling(decoupling_df = decoupling_runs_6mo, activity_type = "Run")
-      print(p_runs_6mo)
-    } else {
-      message("No decoupling data for Runs (last 6 months) to plot, or calculation failed.")
-    }
-
-    # Example 2: Plot Decoupling trend for Rides
-    # decoupling_rides <- calculate_decoupling(
-    #   stoken = stoken_example,
-    #   activity_type = "Ride",
-    #   decouple_metric = "power_hr",
-    #   max_activities = 5
-    # )
-    # if (nrow(decoupling_rides) > 0 && "decoupling" \%in\% names(decoupling_rides)) {
-    #   p_rides <- plot_decoupling(decoupling_df = decoupling_rides, activity_type = "Ride")
-    #   print(p_rides)
-    # } else {
-    #   message("No decoupling data for Rides to plot, or calculation failed.")
-    # }
-
-    # Example 3: Plot Decoupling trend for multiple Run types (no trend line)
-    # decoupling_multi_run <- calculate_decoupling(
-    #   stoken = stoken_example,
-    #   activity_type = c("Run", "VirtualRun"),
-    #   decouple_metric = "pace_hr",
-    #   max_activities = 5
-    # )
-    # if (nrow(decoupling_multi_run) > 0 && "decoupling" \%in\% names(decoupling_multi_run)) {
-    #   p_multi_run <- plot_decoupling(
-    #     decoupling_df = decoupling_multi_run,
-    #     activity_type = c("Run", "VirtualRun"),
-    #     add_trend_line = FALSE
-    #   )
-    #   print(p_multi_run)
-    # } else {
-    #   message("No decoupling data for multi-run types to plot, or calculation failed.")
-    # }
-
-  } else {
-    message("Failed to create placeholder stoken for plot_decoupling examples.")
-  }
-}, error = function(e_auth) {
-  message(paste("Error during rStrava authentication in example:", e_auth$message))
-})
+# Example 3: Plot Decoupling trend for multiple Run types (no trend line)
+decoupling_multi_run <- calculate_decoupling(
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = c("Run", "VirtualRun"),
+  decouple_metric = "pace_hr"
+)
+plot_decoupling(decoupling_multi_run, add_trend_line = FALSE)
 }
 }

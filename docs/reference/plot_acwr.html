@@ -45,7 +45,7 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_acwr</span><span class="op">(</span></span>
-<span>  <span class="va">stoken</span>,</span>
+<span>  <span class="va">data</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span>
 <span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span>
@@ -67,9 +67,9 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-stoken">stoken<a class="anchor" aria-label="anchor" href="#arg-stoken"></a></dt>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p><strong>Recommended: Pass pre-calculated data via <code>acwr_df</code> (local export preferred).</strong>
-For legacy API usage: A Strava token from <code><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">rStrava::strava_oauth()</a></code>. This parameter is deprecated.</p></dd>
+A data frame from <code><a href="calculate_acwr.html">calculate_acwr()</a></code> or activities data from <code><a href="load_local_activities.html">load_local_activities()</a></code>.</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
@@ -136,8 +136,7 @@ When provided, analysis uses local data only (no API calls).</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Plots the ACWR trend over time. <strong>Best practice: Use <code><a href="load_local_activities.html">load_local_activities()</a></code> + <code><a href="calculate_acwr.html">calculate_acwr()</a></code> + this function.</strong>
-ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
-Legacy API mode (via <code>stoken</code>) is maintained for backward compatibility only.</p>
+ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".</p>
     </div>
 
     <div class="section level2">
@@ -150,32 +149,21 @@ Legacy API mode (via <code>stoken</code>) is maintained for backward compatibili
 <span class="r-plt img"><img src="plot_acwr-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Example using real data (requires authentication)</span></span></span>
-<span class="r-in"><span><span class="co"># Please replace with your actual Strava application details for this to work.</span></span></span>
-<span class="r-in"><span><span class="co"># stoken_example &lt;- rStrava::strava_oauth(</span></span></span>
-<span class="r-in"><span><span class="co">#   app_name = "YOUR_APP_NAME_PLACEHOLDER",</span></span></span>
-<span class="r-in"><span><span class="co">#   client_id = "YOUR_CLIENT_ID_PLACEHOLDER",</span></span></span>
-<span class="r-in"><span><span class="co">#   client_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",</span></span></span>
-<span class="r-in"><span><span class="co">#   cache = TRUE</span></span></span>
-<span class="r-in"><span><span class="co"># )</span></span></span>
+<span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
+<span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># If you have a valid stoken_example, you can then use it:</span></span></span>
 <span class="r-in"><span><span class="co"># Plot ACWR trend for Runs (using duration as load metric)</span></span></span>
-<span class="r-in"><span><span class="co"># if (exists("stoken_example") &amp;&amp; inherits(stoken_example, "Token2.0")) {</span></span></span>
-<span class="r-in"><span><span class="co">#   plot_acwr(stoken = stoken_example,</span></span></span>
-<span class="r-in"><span><span class="co">#             activity_type = "Run",</span></span></span>
-<span class="r-in"><span><span class="co">#             load_metric = "duration_mins",</span></span></span>
-<span class="r-in"><span><span class="co">#             acute_period = 7,</span></span></span>
-<span class="r-in"><span><span class="co">#             chronic_period = 28)</span></span></span>
-<span class="r-in"><span><span class="co">#</span></span></span>
-<span class="r-in"><span><span class="co">#   # Plot ACWR trend for Rides (using TSS as load metric)</span></span></span>
-<span class="r-in"><span><span class="co">#   plot_acwr(stoken = stoken_example,</span></span></span>
-<span class="r-in"><span><span class="co">#             activity_type = "Ride",</span></span></span>
-<span class="r-in"><span><span class="co">#             load_metric = "tss",</span></span></span>
-<span class="r-in"><span><span class="co">#             user_ftp = 280)  # FTP value is required</span></span></span>
-<span class="r-in"><span><span class="co"># } else {</span></span></span>
-<span class="r-in"><span><span class="co">#  message("stoken_example not created or invalid. Skipping real data example for plot_acwr.")</span></span></span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span>data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>          activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>          load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span></span>
+<span class="r-in"><span>          acute_period <span class="op">=</span> <span class="fl">7</span>,</span></span>
+<span class="r-in"><span>          chronic_period <span class="op">=</span> <span class="fl">28</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Plot ACWR trend for Rides (using TSS as load metric)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span>data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>          activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
+<span class="r-in"><span>          load_metric <span class="op">=</span> <span class="st">"tss"</span>,</span></span>
+<span class="r-in"><span>          user_ftp <span class="op">=</span> <span class="fl">280</span><span class="op">)</span>  <span class="co"># FTP value is required</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

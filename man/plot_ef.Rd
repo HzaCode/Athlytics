@@ -5,7 +5,7 @@
 \title{Plot Efficiency Factor (EF) Trend}
 \usage{
 plot_ef(
-  stoken,
+  data,
   activity_type = c("Run", "Ride"),
   ef_metric = c("pace_hr", "power_hr"),
   start_date = NULL,
@@ -19,8 +19,8 @@ plot_ef(
 )
 }
 \arguments{
-\item{stoken}{\strong{Recommended: Pass pre-calculated data via \code{ef_df} (local export preferred).}
-For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This parameter is deprecated.}
+\item{data}{\strong{Recommended: Pass pre-calculated data via \code{ef_df} (local export preferred).}
+A data frame from \code{calculate_ef()} or activities data from \code{load_local_activities()}.}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
@@ -55,7 +55,6 @@ Plots the Efficiency Factor (EF) trend over time. \strong{Recommended workflow: 
 Plots EF (output/HR based on activity averages). An upward trend
 often indicates improved aerobic fitness. Points colored by activity type.
 \strong{Best practice: Use \code{load_local_activities()} + \code{calculate_ef()} + this function.}
-Legacy API mode is maintained for backward compatibility only.
 }
 \examples{
 # Example using pre-calculated sample data
@@ -64,27 +63,24 @@ p <- plot_ef(athlytics_sample_ef)
 print(p)
 
 \dontrun{
-# Example using real data (requires authentication)
-# stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
-#                                "YOUR_APP_CLIENT_ID",
-#                                "YOUR_APP_SECRET",
-#                                cache = TRUE)
+# Example using local Strava export data
+activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Plot Pace/HR EF trend for Runs (last 6 months)
-# plot_ef(stoken = stoken, # Replace stoken with a valid token object
-#         activity_type = "Run",
-#         ef_metric = "pace_hr",
-#         start_date = Sys.Date() - months(6))
+plot_ef(data = activities,
+        activity_type = "Run",
+        ef_metric = "pace_hr",
+        start_date = Sys.Date() - months(6))
 
 # Plot Power/HR EF trend for Rides
-# plot_ef(stoken = stoken, # Replace stoken with a valid token object
-#         activity_type = "Ride",
-#         ef_metric = "power_hr")
+plot_ef(data = activities,
+        activity_type = "Ride",
+        ef_metric = "power_hr")
 
 # Plot Pace/HR EF trend for multiple Run types (no trend line)
-# plot_ef(stoken = stoken, # Replace stoken with a valid token object
-#         activity_type = c("Run", "VirtualRun"),
-#         ef_metric = "pace_hr",
-#         add_trend_line = FALSE)
+plot_ef(data = activities,
+        activity_type = c("Run", "VirtualRun"),
+        ef_metric = "pace_hr",
+        add_trend_line = FALSE)
 }
 }

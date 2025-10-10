@@ -5,7 +5,7 @@
 \title{Plot Training Load Exposure (ATL vs CTL)}
 \usage{
 plot_exposure(
-  stoken,
+  data,
   activity_type = c("Run", "Ride", "VirtualRide", "VirtualRun"),
   load_metric = "duration_mins",
   acute_period = 7,
@@ -19,7 +19,7 @@ plot_exposure(
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from \code{rStrava::strava_oauth()}. Required unless \code{exposure_df} is provided.}
+\item{data}{A data frame from \code{load_local_activities()}. Required unless \code{exposure_df} is provided.}
 
 \item{activity_type}{Type(s) of activities to include (e.g., "Run", "Ride"). Default uses common types.}
 
@@ -41,7 +41,7 @@ See \code{calculate_exposure} for details on approximate TSS/HRSS calculations.}
 \item{risk_zones}{Add background shading for typical ACWR risk zones? Default \code{TRUE}.}
 
 \item{exposure_df}{Optional. A pre-calculated data frame from \code{calculate_exposure}.
-If provided, \code{stoken} and other calculation parameters are ignored. Must contain
+If provided, \code{data} and other calculation parameters are ignored. Must contain
 \code{date}, \code{atl}, \code{ctl} (and \code{acwr} if \code{risk_zones = TRUE}).}
 }
 \value{
@@ -66,29 +66,25 @@ data(Athlytics_sample_data)
 p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
 print(p)
 
-\donttest{
-# Example using real data (requires authentication)
-# stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
-#                                "YOUR_APP_CLIENT_ID",
-#                                "YOUR_APP_SECRET",
-#                                cache = TRUE)
+\dontrun{
+# Example using local Strava export data
+activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Plot Exposure trend for Runs (last 6 months)
-# plot_exposure(stoken = stoken, # Replace stoken with a valid token object
-#               activity_type = "Run",
-#               end_date = Sys.Date(), # For internal calculate_exposure: fetches prior data.
-#               # Note: start_date applies to the internal calculate_exposure call.
-#               user_ftp = 280) # Example, if load_metric = "tss"
+plot_exposure(data = activities,
+              activity_type = "Run",
+              end_date = Sys.Date(),
+              user_ftp = 280) # Example, if load_metric = "tss"
 
 # Plot Exposure trend for Rides
-# plot_exposure(stoken = stoken, # Replace stoken with a valid token object
-#               activity_type = "Ride",
-#               user_ftp = 280) # Example, provide if load_metric = "tss"
+plot_exposure(data = activities,
+              activity_type = "Ride",
+              user_ftp = 280) # Example, provide if load_metric = "tss"
 
 # Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)
-# plot_exposure(stoken = stoken, # Replace stoken with a valid token object
-#               activity_type = c("Run", "VirtualRun"),
-#               risk_zones = FALSE,
-#               user_ftp = 280) # Example, provide if load_metric = "tss"
+plot_exposure(data = activities,
+              activity_type = c("Run", "VirtualRun"),
+              risk_zones = FALSE,
+              user_ftp = 280) # Example, provide if load_metric = "tss"
 }
 }

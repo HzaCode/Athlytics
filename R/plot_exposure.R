@@ -126,7 +126,7 @@ plot_exposure <- function(data,
                        acute_period, chronic_period, plot_end_date),
       x = sprintf("Chronic Training Load (CTL - %d day avg)", chronic_period),
       y = sprintf("Acute Training Load (ATL - %d day avg)", acute_period),
-      caption = "Data sourced from Strava via rStrava. Red triangle is latest data point."
+      caption = "Data from local Strava export. Red triangle is latest data point."
     ) +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(

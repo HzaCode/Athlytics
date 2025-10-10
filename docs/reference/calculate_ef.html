@@ -4,9 +4,9 @@ effort. Higher EF indicates better aerobic fitness - you're able to maintain fas
 pace or higher power at the same heart rate. Tracking EF over time helps monitor
 aerobic base development and training effectiveness.
 EF Metrics:
-Pace_HR (for running): Speed (m/s) / Average HR
+pace_hr (for running): Speed (m/s) / Average HR
 - Higher values = faster pace at same HR = better fitness
-Power_HR (for cycling): Average Power (watts) / Average HR
+power_hr (for cycling): Average Power (watts) / Average HR
 - Higher values = more power at same HR = better fitness
 
 
@@ -21,9 +21,9 @@ effort. Higher EF indicates better aerobic fitness - you're able to maintain fas
 pace or higher power at the same heart rate. Tracking EF over time helps monitor
 aerobic base development and training effectiveness.
 EF Metrics:
-Pace_HR (for running): Speed (m/s) / Average HR
+pace_hr (for running): Speed (m/s) / Average HR
 - Higher values = faster pace at same HR = better fitness
-Power_HR (for cycling): Average Power (watts) / Average HR
+power_hr (for cycling): Average Power (watts) / Average HR
 - Higher values = more power at same HR = better fitness
 
 
@@ -77,9 +77,9 @@ Increased mitochondrial density
 effort. Higher EF indicates better aerobic fitness - you're able to maintain faster
 pace or higher power at the same heart rate. Tracking EF over time helps monitor
 aerobic base development and training effectiveness.</p>
-<p><strong>EF Metrics:</strong></p><ul><li><p><strong>Pace_HR</strong> (for running): Speed (m/s) / Average HR
+<p><strong>EF Metrics:</strong></p><ul><li><p><strong>pace_hr</strong> (for running): Speed (m/s) / Average HR
 - Higher values = faster pace at same HR = better fitness</p></li>
-<li><p><strong>Power_HR</strong> (for cycling): Average Power (watts) / Average HR
+<li><p><strong>power_hr</strong> (for cycling): Average Power (watts) / Average HR
 - Higher values = more power at same HR = better fitness</p></li>
 </ul><p><strong>What Improves EF?</strong></p><ul><li><p>Aerobic base building (Zone 2 training)</p></li>
 <li><p>Improved running/cycling economy</p></li>
@@ -92,7 +92,7 @@ aerobic base development and training effectiveness.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calculate_ef</span><span class="op">(</span></span>
 <span>  <span class="va">activities_data</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span>, <span class="st">"Pace_HR"</span>, <span class="st">"Power_HR"</span><span class="op">)</span>,</span>
+<span>  ef_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">20</span>,</span>
@@ -111,7 +111,7 @@ aerobic base development and training effectiveness.</p>
 <dl><dt id="arg-activities-data">activities_data<a class="anchor" aria-label="anchor" href="#arg-activities-data"></a></dt>
 <dd><p>A data frame of activities from <code><a href="load_local_activities.html">load_local_activities()</a></code>.
 Must contain columns: <code>date</code>, <code>type</code>, <code>moving_time</code>, <code>distance</code>,
-<code>average_heartrate</code>, and <code>average_watts</code> (for Power_HR metric).</p></dd>
+<code>average_heartrate</code>, and <code>average_watts</code> (for power_hr metric).</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
@@ -121,12 +121,11 @@ Default: <code>c("Run", "Ride")</code>.</p></dd>
 
 
 <dt id="arg-ef-metric">ef_metric<a class="anchor" aria-label="anchor" href="#arg-ef-metric"></a></dt>
-<dd><p>Character string specifying the efficiency metric:</p><ul><li><p><code>"pace_hr"</code> or <code>"Pace_HR"</code>: Pace-based efficiency (for running).
+<dd><p>Character string specifying the efficiency metric:</p><ul><li><p><code>"pace_hr"</code>: Pace-based efficiency (for running).
 Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)</p></li>
-<li><p><code>"power_hr"</code> or <code>"Power_HR"</code>: Power-based efficiency (for cycling).
+<li><p><code>"power_hr"</code>: Power-based efficiency (for cycling).
 Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)</p></li>
-</ul><p>Default: <code>c("pace_hr", "power_hr")</code> (uses first matching metric for activity type).
-Note: Older capitalized names ("Pace_HR", "Power_HR") are supported for backward compatibility.</p></dd>
+</ul><p>Default: <code>c("pace_hr", "power_hr")</code> (uses first matching metric for activity type).</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -195,12 +194,12 @@ criteria not met, "insufficient_data" if data quality issues, "too_short" if bel
 relationship between performance output (pace or power) and heart rate.
 EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 2019).</p>
 <p><strong>Algorithm:</strong></p><ol><li><p>Filter activities by type, date range, and minimum duration</p></li>
-<li><p>For each activity, calculate:</p><ul><li><p>Pace_HR: (distance / moving_time) / average_heartrate</p></li>
-<li><p>Power_HR: average_watts / average_heartrate</p></li>
+<li><p>For each activity, calculate:</p><ul><li><p>pace_hr: (distance / moving_time) / average_heartrate</p></li>
+<li><p>power_hr: average_watts / average_heartrate</p></li>
 </ul></li>
 <li><p>Return one EF value per activity</p></li>
 </ol><p><strong>Data Quality Considerations:</strong></p><ul><li><p>Requires heart rate data (activities without HR are excluded)</p></li>
-<li><p>Power_HR requires power meter data (cycling with power)</p></li>
+<li><p>power_hr requires power meter data (cycling with power)</p></li>
 <li><p>Best for steady-state endurance efforts (tempo runs, long rides)</p></li>
 <li><p>Interval workouts may give misleading EF values</p></li>
 <li><p>Environmental factors (heat, altitude) can affect EF</p></li>
@@ -208,7 +207,7 @@ EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 
 <li><p><strong>Stable</strong>: Maintenance phase</p></li>
 <li><p><strong>Downward trend</strong>: Possible overtraining, fatigue, or environmental stress</p></li>
 <li><p><strong>Sudden drop</strong>: Check for illness, equipment change, or data quality</p></li>
-</ul><p><strong>Typical EF Ranges (Pace_HR for running):</strong></p><ul><li><p>Beginner: 0.01 - 0.015 (m/s per bpm)</p></li>
+</ul><p><strong>Typical EF Ranges (pace_hr for running):</strong></p><ul><li><p>Beginner: 0.01 - 0.015 (m/s per bpm)</p></li>
 <li><p>Intermediate: 0.015 - 0.020</p></li>
 <li><p>Advanced: 0.020 - 0.025</p></li>
 <li><p>Elite: &gt; 0.025</p></li>

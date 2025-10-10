@@ -23,12 +23,12 @@ create_mock_activities <- function(n = 30) {
   )
 }
 
-test_that("calculate_ef works with Pace_HR metric", {
+test_that("calculate_ef works with pace_hr metric", {
   mock_activities <- create_mock_activities()
   
   ef_result <- calculate_ef(
     activities_data = mock_activities,
-    ef_metric = "Pace_HR"
+    ef_metric = "pace_hr"
   )
   
   expect_s3_class(ef_result, "data.frame")
@@ -36,12 +36,12 @@ test_that("calculate_ef works with Pace_HR metric", {
   expect_gt(nrow(ef_result), 0)
 })
 
-test_that("calculate_ef works with Power_HR metric", {
+test_that("calculate_ef works with power_hr metric", {
   mock_activities <- create_mock_activities()
   
   ef_result <- calculate_ef(
     activities_data = mock_activities,
-    ef_metric = "Power_HR"
+    ef_metric = "power_hr"
   )
   
   expect_s3_class(ef_result, "data.frame")

@@ -7,7 +7,7 @@
 calculate_ef(
   activities_data,
   activity_type = c("Run", "Ride"),
-  ef_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
+  ef_metric = c("pace_hr", "power_hr"),
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 20,
@@ -21,7 +21,7 @@ calculate_ef(
 \arguments{
 \item{activities_data}{A data frame of activities from \code{load_local_activities()}.
 Must contain columns: \code{date}, \code{type}, \code{moving_time}, \code{distance},
-\code{average_heartrate}, and \code{average_watts} (for Power_HR metric).}
+\code{average_heartrate}, and \code{average_watts} (for power_hr metric).}
 
 \item{activity_type}{Character vector or single string specifying activity type(s)
 to analyze. Common values: \code{"Run"}, \code{"Ride"}, or \code{c("Run", "Ride")}.
@@ -29,13 +29,12 @@ Default: \code{c("Run", "Ride")}.}
 
 \item{ef_metric}{Character string specifying the efficiency metric:
 \itemize{
-\item \code{"pace_hr"} or \code{"Pace_HR"}: Pace-based efficiency (for running).
+\item \code{"pace_hr"}: Pace-based efficiency (for running).
 Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)
-\item \code{"power_hr"} or \code{"Power_HR"}: Power-based efficiency (for cycling).
+\item \code{"power_hr"}: Power-based efficiency (for cycling).
 Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)
 }
-Default: \code{c("pace_hr", "power_hr")} (uses first matching metric for activity type).
-Note: Older capitalized names ("Pace_HR", "Power_HR") are supported for backward compatibility.}
+Default: \code{c("pace_hr", "power_hr")} (uses first matching metric for activity type).}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
 Defaults to one year before \code{end_date}.}
@@ -82,9 +81,9 @@ aerobic base development and training effectiveness.
 
 \strong{EF Metrics:}
 \itemize{
-\item \strong{Pace_HR} (for running): Speed (m/s) / Average HR
+\item \strong{pace_hr} (for running): Speed (m/s) / Average HR
 - Higher values = faster pace at same HR = better fitness
-\item \strong{Power_HR} (for cycling): Average Power (watts) / Average HR
+\item \strong{power_hr} (for cycling): Average Power (watts) / Average HR
 - Higher values = more power at same HR = better fitness
 }
 
@@ -106,8 +105,8 @@ EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 
 \item Filter activities by type, date range, and minimum duration
 \item For each activity, calculate:
 \itemize{
-\item Pace_HR: (distance / moving_time) / average_heartrate
-\item Power_HR: average_watts / average_heartrate
+\item pace_hr: (distance / moving_time) / average_heartrate
+\item power_hr: average_watts / average_heartrate
 }
 \item Return one EF value per activity
 }
@@ -115,7 +114,7 @@ EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 
 \strong{Data Quality Considerations:}
 \itemize{
 \item Requires heart rate data (activities without HR are excluded)
-\item Power_HR requires power meter data (cycling with power)
+\item power_hr requires power meter data (cycling with power)
 \item Best for steady-state endurance efforts (tempo runs, long rides)
 \item Interval workouts may give misleading EF values
 \item Environmental factors (heat, altitude) can affect EF
@@ -129,7 +128,7 @@ EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 
 \item \strong{Sudden drop}: Check for illness, equipment change, or data quality
 }
 
-\strong{Typical EF Ranges (Pace_HR for running):}
+\strong{Typical EF Ranges (pace_hr for running):}
 \itemize{
 \item Beginner: 0.01 - 0.015 (m/s per bpm)
 \item Intermediate: 0.015 - 0.020
