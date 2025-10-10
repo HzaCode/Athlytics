@@ -26,8 +26,6 @@ runnable_function_examples.html
 
 # Documentation files (not for GitHub)
 vignettes/
-docs/
-analysis_output/
 export_data/
 tests/manual_tests/
 paper/
