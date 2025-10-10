@@ -60,10 +60,9 @@ Visualizes training state by plotting ATL vs CTL (related to PMC charts).
   If `exposure_df` is not provided, it calls `calculate_exposure` first.
 }
 \examples{
-# Example using simulated data
-data(athlytics_sample_data)
-# Ensure exposure_df is named and other necessary parameters like activity_type are provided
-p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
+# Example using pre-calculated sample data
+data("athlytics_sample_exposure", package = "Athlytics")
+p <- plot_exposure(athlytics_sample_exposure)
 print(p)
 
 \dontrun{

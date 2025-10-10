@@ -41,6 +41,10 @@ plot_decoupling(
 \item{decoupling_df}{Optional. A pre-calculated data frame from `calculate_decoupling`.
 If provided, `stoken` and other calculation parameters are ignored.
 Must contain 'date' and 'decoupling' columns.}
+
+\item{group_var}{Optional. Column name for grouping/faceting (e.g., "athlete_id").}
+
+\item{group_colors}{Optional. Named vector of colors for groups.}
 }
 \value{
 A ggplot object showing the decoupling trend.
@@ -58,13 +62,10 @@ Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
   (can be slow and hit API limits).
 }
 \examples{
-# Example using simulated data
-data(athlytics_sample_data)
-# Explicitly name decoupling_df and provide activity_type
-if (!is.null(athlytics_sample_decoupling) && nrow(athlytics_sample_decoupling) > 0) {
-  p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling, activity_type = "Run")
-  print(p)
-}
+# Example using pre-calculated sample data
+data("athlytics_sample_decoupling", package = "Athlytics")
+p <- plot_decoupling(athlytics_sample_decoupling)
+print(p)
 
 \dontrun{
 # Example using real data (requires authentication)

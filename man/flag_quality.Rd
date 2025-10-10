@@ -63,10 +63,10 @@ suitable for physiological metrics calculation.
 This function performs several quality checks:
 \itemize{
   \item **HR/Power Spikes**: Flags values outside physiological ranges or with
-    sudden jumps (ΔHR > 10 bpm/s, ΔP > 300 W/s).
+    sudden jumps (Delta HR > 10 bpm/s, Delta P > 300 W/s).
   \item **GPS Drift**: Flags implausible speeds or accelerations based on sport type.
   \item **Steady-State Detection**: Identifies segments with low variability
-    (CV < 8\%) lasting ≥20 minutes, suitable for EF/decoupling calculations.
+    (CV < 8\%) lasting >= 20 minutes, suitable for EF/decoupling calculations.
 }
 
 The function is sport-aware and adjusts thresholds accordingly. All thresholds
@@ -90,3 +90,4 @@ summary(flagged_data$quality_score)
 table(flagged_data$flag_any)
 }
 }
+\keyword{internal}

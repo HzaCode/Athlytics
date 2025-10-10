@@ -18,6 +18,8 @@
 #' @param highlight_zones Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default `TRUE`.
 #' @param acwr_df Optional. A pre-calculated data frame from `calculate_acwr`.
 #'   If provided, `stoken` and other calculation parameters are ignored.
+#' @param group_var Optional. Column name for grouping/faceting (e.g., "athlete_id").
+#' @param group_colors Optional. Named vector of colors for groups.
 #'
 #' @return A ggplot object showing the ACWR trend.
 #'
@@ -34,13 +36,10 @@
 #' @export
 #'
 #' @examples
-#' # Example using simulated data
-#' data(athlytics_sample_data)
-#' if (!is.null(athlytics_sample_acwr)) {
-  #'   # Note: acwr_df should be named and necessary parameters provided
-#'   p <- plot_acwr(acwr_df = athlytics_sample_acwr)
-#'   print(p)
-#' }
+#' # Example using pre-calculated sample data
+#' data("athlytics_sample_acwr", package = "Athlytics")
+#' p <- plot_acwr(athlytics_sample_acwr)
+#' print(p)
 #'
 #' \dontrun{
 #' # Example using real data (requires authentication)

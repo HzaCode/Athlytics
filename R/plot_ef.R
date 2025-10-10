@@ -17,6 +17,8 @@
 #' @param smoothing_method Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".
 #' @param ef_df Optional. A pre-calculated data frame from `calculate_ef`.
 #'   If provided, `stoken` and other calculation parameters are ignored.
+#' @param group_var Optional. Column name for grouping/faceting (e.g., "athlete_id").
+#' @param group_colors Optional. Named vector of colors for groups.
 #'
 #' @return A ggplot object showing the EF trend.
 #'
@@ -32,10 +34,9 @@
 #' @export
 #'
 #' @examples
-#' # Example using simulated data
-#' data(athlytics_sample_data)
-#' # Explicitly name ef_df and provide activity_type
-#' p <- plot_ef(ef_df = athlytics_sample_ef, activity_type = "Run") 
+#' # Example using pre-calculated sample data
+#' data("athlytics_sample_ef", package = "Athlytics")
+#' p <- plot_ef(athlytics_sample_ef)
 #' print(p)
 #'
 #' \dontrun{

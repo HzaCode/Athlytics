@@ -11,7 +11,7 @@ Description: An open-source computational framework for longitudinal analysis of
     standardized functions to calculate and visualize key physiological indicators 
     including Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and 
     training load metrics. 
-License: MIT + file LICENSE.md
+License: MIT + file LICENSE
 URL: https://hezhiang.com/Athlytics/, https://github.com/HzaCode/Athlytics
 BugReports: https://github.com/HzaCode/Athlytics/issues 
 Encoding: UTF-8

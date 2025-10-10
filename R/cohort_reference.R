@@ -40,7 +40,8 @@
 #'
 #' @importFrom dplyr group_by summarise filter mutate %>% ungroup
 #' @importFrom tidyr pivot_longer
-#' @importFrom stats quantile
+#' @importFrom stats quantile setNames
+#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -128,10 +129,10 @@ cohort_reference <- function(data,
   reference_data <- data %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(grouping_vars))) %>%
     dplyr::summarise(
-      n_athletes = dplyr::n_distinct(athlete_id, na.rm = TRUE),
-      !!!setNames(
+      n_athletes = dplyr::n_distinct(.data$athlete_id, na.rm = TRUE),
+      !!!stats::setNames(
         lapply(probs, function(p) {
-          expr(quantile(.data[[!!metric]], probs = !!p, na.rm = TRUE))
+          rlang::expr(stats::quantile(.data[[!!metric]], probs = !!p, na.rm = TRUE))
         }),
         paste0("p", sprintf("%02d", probs * 100))
       ),
@@ -263,6 +264,7 @@ add_reference_bands <- function(p,
 #'
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal scale_x_date
 #' @importFrom dplyr %>%
+#' @importFrom rlang %||% .data
 #' @export
 #'
 #' @examples

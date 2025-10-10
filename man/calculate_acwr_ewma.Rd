@@ -78,7 +78,7 @@ This function extends the basic ACWR calculation with two methods:
     with configurable half-lives. More responsive to recent changes.
 }
 
-For EWMA, the smoothing parameter α is calculated as: α = ln(2) / half_life
+For EWMA, the smoothing parameter alpha is calculated as: alpha = ln(2) / half_life
 
 **Confidence Bands**: When `ci = TRUE` and `method = "ewma"`, uses moving-block
 bootstrap to estimate uncertainty. The daily load sequence is resampled in
@@ -107,3 +107,4 @@ acwr_ewma <- calculate_acwr_ewma(
 head(acwr_ewma)
 }
 }
+\keyword{internal}

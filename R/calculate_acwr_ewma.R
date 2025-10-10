@@ -35,7 +35,7 @@
 #'     with configurable half-lives. More responsive to recent changes.
 #' }
 #'
-#' For EWMA, the smoothing parameter α is calculated as: α = ln(2) / half_life
+#' For EWMA, the smoothing parameter alpha is calculated as: alpha = ln(2) / half_life
 #'
 #' **Confidence Bands**: When `ci = TRUE` and `method = "ewma"`, uses moving-block
 #' bootstrap to estimate uncertainty. The daily load sequence is resampled in
@@ -45,7 +45,6 @@
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce
 #' @importFrom lubridate as_date days
 #' @importFrom stats quantile
-#' @export
 #'
 #' @examples
 #' \dontrun{
@@ -68,6 +67,8 @@
 #' # Compare both methods
 #' head(acwr_ewma)
 #' }
+#'
+#' @keywords internal
 calculate_acwr_ewma <- function(activities_data,
                                activity_type = NULL,
                                load_metric = "duration_mins",

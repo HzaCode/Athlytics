@@ -30,6 +30,7 @@
 ^tests/testthat/_snaps/$
 # Ignore temporary check directory if created inside project
 ^Athlytics\.Rcheck/$
+^\.\.Rcheck/$
 # pkgdown files
 ^_pkgdown\.yml$
 ^docs$
@@ -95,3 +96,11 @@
 ^package-lock\.json$
 ^strava_api.*\.md$
 ^提交指南.*\.md$
+^export_data$
+^analysis_output$
+^athlytics_downloads_raw_data\.csv$
+^Athlytics_.*\.tar\.gz$
+^tatus$
+^check_output\.txt$
+^man/calculate_acwr_ewma\.Rd$
+^man/flag_quality\.Rd$
