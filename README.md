@@ -99,34 +99,34 @@ remotes::install_github('HzaCode/Athlytics')
 ```r
 library(Athlytics)
 
-# 1) 直接读取 Strava 导出 ZIP（无需手动解压）
+# 1) Load Strava export ZIP (no manual extraction needed)
 activities <- load_local_activities("athlete1_export.zip")
 
-# 2) 训练负荷（ACWR）
+# 2) Training Load (ACWR)
 acwr_data <- calculate_acwr(
   activities_data = activities,
-  load_metric = "duration_mins"   # 与文档枚举一致
+  load_metric = "duration_mins"   # Consistent with documentation
 )
-# 科研中立：默认不渲染风险区底色；阈值有争议，可配置
+# Scientific neutrality: risk zones off by default (thresholds are debated)
 plot_acwr(acwr_data, highlight_zones = FALSE)
 
-# 3) 有氧效率（EF）
+# 3) Aerobic Efficiency (EF)
 ef_data <- calculate_ef(
   activities_data = activities,
-  ef_metric = "pace_hr"           # 统一为小写下划线风格
+  ef_metric = "pace_hr"           # Unified lowercase naming
 )
 plot_ef(ef_data, add_trend_line = TRUE)
 
-# 4) 心肺解耦（Decoupling）
+# 4) Cardiovascular Decoupling
 decoupling_data <- calculate_decoupling(
   activities_data = activities
-  # 如遇"找不到流数据/TCX"的报错，再额外传 export_dir 指向导出目录
+  # If stream data error occurs, specify export_dir for unzipped export
   # export_dir = "path/to/unzipped_export_dir"
 )
 plot_decoupling(decoupling_data, decouple_metric = "pace_hr")
 ```
 
-> **Note:** EF/Decoupling 仅适用于**长时间稳态**；若你的数据不满足稳态门槛，会自动跳过或给出提示（建议先做质量标记/稳态识别再解释结果）。
+> **Note:** EF/Decoupling analysis requires **steady-state conditions**. Activities not meeting steady-state thresholds will be automatically skipped or flagged (quality checks recommended before interpreting results).
 
 **👥 Multi-Athlete Cohort Studies**
 
