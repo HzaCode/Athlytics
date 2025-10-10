@@ -40,3 +40,6 @@ test-*.md
 node_modules/
 /doc/
 /Meta/
+
+# Paper drafts and submissions
+paper/
