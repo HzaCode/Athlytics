@@ -24,30 +24,28 @@ explicit_english_month_year <- function(date_obj) {
 #'
 #' Visualizes the trend of aerobic decoupling over time.
 #'
-#' Plots the aerobic decoupling trend over time. Uses pre-calculated data
-#' or calls `calculate_decoupling` (can be slow).
+#' Plots the aerobic decoupling trend over time. **Recommended workflow: Use local data via `decoupling_df`.**
 #'
-#' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `decoupling_df` is provided.
+#' @param stoken **Recommended: Pass pre-calculated data via `decoupling_df` (local export preferred).**
+#'   For legacy API usage: A Strava token from `rStrava::strava_oauth()`. This parameter is deprecated.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
 #' @param decouple_metric Metric basis: "Pace_HR" or "Power_HR".
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #' @param min_duration_mins Minimum activity duration (minutes) to include. Default 45.
-#' @param max_activities Max number of recent activities to fetch/analyze when `stoken` is used. Default 50.
 #' @param add_trend_line Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.
 #' @param smoothing_method Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".
-#' @param decoupling_df Optional. A pre-calculated data frame from `calculate_decoupling`.
-#'   If provided, `stoken` and other calculation parameters are ignored.
+#' @param decoupling_df **Recommended.** A pre-calculated data frame from `calculate_decoupling()`.
+#'   When provided, analysis uses local data only (no API calls).
 #'   Must contain 'date' and 'decoupling' columns.
 #'
 #' @return A ggplot object showing the decoupling trend.
 #'
 #' @details Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
-#'   Positive values mean HR drifted relative to output. A 5% threshold line is often
-#'   used as reference. If `decoupling_df` is not provided, calls `calculate_decoupling` first
-#'   (can be slow and hit API limits).
+#'   Positive values mean HR drifted relative to output. A 5\\% threshold line is often
+#'   used as reference. **Best practice: Use `load_local_activities()` + `calculate_decoupling()` + this function.**
+#'   Legacy API mode is maintained for backward compatibility only.
 #'
-#' @importFrom rStrava get_activity_list get_activity_streams
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when group_by summarise pull first last tibble
 #' @importFrom lubridate as_date
 #' @importFrom lubridate date
@@ -155,7 +153,6 @@ plot_decoupling <- function(stoken,
                             start_date = NULL,
                             end_date = NULL,
                             min_duration_mins = 45,
-                            max_activities = 50,
                             add_trend_line = TRUE,
                             smoothing_method = "loess",
                             decoupling_df = NULL) {
@@ -177,8 +174,7 @@ plot_decoupling <- function(stoken,
           decouple_metric = decouple_metric_label, # Use the matched, single metric
           start_date = start_date,
           end_date = end_date,
-          min_duration_mins = min_duration_mins,
-          max_activities = max_activities
+          min_duration_mins = min_duration_mins
       )
   }
 

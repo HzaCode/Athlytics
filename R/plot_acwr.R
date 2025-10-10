@@ -4,7 +4,8 @@
 #'
 #' Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 #'
-#' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `acwr_df` is provided.
+#' @param stoken **Recommended: Pass pre-calculated data via `acwr_df` (local export preferred).**
+#'   For legacy API usage: A Strava token from `rStrava::strava_oauth()`. This parameter is deprecated.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
 #' @param load_metric Method for calculating daily load (e.g., "duration_mins", "distance_km", "tss", "hrss").
 #' @param acute_period Days for the acute load window (e.g., 7).
@@ -16,16 +17,16 @@
 #' @param user_resting_hr Required if `load_metric = "hrss"` and `acwr_df` is not provided. Your resting heart rate.
 #' @param smoothing_period Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.
 #' @param highlight_zones Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default `TRUE`.
-#' @param acwr_df Optional. A pre-calculated data frame from `calculate_acwr`.
-#'   If provided, `stoken` and other calculation parameters are ignored.
+#' @param acwr_df **Recommended.** A pre-calculated data frame from `calculate_acwr()` or `calculate_acwr_ewma()`.
+#'   When provided, analysis uses local data only (no API calls).
 #' @param group_var Optional. Column name for grouping/faceting (e.g., "athlete_id").
 #' @param group_colors Optional. Named vector of colors for groups.
 #'
 #' @return A ggplot object showing the ACWR trend.
 #'
-#' @details Plots the ACWR trend over time. Uses pre-calculated data or calls `calculate_acwr` (can be slow).
+#' @details Plots the ACWR trend over time. **Best practice: Use `load_local_activities()` + `calculate_acwr()` + this function.**
 #'   ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
-#'   If `acwr_df` is not provided, calls `calculate_acwr` first (can be slow and hit API limits).
+#'   Legacy API mode (via `stoken`) is maintained for backward compatibility only.
 #'
 #' 
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup

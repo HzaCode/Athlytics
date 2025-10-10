@@ -7,11 +7,11 @@
 \format{
 A tibble with X rows and 5 variables:
 \describe{
-  \item{date}{Date of the metrics, as a Date object.}
-  \item{atl}{Acute Training Load, as a numeric value.}
-  \item{ctl}{Chronic Training Load, as a numeric value.}
-  \item{acwr}{Acute:Chronic Workload Ratio, as a numeric value.}
-  \item{acwr_smooth}{Smoothed ACWR, as a numeric value.}
+\item{date}{Date of the metrics, as a Date object.}
+\item{atl}{Acute Training Load, as a numeric value.}
+\item{ctl}{Chronic Training Load, as a numeric value.}
+\item{acwr}{Acute:Chronic Workload Ratio, as a numeric value.}
+\item{acwr_smooth}{Smoothed ACWR, as a numeric value.}
 }
 }
 \source{

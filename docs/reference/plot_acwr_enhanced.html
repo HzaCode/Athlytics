@@ -65,11 +65,11 @@ and cohort reference percentiles.</p>
 
 
 <dl><dt id="arg-acwr-data">acwr_data<a class="anchor" aria-label="anchor" href="#arg-acwr-data"></a></dt>
-<dd><p>A data frame from `calculate_acwr_ewma()` containing ACWR values.</p></dd>
+<dd><p>A data frame from <code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma()</a></code> containing ACWR values.</p></dd>
 
 
 <dt id="arg-reference-data">reference_data<a class="anchor" aria-label="anchor" href="#arg-reference-data"></a></dt>
-<dd><p>Optional. A data frame from `cohort_reference()` for
+<dd><p>Optional. A data frame from <code><a href="cohort_reference.html">cohort_reference()</a></code> for
 adding cohort reference bands.</p></dd>
 
 
@@ -113,12 +113,11 @@ Default TRUE.</p></dd>
 <li><p>Cohort reference percentile bands (if provided)</p></li>
 <li><p>Bootstrap confidence bands (if available in data)</p></li>
 <li><p>Individual ACWR trend line</p></li>
-</ul><p>The layering order (bottom to top):
-1. Risk zones (background)
-2. Cohort reference bands (P5-P95, then P25-P75)
-3. Confidence intervals (individual uncertainty)
-4. ACWR line (individual trend)</p>
-    </div>
+</ul><p>The layering order (bottom to top):</p><ol><li><p>Risk zones (background)</p></li>
+<li><p>Cohort reference bands (P5-P95, then P25-P75)</p></li>
+<li><p>Confidence intervals (individual uncertainty)</p></li>
+<li><p>ACWR line (individual trend)</p></li>
+</ol></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

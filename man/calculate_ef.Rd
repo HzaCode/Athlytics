@@ -14,23 +14,23 @@ calculate_ef(
 )
 }
 \arguments{
-\item{activities_data}{A data frame of activities from `load_local_activities()`.
-Must contain columns: `date`, `type`, `moving_time`, `distance`, 
-`average_heartrate`, and `average_watts` (for Power_HR metric).}
+\item{activities_data}{A data frame of activities from \code{load_local_activities()}.
+Must contain columns: \code{date}, \code{type}, \code{moving_time}, \code{distance},
+\code{average_heartrate}, and \code{average_watts} (for Power_HR metric).}
 
 \item{activity_type}{Character vector or single string specifying activity type(s)
-to analyze. Common values: `"Run"`, `"Ride"`, or `c("Run", "Ride")`.
-Default: `c("Run", "Ride")`.}
+to analyze. Common values: \code{"Run"}, \code{"Ride"}, or \code{c("Run", "Ride")}.
+Default: \code{c("Run", "Ride")}.}
 
 \item{ef_metric}{Character string specifying the efficiency metric:
 \itemize{
-  \item `"Pace_HR"`: Pace-based efficiency (for running). Formula: (distance / moving_time) / avg_HR
-  \item `"Power_HR"`: Power-based efficiency (for cycling). Formula: avg_watts / avg_HR
+\item \code{"Pace_HR"}: Pace-based efficiency (for running). Formula: (distance / moving_time) / avg_HR
+\item \code{"Power_HR"}: Power-based efficiency (for cycling). Formula: avg_watts / avg_HR
 }
-Default: `c("Pace_HR", "Power_HR")` (uses first matching metric for activity type).}
+Default: \code{c("Pace_HR", "Power_HR")} (uses first matching metric for activity type).}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
-Defaults to one year before `end_date`.}
+Defaults to one year before \code{end_date}.}
 
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string, Date, or POSIXct).
 Defaults to current date (Sys.Date()).}
@@ -42,9 +42,9 @@ represent steady-state aerobic efforts.}
 \value{
 A tibble with the following columns:
 \describe{
-  \item{date}{Activity date (Date class)}
-  \item{activity_type}{Activity type (character: "Run" or "Ride")}
-  \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.}
+\item{date}{Activity date (Date class)}
+\item{activity_type}{Activity type (character: "Run" or "Ride")}
+\item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.}
 }
 }
 \description{
@@ -53,20 +53,20 @@ effort. Higher EF indicates better aerobic fitness - you're able to maintain fas
 pace or higher power at the same heart rate. Tracking EF over time helps monitor
 aerobic base development and training effectiveness.
 
-**EF Metrics:**
+\strong{EF Metrics:}
 \itemize{
-  \item **Pace_HR** (for running): Speed (m/s) / Average HR
-    - Higher values = faster pace at same HR = better fitness
-  \item **Power_HR** (for cycling): Average Power (watts) / Average HR
-    - Higher values = more power at same HR = better fitness
+\item \strong{Pace_HR} (for running): Speed (m/s) / Average HR
+- Higher values = faster pace at same HR = better fitness
+\item \strong{Power_HR} (for cycling): Average Power (watts) / Average HR
+- Higher values = more power at same HR = better fitness
 }
 
-**What Improves EF?**
+\strong{What Improves EF?}
 \itemize{
-  \item Aerobic base building (Zone 2 training)
-  \item Improved running/cycling economy
-  \item Enhanced cardiovascular efficiency
-  \item Increased mitochondrial density
+\item Aerobic base building (Zone 2 training)
+\item Improved running/cycling economy
+\item Enhanced cardiovascular efficiency
+\item Increased mitochondrial density
 }
 }
 \details{
@@ -74,37 +74,40 @@ Computes Efficiency Factor (EF) for endurance activities, quantifying the
 relationship between performance output (pace or power) and heart rate.
 EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 2019).
 
-
-**Algorithm:**
-1. Filter activities by type, date range, and minimum duration
-2. For each activity, calculate:
-   - Pace_HR: (distance / moving_time) / average_heartrate
-   - Power_HR: average_watts / average_heartrate
-3. Return one EF value per activity
-
-**Data Quality Considerations:**
+\strong{Algorithm:}
+\enumerate{
+\item Filter activities by type, date range, and minimum duration
+\item For each activity, calculate:
 \itemize{
-  \item Requires heart rate data (activities without HR are excluded)
-  \item Power_HR requires power meter data (cycling with power)
-  \item Best for steady-state endurance efforts (tempo runs, long rides)
-  \item Interval workouts may give misleading EF values
-  \item Environmental factors (heat, altitude) can affect EF
+\item Pace_HR: (distance / moving_time) / average_heartrate
+\item Power_HR: average_watts / average_heartrate
+}
+\item Return one EF value per activity
 }
 
-**Interpretation:**
+\strong{Data Quality Considerations:}
 \itemize{
-  \item **Upward trend**: Improving aerobic fitness
-  \item **Stable**: Maintenance phase
-  \item **Downward trend**: Possible overtraining, fatigue, or environmental stress
-  \item **Sudden drop**: Check for illness, equipment change, or data quality
+\item Requires heart rate data (activities without HR are excluded)
+\item Power_HR requires power meter data (cycling with power)
+\item Best for steady-state endurance efforts (tempo runs, long rides)
+\item Interval workouts may give misleading EF values
+\item Environmental factors (heat, altitude) can affect EF
 }
 
-**Typical EF Ranges (Pace_HR for running):**
+\strong{Interpretation:}
 \itemize{
-  \item Beginner: 0.01 - 0.015 (m/s per bpm)
-  \item Intermediate: 0.015 - 0.020
-  \item Advanced: 0.020 - 0.025
-  \item Elite: > 0.025
+\item \strong{Upward trend}: Improving aerobic fitness
+\item \strong{Stable}: Maintenance phase
+\item \strong{Downward trend}: Possible overtraining, fatigue, or environmental stress
+\item \strong{Sudden drop}: Check for illness, equipment change, or data quality
+}
+
+\strong{Typical EF Ranges (Pace_HR for running):}
+\itemize{
+\item Beginner: 0.01 - 0.015 (m/s per bpm)
+\item Intermediate: 0.015 - 0.020
+\item Advanced: 0.020 - 0.025
+\item Elite: > 0.025
 }
 
 Note: EF values are relative to individual baseline. Focus on personal trends
@@ -133,8 +136,8 @@ print(tail(ef_data_ride))
 }
 }
 \references{
-Allen, H., Coggan, A. R., & McGregor, S. (2019). *Training and Racing with a
-Power Meter* (3rd ed.). VeloPress.
+Allen, H., Coggan, A. R., & McGregor, S. (2019). \emph{Training and Racing with a
+Power Meter} (3rd ed.). VeloPress.
 }
 \seealso{
 \code{\link{plot_ef}} for visualization with trend lines,

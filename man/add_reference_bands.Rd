@@ -15,7 +15,7 @@ add_reference_bands(
 \arguments{
 \item{p}{A ggplot object (typically from plot_acwr or similar).}
 
-\item{reference_data}{A data frame from `cohort_reference()`.}
+\item{reference_data}{A data frame from \code{cohort_reference()}.}
 
 \item{bands}{Character vector specifying which bands to plot. Options:
 "p25_p75" (inner quartiles), "p05_p95" (outer 5-95 range), "p50" (median).

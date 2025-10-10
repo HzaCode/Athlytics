@@ -68,7 +68,7 @@
 
 
 <dl><dt id="arg-stoken">stoken<a class="anchor" aria-label="anchor" href="#arg-stoken"></a></dt>
-<dd><p>A valid Strava token from `rStrava::strava_oauth()`. Required unless `acwr_df` is provided.</p></dd>
+<dd><p>A valid Strava token from <code><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">rStrava::strava_oauth()</a></code>. Required unless <code>acwr_df</code> is provided.</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
@@ -84,7 +84,7 @@
 
 
 <dt id="arg-chronic-period">chronic_period<a class="anchor" aria-label="anchor" href="#arg-chronic-period"></a></dt>
-<dd><p>Days for the chronic load window (e.g., 28). Must be greater than `acute_period`.</p></dd>
+<dd><p>Days for the chronic load window (e.g., 28). Must be greater than <code>acute_period</code>.</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -96,15 +96,15 @@
 
 
 <dt id="arg-user-ftp">user_ftp<a class="anchor" aria-label="anchor" href="#arg-user-ftp"></a></dt>
-<dd><p>Required if `load_metric = "tss"` and `acwr_df` is not provided. Your Functional Threshold Power.</p></dd>
+<dd><p>Required if <code>load_metric = "tss"</code> and <code>acwr_df</code> is not provided. Your Functional Threshold Power.</p></dd>
 
 
 <dt id="arg-user-max-hr">user_max_hr<a class="anchor" aria-label="anchor" href="#arg-user-max-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"` and `acwr_df` is not provided. Your maximum heart rate.</p></dd>
+<dd><p>Required if <code>load_metric = "hrss"</code> and <code>acwr_df</code> is not provided. Your maximum heart rate.</p></dd>
 
 
 <dt id="arg-user-resting-hr">user_resting_hr<a class="anchor" aria-label="anchor" href="#arg-user-resting-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"` and `acwr_df` is not provided. Your resting heart rate.</p></dd>
+<dd><p>Required if <code>load_metric = "hrss"</code> and <code>acwr_df</code> is not provided. Your resting heart rate.</p></dd>
 
 
 <dt id="arg-smoothing-period">smoothing_period<a class="anchor" aria-label="anchor" href="#arg-smoothing-period"></a></dt>
@@ -112,12 +112,12 @@
 
 
 <dt id="arg-highlight-zones">highlight_zones<a class="anchor" aria-label="anchor" href="#arg-highlight-zones"></a></dt>
-<dd><p>Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default `TRUE`.</p></dd>
+<dd><p>Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-acwr-df">acwr_df<a class="anchor" aria-label="anchor" href="#arg-acwr-df"></a></dt>
-<dd><p>Optional. A pre-calculated data frame from `calculate_acwr`.
-If provided, `stoken` and other calculation parameters are ignored.</p></dd>
+<dd><p>Optional. A pre-calculated data frame from <code>calculate_acwr</code>.
+If provided, <code>stoken</code> and other calculation parameters are ignored.</p></dd>
 
 
 <dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
@@ -134,9 +134,9 @@ If provided, `stoken` and other calculation parameters are ignored.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots the ACWR trend over time. Uses pre-calculated data or calls `calculate_acwr` (can be slow).
-  ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
-  If `acwr_df` is not provided, calls `calculate_acwr` first (can be slow and hit API limits).</p>
+    <p>Plots the ACWR trend over time. Uses pre-calculated data or calls <code>calculate_acwr</code> (can be slow).
+ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
+If <code>acwr_df</code> is not provided, calls <code>calculate_acwr</code> first (can be slow and hit API limits).</p>
     </div>
 
     <div class="section level2">

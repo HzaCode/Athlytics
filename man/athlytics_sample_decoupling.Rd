@@ -7,8 +7,8 @@
 \format{
 A tibble with X rows and 2 variables:
 \describe{
-  \item{date}{Date of the activity, as a Date object.}
-  \item{decoupling}{Calculated decoupling percentage, as a numeric value.}
+\item{date}{Date of the activity, as a Date object.}
+\item{decoupling}{Calculated decoupling percentage, as a numeric value.}
 }
 }
 \source{

@@ -8,9 +8,9 @@
 #' Designed to work with Strava's official bulk data export
 #' (Settings > My Account > Download or Delete Your Account > Get Started).
 #'
-#' @param csv_path Path to the activities.csv file OR a .zip archive from Strava export.
-#'   If a .zip file is provided, the function will automatically extract and read
-#'   the activities.csv file from within the archive.
+#' @param path Path to activities.csv file OR a .zip archive from Strava export.
+#'   Supports both CSV and ZIP formats. If a .zip file is provided, the function
+#'   will automatically extract and read the activities.csv file from within the archive.
 #'   Default is "strava_export_data/activities.csv".
 #' @param start_date Optional. Start date (YYYY-MM-DD or Date/POSIXct) for filtering activities.
 #'   Defaults to NULL (no filtering).
@@ -47,10 +47,9 @@
 #'   \item Filtering by date range and activity type if specified
 #' }
 #'
-#' **Important Note**: Due to Strava API terms of service restrictions,
-#' this function should be used for personal analysis of your own exported
-#' data only. When using this package for academic research, ensure compliance
-#' with Strava's API Agreement and data usage policies.
+#' **Privacy Note**: This function processes local export data only and does not
+#' connect to the internet. Ensure you have permission to analyze the data and
+#' follow applicable privacy regulations when using this data for research purposes.
 #'
 #' @examples
 #' \dontrun{
@@ -62,14 +61,14 @@
 #'
 #' # Load only running activities from 2023
 #' activities <- load_local_activities(
-#'   csv_path = "export_12345678.zip",
+#'   path = "export_12345678.zip",
 #'   start_date = "2023-01-01",
 #'   end_date = "2023-12-31",
 #'   activity_types = "Run"
 #' )
 #'
 #' # Use with Athlytics functions
-#' acwr_data <- calculate_acwr(activities, load_metric = "distance")
+#' acwr_data <- calculate_acwr(activities, load_metric = "distance_km")
 #' plot_acwr(acwr_data, highlight_zones = TRUE)
 #' 
 #' # Multi-metric analysis
@@ -82,37 +81,37 @@
 #' @importFrom readr read_csv cols
 #' @importFrom rlang .data
 #' @export
-load_local_activities <- function(csv_path = "strava_export_data/activities.csv",
-                                   start_date = NULL,
-                                   end_date = NULL,
-                                   activity_types = NULL) {
+load_local_activities <- function(path = "strava_export_data/activities.csv",
+                                 start_date = NULL,
+                                 end_date = NULL,
+                                 activity_types = NULL) {
   
   # --- Input Validation ---
-  if (!file.exists(csv_path)) {
-    stop("File not found at: ", csv_path,
+  if (!file.exists(path)) {
+    stop("File not found at: ", path,
          "\nPlease ensure you have downloaded your Strava data export.")
   }
   
   # --- Handle ZIP files ---
   temp_extracted <- FALSE
-  original_path <- csv_path
+  original_path <- path
   
   # Check if input is a ZIP file
-  if (tolower(tools::file_ext(csv_path)) == "zip") {
+  if (tolower(tools::file_ext(path)) == "zip") {
     message("Detected ZIP archive. Extracting activities.csv...")
     
     # Create a temporary directory for extraction
     temp_dir <- tempdir()
     
     # List files in the ZIP
-    zip_contents <- utils::unzip(csv_path, list = TRUE)
+    zip_contents <- utils::unzip(path, list = TRUE)
     
     # Find activities.csv (case-insensitive)
     activities_file <- grep("activities\\.csv$", zip_contents$Name, 
                            ignore.case = TRUE, value = TRUE)
     
     if (length(activities_file) == 0) {
-      stop("No activities.csv file found in ZIP archive: ", csv_path)
+      stop("No activities.csv file found in ZIP archive: ", path)
     }
     
     if (length(activities_file) > 1) {
@@ -122,8 +121,8 @@ load_local_activities <- function(csv_path = "strava_export_data/activities.csv"
     
     # Extract the activities.csv file
     tryCatch({
-      utils::unzip(csv_path, files = activities_file, exdir = temp_dir, overwrite = TRUE)
-      csv_path <- file.path(temp_dir, activities_file)
+      utils::unzip(path, files = activities_file, exdir = temp_dir, overwrite = TRUE)
+      path <- file.path(temp_dir, activities_file)
       temp_extracted <- TRUE
       message("Successfully extracted to temporary location.")
     }, error = function(e) {
@@ -136,7 +135,7 @@ load_local_activities <- function(csv_path = "strava_export_data/activities.csv"
   
   # Read CSV with appropriate column types
   activities_raw <- tryCatch({
-    readr::read_csv(csv_path, show_col_types = FALSE, col_types = readr::cols())
+    readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols())
   }, error = function(e) {
     stop("Failed to read CSV file: ", e$message)
   })

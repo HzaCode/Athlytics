@@ -99,13 +99,34 @@ remotes::install_github('HzaCode/Athlytics')
 ```r
 library(Athlytics)
 
-# Load data directly from ZIP (no extraction needed!)
+# 1) 直接读取 Strava 导出 ZIP（无需手动解压）
 activities <- load_local_activities("athlete1_export.zip")
 
-# Calculate and visualize training load
-acwr_data <- calculate_acwr(activities_data = activities)
-plot_acwr(acwr_data, highlight_zones = TRUE)
+# 2) 训练负荷（ACWR）
+acwr_data <- calculate_acwr(
+  activities_data = activities,
+  load_metric = "duration_mins"   # 与文档枚举一致
+)
+# 科研中立：默认不渲染风险区底色；阈值有争议，可配置
+plot_acwr(acwr_data, highlight_zones = FALSE)
+
+# 3) 有氧效率（EF）
+ef_data <- calculate_ef(
+  activities_data = activities,
+  ef_metric = "pace_hr"           # 统一为小写下划线风格
+)
+plot_ef(ef_data, add_trend_line = TRUE)
+
+# 4) 心肺解耦（Decoupling）
+decoupling_data <- calculate_decoupling(
+  activities_data = activities
+  # 如遇"找不到流数据/TCX"的报错，再额外传 export_dir 指向导出目录
+  # export_dir = "path/to/unzipped_export_dir"
+)
+plot_decoupling(decoupling_data, decouple_metric = "pace_hr")
 ```
+
+> **Note:** EF/Decoupling 仅适用于**长时间稳态**；若你的数据不满足稳态门槛，会自动跳过或给出提示（建议先做质量标记/稳态识别再解释结果）。
 
 **👥 Multi-Athlete Cohort Studies**
 
@@ -125,16 +146,17 @@ athlete3 <- load_local_activities("athlete3_export.zip") %>%
 # Combine data
 cohort_data <- bind_rows(athlete1, athlete2, athlete3)
 
-# Calculate ACWR for each athlete using group_by
+# Calculate ACWR for each athlete (modern dplyr workflow)
 cohort_acwr <- cohort_data %>%
   group_by(athlete_id) %>%
-  do(calculate_acwr_ewma(.))
+  group_modify(~ calculate_acwr(.x, load_metric = "duration_mins")) %>%
+  ungroup()
 
-# Calculate reference percentiles
+# Calculate reference percentiles by group
 reference_bands <- cohort_reference(
-  data = cohort_acwr,
+  data   = cohort_acwr,
   metric = "acwr_smooth",
-  by = c("group")
+  by     = c("group")
 )
 
 # Compare individual athlete against cohort
@@ -191,7 +213,7 @@ Pace/HR Ratio (runs) • Power/HR Ratio (cycling) • Normalized Power efficienc
 
 ```r
 # Calculate Efficiency Factor
-ef_data <- calculate_ef(activities_data = activities, ef_metric = "Pace_HR")
+ef_data <- calculate_ef(activities_data = activities, ef_metric = "pace_hr")
 
 # Plot with trend line
 plot_ef(ef_data, add_trend_line = TRUE)
@@ -220,7 +242,7 @@ First vs second half comparison • Decoupling percentage • Quality thresholds
 decoupling_data <- calculate_decoupling(activities_data = activities)
 
 # Visualize trends
-plot_decoupling(decoupling_data, decouple_metric = "Pace_HR")
+plot_decoupling(decoupling_data, decouple_metric = "pace_hr")
 ```
 
 <p align="center">

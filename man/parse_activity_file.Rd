@@ -12,8 +12,8 @@ parse_activity_file(file_path, export_dir = NULL)
 \item{export_dir}{Base directory of the Strava export (for resolving relative paths)}
 }
 \value{
-A data frame with columns: time, latitude, longitude, elevation, 
-  heart_rate, power, cadence, speed (all optional depending on file content)
+A data frame with columns: time, latitude, longitude, elevation,
+heart_rate, power, cadence, speed (all optional depending on file content)
 }
 \description{
 Internal function to parse activity files from Strava export data.

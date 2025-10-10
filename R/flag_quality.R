@@ -18,7 +18,7 @@
 #' @param max_hr_jump Maximum plausible HR change per second (bpm/s). Default 10.
 #' @param max_pw_jump Maximum plausible power change per second (W/s). Default 300.
 #' @param min_steady_minutes Minimum duration (minutes) for steady-state segment. Default 20.
-#' @param steady_cv_threshold Coefficient of variation threshold for steady-state (%). Default 8.
+#' @param steady_cv_threshold Coefficient of variation threshold for steady-state (\\%). Default 8.
 #'
 #' @return A data frame identical to `streams` with additional flag columns:
 #'   \describe{
@@ -46,7 +46,7 @@
 #' @importFrom dplyr mutate lag lead if_else coalesce %>%
 #' @importFrom zoo rollmean rollapply
 #' @importFrom stats sd
-#' @keywords internal
+#' @export
 #'
 #' @examples
 #' \dontrun{

@@ -4,10 +4,10 @@
 #'
 #' Visualizes the trend of Efficiency Factor (EF) over time.
 #'
-#' Plots the Efficiency Factor (EF) trend over time. Uses pre-calculated data
-#' or calls `calculate_ef`.
+#' Plots the Efficiency Factor (EF) trend over time. **Recommended workflow: Use local data via `ef_df`.**
 #'
-#' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `ef_df` is provided.
+#' @param stoken **Recommended: Pass pre-calculated data via `ef_df` (local export preferred).**
+#'   For legacy API usage: A Strava token from `rStrava::strava_oauth()`. This parameter is deprecated.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
 #' @param ef_metric Metric to calculate: "Pace_HR" (Speed/HR) or "Power_HR" (Power/HR).
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.
@@ -15,8 +15,8 @@
 #' @param min_duration_mins Minimum activity duration (minutes) to include. Default 20.
 #' @param add_trend_line Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.
 #' @param smoothing_method Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".
-#' @param ef_df Optional. A pre-calculated data frame from `calculate_ef`.
-#'   If provided, `stoken` and other calculation parameters are ignored.
+#' @param ef_df **Recommended.** A pre-calculated data frame from `calculate_ef()`.
+#'   When provided, analysis uses local data only (no API calls).
 #' @param group_var Optional. Column name for grouping/faceting (e.g., "athlete_id").
 #' @param group_colors Optional. Named vector of colors for groups.
 #'
@@ -24,7 +24,8 @@
 #'
 #' @details Plots EF (output/HR based on activity averages). An upward trend
 #'   often indicates improved aerobic fitness. Points colored by activity type.
-#'   If `ef_df` is not provided, calls `calculate_ef` first.
+#'   **Best practice: Use `load_local_activities()` + `calculate_ef()` + this function.**
+#'   Legacy API mode is maintained for backward compatibility only.
 #'
 #' 
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when pull

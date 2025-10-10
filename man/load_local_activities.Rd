@@ -5,16 +5,16 @@
 \title{Load Activities from Local Strava Export}
 \usage{
 load_local_activities(
-  csv_path = "strava_export_data/activities.csv",
+  path = "strava_export_data/activities.csv",
   start_date = NULL,
   end_date = NULL,
   activity_types = NULL
 )
 }
 \arguments{
-\item{csv_path}{Path to the activities.csv file OR a .zip archive from Strava export.
-If a .zip file is provided, the function will automatically extract and read
-the activities.csv file from within the archive.
+\item{path}{Path to activities.csv file OR a .zip archive from Strava export.
+Supports both CSV and ZIP formats. If a .zip file is provided, the function
+will automatically extract and read the activities.csv file from within the archive.
 Default is "strava_export_data/activities.csv".}
 
 \item{start_date}{Optional. Start date (YYYY-MM-DD or Date/POSIXct) for filtering activities.
@@ -28,20 +28,20 @@ Defaults to NULL (no filtering).}
 }
 \value{
 A tibble of activity data with standardized column names compatible
-  with Athlytics functions. Key columns include:
-  \itemize{
-    \item \code{id}: Activity ID (numeric)
-    \item \code{name}: Activity name
-    \item \code{type}: Activity type (Run, Ride, etc.)
-    \item \code{start_date_local}: Activity start datetime (POSIXct)
-    \item \code{date}: Activity date (Date)
-    \item \code{distance}: Distance in meters (numeric)
-    \item \code{moving_time}: Moving time in seconds (integer)
-    \item \code{elapsed_time}: Elapsed time in seconds (integer)
-    \item \code{average_heartrate}: Average heart rate (numeric)
-    \item \code{average_watts}: Average power in watts (numeric)
-    \item \code{elevation_gain}: Elevation gain in meters (numeric)
-  }
+with Athlytics functions. Key columns include:
+\itemize{
+\item \code{id}: Activity ID (numeric)
+\item \code{name}: Activity name
+\item \code{type}: Activity type (Run, Ride, etc.)
+\item \code{start_date_local}: Activity start datetime (POSIXct)
+\item \code{date}: Activity date (Date)
+\item \code{distance}: Distance in meters (numeric)
+\item \code{moving_time}: Moving time in seconds (integer)
+\item \code{elapsed_time}: Elapsed time in seconds (integer)
+\item \code{average_heartrate}: Average heart rate (numeric)
+\item \code{average_watts}: Average power in watts (numeric)
+\item \code{elevation_gain}: Elevation gain in meters (numeric)
+}
 }
 \description{
 Reads and processes activity data from a local Strava export, supporting both
@@ -55,17 +55,16 @@ This function reads the activities.csv file from a Strava data export
 and transforms the data to match the structure expected by Athlytics
 analysis functions. The transformation includes:
 \itemize{
-  \item Converting column names to match API format
-  \item Parsing dates into POSIXct format
-  \item Converting distances to meters
-  \item Converting times to seconds
-  \item Filtering by date range and activity type if specified
+\item Converting column names to match API format
+\item Parsing dates into POSIXct format
+\item Converting distances to meters
+\item Converting times to seconds
+\item Filtering by date range and activity type if specified
 }
 
-**Important Note**: Due to Strava API terms of service restrictions,
-this function should be used for personal analysis of your own exported
-data only. When using this package for academic research, ensure compliance
-with Strava's API Agreement and data usage policies.
+\strong{Privacy Note}: This function processes local export data only and does not
+connect to the internet. Ensure you have permission to analyze the data and
+follow applicable privacy regulations when using this data for research purposes.
 }
 \examples{
 \dontrun{
@@ -77,14 +76,14 @@ activities <- load_local_activities("export_12345678.zip")
 
 # Load only running activities from 2023
 activities <- load_local_activities(
-  csv_path = "export_12345678.zip",
+  path = "export_12345678.zip",
   start_date = "2023-01-01",
   end_date = "2023-12-31",
   activity_types = "Run"
 )
 
 # Use with Athlytics functions
-acwr_data <- calculate_acwr(activities, load_metric = "distance")
+acwr_data <- calculate_acwr(activities, load_metric = "distance_km")
 plot_acwr(acwr_data, highlight_zones = TRUE)
 
 # Multi-metric analysis

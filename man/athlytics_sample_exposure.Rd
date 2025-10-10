@@ -7,11 +7,11 @@
 \format{
 A tibble with X rows and 5 variables:
 \describe{
-  \item{date}{Date of the metrics, as a Date object.}
-  \item{daily_load}{Calculated daily training load, as a numeric value.}
-  \item{ctl}{Chronic Training Load, as a numeric value.}
-  \item{atl}{Acute Training Load, as a numeric value.}
-  \item{acwr}{Acute:Chronic Workload Ratio, as a numeric value.}
+\item{date}{Date of the metrics, as a Date object.}
+\item{daily_load}{Calculated daily training load, as a numeric value.}
+\item{ctl}{Chronic Training Load, as a numeric value.}
+\item{atl}{Acute Training Load, as a numeric value.}
+\item{acwr}{Acute:Chronic Workload Ratio, as a numeric value.}
 }
 }
 \source{
@@ -22,6 +22,6 @@ athlytics_sample_exposure
 }
 \description{
 This dataset contains daily training load, ATL, CTL, and ACWR, derived from
-simulated Strava data. Used in examples and tests, particularly for `plot_exposure`.
+simulated Strava data. Used in examples and tests, particularly for \code{plot_exposure}.
 }
 \keyword{datasets}

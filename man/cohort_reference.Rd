@@ -15,12 +15,12 @@ cohort_reference(
 }
 \arguments{
 \item{data}{A data frame containing metric values for multiple athletes.
-Must include columns: `date`, `athlete_id`, and the metric column.}
+Must include columns: \code{date}, \code{athlete_id}, and the metric column.}
 
 \item{metric}{Name of the metric column to calculate percentiles for
 (e.g., "acwr", "acwr_smooth", "ef", "decoupling"). Default "acwr_smooth".}
 
-\item{by}{Character vector of grouping variables. Options: "sport", "sex", 
+\item{by}{Character vector of grouping variables. Options: "sport", "sex",
 "age_band", "athlete_id". Default c("sport").}
 
 \item{probs}{Numeric vector of probabilities for percentiles (0-1).
@@ -33,13 +33,13 @@ valid percentiles. Default 5.}
 }
 \value{
 A long-format data frame with columns:
-  \describe{
-    \item{date}{Date}
-    \item{...}{Grouping variables (as specified in `by`)}
-    \item{percentile}{Percentile label (e.g., "p05", "p25", "p50", "p75", "p95")}
-    \item{value}{Metric value at that percentile}
-    \item{n_athletes}{Number of athletes contributing to this percentile}
-  }
+\describe{
+\item{date}{Date}
+\item{...}{Grouping variables (as specified in \code{by})}
+\item{percentile}{Percentile label (e.g., "p05", "p25", "p50", "p75", "p95")}
+\item{value}{Metric value at that percentile}
+\item{n_athletes}{Number of athletes contributing to this percentile}
+}
 }
 \description{
 Calculates reference percentiles for a metric across a cohort of athletes,
@@ -49,12 +49,12 @@ stratified by specified grouping variables (e.g., sport, sex, age band).
 This function creates cohort-level reference bands for comparing individual
 athlete metrics to their peers. Common use cases:
 \itemize{
-  \item Compare an athlete's ACWR trend to team averages
-  \item Identify outliers (athletes outside P5-P95 range)
-  \item Track team-wide trends over time
+\item Compare an athlete's ACWR trend to team averages
+\item Identify outliers (athletes outside P5-P95 range)
+\item Track team-wide trends over time
 }
 
-**Important**: Percentile bands represent **population variability**, not
+\strong{Important}: Percentile bands represent \strong{population variability}, not
 statistical confidence intervals for individual values.
 }
 \examples{

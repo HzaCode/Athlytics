@@ -93,7 +93,7 @@ Defaults to NULL (no filtering).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble of activity data with standardized column names compatible
-  with Athlytics functions. Key columns include:</p><ul><li><p><code>id</code>: Activity ID (numeric)</p></li>
+with Athlytics functions. Key columns include:</p><ul><li><p><code>id</code>: Activity ID (numeric)</p></li>
 <li><p><code>name</code>: Activity name</p></li>
 <li><p><code>type</code>: Activity type (Run, Ride, etc.)</p></li>
 <li><p><code>start_date_local</code>: Activity start datetime (POSIXct)</p></li>
@@ -114,7 +114,7 @@ analysis functions. The transformation includes:</p><ul><li><p>Converting column
 <li><p>Converting distances to meters</p></li>
 <li><p>Converting times to seconds</p></li>
 <li><p>Filtering by date range and activity type if specified</p></li>
-</ul><p>**Important Note**: Due to Strava API terms of service restrictions,
+</ul><p><strong>Important Note</strong>: Due to Strava API terms of service restrictions,
 this function should be used for personal analysis of your own exported
 data only. When using this package for academic research, ensure compliance
 with Strava's API Agreement and data usage policies.</p>

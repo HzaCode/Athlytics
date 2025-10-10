@@ -3,25 +3,26 @@
 #' Visualizes the trend of personal best times for specific running distances.
 #'
 #' Plots the trend of best efforts for specified distances, highlighting new PBs.
-#' Uses pre-calculated data or calls `calculate_pbs`.
+#' **Recommended workflow: Use local data via `pbs_df`.**
 #'
-#' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `pbs_df` is provided.
+#' @param stoken **Recommended: Pass pre-calculated data via `pbs_df` (local export preferred).**
+#'   For legacy API usage: A Strava token from `rStrava::strava_oauth()`. This parameter is deprecated.
 #' @param activity_type Type(s) of activities to search (e.g., "Run"). Default "Run".
 #' @param distance_meters Numeric vector of distances (meters) to plot PBs for (e.g., `c(1000, 5000)`).
 #'   Relies on Strava's `best_efforts` data.
 #' @param max_activities Max number of recent activities to check. Default 500. Reduce for speed.
 #' @param date_range Optional. Filter activities by date `c("YYYY-MM-DD", "YYYY-MM-DD")`.
 #' @param add_trend_line Logical. Whether to add a trend line to the plot. Default TRUE.
-#' @param pbs_df Optional. A pre-calculated data frame from `calculate_pbs`.
-#'   If provided, `stoken` and other calculation parameters are ignored.
+#' @param pbs_df **Recommended.** A pre-calculated data frame from `calculate_pbs()`.
+#'   When provided, analysis uses local data only (no API calls).
 #'
 #' @return A ggplot object showing PB trends, faceted by distance if multiple are plotted.
 #'
 #' @details Visualizes data from `calculate_pbs`. Points show best efforts;
 #'   solid points mark new PBs. Y-axis is MM:SS.
-#'   If `pbs_df` is not provided, calls `calculate_pbs` first (can be slow).
+#'   **Best practice: Use `load_local_activities()` + `calculate_pbs()` + this function.**
+#'   Legacy API mode is maintained for backward compatibility only.
 #'
-#' @importFrom rStrava get_activity_list get_activity
 #' @importFrom dplyr filter select mutate arrange group_by slice bind_rows summarise distinct rename %>% left_join
 #' @importFrom purrr map_dfr map_chr possibly quietly
 #' @importFrom tidyr unnest pivot_longer
@@ -167,7 +168,7 @@ plot_pbs <- function(stoken,
       subtitle = "Showing best efforts for specified distances over time",
       x = "Activity Date",
       y = "Best Time (MM:SS)",
-      caption = "Data sourced from Strava via rStrava"
+      caption = "Data from local Strava export"
     ) +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(

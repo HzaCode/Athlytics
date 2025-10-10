@@ -7,21 +7,21 @@
 quality_summary(flagged_streams)
 }
 \arguments{
-\item{flagged_streams}{A data frame returned by `flag_quality()`.}
+\item{flagged_streams}{A data frame returned by \code{flag_quality()}.}
 }
 \value{
 A list with summary statistics:
-  \describe{
-    \item{total_points}{Total number of data points}
-    \item{flagged_points}{Number of flagged points}
-    \item{flagged_pct}{Percentage of flagged points}
-    \item{steady_state_points}{Number of steady-state points}
-    \item{steady_state_pct}{Percentage in steady-state}
-    \item{quality_score}{Overall quality score (0-1)}
-    \item{hr_spike_pct}{Percentage with HR spikes}
-    \item{pw_spike_pct}{Percentage with power spikes}
-    \item{gps_drift_pct}{Percentage with GPS drift}
-  }
+\describe{
+\item{total_points}{Total number of data points}
+\item{flagged_points}{Number of flagged points}
+\item{flagged_pct}{Percentage of flagged points}
+\item{steady_state_points}{Number of steady-state points}
+\item{steady_state_pct}{Percentage in steady-state}
+\item{quality_score}{Overall quality score (0-1)}
+\item{hr_spike_pct}{Percentage with HR spikes}
+\item{pw_spike_pct}{Percentage with power spikes}
+\item{gps_drift_pct}{Percentage with GPS drift}
+}
 }
 \description{
 Provides a summary of quality flags and steady-state segments.

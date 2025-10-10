@@ -7,9 +7,9 @@
 \format{
 A data.frame with X rows and 3 variables:
 \describe{
-  \item{date}{Date of the activity, as a Date object.}
-  \item{activity_type}{Type of activity (e.g., "Run", "Ride"), as a character string.}
-  \item{ef_value}{Calculated Efficiency Factor, as a numeric value.}
+\item{date}{Date of the activity, as a Date object.}
+\item{activity_type}{Type of activity (e.g., "Run", "Ride"), as a character string.}
+\item{ef_value}{Calculated Efficiency Factor, as a numeric value.}
 }
 }
 \source{

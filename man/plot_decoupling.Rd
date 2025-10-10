@@ -11,16 +11,14 @@ plot_decoupling(
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 45,
-  max_activities = 50,
   add_trend_line = TRUE,
   smoothing_method = "loess",
-  decoupling_df = NULL,
-  group_var = NULL,
-  group_colors = NULL
+  decoupling_df = NULL
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from `rStrava::strava_oauth()`. Required unless `decoupling_df` is provided.}
+\item{stoken}{\strong{Recommended: Pass pre-calculated data via \code{decoupling_df} (local export preferred).}
+For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This parameter is deprecated.}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
@@ -32,19 +30,13 @@ plot_decoupling(
 
 \item{min_duration_mins}{Minimum activity duration (minutes) to include. Default 45.}
 
-\item{max_activities}{Max number of recent activities to fetch/analyze when `stoken` is used. Default 50.}
-
-\item{add_trend_line}{Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.}
+\item{add_trend_line}{Add a smoothed trend line (\code{geom_smooth})? Default \code{TRUE}.}
 
 \item{smoothing_method}{Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".}
 
-\item{decoupling_df}{Optional. A pre-calculated data frame from `calculate_decoupling`.
-If provided, `stoken` and other calculation parameters are ignored.
+\item{decoupling_df}{\strong{Recommended.} A pre-calculated data frame from \code{calculate_decoupling()}.
+When provided, analysis uses local data only (no API calls).
 Must contain 'date' and 'decoupling' columns.}
-
-\item{group_var}{Optional. Column name for grouping/faceting (e.g., "athlete_id").}
-
-\item{group_colors}{Optional. Named vector of colors for groups.}
 }
 \value{
 A ggplot object showing the decoupling trend.
@@ -53,21 +45,23 @@ A ggplot object showing the decoupling trend.
 Visualizes the trend of aerobic decoupling over time.
 }
 \details{
-Plots the aerobic decoupling trend over time. Uses pre-calculated data
-or calls `calculate_decoupling` (can be slow).
+Plots the aerobic decoupling trend over time. \strong{Recommended workflow: Use local data via \code{decoupling_df}.}
 
 Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
-  Positive values mean HR drifted relative to output. A 5% threshold line is often
-  used as reference. If `decoupling_df` is not provided, calls `calculate_decoupling` first
-  (can be slow and hit API limits).
+Positive values mean HR drifted relative to output. A 5\\\% threshold line is often
+used as reference. \strong{Best practice: Use \code{load_local_activities()} + \code{calculate_decoupling()} + this function.}
+Legacy API mode is maintained for backward compatibility only.
 }
 \examples{
-# Example using pre-calculated sample data
-data("athlytics_sample_decoupling", package = "Athlytics")
-p <- plot_decoupling(athlytics_sample_decoupling)
-print(p)
+# Example using simulated data
+data(Athlytics_sample_data)
+# Explicitly name decoupling_df and provide activity_type
+if (!is.null(athlytics_sample_decoupling) && nrow(athlytics_sample_decoupling) > 0) {
+  p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling, activity_type = "Run")
+  print(p)
+}
 
-\dontrun{
+\donttest{
 # Example using real data (requires authentication)
 # NOTE: The following rStrava::strava_oauth call is a placeholder.
 # You MUST replace placeholders with your actual Strava API credentials.
@@ -81,7 +75,7 @@ tryCatch({
   )
 
   if (inherits(stoken_example, "Token2.0")) {
-    message("Placeholder stoken_example created for athlytics examples.")
+    message("Placeholder stoken_example created for Athlytics examples.")
 
     # Example 1: Plot Decoupling trend for Runs (last 6 months)
     # This first calculates the data, then plots it.

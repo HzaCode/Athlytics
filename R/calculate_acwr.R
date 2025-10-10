@@ -130,7 +130,7 @@
 #' # Step 3: Calculate ACWR for Runs (using distance)
 #' run_acwr <- calculate_acwr(activities_data = activities, 
 #'                            activity_type = "Run",
-#'                            load_metric = "distance")
+#'                            load_metric = "distance_km")
 #' print(tail(run_acwr))
 #' 
 #' # Calculate ACWR for Rides (using TSS, requires FTP)

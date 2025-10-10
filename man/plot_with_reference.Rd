@@ -16,7 +16,7 @@ plot_with_reference(
 \arguments{
 \item{individual}{A data frame with individual athlete data (from calculate_acwr, etc.)}
 
-\item{reference}{A data frame from `cohort_reference()`.}
+\item{reference}{A data frame from \code{cohort_reference()}.}
 
 \item{metric}{Name of the metric to plot. Default "acwr_smooth".}
 

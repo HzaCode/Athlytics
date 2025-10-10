@@ -20,8 +20,8 @@ flag_quality(
 }
 \arguments{
 \item{streams}{A data frame containing activity stream data with time-series
-measurements. Expected columns: `time` (seconds), `heartrate` (bpm),
-`watts` (W), `velocity_smooth` or `speed` (m/s), `distance` (m).}
+measurements. Expected columns: \code{time} (seconds), \code{heartrate} (bpm),
+\code{watts} (W), \code{velocity_smooth} or \code{speed} (m/s), \code{distance} (m).}
 
 \item{sport}{Type of activity (e.g., "Run", "Ride"). Default "Run".}
 
@@ -41,18 +41,18 @@ measurements. Expected columns: `time` (seconds), `heartrate` (bpm),
 
 \item{min_steady_minutes}{Minimum duration (minutes) for steady-state segment. Default 20.}
 
-\item{steady_cv_threshold}{Coefficient of variation threshold for steady-state (%). Default 8.}
+\item{steady_cv_threshold}{Coefficient of variation threshold for steady-state (\\\%). Default 8.}
 }
 \value{
-A data frame identical to `streams` with additional flag columns:
-  \describe{
-    \item{flag_hr_spike}{Logical. TRUE if HR is out of range or has excessive jump.}
-    \item{flag_pw_spike}{Logical. TRUE if power is out of range or has excessive jump.}
-    \item{flag_gps_drift}{Logical. TRUE if speed or acceleration is implausible.}
-    \item{flag_any}{Logical. TRUE if any quality flag is raised.}
-    \item{is_steady_state}{Logical. TRUE if segment meets steady-state criteria.}
-    \item{quality_score}{Numeric 0-1. Proportion of clean data (1 = perfect).}
-  }
+A data frame identical to \code{streams} with additional flag columns:
+\describe{
+\item{flag_hr_spike}{Logical. TRUE if HR is out of range or has excessive jump.}
+\item{flag_pw_spike}{Logical. TRUE if power is out of range or has excessive jump.}
+\item{flag_gps_drift}{Logical. TRUE if speed or acceleration is implausible.}
+\item{flag_any}{Logical. TRUE if any quality flag is raised.}
+\item{is_steady_state}{Logical. TRUE if segment meets steady-state criteria.}
+\item{quality_score}{Numeric 0-1. Proportion of clean data (1 = perfect).}
+}
 }
 \description{
 Detects and flags potential data quality issues in activity stream data,
@@ -62,11 +62,11 @@ suitable for physiological metrics calculation.
 \details{
 This function performs several quality checks:
 \itemize{
-  \item **HR/Power Spikes**: Flags values outside physiological ranges or with
-    sudden jumps (Delta HR > 10 bpm/s, Delta P > 300 W/s).
-  \item **GPS Drift**: Flags implausible speeds or accelerations based on sport type.
-  \item **Steady-State Detection**: Identifies segments with low variability
-    (CV < 8\%) lasting >= 20 minutes, suitable for EF/decoupling calculations.
+\item \strong{HR/Power Spikes}: Flags values outside physiological ranges or with
+sudden jumps (Delta HR > 10 bpm/s, Delta P > 300 W/s).
+\item \strong{GPS Drift}: Flags implausible speeds or accelerations based on sport type.
+\item \strong{Steady-State Detection}: Identifies segments with low variability
+(CV < 8\\%) lasting >= 20 minutes, suitable for EF/decoupling calculations.
 }
 
 The function is sport-aware and adjusts thresholds accordingly. All thresholds
@@ -90,4 +90,3 @@ summary(flagged_data$quality_score)
 table(flagged_data$flag_any)
 }
 }
-\keyword{internal}

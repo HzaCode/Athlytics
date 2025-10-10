@@ -17,8 +17,8 @@ calculate_exposure(
 )
 }
 \arguments{
-\item{activities_data}{A data frame of activities from `load_local_activities()`.
-Must contain columns: date, distance, moving_time, elapsed_time, 
+\item{activities_data}{A data frame of activities from \code{load_local_activities()}.
+Must contain columns: date, distance, moving_time, elapsed_time,
 average_heartrate, average_watts, type, elevation_gain.}
 
 \item{activity_type}{Type(s) of activities to include (e.g., "Run", "Ride").
@@ -29,20 +29,20 @@ Default includes common run/ride types.}
 
 \item{acute_period}{Days for the acute load window (e.g., 7).}
 
-\item{chronic_period}{Days for the chronic load window (e.g., 42). Must be greater than `acute_period`.}
+\item{chronic_period}{Days for the chronic load window (e.g., 42). Must be greater than \code{acute_period}.}
 
-\item{user_ftp}{Required if `load_metric = "tss"`. Your Functional Threshold Power.}
+\item{user_ftp}{Required if \code{load_metric = "tss"}. Your Functional Threshold Power.}
 
-\item{user_max_hr}{Required if `load_metric = "hrss"`. Your maximum heart rate.}
+\item{user_max_hr}{Required if \code{load_metric = "hrss"}. Your maximum heart rate.}
 
-\item{user_resting_hr}{Required if `load_metric = "hrss"`. Your resting heart rate.}
+\item{user_resting_hr}{Required if \code{load_metric = "hrss"}. Your resting heart rate.}
 
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
-The analysis period covers the `chronic_period` days ending on this date.}
+The analysis period covers the \code{chronic_period} days ending on this date.}
 }
 \value{
-A data frame with columns: `date`, `daily_load`, `atl` (Acute Load),
-  `ctl` (Chronic Load), and `acwr` (Acute:Chronic Ratio) for the analysis period.
+A data frame with columns: \code{date}, \code{daily_load}, \code{atl} (Acute Load),
+\code{ctl} (Chronic Load), and \code{acwr} (Acute:Chronic Ratio) for the analysis period.
 }
 \description{
 Calculates training load metrics like ATL, CTL, and ACWR from local Strava data.
@@ -50,8 +50,8 @@ Calculates training load metrics like ATL, CTL, and ACWR from local Strava data.
 \details{
 Calculates daily load, ATL, CTL, and ACWR from Strava activities based on the chosen metric and periods.
 
-Provides data for `plot_exposure`. Requires extra prior data for
-  accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
+Provides data for \code{plot_exposure}. Requires extra prior data for
+accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 }
 \examples{
 # Example using simulated data

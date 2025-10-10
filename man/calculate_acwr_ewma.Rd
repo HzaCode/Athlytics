@@ -26,7 +26,7 @@ calculate_acwr_ewma(
 )
 }
 \arguments{
-\item{activities_data}{A data frame of activities from `load_local_activities()`.}
+\item{activities_data}{A data frame of activities from \code{load_local_activities()}.}
 
 \item{activity_type}{Optional. Filter activities by type. Default NULL includes all.}
 
@@ -46,11 +46,11 @@ calculate_acwr_ewma(
 
 \item{end_date}{Optional. Analysis end date. Defaults to today.}
 
-\item{user_ftp}{Required if `load_metric = "tss"`.}
+\item{user_ftp}{Required if \code{load_metric = "tss"}.}
 
-\item{user_max_hr}{Required if `load_metric = "hrss"`.}
+\item{user_max_hr}{Required if \code{load_metric = "hrss"}.}
 
-\item{user_resting_hr}{Required if `load_metric = "hrss"`.}
+\item{user_resting_hr}{Required if \code{load_metric = "hrss"}.}
 
 \item{smoothing_period}{Days for smoothing ACWR. Default 7.}
 
@@ -60,11 +60,11 @@ calculate_acwr_ewma(
 
 \item{block_len}{Block length for moving-block bootstrap (days). Default 7.}
 
-\item{conf_level}{Confidence level (0-1). Default 0.95 (95% CI).}
+\item{conf_level}{Confidence level (0-1). Default 0.95 (95\\\% CI).}
 }
 \value{
-A data frame with columns: `date`, `atl`, `ctl`, `acwr`, `acwr_smooth`,
-  and if `ci = TRUE` and `method = "ewma"`: `acwr_lower`, `acwr_upper`.
+A data frame with columns: \code{date}, \code{atl}, \code{ctl}, \code{acwr}, \code{acwr_smooth},
+and if \code{ci = TRUE} and \code{method = "ewma"}: \code{acwr_lower}, \code{acwr_upper}.
 }
 \description{
 Calculates the Acute:Chronic Workload Ratio (ACWR) using Exponentially
@@ -73,14 +73,14 @@ Weighted Moving Average (EWMA) with optional bootstrap confidence bands.
 \details{
 This function extends the basic ACWR calculation with two methods:
 \itemize{
-  \item **RA (Rolling Average)**: Traditional rolling mean approach (default).
-  \item **EWMA (Exponentially Weighted Moving Average)**: Uses exponential decay
-    with configurable half-lives. More responsive to recent changes.
+\item \strong{RA (Rolling Average)}: Traditional rolling mean approach (default).
+\item \strong{EWMA (Exponentially Weighted Moving Average)}: Uses exponential decay
+with configurable half-lives. More responsive to recent changes.
 }
 
 For EWMA, the smoothing parameter alpha is calculated as: alpha = ln(2) / half_life
 
-**Confidence Bands**: When `ci = TRUE` and `method = "ewma"`, uses moving-block
+\strong{Confidence Bands}: When \code{ci = TRUE} and \code{method = "ewma"}, uses moving-block
 bootstrap to estimate uncertainty. The daily load sequence is resampled in
 weekly blocks (preserving within-week correlation), ACWR is recalculated,
 and percentiles form the confidence bands.
@@ -106,5 +106,5 @@ acwr_ewma <- calculate_acwr_ewma(
 # Compare both methods
 head(acwr_ewma)
 }
+
 }
-\keyword{internal}

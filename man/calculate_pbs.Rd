@@ -14,7 +14,7 @@ calculate_pbs(
 )
 }
 \arguments{
-\item{activities_data}{A data frame of activities from `load_local_activities()`.
+\item{activities_data}{A data frame of activities from \code{load_local_activities()}.
 Must contain columns: date, type, filename, distance.}
 
 \item{export_dir}{Base directory of the Strava export containing the activities folder.
@@ -26,13 +26,13 @@ Default is "strava_export_data".}
 
 \item{end_date}{Optional end date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).}
 
-\item{distances_m}{Target distances in meters to track. 
+\item{distances_m}{Target distances in meters to track.
 Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marathon.}
 }
 \value{
-A data frame with columns: activity_id, activity_date, distance, 
-  elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb, 
-  distance_label, time_period
+A data frame with columns: activity_id, activity_date, distance,
+elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb,
+distance_label, time_period
 }
 \description{
 Tracks personal best times for standard distances (1k, 5k, 10k, half marathon, marathon)
@@ -43,7 +43,7 @@ This function analyzes detailed activity files (FIT/TCX/GPX) to find the fastest
 efforts at specified distances. It tracks cumulative personal bests over time,
 showing when new PBs are set.
 
-**Note**: Requires detailed activity files from your Strava export. Activities
+\strong{Note}: Requires detailed activity files from your Strava export. Activities
 must be long enough to contain the target distance segments.
 }
 \examples{

@@ -2,151 +2,85 @@
 % Please edit documentation in R/calculate_decoupling.R
 \name{calculate_decoupling}
 \alias{calculate_decoupling}
-\title{Calculate Cardiovascular Decoupling}
+\title{Calculate Aerobic Decoupling}
 \usage{
 calculate_decoupling(
-  activities_data,
+  activities_data = NULL,
   export_dir = "strava_export_data",
   activity_type = c("Run", "Ride"),
+  decouple_metric = c("Pace_HR", "Power_HR"),
   start_date = NULL,
   end_date = NULL,
-  min_duration_mins = 40
+  min_duration_mins = 40,
+  stream_df = NULL,
+  stoken = NULL
 )
 }
 \arguments{
-\item{activities_data}{A data frame of activities from `load_local_activities()`.
-Must contain columns: `date`, `type`, `filename`. The `filename` column is used
-to locate detailed activity files (FIT/TCX/GPX) in the Strava export.}
+\item{activities_data}{A data frame from \code{load_local_activities()}. Required unless \code{stream_df} is provided.}
 
-\item{export_dir}{Character string. Base directory of the Strava export containing
-the activities folder with detailed activity files. Default: `"strava_export_data"`.
-If you loaded from a ZIP, this should be the path where the ZIP was extracted
-(handled automatically by `load_local_activities`).}
+\item{export_dir}{Base directory of Strava export containing the activities folder.
+Default is "strava_export_data".}
 
-\item{activity_type}{Character vector or single string. Activity type(s) to analyze.
-Common values: `"Run"`, `"Ride"`. Default: `c("Run", "Ride")`.}
+\item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
-\item{start_date}{Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
-Defaults to NULL (include all dates).}
+\item{decouple_metric}{Basis for calculation: "Pace_HR" or "Power_HR".}
 
-\item{end_date}{Optional. Analysis end date (YYYY-MM-DD string, Date, or POSIXct).
-Defaults to NULL (include all dates).}
+\item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.}
 
-\item{min_duration_mins}{Numeric. Minimum activity duration in minutes to include
-in analysis (default: 40). Shorter activities may not show meaningful decoupling.
-Recommended: 45-60+ minutes for reliable decoupling assessment.}
+\item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
+
+\item{min_duration_mins}{Minimum activity duration (minutes) to include. Default 40.}
+
+\item{stream_df}{Optional. A pre-fetched data frame for a \emph{single} activity's stream.
+If provided, calculates decoupling for this data directly, ignoring other parameters.
+Must include columns: \code{time}, \code{heartrate}, and either \code{velocity_smooth}/\code{distance}
+(for Pace_HR) or \code{watts} (for Power_HR).}
+
+\item{stoken}{\strong{Deprecated.} Legacy Strava token parameter maintained for backward compatibility only.}
 }
 \value{
-A tibble with the following columns:
-\describe{
-  \item{date}{Activity date (Date class)}
-  \item{activity_id}{Strava activity ID (character)}
-  \item{decoupling_percent}{Decoupling percentage (numeric). Positive values indicate drift.}
-}
+Returns a data frame with \code{date} and \code{decoupling} (\\\%) columns, OR
+a single numeric decoupling value if \code{stream_df} is provided.
 }
 \description{
-Cardiovascular decoupling (aerobic decoupling) measures the deterioration of
-efficiency during prolonged exercise. As you fatigue, heart rate tends to rise
-(cardiac drift) while power/pace may decrease, indicating reduced efficiency.
-Low decoupling suggests good aerobic fitness and durability at the given intensity.
-
-**Decoupling Formula:**
-
-Decoupling\% = ((EF_half1 - EF_half2) / EF_half1) × 100
-
-Where:
-\itemize{
-  \item **For Running**: EF = Pace / Heart Rate
-  \item **For Cycling**: EF = Power / Heart Rate
-}
-
-**Interpretation:**
-\itemize{
-  \item **< 5\%**: Excellent aerobic fitness and pacing
-  \item **5-10\%**: Acceptable for the intensity
-  \item **> 10\%**: Possible inadequate aerobic base, too fast pace, or environmental stress
-  \item **Negative values**: Possible warm-up effect or pacing issues
-}
+Calculates aerobic decoupling for Strava activities from local export data.
 }
 \details{
-Quantifies cardiovascular drift during endurance activities by comparing the
-efficiency (pace/HR or power/HR) between the first and second halves of an activity.
-Decoupling is a key indicator of aerobic endurance and durability (Maunder et al., 2021).
+Calculates aerobic decoupling (HR drift relative to pace/power) using detailed
+activity stream data from local FIT/TCX/GPX files.
 
+Provides data for \code{plot_decoupling}. Compares output/HR efficiency
+between first and second halves of activities. Positive values indicate
+HR drift (cardiovascular drift).
 
-**Algorithm:**
-1. Parse detailed activity files (FIT/TCX/GPX) to extract time-series data
-2. Split each activity into first and second halves by time
-3. Calculate average efficiency for each half:
-   - Running: avg_pace / avg_HR for each half
-   - Cycling: avg_power / avg_HR for each half
-4. Compute decoupling percentage: ((half1_EF - half2_EF) / half1_EF) × 100
+\strong{Best practice}: Use \code{load_local_activities()} to load data, then pass to this function.
 
-**Data Requirements:**
-\itemize{
-  \item Requires detailed activity files (FIT/TCX/GPX) from Strava export
-  \item Must have continuous heart rate data throughout activity
-  \item Cycling decoupling requires power meter data
-  \item Activities must be > min_duration_mins (default 40 minutes)
-}
-
-**Best Practices:**
-\itemize{
-  \item Use for steady-state aerobic efforts (long runs, endurance rides)
-  \item Avoid interval workouts (high variability confounds results)
-  \item Consistent pacing yields more interpretable results
-  \item Track decoupling trends over time (not individual sessions)
-}
-
-**Factors Affecting Decoupling:**
-\itemize{
-  \item **Aerobic Fitness**: Better base = lower decoupling
-  \item **Intensity**: Higher intensity = more decoupling
-  \item **Temperature**: Heat increases cardiac drift
-  \item **Hydration**: Dehydration worsens decoupling
-  \item **Fatigue**: Accumulated fatigue increases decoupling
-  \item **Pacing**: Poor pacing (starting too fast) inflates decoupling
-}
-
-**Training Applications:**
-\itemize{
-  \item Monitor aerobic base development during base training
-  \item Assess readiness for race-specific intensity
-  \item Validate pacing strategy for long events
-  \item Identify need for more aerobic volume
-}
-}
-\note{
-This function requires the optional `FITfileR` package for parsing FIT files.
-Install with: `install.packages("FITfileR")`. TCX and GPX parsing uses `XML` package.
+The function parses FIT/TCX/GPX files from your Strava export to extract detailed
+stream data (time, heartrate, distance/power). Activities are split into two halves,
+and the efficiency factor (output/HR) is compared between halves.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_decoupling)
+data(Athlytics_sample_data)
 print(head(athlytics_sample_decoupling))
 
 \dontrun{
 # Load local activities
 activities <- load_local_activities("strava_export_data/activities.csv")
 
-# Calculate decoupling for long runs
-decoupling_data <- calculate_decoupling(
-  activities_data = activities,
-  export_dir = "strava_export_data",
-  activity_type = "Run",
-  min_duration_mins = 60
+# Calculate Pace/HR decoupling for recent runs
+run_decoupling <- calculate_decoupling(
+    activities_data = activities,
+    export_dir = "strava_export_data",
+    activity_type = "Run",
+    decouple_metric = "Pace_HR",
+    start_date = "2024-01-01"
 )
-print(head(decoupling_data))
+print(tail(run_decoupling))
+
+# Calculate for a single activity stream
+# stream_data <- parse_activity_file("strava_export_data/activities/12345.fit")
+# single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "Pace_HR")
 }
-}
-\references{
-Maunder, E., Seiler, S., Mildenhall, M. J., Kilding, A. E., & Plews, D. J. (2021).
-The Importance of 'Durability' in the Physiological Profiling of Endurance Athletes.
-*Sports Medicine*, 51(8), 1619-1628.
-}
-\seealso{
-\code{\link{plot_decoupling}} for visualization,
-\code{\link{calculate_ef}} for cross-activity efficiency trends,
-\code{\link{parse_activity_file}} for low-level file parsing,
-\code{\link{load_local_activities}} for data loading
 }

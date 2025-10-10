@@ -27,7 +27,6 @@
 #'   Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
 #'   If `exposure_df` is not provided, it calls `calculate_exposure` first.
 #'
-#' @importFrom rStrava get_activity_list get_activity
 #' @importFrom dplyr filter select mutate arrange group_by summarise ungroup lead lag rename recode full_join %>% coalesce
 #' @importFrom purrr map_dfr possibly
 #' @importFrom lubridate ymd_hms as_date days floor_date ceiling_date interval duration

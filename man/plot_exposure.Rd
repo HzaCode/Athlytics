@@ -19,30 +19,30 @@ plot_exposure(
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from `rStrava::strava_oauth()`. Required unless `exposure_df` is provided.}
+\item{stoken}{A valid Strava token from \code{rStrava::strava_oauth()}. Required unless \code{exposure_df} is provided.}
 
 \item{activity_type}{Type(s) of activities to include (e.g., "Run", "Ride"). Default uses common types.}
 
 \item{load_metric}{Method for calculating daily load (e.g., "duration_mins", "tss", "hrss"). Default "duration_mins".
-See `calculate_exposure` for details on approximate TSS/HRSS calculations.}
+See \code{calculate_exposure} for details on approximate TSS/HRSS calculations.}
 
 \item{acute_period}{Days for acute load window (e.g., 7).}
 
-\item{chronic_period}{Days for chronic load window (e.g., 42). Must be > `acute_period`.}
+\item{chronic_period}{Days for chronic load window (e.g., 42). Must be > \code{acute_period}.}
 
-\item{user_ftp}{Required if `load_metric = "tss"`. Your FTP.}
+\item{user_ftp}{Required if \code{load_metric = "tss"}. Your FTP.}
 
-\item{user_max_hr}{Required if `load_metric = "hrss"`. Your max HR.}
+\item{user_max_hr}{Required if \code{load_metric = "hrss"}. Your max HR.}
 
-\item{user_resting_hr}{Required if `load_metric = "hrss"`. Your resting HR.}
+\item{user_resting_hr}{Required if \code{load_metric = "hrss"}. Your resting HR.}
 
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
 
-\item{risk_zones}{Add background shading for typical ACWR risk zones? Default `TRUE`.}
+\item{risk_zones}{Add background shading for typical ACWR risk zones? Default \code{TRUE}.}
 
-\item{exposure_df}{Optional. A pre-calculated data frame from `calculate_exposure`.
-If provided, `stoken` and other calculation parameters are ignored. Must contain
-`date`, `atl`, `ctl` (and `acwr` if `risk_zones = TRUE`).}
+\item{exposure_df}{Optional. A pre-calculated data frame from \code{calculate_exposure}.
+If provided, \code{stoken} and other calculation parameters are ignored. Must contain
+\code{date}, \code{atl}, \code{ctl} (and \code{acwr} if \code{risk_zones = TRUE}).}
 }
 \value{
 A ggplot object showing ATL vs CTL.
@@ -52,20 +52,21 @@ Visualizes the relationship between Acute and Chronic Training Load.
 }
 \details{
 Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
-pre-calculated data or calls `calculate_exposure`.
+pre-calculated data or calls \code{calculate_exposure}.
 
 Visualizes training state by plotting ATL vs CTL (related to PMC charts).
-  Points are colored by date, latest point is highlighted (red triangle).
-  Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
-  If `exposure_df` is not provided, it calls `calculate_exposure` first.
+Points are colored by date, latest point is highlighted (red triangle).
+Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
+If \code{exposure_df} is not provided, it calls \code{calculate_exposure} first.
 }
 \examples{
-# Example using pre-calculated sample data
-data("athlytics_sample_exposure", package = "Athlytics")
-p <- plot_exposure(athlytics_sample_exposure)
+# Example using simulated data
+data(Athlytics_sample_data)
+# Ensure exposure_df is named and other necessary parameters like activity_type are provided
+p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
 print(p)
 
-\dontrun{
+\donttest{
 # Example using real data (requires authentication)
 # stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
 #                                "YOUR_APP_CLIENT_ID",

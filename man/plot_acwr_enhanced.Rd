@@ -17,9 +17,9 @@ plot_acwr_enhanced(
 )
 }
 \arguments{
-\item{acwr_data}{A data frame from `calculate_acwr_ewma()` containing ACWR values.}
+\item{acwr_data}{A data frame from \code{calculate_acwr_ewma()} containing ACWR values.}
 
-\item{reference_data}{Optional. A data frame from `cohort_reference()` for
+\item{reference_data}{Optional. A data frame from \code{cohort_reference()} for
 adding cohort reference bands.}
 
 \item{show_ci}{Logical. Whether to show confidence bands (if available in data).
@@ -48,17 +48,19 @@ and cohort reference percentiles.
 \details{
 This enhanced plot function combines multiple visualization layers:
 \itemize{
-  \item Risk zone shading (sweet spot: 0.8-1.3, caution: 1.3-1.5, high risk: >1.5)
-  \item Cohort reference percentile bands (if provided)
-  \item Bootstrap confidence bands (if available in data)
-  \item Individual ACWR trend line
+\item Risk zone shading (sweet spot: 0.8-1.3, caution: 1.3-1.5, high risk: >1.5)
+\item Cohort reference percentile bands (if provided)
+\item Bootstrap confidence bands (if available in data)
+\item Individual ACWR trend line
 }
 
 The layering order (bottom to top):
-1. Risk zones (background)
-2. Cohort reference bands (P5-P95, then P25-P75)
-3. Confidence intervals (individual uncertainty)
-4. ACWR line (individual trend)
+\enumerate{
+\item Risk zones (background)
+\item Cohort reference bands (P5-P95, then P25-P75)
+\item Confidence intervals (individual uncertainty)
+\item ACWR line (individual trend)
+}
 }
 \examples{
 \dontrun{

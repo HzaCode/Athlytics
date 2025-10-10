@@ -19,7 +19,8 @@ plot_ef(
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from `rStrava::strava_oauth()`. Required unless `ef_df` is provided.}
+\item{stoken}{\strong{Recommended: Pass pre-calculated data via \code{ef_df} (local export preferred).}
+For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This parameter is deprecated.}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
@@ -31,12 +32,12 @@ plot_ef(
 
 \item{min_duration_mins}{Minimum activity duration (minutes) to include. Default 20.}
 
-\item{add_trend_line}{Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.}
+\item{add_trend_line}{Add a smoothed trend line (\code{geom_smooth})? Default \code{TRUE}.}
 
 \item{smoothing_method}{Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".}
 
-\item{ef_df}{Optional. A pre-calculated data frame from `calculate_ef`.
-If provided, `stoken` and other calculation parameters are ignored.}
+\item{ef_df}{\strong{Recommended.} A pre-calculated data frame from \code{calculate_ef()}.
+When provided, analysis uses local data only (no API calls).}
 
 \item{group_var}{Optional. Column name for grouping/faceting (e.g., "athlete_id").}
 
@@ -49,12 +50,12 @@ A ggplot object showing the EF trend.
 Visualizes the trend of Efficiency Factor (EF) over time.
 }
 \details{
-Plots the Efficiency Factor (EF) trend over time. Uses pre-calculated data
-or calls `calculate_ef`.
+Plots the Efficiency Factor (EF) trend over time. \strong{Recommended workflow: Use local data via \code{ef_df}.}
 
 Plots EF (output/HR based on activity averages). An upward trend
-  often indicates improved aerobic fitness. Points colored by activity type.
-  If `ef_df` is not provided, calls `calculate_ef` first.
+often indicates improved aerobic fitness. Points colored by activity type.
+\strong{Best practice: Use \code{load_local_activities()} + \code{calculate_ef()} + this function.}
+Legacy API mode is maintained for backward compatibility only.
 }
 \examples{
 # Example using pre-calculated sample data

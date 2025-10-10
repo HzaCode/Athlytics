@@ -75,17 +75,17 @@ test_that("calculate_decoupling handles missing columns in stream_df", {
   # Test missing watts for Power_HR
   mock_streams_no_watts <- mock_activity_streams[, !(names(mock_activity_streams) %in% "watts")]
   expect_error(calculate_decoupling(stream_df = mock_streams_no_watts, decouple_metric = "Power_HR"), 
-                 regexp = "Provided `stream_df` is invalid or missing required columns")
+                 regexp = "must contain 'watts' column")
                  
   # Test missing velocity_smooth AND distance for Pace_HR
   mock_streams_no_speed <- mock_activity_streams[, !(names(mock_activity_streams) %in% c("velocity_smooth", "distance"))]
   expect_error(calculate_decoupling(stream_df = mock_streams_no_speed, decouple_metric = "Pace_HR"), 
-                 regexp = "Provided `stream_df` is invalid or missing required columns")
+                 regexp = "must contain 'distance' or 'velocity_smooth' column")
                  
   # Test missing heartrate
   mock_streams_no_hr <- mock_activity_streams[, !(names(mock_activity_streams) %in% "heartrate")]
   expect_error(calculate_decoupling(stream_df = mock_streams_no_hr, decouple_metric = "Power_HR"),
-                 regexp = "Provided `stream_df` is invalid or missing required columns")
+                 regexp = "missing required columns")
 })
 
 # --- Test Cases for plot_decoupling (using Athlytics_sample_data) ---
@@ -204,8 +204,7 @@ test_that("plot_decoupling handles NULL/empty df from internal calculate_decoupl
   # to the *real* calculate_decoupling fails (as observed when mocking fails).
   dummy_stoken_for_plot <- structure(list(token = list(access_token = "plot_dummy_error")), class = "Token2.0")
 
-  # We expect calculate_decoupling (when called by plot_decoupling without underlying mocks)
-  # to fail trying to fetch activities with a dummy token.
+  # API mode is deprecated, so we expect the deprecation error
   expect_error(
     plot_decoupling(
       stoken = dummy_stoken_for_plot,
@@ -213,7 +212,7 @@ test_that("plot_decoupling handles NULL/empty df from internal calculate_decoupl
       decouple_metric = "Power_HR"
       # decoupling_df is NULL by default
     ),
-    regexp = "Could not fetch any activities."
+    regexp = "API mode is deprecated"
   )
 })
 
@@ -221,18 +220,17 @@ test_that("plot_decoupling handles NULL/empty df from internal calculate_decoupl
 # Dummy stoken for API path tests (basic signature checks)
 dummy_stoken <- structure(list(token = list(access_token = "dummy")), class = "Token2.0")
 
-test_that("calculate_decoupling (API path) throws error for invalid decouple_metric", {
+test_that("calculate_decoupling (API path) throws error for deprecated API mode", {
   expect_error(
-    calculate_decoupling(stoken = dummy_stoken, decouple_metric = "Speed_Cadence"),
-    # Adjusted regexp to be more flexible with quotes, as they vary by R version/OS
-    regexp = "'arg' should be one of .*Pace_HR.*, .*Power_HR.*"
+    calculate_decoupling(stoken = dummy_stoken, decouple_metric = "Pace_HR"),
+    regexp = "API mode is deprecated"
   )
 })
 
-test_that("calculate_decoupling (API path) handles non-Token2.0 stoken", {
+test_that("calculate_decoupling (API path) rejects non-Token2.0 stoken", {
   expect_error(
     calculate_decoupling(stoken = 12345, decouple_metric = "Power_HR"),
-    regexp = "`stoken` must be a valid Token2\\.0 object from rStrava::strava_oauth\\(\\)\\."
+    regexp = "API mode is deprecated"
   )
 })
 
@@ -267,17 +265,8 @@ test_that("calculate_decoupling (API path) works with mocked API calls", {
     get_activity_streams = mock_rStrava_get_activity_streams_decoupling # Use the stream mock
   )
 
-  # Call calculate_decoupling, triggering the API path
-  # Use parameters that ensure the mock activities are filtered and processed
-  result_df <- calculate_decoupling(
-    stoken = dummy_stoken, # Use the dummy token defined earlier
-    activity_type = "Run", # Filter for runs in mock_activity_list_list
-    decouple_metric = "Pace_HR",
-    start_date = "2023-10-01", 
-    end_date = "2023-10-03", # Cover dates in mock data
-    min_duration_mins = 20, # Ensure mock runs (30min, 90min) are included
-    max_activities = 5 # Process all mock activities
-  )
+  # API mode is deprecated, so this test is skipped
+  skip("API mode is deprecated; decoupling now uses local files only")
 
   # Check the output structure
   expect_s3_class(result_df, "data.frame")

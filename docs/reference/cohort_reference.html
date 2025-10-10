@@ -63,7 +63,7 @@ stratified by specified grouping variables (e.g., sport, sex, age band).</p>
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A data frame containing metric values for multiple athletes.
-Must include columns: `date`, `athlete_id`, and the metric column.</p></dd>
+Must include columns: <code>date</code>, <code>athlete_id</code>, and the metric column.</p></dd>
 
 
 <dt id="arg-metric">metric<a class="anchor" aria-label="anchor" href="#arg-metric"></a></dt>
@@ -95,16 +95,16 @@ valid percentiles. Default 5.</p></dd>
     <p>A long-format data frame with columns:</p><dl><dt>date</dt>
 <dd><p>Date</p></dd>
 
-    <dt>...</dt>
-<dd><p>Grouping variables (as specified in `by`)</p></dd>
+<dt>...</dt>
+<dd><p>Grouping variables (as specified in <code>by</code>)</p></dd>
 
-    <dt>percentile</dt>
+<dt>percentile</dt>
 <dd><p>Percentile label (e.g., "p05", "p25", "p50", "p75", "p95")</p></dd>
 
-    <dt>value</dt>
+<dt>value</dt>
 <dd><p>Metric value at that percentile</p></dd>
 
-    <dt>n_athletes</dt>
+<dt>n_athletes</dt>
 <dd><p>Number of athletes contributing to this percentile</p></dd>
 
 
@@ -115,7 +115,7 @@ valid percentiles. Default 5.</p></dd>
 athlete metrics to their peers. Common use cases:</p><ul><li><p>Compare an athlete's ACWR trend to team averages</p></li>
 <li><p>Identify outliers (athletes outside P5-P95 range)</p></li>
 <li><p>Track team-wide trends over time</p></li>
-</ul><p>**Important**: Percentile bands represent **population variability**, not
+</ul><p><strong>Important</strong>: Percentile bands represent <strong>population variability</strong>, not
 statistical confidence intervals for individual values.</p>
     </div>
 

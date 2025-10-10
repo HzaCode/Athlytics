@@ -62,7 +62,7 @@ by analyzing detailed activity files from Strava export data.</p>
 
 
 <dl><dt id="arg-activities-data">activities_data<a class="anchor" aria-label="anchor" href="#arg-activities-data"></a></dt>
-<dd><p>A data frame of activities from `load_local_activities()`.
+<dd><p>A data frame of activities from <code><a href="load_local_activities.html">load_local_activities()</a></code>.
 Must contain columns: date, type, filename, distance.</p></dd>
 
 
@@ -91,15 +91,15 @@ Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marath
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data frame with columns: activity_id, activity_date, distance,
-  elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb,
-  distance_label, time_period</p>
+elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb,
+distance_label, time_period</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function analyzes detailed activity files (FIT/TCX/GPX) to find the fastest
 efforts at specified distances. It tracks cumulative personal bests over time,
 showing when new PBs are set.</p>
-<p>**Note**: Requires detailed activity files from your Strava export. Activities
+<p><strong>Note</strong>: Requires detailed activity files from your Strava export. Activities
 must be long enough to contain the target distance segments.</p>
     </div>
 

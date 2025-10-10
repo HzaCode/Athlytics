@@ -62,7 +62,7 @@
 
 
 <dl><dt id="arg-activities-data">activities_data<a class="anchor" aria-label="anchor" href="#arg-activities-data"></a></dt>
-<dd><p>A data frame of activities from `load_local_activities()`.
+<dd><p>A data frame of activities from <code><a href="load_local_activities.html">load_local_activities()</a></code>.
 Must contain columns: date, distance, moving_time, elapsed_time,
 average_heartrate, average_watts, type, elevation_gain.</p></dd>
 
@@ -82,36 +82,36 @@ Default includes common run/ride types.</p></dd>
 
 
 <dt id="arg-chronic-period">chronic_period<a class="anchor" aria-label="anchor" href="#arg-chronic-period"></a></dt>
-<dd><p>Days for the chronic load window (e.g., 42). Must be greater than `acute_period`.</p></dd>
+<dd><p>Days for the chronic load window (e.g., 42). Must be greater than <code>acute_period</code>.</p></dd>
 
 
 <dt id="arg-user-ftp">user_ftp<a class="anchor" aria-label="anchor" href="#arg-user-ftp"></a></dt>
-<dd><p>Required if `load_metric = "tss"`. Your Functional Threshold Power.</p></dd>
+<dd><p>Required if <code>load_metric = "tss"</code>. Your Functional Threshold Power.</p></dd>
 
 
 <dt id="arg-user-max-hr">user_max_hr<a class="anchor" aria-label="anchor" href="#arg-user-max-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"`. Your maximum heart rate.</p></dd>
+<dd><p>Required if <code>load_metric = "hrss"</code>. Your maximum heart rate.</p></dd>
 
 
 <dt id="arg-user-resting-hr">user_resting_hr<a class="anchor" aria-label="anchor" href="#arg-user-resting-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"`. Your resting heart rate.</p></dd>
+<dd><p>Required if <code>load_metric = "hrss"</code>. Your resting heart rate.</p></dd>
 
 
 <dt id="arg-end-date">end_date<a class="anchor" aria-label="anchor" href="#arg-end-date"></a></dt>
 <dd><p>Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
-The analysis period covers the `chronic_period` days ending on this date.</p></dd>
+The analysis period covers the <code>chronic_period</code> days ending on this date.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame with columns: `date`, `daily_load`, `atl` (Acute Load),
-  `ctl` (Chronic Load), and `acwr` (Acute:Chronic Ratio) for the analysis period.</p>
+    <p>A data frame with columns: <code>date</code>, <code>daily_load</code>, <code>atl</code> (Acute Load),
+<code>ctl</code> (Chronic Load), and <code>acwr</code> (Acute:Chronic Ratio) for the analysis period.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Calculates daily load, ATL, CTL, and ACWR from Strava activities based on the chosen metric and periods.</p>
-<p>Provides data for `plot_exposure`. Requires extra prior data for
-  accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.</p>
+<p>Provides data for <code>plot_exposure</code>. Requires extra prior data for
+accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.</p>
     </div>
 
     <div class="section level2">

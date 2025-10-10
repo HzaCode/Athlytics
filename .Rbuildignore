@@ -102,5 +102,3 @@
 ^Athlytics_.*\.tar\.gz$
 ^tatus$
 ^check_output\.txt$
-^man/calculate_acwr_ewma\.Rd$
-^man/flag_quality\.Rd$

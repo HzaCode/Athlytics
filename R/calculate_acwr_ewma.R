@@ -22,7 +22,7 @@
 #' @param ci Logical. Whether to calculate confidence bands (EWMA only). Default FALSE.
 #' @param B Number of bootstrap iterations (if ci = TRUE). Default 200.
 #' @param block_len Block length for moving-block bootstrap (days). Default 7.
-#' @param conf_level Confidence level (0-1). Default 0.95 (95% CI).
+#' @param conf_level Confidence level (0-1). Default 0.95 (95\\% CI).
 #'
 #' @return A data frame with columns: `date`, `atl`, `ctl`, `acwr`, `acwr_smooth`,
 #'   and if `ci = TRUE` and `method = "ewma"`: `acwr_lower`, `acwr_upper`.
@@ -68,7 +68,7 @@
 #' head(acwr_ewma)
 #' }
 #'
-#' @keywords internal
+#' @export
 calculate_acwr_ewma <- function(activities_data,
                                activity_type = NULL,
                                load_metric = "duration_mins",

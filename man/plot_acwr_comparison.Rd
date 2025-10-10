@@ -11,9 +11,9 @@ plot_acwr_comparison(
 )
 }
 \arguments{
-\item{acwr_ra}{A data frame from `calculate_acwr_ewma(..., method = "ra")`.}
+\item{acwr_ra}{A data frame from \code{calculate_acwr_ewma(..., method = "ra")}.}
 
-\item{acwr_ewma}{A data frame from `calculate_acwr_ewma(..., method = "ewma")`.}
+\item{acwr_ewma}{A data frame from \code{calculate_acwr_ewma(..., method = "ewma")}.}
 
 \item{title}{Plot title. Default "ACWR Method Comparison: RA vs EWMA".}
 }

@@ -23,7 +23,8 @@ plot_acwr(
 )
 }
 \arguments{
-\item{stoken}{A valid Strava token from `rStrava::strava_oauth()`. Required unless `acwr_df` is provided.}
+\item{stoken}{\strong{Recommended: Pass pre-calculated data via \code{acwr_df} (local export preferred).}
+For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This parameter is deprecated.}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
@@ -31,24 +32,24 @@ plot_acwr(
 
 \item{acute_period}{Days for the acute load window (e.g., 7).}
 
-\item{chronic_period}{Days for the chronic load window (e.g., 28). Must be greater than `acute_period`.}
+\item{chronic_period}{Days for the chronic load window (e.g., 28). Must be greater than \code{acute_period}.}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.}
 
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
 
-\item{user_ftp}{Required if `load_metric = "tss"` and `acwr_df` is not provided. Your Functional Threshold Power.}
+\item{user_ftp}{Required if \code{load_metric = "tss"} and \code{acwr_df} is not provided. Your Functional Threshold Power.}
 
-\item{user_max_hr}{Required if `load_metric = "hrss"` and `acwr_df` is not provided. Your maximum heart rate.}
+\item{user_max_hr}{Required if \code{load_metric = "hrss"} and \code{acwr_df} is not provided. Your maximum heart rate.}
 
-\item{user_resting_hr}{Required if `load_metric = "hrss"` and `acwr_df` is not provided. Your resting heart rate.}
+\item{user_resting_hr}{Required if \code{load_metric = "hrss"} and \code{acwr_df} is not provided. Your resting heart rate.}
 
 \item{smoothing_period}{Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.}
 
-\item{highlight_zones}{Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default `TRUE`.}
+\item{highlight_zones}{Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default \code{TRUE}.}
 
-\item{acwr_df}{Optional. A pre-calculated data frame from `calculate_acwr`.
-If provided, `stoken` and other calculation parameters are ignored.}
+\item{acwr_df}{\strong{Recommended.} A pre-calculated data frame from \code{calculate_acwr()} or \code{calculate_acwr_ewma()}.
+When provided, analysis uses local data only (no API calls).}
 
 \item{group_var}{Optional. Column name for grouping/faceting (e.g., "athlete_id").}
 
@@ -61,9 +62,9 @@ A ggplot object showing the ACWR trend.
 Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 }
 \details{
-Plots the ACWR trend over time. Uses pre-calculated data or calls `calculate_acwr` (can be slow).
-  ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
-  If `acwr_df` is not provided, calls `calculate_acwr` first (can be slow and hit API limits).
+Plots the ACWR trend over time. \strong{Best practice: Use \code{load_local_activities()} + \code{calculate_acwr()} + this function.}
+ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
+Legacy API mode (via \code{stoken}) is maintained for backward compatibility only.
 }
 \examples{
 # Example using pre-calculated sample data
