@@ -4,8 +4,8 @@
 #'
 #' Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 #'
-#' @param stoken **Recommended: Pass pre-calculated data via `acwr_df` (local export preferred).**
-#'   For legacy API usage: A Strava token from `rStrava::strava_oauth()`. This parameter is deprecated.
+#' @param data **Recommended: Pass pre-calculated data via `acwr_df` (local export preferred).**
+#'   A data frame from `calculate_acwr()` or activities data from `load_local_activities()`.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
 #' @param load_metric Method for calculating daily load (e.g., "duration_mins", "distance_km", "tss", "hrss").
 #' @param acute_period Days for the acute load window (e.g., 7).
@@ -26,7 +26,6 @@
 #'
 #' @details Plots the ACWR trend over time. **Best practice: Use `load_local_activities()` + `calculate_acwr()` + this function.**
 #'   ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
-#'   Legacy API mode (via `stoken`) is maintained for backward compatibility only.
 #'
 #' 
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
@@ -43,34 +42,23 @@
 #' print(p)
 #'
 #' \dontrun{
-#' # Example using real data (requires authentication)
-#' # Please replace with your actual Strava application details for this to work.
-#' # stoken_example <- rStrava::strava_oauth(
-#' #   app_name = "YOUR_APP_NAME_PLACEHOLDER",
-#' #   client_id = "YOUR_CLIENT_ID_PLACEHOLDER",
-#' #   client_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",
-#' #   cache = TRUE
-#' # )
-#'
-#' # If you have a valid stoken_example, you can then use it:
+#' # Example using local Strava export data
+#' activities <- load_local_activities("strava_export_data/activities.csv")
+#' 
 #' # Plot ACWR trend for Runs (using duration as load metric)
-#' # if (exists("stoken_example") && inherits(stoken_example, "Token2.0")) {
-#' #   plot_acwr(stoken = stoken_example,
-#' #             activity_type = "Run",
-#' #             load_metric = "duration_mins",
-#' #             acute_period = 7,
-#' #             chronic_period = 28)
-#' #
-#' #   # Plot ACWR trend for Rides (using TSS as load metric)
-#' #   plot_acwr(stoken = stoken_example,
-#' #             activity_type = "Ride",
-#' #             load_metric = "tss",
-#' #             user_ftp = 280)  # FTP value is required
-#' # } else {
-#' #  message("stoken_example not created or invalid. Skipping real data example for plot_acwr.")
-#' # }
+#' plot_acwr(data = activities,
+#'           activity_type = "Run",
+#'           load_metric = "duration_mins",
+#'           acute_period = 7,
+#'           chronic_period = 28)
+#'
+#' # Plot ACWR trend for Rides (using TSS as load metric)
+#' plot_acwr(data = activities,
+#'           activity_type = "Ride",
+#'           load_metric = "tss",
+#'           user_ftp = 280)  # FTP value is required
 #' }
-plot_acwr <- function(stoken,
+plot_acwr <- function(data,
                       activity_type = NULL,
                       load_metric = "duration_mins",
                       acute_period = 7,
@@ -88,19 +76,19 @@ plot_acwr <- function(stoken,
   
   # --- Check if first argument is already ACWR data frame ---
   # This allows backward compatibility: plot_acwr(acwr_result)
-  if (is.data.frame(stoken) && "acwr_smooth" %in% colnames(stoken)) {
-    acwr_df <- stoken
+  if (is.data.frame(data) && "acwr_smooth" %in% colnames(data)) {
+    acwr_df <- data
   }
   
   # --- Get Data --- 
   # If acwr_df is not provided, calculate it
   if (is.null(acwr_df)) {
-      # Check if stoken provided when acwr_df is not
-      if (missing(stoken)) stop("Either provide ACWR data frame from calculate_acwr() as first argument, or provide activities_data.")
+      # Check if data provided when acwr_df is not
+      if (missing(data)) stop("Either provide ACWR data frame from calculate_acwr() as first argument, or provide activities_data.")
       
-      # stoken should be activities_data in new usage
+      # data should be activities_data in new usage
       acwr_df <- calculate_acwr(
-          activities_data = stoken,
+          activities_data = data,
           activity_type = activity_type,
           load_metric = load_metric,
           acute_period = acute_period,

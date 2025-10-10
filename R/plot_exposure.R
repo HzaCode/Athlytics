@@ -5,7 +5,7 @@
 #' Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
 #' pre-calculated data or calls `calculate_exposure`.
 #'
-#' @param stoken A valid Strava token from `rStrava::strava_oauth()`. Required unless `exposure_df` is provided.
+#' @param data A data frame from `load_local_activities()`. Required unless `exposure_df` is provided.
 #' @param activity_type Type(s) of activities to include (e.g., "Run", "Ride"). Default uses common types.
 #' @param load_metric Method for calculating daily load (e.g., "duration_mins", "tss", "hrss"). Default "duration_mins".
 #'   See `calculate_exposure` for details on approximate TSS/HRSS calculations.
@@ -17,7 +17,7 @@
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #' @param risk_zones Add background shading for typical ACWR risk zones? Default `TRUE`.
 #' @param exposure_df Optional. A pre-calculated data frame from `calculate_exposure`.
-#'   If provided, `stoken` and other calculation parameters are ignored. Must contain
+#'   If provided, `data` and other calculation parameters are ignored. Must contain
 #'   `date`, `atl`, `ctl` (and `acwr` if `risk_zones = TRUE`).
 #'
 #' @return A ggplot object showing ATL vs CTL.
@@ -43,32 +43,28 @@
 #' p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
 #' print(p)
 #'
-#' \donttest{
-#' # Example using real data (requires authentication)
-#' # stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
-#' #                                "YOUR_APP_CLIENT_ID",
-#' #                                "YOUR_APP_SECRET",
-#' #                                cache = TRUE)
-#'
+#' \dontrun{
+#' # Example using local Strava export data
+#' activities <- load_local_activities("strava_export_data/activities.csv")
+#' 
 #' # Plot Exposure trend for Runs (last 6 months)
-#' # plot_exposure(stoken = stoken, # Replace stoken with a valid token object
-#' #               activity_type = "Run",
-#' #               end_date = Sys.Date(), # For internal calculate_exposure: fetches prior data.
-#' #               # Note: start_date applies to the internal calculate_exposure call.
-#' #               user_ftp = 280) # Example, if load_metric = "tss"
+#' plot_exposure(data = activities,
+#'               activity_type = "Run",
+#'               end_date = Sys.Date(),
+#'               user_ftp = 280) # Example, if load_metric = "tss"
 #'
 #' # Plot Exposure trend for Rides
-#' # plot_exposure(stoken = stoken, # Replace stoken with a valid token object
-#' #               activity_type = "Ride",
-#' #               user_ftp = 280) # Example, provide if load_metric = "tss"
+#' plot_exposure(data = activities,
+#'               activity_type = "Ride",
+#'               user_ftp = 280) # Example, provide if load_metric = "tss"
 #'
 #' # Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)
-#' # plot_exposure(stoken = stoken, # Replace stoken with a valid token object
-#' #               activity_type = c("Run", "VirtualRun"),
-#' #               risk_zones = FALSE,
-#' #               user_ftp = 280) # Example, provide if load_metric = "tss"
+#' plot_exposure(data = activities,
+#'               activity_type = c("Run", "VirtualRun"),
+#'               risk_zones = FALSE,
+#'               user_ftp = 280) # Example, provide if load_metric = "tss"
 #' }
-plot_exposure <- function(stoken,
+plot_exposure <- function(data,
                           activity_type = c("Run", "Ride", "VirtualRide", "VirtualRun"),
                           load_metric = "duration_mins",
                           acute_period = 7,
@@ -82,10 +78,10 @@ plot_exposure <- function(stoken,
 
   # --- Get Data --- 
   if (is.null(exposure_df)) {
-      if (missing(stoken)) stop("Either 'stoken' or 'exposure_df' must be provided.")
+      if (missing(data)) stop("Either 'data' or 'exposure_df' must be provided.")
       
       exposure_df <- calculate_exposure(
-        stoken = stoken,
+        activities_data = data,
         activity_type = activity_type,
         load_metric = load_metric,
         acute_period = acute_period,

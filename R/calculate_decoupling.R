@@ -28,7 +28,6 @@
 #'   If provided, calculates decoupling for this data directly, ignoring other parameters.
 #'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance` 
 #'   (for Pace_HR) or `watts` (for Power_HR).
-#' @param stoken **Deprecated.** Legacy Strava token parameter maintained for backward compatibility only.
 #'
 #' @return Returns a data frame with columns:
 #'   \describe{
@@ -91,14 +90,7 @@ calculate_decoupling <- function(activities_data = NULL,
                                  min_hr_coverage = 0.9,
                                  quality_control = c("off", "flag", "filter"),
                                  stream_df = NULL,
-                                 stoken = NULL) {
-  
-  # --- Handle deprecated stoken parameter ---
-  if (!is.null(stoken)) {
-    warning("'stoken' parameter is deprecated. Use local data via 'activities_data' and 'export_dir' instead.",
-            "\nAPI-based analysis is no longer supported. Please use local Strava export files.")
-    stop("API mode is deprecated. Please use local data: load_local_activities() + calculate_decoupling()")
-  }
+) {
   
   # --- Input Validation ---
   decouple_metric <- match.arg(decouple_metric)

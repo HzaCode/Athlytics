@@ -26,8 +26,8 @@ explicit_english_month_year <- function(date_obj) {
 #'
 #' Plots the aerobic decoupling trend over time. **Recommended workflow: Use local data via `decoupling_df`.**
 #'
-#' @param stoken **Recommended: Pass pre-calculated data via `decoupling_df` (local export preferred).**
-#'   For legacy API usage: A Strava token from `rStrava::strava_oauth()`. This parameter is deprecated.
+#' @param data **Recommended: Pass pre-calculated data via `decoupling_df` (local export preferred).**
+#'   A data frame from `calculate_decoupling()` or activities data from `load_local_activities()`.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
 #' @param decouple_metric Metric basis: "pace_hr" or "power_hr".
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.
@@ -38,14 +38,13 @@ explicit_english_month_year <- function(date_obj) {
 #' @param decoupling_df **Recommended.** A pre-calculated data frame from `calculate_decoupling()`.
 #'   When provided, analysis uses local data only (no API calls).
 #'   Must contain 'date' and 'decoupling' columns.
-#'
+
 #' @return A ggplot object showing the decoupling trend.
 #'
 #' @details Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
 #'   Positive values mean HR drifted relative to output. A 5\\% threshold line is often
 #'   used as reference. **Best practice: Use `load_local_activities()` + `calculate_decoupling()` + this function.**
-#'   Legacy API mode is maintained for backward compatibility only.
-#'
+
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when group_by summarise pull first last tibble
 #' @importFrom lubridate as_date
 #' @importFrom lubridate date
@@ -53,101 +52,49 @@ explicit_english_month_year <- function(date_obj) {
 #' @importFrom lubridate ymd
 #' @importFrom lubridate ymd_hms
 #' @importFrom lubridate as_datetime
-#' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal scale_x_date theme element_text scale_y_continuous annotate geom_hline theme_void ggtitle
+#' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal scale_x_date theme element_text geom_hline
 #' @importFrom rlang .data
-#' @importFrom stats median na.omit
-#' @importFrom utils txtProgressBar setTxtProgressBar
 #' @export
 #'
 #' @examples
-#' # Example using simulated data
-#' data(Athlytics_sample_data)
-#' # Explicitly name decoupling_df and provide activity_type
-#' if (!is.null(athlytics_sample_decoupling) && nrow(athlytics_sample_decoupling) > 0) {
-#'   p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling, activity_type = "Run")
-#'   print(p)
+#' # Example using pre-calculated sample data
+#' data("athlytics_sample_decoupling", package = "Athlytics")
+#' p <- plot_decoupling(athlytics_sample_decoupling)
+#' print(p)
+#'
+#' \dontrun{
+#' # Example using local Strava export data
+#' activities <- load_local_activities("strava_export_data/activities.csv")
+#' 
+#' # Example 1: Plot Decoupling trend for Runs (last 6 months)
+#' decoupling_runs_6mo <- calculate_decoupling(
+#'     activities_data = activities,
+#'     export_dir = "strava_export_data",
+#'     activity_type = "Run",
+#'     decouple_metric = "pace_hr",
+#'     start_date = Sys.Date() - months(6)
+#' )
+#' plot_decoupling(decoupling_runs_6mo)
+#'
+#' # Example 2: Plot Decoupling trend for Rides
+#' decoupling_rides <- calculate_decoupling(
+#'   activities_data = activities,
+#'   export_dir = "strava_export_data",
+#'   activity_type = "Ride",
+#'   decouple_metric = "power_hr"
+#' )
+#' plot_decoupling(decoupling_rides)
+#'
+#' # Example 3: Plot Decoupling trend for multiple Run types (no trend line)
+#' decoupling_multi_run <- calculate_decoupling(
+#'   activities_data = activities,
+#'   export_dir = "strava_export_data",
+#'   activity_type = c("Run", "VirtualRun"),
+#'   decouple_metric = "pace_hr"
+#' )
+#' plot_decoupling(decoupling_multi_run, add_trend_line = FALSE)
 #' }
-#'
-#' \donttest{
-#' # Example using real data (requires authentication)
-#' # NOTE: The following rStrava::strava_oauth call is a placeholder.
-#' # You MUST replace placeholders with your actual Strava API credentials.
-#' tryCatch({
-#'   stoken_example <- rStrava::strava_oauth(
-#'     app_name = "YOUR_APP_NAME_PLACEHOLDER",
-#'     app_client_id = "YOUR_CLIENT_ID_PLACEHOLDER",     # CORRECTED
-#'     app_secret = "YOUR_CLIENT_SECRET_PLACEHOLDER",  # CORRECTED
-#'     cache = TRUE,
-#'     app_scope = "activity:read_all" # Recommended scope
-#'   )
-#'
-#'   if (inherits(stoken_example, "Token2.0")) {
-#'     message("Placeholder stoken_example created for Athlytics examples.")
-#'
-#'     # Example 1: Plot Decoupling trend for Runs (last 6 months)
-#'     # This first calculates the data, then plots it.
-#'     message("Calculating decoupling for Runs (last 6 months) - may take a moment...")
-#'     decoupling_runs_6mo <- tryCatch({
-#'         calculate_decoupling(
-#'             stoken = stoken_example,
-#'             activity_type = "Run",
-#'             decouple_metric = "pace_hr",
-#'             date_range = c(format(Sys.Date() - lubridate::months(6), "%Y-%m-%d"), 
-#'                            format(Sys.Date(), "%Y-%m-%d")),
-#'             max_activities = 5 # Keep low for example
-#'         )
-#'     }, error = function(e_calc) {
-#'         message(paste("Could not calculate decoupling data in example:", e_calc$message))
-#'         return(dplyr::tibble()) # Return empty tibble on error
-#'     })
-#'
-#'     if (nrow(decoupling_runs_6mo) > 0 && "decoupling" %in% names(decoupling_runs_6mo)) {
-#'       p_runs_6mo <- plot_decoupling(decoupling_df = decoupling_runs_6mo, activity_type = "Run")
-#'       print(p_runs_6mo)
-#'     } else {
-#'       message("No decoupling data for Runs (last 6 months) to plot, or calculation failed.")
-#'     }
-#'
-#'     # Example 2: Plot Decoupling trend for Rides
-#'     # decoupling_rides <- calculate_decoupling(
-#'     #   stoken = stoken_example,
-#'     #   activity_type = "Ride",
-#'     #   decouple_metric = "power_hr",
-#'     #   max_activities = 5
-#'     # )
-#'     # if (nrow(decoupling_rides) > 0 && "decoupling" %in% names(decoupling_rides)) {
-#'     #   p_rides <- plot_decoupling(decoupling_df = decoupling_rides, activity_type = "Ride")
-#'     #   print(p_rides)
-#'     # } else {
-#'     #   message("No decoupling data for Rides to plot, or calculation failed.")
-#'     # }
-#'
-#'     # Example 3: Plot Decoupling trend for multiple Run types (no trend line)
-#'     # decoupling_multi_run <- calculate_decoupling(
-#'     #   stoken = stoken_example,
-#'     #   activity_type = c("Run", "VirtualRun"),
-#'     #   decouple_metric = "pace_hr",
-#'     #   max_activities = 5
-#'     # )
-#'     # if (nrow(decoupling_multi_run) > 0 && "decoupling" %in% names(decoupling_multi_run)) {
-#'     #   p_multi_run <- plot_decoupling(
-#'     #     decoupling_df = decoupling_multi_run,
-#'     #     activity_type = c("Run", "VirtualRun"),
-#'     #     add_trend_line = FALSE
-#'     #   )
-#'     #   print(p_multi_run)
-#'     # } else {
-#'     #   message("No decoupling data for multi-run types to plot, or calculation failed.")
-#'     # }
-#'
-#'   } else {
-#'     message("Failed to create placeholder stoken for plot_decoupling examples.")
-#'   }
-#' }, error = function(e_auth) {
-#'   message(paste("Error during rStrava authentication in example:", e_auth$message))
-#' })
-#' }
-plot_decoupling <- function(stoken,
+plot_decoupling <- function(data,
                             activity_type = c("Run", "Ride"), # Default to both if not specified
                             decouple_metric = c("pace_hr", "power_hr"),
                             start_date = NULL,
@@ -163,13 +110,13 @@ plot_decoupling <- function(stoken,
   # --- Get Data --- 
   # If decoupling_df is not provided, calculate it
   if (is.null(decoupling_df)) {
-      # Ensure stoken is provided if decoupling_df is not
-      if (missing(stoken)) stop("Either 'stoken' or 'decoupling_df' must be provided.")
+      # Ensure data is provided if decoupling_df is not
+      if (missing(data)) stop("Either 'data' or 'decoupling_df' must be provided.")
       
       message("No pre-calculated decoupling_df provided. Calculating data now... (This may take a while)")
       # Call the calculation function
       decoupling_df <- calculate_decoupling(
-          stoken = stoken,
+          activities_data = data,
           activity_type = activity_type, # Can be a vector
           decouple_metric = decouple_metric_label, # Use the matched, single metric
           start_date = start_date,
@@ -178,67 +125,48 @@ plot_decoupling <- function(stoken,
       )
   }
 
-  # Check if decoupling_df is empty or invalid after potential calculation
+  # Check if decoupling_df is empty or invalid
   if (!is.data.frame(decoupling_df) || nrow(decoupling_df) == 0 || !all(c("date", "decoupling") %in% names(decoupling_df))) {
-      warning("No valid decoupling data available to plot (or missing 'date'/'decoupling' columns).")
-      # Return a blank plot with a message
-      return(
-          ggplot2::ggplot() +
-          ggplot2::theme_void() +
-          ggplot2::ggtitle("No decoupling data to plot") +
-          ggplot2::labs(subtitle = "Please check input data or calculation parameters.")
-      )
+      warning("No valid decoupling data available to plot (or missing required columns).")
+      return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No decoupling data available"))
   }
 
-  # Ensure 'date' is Date type for plotting
-  plot_data <- decoupling_df %>%
-    dplyr::mutate(date = lubridate::as_date(.data$date)) # Ensure it's Date, not POSIXct for scale_x_date
+  # Rename for clarity
+  plot_data <- decoupling_df
   
   # --- Plotting ---
   message("Generating plot...")
-  y_axis_label <- paste("Decoupling (", gsub("_", "/", decouple_metric_label), ") [%]")
   
-  # Determine activity type label for the plot title/subtitle
-  # If activity_type was a parameter to calculate_decoupling, it might not be in decoupling_df
-  # If decoupling_df is provided, it might or might not have an activity_type column.
-  # For simplicity, if `activity_type` arg to `plot_decoupling` is length 1, use it.
-  # Otherwise, use a generic term or extract from data if present.
-  plot_activity_type_label <- if (length(activity_type) == 1) {
-      activity_type
-  } else if ("activity_type" %in% names(plot_data) && length(unique(plot_data$activity_type)) == 1) {
-      unique(plot_data$activity_type)
-  } else {
-      "Selected Activities" # Generic if multiple or not clearly defined
-  }
-
-
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling)) +
-    ggplot2::geom_point(alpha = 0.8, size = 2.5, color = "dodgerblue") +
-    ggplot2::geom_hline(yintercept = 5, linetype="dashed", color="grey70") +
-    ggplot2::annotate("text", x = min(plot_data$date, na.rm = TRUE), y = 5.5, label="5% threshold", hjust=0, vjust=0, size=3, color="grey50") +
+    ggplot2::geom_point(alpha = 0.7, size = 2, color = "#E64B35") +
     ggplot2::scale_x_date(labels = explicit_english_month_year, date_breaks = "3 months") +
-    ggplot2::scale_y_continuous(labels = function(x) paste0(x, "%")) +
     ggplot2::labs(
-      title = paste("Aerobic Decoupling Trend for", plot_activity_type_label),
-      subtitle = paste("Metric:", decouple_metric_label, "(Lower is generally better)"),
+      title = "Aerobic Decoupling Trend",
+      subtitle = paste("Metric:", decouple_metric_label),
       x = "Date",
-      y = y_axis_label
-    ) +
-    ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-                   plot.title = ggplot2::element_text(face = "bold"))
-
-  if (add_trend_line && nrow(plot_data) >= 2) { # geom_smooth needs at least 2 points
-    p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "firebrick", linewidth = 0.8)
+      y = "Decoupling (%)",
+      caption = "Positive values indicate HR drift relative to output"
+    )
+  
+  # Add 5% threshold line
+  p <- p + ggplot2::geom_hline(yintercept = 5, linetype = "dashed", color = "red", alpha = 0.7) +
+    ggplot2::geom_hline(yintercept = 0, linetype = "solid", color = "black", alpha = 0.5)
+  
+  if (add_trend_line) {
+    p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
   }
+  
+  p <- p +
+    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
+      axis.text.y = ggplot2::element_text(size = 10),
+      axis.title = ggplot2::element_text(size = 11, face = "bold"),
+      plot.title = ggplot2::element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 10)),
+      plot.subtitle = ggplot2::element_text(size = 10, color = "gray40", margin = ggplot2::margin(b = 15)),
+      plot.caption = ggplot2::element_text(size = 9, color = "gray50", hjust = 0),
+      panel.grid.minor = ggplot2::element_blank()
+    )
 
   return(p)
-} 
-
-# Helper for date labels if not available globally (e.g. from another file)
-# This function might be needed if `english_month_year` was used previously and is not defined
-# For simplicity, I've replaced `english_month_year` with `scales::label_date_short()`
-# If you need a specific "Month Year" format, you can define:
-# english_month_year <- function(x) format(x, "%b %Y")
-# And ensure `scales` is in Imports if using its label functions.
-# Since ggplot2 is imported, scales is usually available as a dependency.
+}

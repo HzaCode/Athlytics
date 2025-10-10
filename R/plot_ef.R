@@ -6,8 +6,8 @@
 #'
 #' Plots the Efficiency Factor (EF) trend over time. **Recommended workflow: Use local data via `ef_df`.**
 #'
-#' @param stoken **Recommended: Pass pre-calculated data via `ef_df` (local export preferred).**
-#'   For legacy API usage: A Strava token from `rStrava::strava_oauth()`. This parameter is deprecated.
+#' @param data **Recommended: Pass pre-calculated data via `ef_df` (local export preferred).**
+#'   A data frame from `calculate_ef()` or activities data from `load_local_activities()`.
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
 #' @param ef_metric Metric to calculate: "pace_hr" (Speed/HR) or "power_hr" (Power/HR).
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.
@@ -25,7 +25,6 @@
 #' @details Plots EF (output/HR based on activity averages). An upward trend
 #'   often indicates improved aerobic fitness. Points colored by activity type.
 #'   **Best practice: Use `load_local_activities()` + `calculate_ef()` + this function.**
-#'   Legacy API mode is maintained for backward compatibility only.
 #'
 #' 
 #' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when pull
@@ -41,30 +40,27 @@
 #' print(p)
 #'
 #' \dontrun{
-#' # Example using real data (requires authentication)
-#' # stoken <- rStrava::strava_oauth("YOUR_APP_NAME",
-#' #                                "YOUR_APP_CLIENT_ID",
-#' #                                "YOUR_APP_SECRET",
-#' #                                cache = TRUE)
-#'
+#' # Example using local Strava export data
+#' activities <- load_local_activities("strava_export_data/activities.csv")
+#' 
 #' # Plot Pace/HR EF trend for Runs (last 6 months)
-#' # plot_ef(stoken = stoken, # Replace stoken with a valid token object
-#' #         activity_type = "Run",
-#' #         ef_metric = "pace_hr",
-#' #         start_date = Sys.Date() - months(6))
+#' plot_ef(data = activities,
+#'         activity_type = "Run",
+#'         ef_metric = "pace_hr",
+#'         start_date = Sys.Date() - months(6))
 #'
 #' # Plot Power/HR EF trend for Rides
-#' # plot_ef(stoken = stoken, # Replace stoken with a valid token object
-#' #         activity_type = "Ride",
-#' #         ef_metric = "power_hr")
+#' plot_ef(data = activities,
+#'         activity_type = "Ride",
+#'         ef_metric = "power_hr")
 #'
 #' # Plot Pace/HR EF trend for multiple Run types (no trend line)
-#' # plot_ef(stoken = stoken, # Replace stoken with a valid token object
-#' #         activity_type = c("Run", "VirtualRun"),
-#' #         ef_metric = "pace_hr",
-#' #         add_trend_line = FALSE)
+#' plot_ef(data = activities,
+#'         activity_type = c("Run", "VirtualRun"),
+#'         ef_metric = "pace_hr",
+#'         add_trend_line = FALSE)
 #' }
-plot_ef <- function(stoken,
+plot_ef <- function(data,
                     activity_type = c("Run", "Ride"),
                     ef_metric = c("pace_hr", "power_hr"),
                     start_date = NULL,
@@ -80,18 +76,18 @@ plot_ef <- function(stoken,
   ef_metric_label <- match.arg(ef_metric)
 
   # --- Check if first argument is already EF data frame ---
-  if (is.data.frame(stoken) && all(c("date", "ef_value") %in% colnames(stoken))) {
-    ef_df <- stoken
+  if (is.data.frame(data) && all(c("date", "ef_value") %in% colnames(data))) {
+    ef_df <- data
   }
 
   # --- Get Data --- 
   # If ef_df is not provided, calculate it
   if (is.null(ef_df)) {
-      # Check if stoken provided when ef_df is not
-      if (missing(stoken)) stop("Either provide EF data frame from calculate_ef() as first argument, or provide activities_data.")
+      # Check if data provided when ef_df is not
+      if (missing(data)) stop("Either provide EF data frame from calculate_ef() as first argument, or provide activities_data.")
       
       ef_df <- calculate_ef(
-          activities_data = stoken,
+          activities_data = data,
           activity_type = activity_type,
           ef_metric = ef_metric_label,
           start_date = start_date,
