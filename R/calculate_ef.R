@@ -56,6 +56,8 @@
 #'   Activities with higher variability are rejected as non-steady-state.
 #' @param min_hr_coverage Numeric. Minimum HR data coverage threshold (default: 0.9 = 90%).
 #'   Activities with lower HR coverage are rejected as insufficient data quality.
+#' @param quality_control Character. Quality control mode: "off" (no filtering), "flag" (mark issues), 
+#'   or "filter" (exclude flagged data). Default "filter" for scientific rigor.
 #'
 #' @return A tibble with the following columns:
 #' \describe{
@@ -148,7 +150,8 @@ calculate_ef <- function(activities_data,
                          min_duration_mins = 20,
                          min_steady_minutes = 20,
                          steady_cv_threshold = 0.08,
-                         min_hr_coverage = 0.9) {
+                         min_hr_coverage = 0.9,
+                         quality_control = c("off", "flag", "filter")) {
 
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
@@ -175,6 +178,8 @@ calculate_ef <- function(activities_data,
   if (!is.numeric(min_hr_coverage) || min_hr_coverage <= 0 || min_hr_coverage > 1) {
     stop("`min_hr_coverage` must be between 0 and 1.")
   }
+  
+  quality_control <- match.arg(quality_control)
 
   # --- Date Handling ---
   `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x

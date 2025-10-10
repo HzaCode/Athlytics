@@ -22,6 +22,8 @@
 #'   Activities with higher variability are rejected as non-steady-state.
 #' @param min_hr_coverage Minimum HR data coverage threshold (default: 0.9 = 90%).
 #'   Activities with lower HR coverage are rejected as insufficient data quality.
+#' @param quality_control Quality control mode: "off" (no filtering), "flag" (mark issues), 
+#'   or "filter" (exclude flagged data). Default "filter" for scientific rigor.
 #' @param stream_df Optional. A pre-fetched data frame for a *single* activity's stream.
 #'   If provided, calculates decoupling for this data directly, ignoring other parameters.
 #'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance` 
@@ -87,6 +89,7 @@ calculate_decoupling <- function(activities_data = NULL,
                                  min_steady_minutes = 40,
                                  steady_cv_threshold = 0.08,
                                  min_hr_coverage = 0.9,
+                                 quality_control = c("off", "flag", "filter"),
                                  stream_df = NULL,
                                  stoken = NULL) {
   
@@ -125,6 +128,8 @@ calculate_decoupling <- function(activities_data = NULL,
   if (!is.numeric(min_hr_coverage) || min_hr_coverage <= 0 || min_hr_coverage > 1) {
     stop("`min_hr_coverage` must be between 0 and 1.")
   }
+  
+  quality_control <- match.arg(quality_control)
   
   # --- Date Handling ---
   `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
