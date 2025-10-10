@@ -6,7 +6,7 @@ library(lubridate)
 # library(rStrava) # No longer needed directly if we use stream_df or athlytics_sample_data
 
 # Load main sample data for the package
-data(athlytics_sample_data)
+data(athlytics_sample_decoupling)
 
 # Load data from helper for direct use in tests
   # Check helper-mockdata.R is in tests/testthat directory

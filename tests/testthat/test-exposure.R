@@ -4,7 +4,8 @@ library(testthat)
 library(Athlytics)
 
 # Load sample data from the package
-data(athlytics_sample_data)
+data(athlytics_sample_exposure)
+data(athlytics_sample_acwr)
 
 # Load mock data (if helper-mockdata.R contains mocks for direct use)
 source(test_path("helper-mockdata.R"), local = TRUE)

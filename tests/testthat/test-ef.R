@@ -5,7 +5,7 @@ context("Efficiency Factor Calculation")
 library(Athlytics)
 library(testthat)
 
-data(athlytics_sample_data)
+data(athlytics_sample_ef)
 
 create_mock_activities <- function(n = 30) {
   dates <- seq(Sys.Date() - n, Sys.Date(), by = "day")

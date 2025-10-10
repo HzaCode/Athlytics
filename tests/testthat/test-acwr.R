@@ -6,7 +6,8 @@ library(Athlytics)
 library(testthat)
 
 # Load sample data from the package
-data(athlytics_sample_data)
+data(athlytics_sample_acwr)
+data(athlytics_sample_exposure)
 
 # Create mock activities data for testing
 create_mock_activities <- function(n = 30) {
@@ -138,7 +139,7 @@ test_that("calculate_acwr works with sample data", {
 test_that("plot_acwr works with pre-calculated data", {
   skip_if(is.null(athlytics_sample_acwr), "Sample ACWR data not available")
   
-  p <- plot_acwr(acwr_df = athlytics_sample_acwr, highlight_zones = FALSE)
+  p <- plot_acwr(athlytics_sample_acwr, highlight_zones = FALSE)
   
   expect_s3_class(p, "ggplot")
 })
@@ -146,14 +147,14 @@ test_that("plot_acwr works with pre-calculated data", {
 test_that("plot_acwr validates input", {
   # Test with non-data.frame - may warn instead of error
   expect_warning(
-    plot_acwr(acwr_df = "not_a_dataframe"),
+    plot_acwr("not_a_dataframe"),
     "No valid ACWR data"
   )
   
   # Test with missing required columns - may warn instead of error
   bad_df <- data.frame(x = 1:10, y = 1:10)
   expect_warning(
-    plot_acwr(acwr_df = bad_df),
+    plot_acwr(bad_df),
     "No valid ACWR data|missing"
   )
 })

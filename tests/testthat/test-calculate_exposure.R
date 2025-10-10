@@ -6,7 +6,7 @@ library(Athlytics)
 library(testthat)
 
 # Load sample data
-data(athlytics_sample_data)
+data(athlytics_sample_exposure)
 
 # Create mock activities
 create_mock_activities <- function(n = 30) {

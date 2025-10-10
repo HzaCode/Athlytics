@@ -6,7 +6,7 @@ library(ggplot2) # Explicitly load for s3_class checks if not automatically avai
 library(lubridate) # For seconds_to_period if used in manual_df
 
 # Load data: sample data from package & mock API returns from helper
-data(athlytics_sample_data)
+data(athlytics_sample_pbs)
 source(test_path("helper-mockdata.R"), local = TRUE)
 
 # NOTE: calculate_pbs tests are currently skipped because they require
