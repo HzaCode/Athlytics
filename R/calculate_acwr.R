@@ -64,11 +64,12 @@
 #'
 #' @details
 #' **Algorithm:**
-#' 1. Aggregate activities by date to compute daily load
-#' 2. Calculate acute load: rolling mean over `acute_period` days
-#' 3. Calculate chronic load: rolling mean over `chronic_period` days
-#' 4. Compute ACWR: ATL / CTL (set to NA when CTL < 0.01)
-#' 5. Apply smoothing: rolling mean over `smoothing_period` days
+#' 1. **Daily Aggregation**: Sum all activities by date to compute daily load
+#' 2. **Complete Time Series**: Fill missing days with zero load (critical for ACWR accuracy)
+#' 3. **Acute Load (ATL)**: Rolling mean over `acute_period` days (default: 7)
+#' 4. **Chronic Load (CTL)**: Rolling mean over `chronic_period` days (default: 28)
+#' 5. **ACWR Calculation**: ATL / CTL (set to NA when CTL < 0.01 to avoid division by zero)
+#' 6. **Smoothing**: Optional rolling mean over `smoothing_period` days for visualization
 #'
 #' **Data Requirements:**
 #' The function automatically fetches additional historical data (chronic_period days

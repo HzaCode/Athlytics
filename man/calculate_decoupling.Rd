@@ -8,7 +8,7 @@ calculate_decoupling(
   activities_data = NULL,
   export_dir = "strava_export_data",
   activity_type = c("Run", "Ride"),
-  decouple_metric = c("Pace_HR", "Power_HR"),
+  decouple_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 40,
@@ -24,7 +24,8 @@ Default is "strava_export_data".}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
-\item{decouple_metric}{Basis for calculation: "Pace_HR" or "Power_HR".}
+\item{decouple_metric}{Basis for calculation: "pace_hr" or "power_hr"
+(legacy "Pace_HR"/"Power_HR" also supported).}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.}
 
@@ -40,8 +41,14 @@ Must include columns: \code{time}, \code{heartrate}, and either \code{velocity_s
 \item{stoken}{\strong{Deprecated.} Legacy Strava token parameter maintained for backward compatibility only.}
 }
 \value{
-Returns a data frame with \code{date} and \code{decoupling} (\\\%) columns, OR
-a single numeric decoupling value if \code{stream_df} is provided.
+Returns a data frame with columns:
+\describe{
+\item{date}{Activity date (Date class)}
+\item{decoupling}{Decoupling percentage (\\\%). Positive = HR drift, negative = improved efficiency}
+\item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state
+criteria not met, "insufficient_data" if data quality issues}
+}
+OR a single numeric decoupling value if \code{stream_df} is provided.
 }
 \description{
 Calculates aerobic decoupling for Strava activities from local export data.
@@ -74,13 +81,13 @@ run_decoupling <- calculate_decoupling(
     activities_data = activities,
     export_dir = "strava_export_data",
     activity_type = "Run",
-    decouple_metric = "Pace_HR",
+    decouple_metric = "pace_hr",
     start_date = "2024-01-01"
 )
 print(tail(run_decoupling))
 
 # Calculate for a single activity stream
 # stream_data <- parse_activity_file("strava_export_data/activities/12345.fit")
-# single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "Pace_HR")
+# single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "pace_hr")
 }
 }

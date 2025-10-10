@@ -78,12 +78,15 @@ This function extends the basic ACWR calculation with two methods:
 with configurable half-lives. More responsive to recent changes.
 }
 
-For EWMA, the smoothing parameter alpha is calculated as: alpha = ln(2) / half_life
+\strong{EWMA Formula}: The smoothing parameter α is calculated from half-life:
+\code{α = ln(2) / half_life}. The EWMA update is: \verb{E_t = α × L_t + (1-α) × E_\{t-1\}}
+where L_t is daily load and E_t is the exponentially weighted average.
 
-\strong{Confidence Bands}: When \code{ci = TRUE} and \code{method = "ewma"}, uses moving-block
-bootstrap to estimate uncertainty. The daily load sequence is resampled in
+\strong{Confidence Bands}: When \code{ci = TRUE} and \code{method = "ewma"}, uses \strong{moving-block
+bootstrap} to estimate uncertainty. The daily load sequence is resampled in
 weekly blocks (preserving within-week correlation), ACWR is recalculated,
-and percentiles form the confidence bands.
+and percentiles form the confidence bands. This accounts for temporal correlation
+in training load patterns.
 }
 \examples{
 \dontrun{

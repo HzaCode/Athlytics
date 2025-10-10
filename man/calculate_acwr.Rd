@@ -93,11 +93,12 @@ and injury risk in athletes (Gabbett, 2016; Hulin et al., 2016).
 
 \strong{Algorithm:}
 \enumerate{
-\item Aggregate activities by date to compute daily load
-\item Calculate acute load: rolling mean over \code{acute_period} days
-\item Calculate chronic load: rolling mean over \code{chronic_period} days
-\item Compute ACWR: ATL / CTL (set to NA when CTL < 0.01)
-\item Apply smoothing: rolling mean over \code{smoothing_period} days
+\item \strong{Daily Aggregation}: Sum all activities by date to compute daily load
+\item \strong{Complete Time Series}: Fill missing days with zero load (critical for ACWR accuracy)
+\item \strong{Acute Load (ATL)}: Rolling mean over \code{acute_period} days (default: 7)
+\item \strong{Chronic Load (CTL)}: Rolling mean over \code{chronic_period} days (default: 28)
+\item \strong{ACWR Calculation}: ATL / CTL (set to NA when CTL < 0.01 to avoid division by zero)
+\item \strong{Smoothing}: Optional rolling mean over \code{smoothing_period} days for visualization
 }
 
 \strong{Data Requirements:}

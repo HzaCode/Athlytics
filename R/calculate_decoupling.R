@@ -11,7 +11,8 @@
 #' @param export_dir Base directory of Strava export containing the activities folder.
 #'   Default is "strava_export_data".
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
-#' @param decouple_metric Basis for calculation: "Pace_HR" or "Power_HR".
+#' @param decouple_metric Basis for calculation: "pace_hr" or "power_hr" 
+#'   (legacy "Pace_HR"/"Power_HR" also supported).
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #' @param min_duration_mins Minimum activity duration (minutes) to include. Default 40.
@@ -21,8 +22,14 @@
 #'   (for Pace_HR) or `watts` (for Power_HR).
 #' @param stoken **Deprecated.** Legacy Strava token parameter maintained for backward compatibility only.
 #'
-#' @return Returns a data frame with `date` and `decoupling` (\\%) columns, OR
-#'   a single numeric decoupling value if `stream_df` is provided.
+#' @return Returns a data frame with columns:
+#'   \describe{
+#'     \item{date}{Activity date (Date class)}
+#'     \item{decoupling}{Decoupling percentage (\\%). Positive = HR drift, negative = improved efficiency}
+#'     \item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state 
+#'       criteria not met, "insufficient_data" if data quality issues}
+#'   }
+#'   OR a single numeric decoupling value if `stream_df` is provided.
 #'
 #' @details Provides data for `plot_decoupling`. Compares output/HR efficiency
 #'   between first and second halves of activities. Positive values indicate
@@ -55,19 +62,19 @@
 #'     activities_data = activities,
 #'     export_dir = "strava_export_data",
 #'     activity_type = "Run",
-#'     decouple_metric = "Pace_HR",
+#'     decouple_metric = "pace_hr",
 #'     start_date = "2024-01-01"
 #' )
 #' print(tail(run_decoupling))
 #' 
 #' # Calculate for a single activity stream
 #' # stream_data <- parse_activity_file("strava_export_data/activities/12345.fit")
-#' # single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "Pace_HR")
+#' # single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "pace_hr")
 #' }
 calculate_decoupling <- function(activities_data = NULL,
                                  export_dir = "strava_export_data",
                                  activity_type = c("Run", "Ride"),
-                                 decouple_metric = c("Pace_HR", "Power_HR"),
+                                 decouple_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
                                  start_date = NULL,
                                  end_date = NULL,
                                  min_duration_mins = 40,
@@ -83,6 +90,9 @@ calculate_decoupling <- function(activities_data = NULL,
   
   # --- Input Validation ---
   decouple_metric <- match.arg(decouple_metric)
+  
+  # Normalize to lowercase (support legacy capitalized names)
+  decouple_metric <- tolower(decouple_metric)
   
   # If stream_df provided, calculate for single activity
   if (!is.null(stream_df)) {
@@ -200,13 +210,13 @@ calculate_single_decoupling <- function(stream_df, decouple_metric) {
   
   # Validate stream_df structure
   required_cols <- c("time", "heartrate")
-  if (decouple_metric == "Pace_HR") {
+  if (decouple_metric == "pace_hr") {
     if (!"distance" %in% colnames(stream_df) && !"velocity_smooth" %in% colnames(stream_df)) {
-      stop("For Pace_HR decoupling, stream_df must contain 'distance' or 'velocity_smooth' column.")
+      stop("For pace_hr decoupling, stream_df must contain 'distance' or 'velocity_smooth' column.")
     }
-  } else {  # Power_HR
+  } else {  # power_hr
     if (!"watts" %in% colnames(stream_df)) {
-      stop("For Power_HR decoupling, stream_df must contain 'watts' column.")
+      stop("For power_hr decoupling, stream_df must contain 'watts' column.")
     }
   }
   
@@ -224,7 +234,7 @@ calculate_single_decoupling <- function(stream_df, decouple_metric) {
   }
   
   # Calculate velocity if needed
-  if (decouple_metric == "Pace_HR") {
+  if (decouple_metric == "pace_hr") {
     if ("velocity_smooth" %in% colnames(stream_clean)) {
       stream_clean <- stream_clean %>%
         dplyr::mutate(velocity = .data$velocity_smooth)

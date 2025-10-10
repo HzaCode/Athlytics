@@ -36,10 +36,13 @@
 #'   Default: `c("Run", "Ride")`.
 #' @param ef_metric Character string specifying the efficiency metric:
 #'   \itemize{
-#'     \item `"Pace_HR"`: Pace-based efficiency (for running). Formula: (distance / moving_time) / avg_HR
-#'     \item `"Power_HR"`: Power-based efficiency (for cycling). Formula: avg_watts / avg_HR
+#'     \item `"pace_hr"` or `"Pace_HR"`: Pace-based efficiency (for running). 
+#'       Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)
+#'     \item `"power_hr"` or `"Power_HR"`: Power-based efficiency (for cycling). 
+#'       Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)
 #'   }
-#'   Default: `c("Pace_HR", "Power_HR")` (uses first matching metric for activity type).
+#'   Default: `c("pace_hr", "power_hr")` (uses first matching metric for activity type).
+#'   Note: Older capitalized names ("Pace_HR", "Power_HR") are supported for backward compatibility.
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
 #'   Defaults to one year before `end_date`.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string, Date, or POSIXct).
@@ -52,7 +55,10 @@
 #' \describe{
 #'   \item{date}{Activity date (Date class)}
 #'   \item{activity_type}{Activity type (character: "Run" or "Ride")}
-#'   \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.}
+#'   \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
+#'     Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.}
+#'   \item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state 
+#'     criteria not met, "insufficient_data" if data quality issues. (Only if quality checks enabled)}
 #' }
 #'
 #' @details
@@ -118,18 +124,18 @@
 #' # Calculate Pace/HR efficiency factor for Runs
 #' ef_data_run <- calculate_ef(activities_data = activities, 
 #'                              activity_type = "Run", 
-#'                              ef_metric = "Pace_HR")
+#'                              ef_metric = "pace_hr")
 #' print(tail(ef_data_run))
 #'
 #' # Calculate Power/HR efficiency factor for Rides
 #' ef_data_ride <- calculate_ef(activities_data = activities,
 #'                               activity_type = "Ride",
-#'                               ef_metric = "Power_HR")
+#'                               ef_metric = "power_hr")
 #' print(tail(ef_data_ride))
 #' }
 calculate_ef <- function(activities_data,
                          activity_type = c("Run", "Ride"),
-                         ef_metric = c("Pace_HR", "Power_HR"),
+                         ef_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
                          start_date = NULL,
                          end_date = NULL,
                          min_duration_mins = 20) {
@@ -144,6 +150,9 @@ calculate_ef <- function(activities_data,
   }
   
   ef_metric <- match.arg(ef_metric)
+  
+  # Normalize to lowercase (support legacy capitalized names)
+  ef_metric <- tolower(ef_metric)
   if (!is.numeric(min_duration_mins) || min_duration_mins < 0) {
     stop("`min_duration_mins` must be a non-negative number.")
   }
@@ -195,12 +204,13 @@ calculate_ef <- function(activities_data,
 
     ef_value <- NA
 
-    if (ef_metric == "Pace_HR") {
+    if (ef_metric == "pace_hr") {
       if (distance_m > 0 && duration_sec > 0) {
-        pace_min_per_km <- (duration_sec / 60) / (distance_m / 1000)
-        ef_value <- pace_min_per_km / avg_hr
+        # Calculate speed (m/s) / HR
+        speed_ms <- distance_m / duration_sec
+        ef_value <- speed_ms / avg_hr
       }
-    } else if (ef_metric == "Power_HR") {
+    } else if (ef_metric == "power_hr") {
       if (power_used > 0) {
         ef_value <- power_used / avg_hr
       }

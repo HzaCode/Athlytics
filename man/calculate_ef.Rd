@@ -7,7 +7,7 @@
 calculate_ef(
   activities_data,
   activity_type = c("Run", "Ride"),
-  ef_metric = c("Pace_HR", "Power_HR"),
+  ef_metric = c("pace_hr", "power_hr", "Pace_HR", "Power_HR"),
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 20
@@ -24,10 +24,13 @@ Default: \code{c("Run", "Ride")}.}
 
 \item{ef_metric}{Character string specifying the efficiency metric:
 \itemize{
-\item \code{"Pace_HR"}: Pace-based efficiency (for running). Formula: (distance / moving_time) / avg_HR
-\item \code{"Power_HR"}: Power-based efficiency (for cycling). Formula: avg_watts / avg_HR
+\item \code{"pace_hr"} or \code{"Pace_HR"}: Pace-based efficiency (for running).
+Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)
+\item \code{"power_hr"} or \code{"Power_HR"}: Power-based efficiency (for cycling).
+Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)
 }
-Default: \code{c("Pace_HR", "Power_HR")} (uses first matching metric for activity type).}
+Default: \code{c("pace_hr", "power_hr")} (uses first matching metric for activity type).
+Note: Older capitalized names ("Pace_HR", "Power_HR") are supported for backward compatibility.}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
 Defaults to one year before \code{end_date}.}
@@ -44,7 +47,10 @@ A tibble with the following columns:
 \describe{
 \item{date}{Activity date (Date class)}
 \item{activity_type}{Activity type (character: "Run" or "Ride")}
-\item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.}
+\item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
+Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.}
+\item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state
+criteria not met, "insufficient_data" if data quality issues. (Only if quality checks enabled)}
 }
 }
 \description{
@@ -125,13 +131,13 @@ activities <- load_local_activities("strava_export_data/activities.csv")
 # Calculate Pace/HR efficiency factor for Runs
 ef_data_run <- calculate_ef(activities_data = activities, 
                              activity_type = "Run", 
-                             ef_metric = "Pace_HR")
+                             ef_metric = "pace_hr")
 print(tail(ef_data_run))
 
 # Calculate Power/HR efficiency factor for Rides
 ef_data_ride <- calculate_ef(activities_data = activities,
                               activity_type = "Ride",
-                              ef_metric = "Power_HR")
+                              ef_metric = "power_hr")
 print(tail(ef_data_ride))
 }
 }
