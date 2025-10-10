@@ -206,7 +206,7 @@ calculate_ef <- function(activities_data,
 
     if (ef_metric == "pace_hr") {
       if (distance_m > 0 && duration_sec > 0) {
-        # Calculate speed (m/s) / HR
+        # Calculate speed (m/s) / HR - EF is speed per unit HR
         speed_ms <- distance_m / duration_sec
         ef_value <- speed_ms / avg_hr
       }

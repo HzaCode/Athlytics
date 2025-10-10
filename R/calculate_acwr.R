@@ -23,8 +23,8 @@
 #' @param activities_data A data frame of activities from `load_local_activities()`.
 #'   Must contain columns: `date`, `distance`, `moving_time`, `elapsed_time`, 
 #'   `average_heartrate`, `average_watts`, `type`, `elevation_gain`.
-#' @param activity_type Optional character vector. Filter activities by type 
-#'   (e.g., `"Run"`, `"Ride"`, `c("Run", "Ride")`). Default `NULL` includes all types.
+#' @param activity_type **Required** character vector. Filter activities by type 
+#'   (e.g., `"Run"`, `"Ride"`). **Must specify** to avoid mixing incompatible load metrics.
 #' @param load_metric Character string specifying the load calculation method:
 #'   \itemize{
 #'     \item `"duration_mins"`: Training duration in minutes (default)
@@ -145,7 +145,7 @@
 #' plot_acwr(run_acwr, highlight_zones = TRUE)
 #' }
 calculate_acwr <- function(activities_data,
-                           activity_type = NULL,
+                           activity_type = c("Run", "Ride"),
                            load_metric = "duration_mins",
                            acute_period = 7,
                            chronic_period = 28,
