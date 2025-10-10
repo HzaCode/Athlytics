@@ -99,7 +99,9 @@ calculate_decoupling <- function(activities_data = NULL,
   
   # If stream_df provided, calculate for single activity
   if (!is.null(stream_df)) {
-    return(calculate_single_decoupling(stream_df, decouple_metric))
+    result <- calculate_single_decoupling(stream_df, decouple_metric)
+    # Return just the numeric value for backward compatibility
+    return(result$value)
   }
   
   # Otherwise, need activities_data

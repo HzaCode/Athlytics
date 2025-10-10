@@ -70,7 +70,7 @@ test_that("calculate_acwr validates activities_data parameter", {
   empty_df <- data.frame()
   expect_error(
     calculate_acwr(activities_data = empty_df),
-    "date|Column"  # Either missing date column or validation error
+    "activity_type.*must be explicitly specified"  # Now checks for activity_type first
   )
 })
 
@@ -94,6 +94,7 @@ test_that("calculate_acwr works with different load metrics", {
   # Test duration_mins
   acwr_duration <- calculate_acwr(
     activities_data = mock_activities,
+    activity_type = "Run",
     load_metric = "duration_mins"
   )
   expect_s3_class(acwr_duration, "data.frame")
@@ -101,6 +102,7 @@ test_that("calculate_acwr works with different load metrics", {
   # Test distance_km
   acwr_distance <- calculate_acwr(
     activities_data = mock_activities,
+    activity_type = "Run",
     load_metric = "distance_km"
   )
   expect_s3_class(acwr_distance, "data.frame")
@@ -108,6 +110,7 @@ test_that("calculate_acwr works with different load metrics", {
   # Test elevation
   acwr_elevation <- calculate_acwr(
     activities_data = mock_activities,
+    activity_type = "Run",
     load_metric = "elevation_gain_m"
   )
   expect_s3_class(acwr_elevation, "data.frame")
@@ -155,6 +158,6 @@ test_that("plot_acwr validates input", {
   bad_df <- data.frame(x = 1:10, y = 1:10)
   expect_error(
     plot_acwr(bad_df),
-    "date.*not found|missing"
+    "activity_type.*must be explicitly specified"  # Now checks for activity_type first
   )
 })

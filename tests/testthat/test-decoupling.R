@@ -106,10 +106,10 @@ test_that("plot_decoupling returns a ggplot object using Athlytics_sample_data",
   expect_true("decoupling" %in% names(p_decouple$data))
 })
 
-test_that("plot_decoupling throws error if stoken is missing and decoupling_df is NULL", {
+test_that("plot_decoupling throws error if data is missing and decoupling_df is NULL", {
   expect_error(
-    plot_decoupling(decouple_metric = "pace_hr"), # stoken is missing by default
-    regexp = "Either 'stoken' or 'decoupling_df' must be provided."
+    plot_decoupling(decouple_metric = "pace_hr"), # data is missing by default
+    regexp = "Either 'data' or 'decoupling_df' must be provided."
   )
 })
 
@@ -200,20 +200,7 @@ test_that("plot_decoupling handles add_trend_line argument correctly", {
 })
 
 test_that("plot_decoupling handles NULL/empty df from internal calculate_decoupling call", {
-  # This test checks what happens when decoupling_df is NULL and the internal call
-  # to the *real* calculate_decoupling fails (as observed when mocking fails).
-  dummy_stoken_for_plot <- structure(list(token = list(access_token = "plot_dummy_error")), class = "Token2.0")
-
-  # API mode is deprecated, so we expect the deprecation error
-  expect_error(
-    plot_decoupling(
-      stoken = dummy_stoken_for_plot,
-      activity_type = "Ride",
-      decouple_metric = "power_hr"
-      # decoupling_df is NULL by default
-    ),
-    regexp = "API mode is deprecated"
-  )
+  skip("API mode is deprecated; test no longer applicable as stoken parameter removed")
 })
 
 # --- Tests for API path of calculate_decoupling (kept separate, may fail/skip without real token/mocking) ---
@@ -221,17 +208,11 @@ test_that("plot_decoupling handles NULL/empty df from internal calculate_decoupl
 dummy_stoken <- structure(list(token = list(access_token = "dummy")), class = "Token2.0")
 
 test_that("calculate_decoupling (API path) throws error for deprecated API mode", {
-  expect_error(
-    calculate_decoupling(stoken = dummy_stoken, decouple_metric = "pace_hr"),
-    regexp = "API mode is deprecated"
-  )
+  skip("API mode is deprecated; stoken parameter removed")
 })
 
 test_that("calculate_decoupling (API path) rejects non-Token2.0 stoken", {
-  expect_error(
-    calculate_decoupling(stoken = 12345, decouple_metric = "power_hr"),
-    regexp = "API mode is deprecated"
-  )
+  skip("API mode is deprecated; stoken parameter removed")
 })
 
 # Mock for rStrava::get_activity_streams specific to decoupling tests
