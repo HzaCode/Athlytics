@@ -5,7 +5,7 @@
 \alias{athlytics_sample_decoupling}
 \title{Sample Aerobic Decoupling Data for Athlytics}
 \format{
-A tibble with X rows and 2 variables:
+A tibble with 365 rows and 2 variables:
 \describe{
 \item{date}{Date of the activity, as a Date object.}
 \item{decoupling}{Calculated decoupling percentage, as a numeric value.}

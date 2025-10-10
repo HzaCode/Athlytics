@@ -197,21 +197,27 @@ calculate_decoupling <- function(activities_data = NULL,
     }
     
     # Calculate decoupling for this activity
-    decoupling_value <- tryCatch({
+    decoupling_result <- tryCatch({
       calculate_single_decoupling(stream_data, decouple_metric, quality_control)
     }, error = function(e) {
       message(sprintf("  Error calculating decoupling: %s", e$message))
-      return(NA_real_)
+      return(list(value = NA_real_, status = "calculation_error"))
     })
     
-    if (is.na(decoupling_value)) {
-      return(NULL)
+    # Handle both old format (just numeric) and new format (list with status)
+    if (is.list(decoupling_result)) {
+      decoupling_value <- decoupling_result$value
+      status <- decoupling_result$status
+    } else {
+      decoupling_value <- decoupling_result
+      status <- if (is.na(decoupling_value)) "insufficient_data" else "ok"
     }
     
-    # Return result
+    # Return result with status
     data.frame(
       date = activity$date,
       decoupling = decoupling_value,
+      status = status,
       stringsAsFactors = FALSE
     )
   })
@@ -253,7 +259,7 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     dplyr::filter(!is.na(.data$time), !is.na(.data$heartrate))
   
   if (nrow(stream_clean) < 100) {
-    stop("Insufficient data points for decoupling calculation (need at least 100 points).")
+    return(list(value = NA_real_, status = "insufficient_data_points"))
   }
   
   # Calculate velocity if needed
@@ -280,14 +286,11 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   }
   
   if (nrow(stream_clean) < 100) {
-    stop("Insufficient valid data after filtering (need at least 100 points with positive values).")
+    return(list(value = NA_real_, status = "insufficient_valid_data"))
   }
   
   # Apply quality control and steady-state gating
   if (quality_control != "off") {
-    # For now, we use simplified quality checks since we don't have full flag_quality integration
-    # In a full implementation, we would call flag_quality() here
-    
     # Basic quality gates
     if (decouple_metric == "pace_hr") {
       # Check for reasonable velocity values
@@ -304,17 +307,60 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
       dplyr::filter(.data$heartrate > 50, .data$heartrate < 220)
     
     if (nrow(stream_clean) < 100) {
-      stop("Insufficient data after quality filtering (need at least 100 points).")
+      return(list(value = NA_real_, status = "insufficient_data_after_quality_filter"))
     }
   }
   
-  # Split into two halves
-  midpoint <- floor(nrow(stream_clean) / 2)
-  first_half <- stream_clean[1:midpoint, ]
-  second_half <- stream_clean[(midpoint + 1):nrow(stream_clean), ]
+  # Calculate HR coverage
+  hr_coverage <- sum(!is.na(stream_clean$heartrate) & stream_clean$heartrate > 0) / nrow(stream_clean)
+  if (hr_coverage < 0.9) {  # Default min_hr_coverage threshold
+    return(list(value = NA_real_, status = "insufficient_hr_data"))
+  }
   
-  # Calculate efficiency factor for each half
-  if (decouple_metric == "Pace_HR") {
+  # Find steady-state windows using rolling coefficient of variation
+  window_size <- min(300, nrow(stream_clean) %/% 4)  # 5-minute windows or 1/4 of data
+  if (window_size < 60) window_size <- 60  # Minimum 1-minute windows
+  
+  if (decouple_metric == "pace_hr") {
+    # Calculate rolling CV for velocity
+    stream_clean <- stream_clean %>%
+      dplyr::arrange(.data$time) %>%
+      dplyr::mutate(
+        velocity_rollmean = zoo::rollmean(.data$velocity, window_size, fill = NA, align = "center"),
+        velocity_rollsd = zoo::rollapply(.data$velocity, window_size, sd, fill = NA, align = "center"),
+        velocity_cv = .data$velocity_rollsd / .data$velocity_rollmean
+      )
+    
+    # Find steady-state periods (CV < 8% threshold)
+    steady_periods <- stream_clean %>%
+      dplyr::filter(!is.na(.data$velocity_cv), .data$velocity_cv < 0.08)
+    
+  } else {
+    # Calculate rolling CV for power
+    stream_clean <- stream_clean %>%
+      dplyr::arrange(.data$time) %>%
+      dplyr::mutate(
+        watts_rollmean = zoo::rollmean(.data$watts, window_size, fill = NA, align = "center"),
+        watts_rollsd = zoo::rollapply(.data$watts, window_size, sd, fill = NA, align = "center"),
+        watts_cv = .data$watts_rollsd / .data$watts_rollmean
+      )
+    
+    # Find steady-state periods (CV < 8% threshold)
+    steady_periods <- stream_clean %>%
+      dplyr::filter(!is.na(.data$watts_cv), .data$watts_cv < 0.08)
+  }
+  
+  if (nrow(steady_periods) < 100) {
+    return(list(value = NA_real_, status = "non_steady"))
+  }
+  
+  # Split steady-state periods into two halves
+  midpoint <- floor(nrow(steady_periods) / 2)
+  first_half <- steady_periods[1:midpoint, ]
+  second_half <- steady_periods[(midpoint + 1):nrow(steady_periods), ]
+  
+  # Calculate efficiency factor for each half from steady-state data only
+  if (decouple_metric == "pace_hr") {
     ef_first <- median(first_half$velocity / first_half$heartrate, na.rm = TRUE)
     ef_second <- median(second_half$velocity / second_half$heartrate, na.rm = TRUE)
   } else {
@@ -325,9 +371,11 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   # Calculate decoupling percentage
   if (ef_first > 0) {
     decoupling_pct <- ((ef_first - ef_second) / ef_first) * 100
+    status <- "ok"
   } else {
     decoupling_pct <- NA_real_
+    status <- "calculation_failed"
   }
   
-  return(decoupling_pct)
+  return(list(value = decoupling_pct, status = status))
 }

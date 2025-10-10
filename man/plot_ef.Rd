@@ -7,7 +7,7 @@
 plot_ef(
   stoken,
   activity_type = c("Run", "Ride"),
-  ef_metric = c("Pace_HR", "Power_HR"),
+  ef_metric = c("pace_hr", "power_hr"),
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 20,
@@ -24,7 +24,7 @@ For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This p
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
-\item{ef_metric}{Metric to calculate: "Pace_HR" (Speed/HR) or "Power_HR" (Power/HR).}
+\item{ef_metric}{Metric to calculate: "pace_hr" (Speed/HR) or "power_hr" (Power/HR).}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.}
 
@@ -73,18 +73,18 @@ print(p)
 # Plot Pace/HR EF trend for Runs (last 6 months)
 # plot_ef(stoken = stoken, # Replace stoken with a valid token object
 #         activity_type = "Run",
-#         ef_metric = "Pace_HR",
+#         ef_metric = "pace_hr",
 #         start_date = Sys.Date() - months(6))
 
 # Plot Power/HR EF trend for Rides
 # plot_ef(stoken = stoken, # Replace stoken with a valid token object
 #         activity_type = "Ride",
-#         ef_metric = "Power_HR")
+#         ef_metric = "power_hr")
 
 # Plot Pace/HR EF trend for multiple Run types (no trend line)
 # plot_ef(stoken = stoken, # Replace stoken with a valid token object
 #         activity_type = c("Run", "VirtualRun"),
-#         ef_metric = "Pace_HR",
+#         ef_metric = "pace_hr",
 #         add_trend_line = FALSE)
 }
 }

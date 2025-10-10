@@ -102,10 +102,11 @@ library(Athlytics)
 # 1) Load Strava export ZIP (no manual extraction needed)
 activities <- load_local_activities("athlete1_export.zip")
 
-# 2) Training Load (ACWR)
+# 2) Training Load (ACWR) — run-only to avoid mixing sports
 acwr_data <- calculate_acwr(
   activities_data = activities,
-  load_metric = "duration_mins"   # Consistent with documentation
+  activity_type   = "Run",
+  load_metric     = "duration_mins"
 )
 # Scientific neutrality: risk zones off by default (thresholds are debated)
 plot_acwr(acwr_data, highlight_zones = FALSE)

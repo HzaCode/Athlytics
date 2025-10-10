@@ -19,7 +19,7 @@ This major release transitions from Strava API to **local data export processing
 * **Multi-Athlete Cohort Analysis**: Improved support for research and team analytics
   - Better documentation for `cohort_reference()` and multi-athlete workflows
   - Examples updated to show intervention/control group comparisons
-  - Proper use of `group_by()` and `do()` for batch processing
+  - Proper use of `group_modify()` for batch processing
 
 * **README & Package Updates**
   - Updated all code examples to reflect local data processing workflow

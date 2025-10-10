@@ -47,7 +47,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_ef</span><span class="op">(</span></span>
 <span>  <span class="va">stoken</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pace_HR"</span>, <span class="st">"Power_HR"</span><span class="op">)</span>,</span>
+<span>  ef_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">20</span>,</span>
@@ -73,7 +73,7 @@ For legacy API usage: A Strava token from <code><a href="https://rdrr.io/pkg/rSt
 
 
 <dt id="arg-ef-metric">ef_metric<a class="anchor" aria-label="anchor" href="#arg-ef-metric"></a></dt>
-<dd><p>Metric to calculate: "Pace_HR" (Speed/HR) or "Power_HR" (Power/HR).</p></dd>
+<dd><p>Metric to calculate: "pace_hr" (Speed/HR) or "power_hr" (Power/HR).</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -142,18 +142,18 @@ Legacy API mode is maintained for backward compatibility only.</p>
 <span class="r-in"><span><span class="co"># Plot Pace/HR EF trend for Runs (last 6 months)</span></span></span>
 <span class="r-in"><span><span class="co"># plot_ef(stoken = stoken, # Replace stoken with a valid token object</span></span></span>
 <span class="r-in"><span><span class="co">#         activity_type = "Run",</span></span></span>
-<span class="r-in"><span><span class="co">#         ef_metric = "Pace_HR",</span></span></span>
+<span class="r-in"><span><span class="co">#         ef_metric = "pace_hr",</span></span></span>
 <span class="r-in"><span><span class="co">#         start_date = Sys.Date() - months(6))</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Power/HR EF trend for Rides</span></span></span>
 <span class="r-in"><span><span class="co"># plot_ef(stoken = stoken, # Replace stoken with a valid token object</span></span></span>
 <span class="r-in"><span><span class="co">#         activity_type = "Ride",</span></span></span>
-<span class="r-in"><span><span class="co">#         ef_metric = "Power_HR")</span></span></span>
+<span class="r-in"><span><span class="co">#         ef_metric = "power_hr")</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Pace/HR EF trend for multiple Run types (no trend line)</span></span></span>
 <span class="r-in"><span><span class="co"># plot_ef(stoken = stoken, # Replace stoken with a valid token object</span></span></span>
 <span class="r-in"><span><span class="co">#         activity_type = c("Run", "VirtualRun"),</span></span></span>
-<span class="r-in"><span><span class="co">#         ef_metric = "Pace_HR",</span></span></span>
+<span class="r-in"><span><span class="co">#         ef_metric = "pace_hr",</span></span></span>
 <span class="r-in"><span><span class="co">#         add_trend_line = FALSE)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

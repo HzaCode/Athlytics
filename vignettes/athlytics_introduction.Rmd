@@ -283,7 +283,7 @@ Efficiency Factor measures how much output (speed/power) you generate per unit o
 ef_runs <- calculate_ef(
   activities_data = runs,
   activity_type = "Run",
-  ef_metric = "Pace_HR"  # Pace divided by HR
+  ef_metric = "pace_hr"  # Pace divided by HR
 )
 
 # For cycling (Power/HR)
@@ -291,7 +291,7 @@ rides <- activities %>% filter(sport == "Ride")
 ef_cycling <- calculate_ef(
   activities_data = rides,
   activity_type = "Ride",
-  ef_metric = "Power_HR"  # Power divided by HR
+  ef_metric = "power_hr"  # Power divided by HR
 )
 
 # View results
@@ -379,7 +379,7 @@ $$
 decoupling_runs <- calculate_decoupling(
   activities_data = runs,
   activity_type = "Run",
-  decouple_metric = "Pace_HR",
+  decouple_metric = "pace_hr",
   min_duration_mins = 60  # Only analyze runs ≥ 60 minutes
 )
 
@@ -387,7 +387,7 @@ decoupling_runs <- calculate_decoupling(
 decoupling_rides <- calculate_decoupling(
   activities_data = rides,
   activity_type = "Ride",
-  decouple_metric = "Power_HR",
+  decouple_metric = "power_hr",
   min_duration_mins = 90  # Longer threshold for cycling
 )
 
@@ -409,7 +409,7 @@ head(decoupling_runs)
 plot_decoupling(decoupling_runs)
 
 # With metric specification
-plot_decoupling(decoupling_runs, decouple_metric = "Pace_HR")
+plot_decoupling(decoupling_runs, decouple_metric = "pace_hr")
 ```
 
 ### Practical Applications
@@ -556,7 +556,7 @@ print(p1)
 # ---- 3. Aerobic Fitness Tracking ----
 ef_data <- calculate_ef(
   activities_data = runs,
-  ef_metric = "Pace_HR"
+  ef_metric = "pace_hr"
 )
 
 # Calculate fitness trend
@@ -648,7 +648,7 @@ Some activities may lack required metrics (HR, power, etc.):
 ```{r eval=FALSE}
 # Filter before calculating
 runs_with_hr <- runs %>% filter(!is.na(avg_hr))
-ef_data <- calculate_ef(runs_with_hr, ef_metric = "Pace_HR")
+ef_data <- calculate_ef(runs_with_hr, ef_metric = "pace_hr")
 ```
 
 ### Plots look strange or empty

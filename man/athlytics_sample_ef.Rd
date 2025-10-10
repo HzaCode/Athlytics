@@ -5,7 +5,7 @@
 \alias{athlytics_sample_ef}
 \title{Sample Efficiency Factor (EF) Data for Athlytics}
 \format{
-A data.frame with X rows and 3 variables:
+A data.frame with 50 rows and 3 variables:
 \describe{
 \item{date}{Date of the activity, as a Date object.}
 \item{activity_type}{Type of activity (e.g., "Run", "Ride"), as a character string.}

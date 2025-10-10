@@ -5,7 +5,7 @@
 \alias{athlytics_sample_pbs}
 \title{Sample Personal Bests (PBs) Data for Athlytics}
 \format{
-A tibble with X rows and 10 variables:
+A tibble with 100 rows and 10 variables:
 \describe{
 \item{activity_id}{ID of the activity where the effort occurred, as a character string.}
 \item{activity_date}{Date and time of the activity, as a POSIXct object.}

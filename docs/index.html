@@ -165,10 +165,11 @@
 <span><span class="co"># 1) Load Strava export ZIP (no manual extraction needed)</span></span>
 <span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete1_export.zip"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 2) Training Load (ACWR)</span></span>
+<span><span class="co"># 2) Training Load (ACWR) — run-only to avoid mixing sports</span></span>
 <span><span class="va">acwr_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span>
-<span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>   <span class="co"># Consistent with documentation</span></span>
+<span>  activity_type   <span class="op">=</span> <span class="st">"Run"</span>,</span>
+<span>  load_metric     <span class="op">=</span> <span class="st">"duration_mins"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co"># Scientific neutrality: risk zones off by default (thresholds are debated)</span></span>
 <span><span class="fu"><a href="reference/plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">acwr_data</span>, highlight_zones <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>

@@ -7,7 +7,7 @@
 plot_decoupling(
   stoken,
   activity_type = c("Run", "Ride"),
-  decouple_metric = c("Pace_HR", "Power_HR"),
+  decouple_metric = c("pace_hr", "power_hr"),
   start_date = NULL,
   end_date = NULL,
   min_duration_mins = 45,
@@ -22,7 +22,7 @@ For legacy API usage: A Strava token from \code{rStrava::strava_oauth()}. This p
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
-\item{decouple_metric}{Metric basis: "Pace_HR" or "Power_HR".}
+\item{decouple_metric}{Metric basis: "pace_hr" or "power_hr".}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.}
 
@@ -84,7 +84,7 @@ tryCatch({
         calculate_decoupling(
             stoken = stoken_example,
             activity_type = "Run",
-            decouple_metric = "Pace_HR",
+            decouple_metric = "pace_hr",
             date_range = c(format(Sys.Date() - lubridate::months(6), "\%Y-\%m-\%d"), 
                            format(Sys.Date(), "\%Y-\%m-\%d")),
             max_activities = 5 # Keep low for example
@@ -105,7 +105,7 @@ tryCatch({
     # decoupling_rides <- calculate_decoupling(
     #   stoken = stoken_example,
     #   activity_type = "Ride",
-    #   decouple_metric = "Power_HR",
+    #   decouple_metric = "power_hr",
     #   max_activities = 5
     # )
     # if (nrow(decoupling_rides) > 0 && "decoupling" \%in\% names(decoupling_rides)) {
@@ -119,7 +119,7 @@ tryCatch({
     # decoupling_multi_run <- calculate_decoupling(
     #   stoken = stoken_example,
     #   activity_type = c("Run", "VirtualRun"),
-    #   decouple_metric = "Pace_HR",
+    #   decouple_metric = "pace_hr",
     #   max_activities = 5
     # )
     # if (nrow(decoupling_multi_run) > 0 && "decoupling" \%in\% names(decoupling_multi_run)) {

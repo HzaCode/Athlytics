@@ -5,7 +5,7 @@
 #' A dataset containing pre-calculated Acute:Chronic Workload Ratio (ACWR)
 #' and related metrics, derived from simulated Strava data. Used in examples and tests.
 #'
-#' @format A tibble with X rows and 5 variables:
+#' @format A tibble with 365 rows and 5 variables:
 #' \describe{
 #'   \item{date}{Date of the metrics, as a Date object.}
 #'   \item{atl}{Acute Training Load, as a numeric value.}
@@ -21,7 +21,7 @@
 #' A dataset containing pre-calculated aerobic decoupling percentages,
 #' derived from simulated Strava data. Used in examples and tests.
 #'
-#' @format A tibble with X rows and 2 variables:
+#' @format A tibble with 365 rows and 2 variables:
 #' \describe{
 #'   \item{date}{Date of the activity, as a Date object.}
 #'   \item{decoupling}{Calculated decoupling percentage, as a numeric value.}
@@ -34,7 +34,7 @@
 #' A dataset containing pre-calculated Efficiency Factor (EF) values,
 #' derived from simulated Strava data. Used in examples and tests.
 #'
-#' @format A data.frame with X rows and 3 variables:
+#' @format A data.frame with 50 rows and 3 variables:
 #' \describe{
 #'   \item{date}{Date of the activity, as a Date object.}
 #'   \item{activity_type}{Type of activity (e.g., "Run", "Ride"), as a character string.}
@@ -48,7 +48,7 @@
 #' This dataset contains daily training load, ATL, CTL, and ACWR, derived from
 #' simulated Strava data. Used in examples and tests, particularly for `plot_exposure`.
 #'
-#' @format A tibble with X rows and 5 variables:
+#' @format A tibble with 365 rows and 5 variables:
 #' \describe{
 #'   \item{date}{Date of the metrics, as a Date object.}
 #'   \item{daily_load}{Calculated daily training load, as a numeric value.}
@@ -64,7 +64,7 @@
 #' A dataset containing pre-calculated Personal Best (PB) times for various distances,
 #' derived from simulated Strava data. Used in examples and tests.
 #'
-#' @format A tibble with X rows and 10 variables:
+#' @format A tibble with 100 rows and 10 variables:
 #' \describe{
 #'   \item{activity_id}{ID of the activity where the effort occurred, as a character string.}
 #'   \item{activity_date}{Date and time of the activity, as a POSIXct object.}

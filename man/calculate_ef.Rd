@@ -14,7 +14,8 @@ calculate_ef(
   min_steady_minutes = 20,
   steady_cv_threshold = 0.08,
   min_hr_coverage = 0.9,
-  quality_control = c("off", "flag", "filter")
+  quality_control = c("off", "flag", "filter"),
+  export_dir = NULL
 )
 }
 \arguments{
@@ -57,6 +58,9 @@ Activities with lower HR coverage are rejected as insufficient data quality.}
 
 \item{quality_control}{Character. Quality control mode: "off" (no filtering), "flag" (mark issues),
 or "filter" (exclude flagged data). Default "filter" for scientific rigor.}
+
+\item{export_dir}{Optional. Path to Strava export directory containing activity files.
+When provided, enables stream data analysis for more accurate steady-state detection.}
 }
 \value{
 A tibble with the following columns:

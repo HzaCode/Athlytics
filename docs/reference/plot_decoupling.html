@@ -47,7 +47,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_decoupling</span><span class="op">(</span></span>
 <span>  <span class="va">stoken</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
-<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pace_HR"</span>, <span class="st">"Power_HR"</span><span class="op">)</span>,</span>
+<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">45</span>,</span>
@@ -71,7 +71,7 @@ For legacy API usage: A Strava token from <code><a href="https://rdrr.io/pkg/rSt
 
 
 <dt id="arg-decouple-metric">decouple_metric<a class="anchor" aria-label="anchor" href="#arg-decouple-metric"></a></dt>
-<dd><p>Metric basis: "Pace_HR" or "Power_HR".</p></dd>
+<dd><p>Metric basis: "pace_hr" or "power_hr".</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -149,7 +149,7 @@ Legacy API mode is maintained for backward compatibility only.</p>
 <span class="r-in"><span>        <span class="fu"><a href="calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>            stoken <span class="op">=</span> <span class="va">stoken_example</span>,</span></span>
 <span class="r-in"><span>            activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
-<span class="r-in"><span>            decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span></span>
+<span class="r-in"><span>            decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span>,</span></span>
 <span class="r-in"><span>            date_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu">months</span><span class="op">(</span><span class="fl">6</span><span class="op">)</span>, <span class="st">"%Y-%m-%d"</span><span class="op">)</span>, </span></span>
 <span class="r-in"><span>                           <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"%Y-%m-%d"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>            max_activities <span class="op">=</span> <span class="fl">5</span> <span class="co"># Keep low for example</span></span></span>
@@ -170,7 +170,7 @@ Legacy API mode is maintained for backward compatibility only.</p>
 <span class="r-in"><span>    <span class="co"># decoupling_rides &lt;- calculate_decoupling(</span></span></span>
 <span class="r-in"><span>    <span class="co">#   stoken = stoken_example,</span></span></span>
 <span class="r-in"><span>    <span class="co">#   activity_type = "Ride",</span></span></span>
-<span class="r-in"><span>    <span class="co">#   decouple_metric = "Power_HR",</span></span></span>
+<span class="r-in"><span>    <span class="co">#   decouple_metric = "power_hr",</span></span></span>
 <span class="r-in"><span>    <span class="co">#   max_activities = 5</span></span></span>
 <span class="r-in"><span>    <span class="co"># )</span></span></span>
 <span class="r-in"><span>    <span class="co"># if (nrow(decoupling_rides) &gt; 0 &amp;&amp; "decoupling" %in% names(decoupling_rides)) {</span></span></span>
@@ -184,7 +184,7 @@ Legacy API mode is maintained for backward compatibility only.</p>
 <span class="r-in"><span>    <span class="co"># decoupling_multi_run &lt;- calculate_decoupling(</span></span></span>
 <span class="r-in"><span>    <span class="co">#   stoken = stoken_example,</span></span></span>
 <span class="r-in"><span>    <span class="co">#   activity_type = c("Run", "VirtualRun"),</span></span></span>
-<span class="r-in"><span>    <span class="co">#   decouple_metric = "Pace_HR",</span></span></span>
+<span class="r-in"><span>    <span class="co">#   decouple_metric = "pace_hr",</span></span></span>
 <span class="r-in"><span>    <span class="co">#   max_activities = 5</span></span></span>
 <span class="r-in"><span>    <span class="co"># )</span></span></span>
 <span class="r-in"><span>    <span class="co"># if (nrow(decoupling_multi_run) &gt; 0 &amp;&amp; "decoupling" %in% names(decoupling_multi_run)) {</span></span></span>

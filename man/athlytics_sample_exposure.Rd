@@ -5,7 +5,7 @@
 \alias{athlytics_sample_exposure}
 \title{Sample Training Load Exposure Data for Athlytics}
 \format{
-A tibble with X rows and 5 variables:
+A tibble with 365 rows and 5 variables:
 \describe{
 \item{date}{Date of the metrics, as a Date object.}
 \item{daily_load}{Calculated daily training load, as a numeric value.}

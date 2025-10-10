@@ -5,7 +5,7 @@
 \alias{athlytics_sample_acwr}
 \title{Sample ACWR Data for Athlytics}
 \format{
-A tibble with X rows and 5 variables:
+A tibble with 365 rows and 5 variables:
 \describe{
 \item{date}{Date of the metrics, as a Date object.}
 \item{atl}{Acute Training Load, as a numeric value.}

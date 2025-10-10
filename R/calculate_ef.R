@@ -58,6 +58,8 @@
 #'   Activities with lower HR coverage are rejected as insufficient data quality.
 #' @param quality_control Character. Quality control mode: "off" (no filtering), "flag" (mark issues), 
 #'   or "filter" (exclude flagged data). Default "filter" for scientific rigor.
+#' @param export_dir Optional. Path to Strava export directory containing activity files.
+#'   When provided, enables stream data analysis for more accurate steady-state detection.
 #'
 #' @return A tibble with the following columns:
 #' \describe{
@@ -151,7 +153,8 @@ calculate_ef <- function(activities_data,
                          min_steady_minutes = 20,
                          steady_cv_threshold = 0.08,
                          min_hr_coverage = 0.9,
-                         quality_control = c("off", "flag", "filter")) {
+                         quality_control = c("off", "flag", "filter"),
+                         export_dir = NULL) {
 
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
@@ -226,20 +229,24 @@ calculate_ef <- function(activities_data,
     if (duration_sec < (min_duration_mins * 60)) return(NULL)
     if (is.na(avg_hr) || avg_hr <= 0) return(NULL)
     
-    # HR coverage check: if we have average HR, assume reasonable coverage
-    # For more precise coverage, would need to parse stream data files
-    # This is a simplified check - in practice, EF calculation should ideally
-    # parse stream data to get actual HR coverage percentage
-    hr_coverage <- ifelse(!is.na(avg_hr) && avg_hr > 0, 1.0, 0.0)
-    if (hr_coverage < min_hr_coverage) {
-      return(data.frame(
-        date = activity_date,
-        activity_type = act_type,
-        ef_value = NA_real_,
-        status = "insufficient_hr_data",
-        stringsAsFactors = FALSE
-      ))
+    # Try to parse stream data for proper steady-state analysis
+    stream_data <- NULL
+    if (!is.null(export_dir) && !is.na(activity$filename) && nchar(activity$filename) > 0) {
+      tryCatch({
+        stream_data <- parse_activity_file(activity$filename, export_dir)
+      }, error = function(e) {
+        message(sprintf("  Could not parse stream data for activity %s: %s", activity_date, e$message))
+      })
     }
+    
+    # If we have stream data, do proper steady-state analysis
+    if (!is.null(stream_data) && nrow(stream_data) > 0) {
+      return(calculate_ef_from_stream(stream_data, activity_date, act_type, ef_metric, 
+                                   min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control))
+    }
+    
+    # Fallback to activity-level averages (with warnings about limitations)
+    message(sprintf("  No stream data available for %s, using activity-level averages (less reliable)", activity_date))
     
     # Quality control integration
     if (quality_control != "off") {
@@ -292,7 +299,7 @@ calculate_ef <- function(activities_data,
         date = activity_date,
         activity_type = act_type,
         ef_value = ef_value,
-        status = "ok",
+        status = "ok_activity_level",
         stringsAsFactors = FALSE
       )
     } else {
@@ -300,7 +307,7 @@ calculate_ef <- function(activities_data,
         date = activity_date,
         activity_type = act_type,
         ef_value = NA_real_,
-        status = "insufficient_data",
+        status = "calculation_failed",
         stringsAsFactors = FALSE
       )
     }
@@ -318,4 +325,213 @@ calculate_ef <- function(activities_data,
 
   message("EF calculation complete.")
   return(ef_data)
+}
+
+#' Internal: Calculate EF from Stream Data with Steady-State Analysis
+#' @keywords internal
+#' @noRd
+calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_metric, 
+                                   min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control) {
+  
+  # Validate stream data structure
+  required_cols <- c("time", "heartrate")
+  if (ef_metric == "pace_hr") {
+    if (!"distance" %in% colnames(stream_data) && !"velocity_smooth" %in% colnames(stream_data)) {
+      return(data.frame(
+        date = activity_date,
+        activity_type = act_type,
+        ef_value = NA_real_,
+        status = "missing_velocity_data",
+        stringsAsFactors = FALSE
+      ))
+    }
+  } else {  # power_hr
+    if (!"watts" %in% colnames(stream_data)) {
+      return(data.frame(
+        date = activity_date,
+        activity_type = act_type,
+        ef_value = NA_real_,
+        status = "missing_power_data",
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+  
+  missing_cols <- setdiff(required_cols, colnames(stream_data))
+  if (length(missing_cols) > 0) {
+    return(data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = NA_real_,
+      status = "missing_hr_data",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Clean stream data
+  stream_clean <- stream_data %>%
+    dplyr::filter(!is.na(.data$time), !is.na(.data$heartrate))
+  
+  if (nrow(stream_clean) < 100) {
+    return(data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = NA_real_,
+      status = "insufficient_data_points",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Calculate HR coverage
+  total_time <- max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)
+  hr_data_time <- sum(!is.na(stream_clean$heartrate) & stream_clean$heartrate > 0)
+  hr_coverage <- hr_data_time / nrow(stream_clean)
+  
+  if (hr_coverage < min_hr_coverage) {
+    return(data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = NA_real_,
+      status = "insufficient_hr_data",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Calculate velocity if needed for pace_hr
+  if (ef_metric == "pace_hr") {
+    if ("velocity_smooth" %in% colnames(stream_clean)) {
+      stream_clean <- stream_clean %>%
+        dplyr::mutate(velocity = .data$velocity_smooth)
+    } else if ("distance" %in% colnames(stream_clean)) {
+      # Calculate velocity from distance
+      stream_clean <- stream_clean %>%
+        dplyr::arrange(.data$time) %>%
+        dplyr::mutate(
+          distance_diff = .data$distance - dplyr::lag(.data$distance, default = first(.data$distance)),
+          time_diff = .data$time - dplyr::lag(.data$time, default = first(.data$time)),
+          velocity = ifelse(.data$time_diff > 0, .data$distance_diff / .data$time_diff, 0)
+        )
+    }
+    
+    stream_clean <- stream_clean %>%
+      dplyr::filter(!is.na(.data$velocity), .data$velocity > 0, .data$heartrate > 0)
+  } else {
+    stream_clean <- stream_clean %>%
+      dplyr::filter(!is.na(.data$watts), .data$watts > 0, .data$heartrate > 0)
+  }
+  
+  if (nrow(stream_clean) < 100) {
+    return(data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = NA_real_,
+      status = "insufficient_valid_data",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Quality control
+  if (quality_control != "off") {
+    # Check for reasonable values
+    if (ef_metric == "pace_hr") {
+      stream_clean <- stream_clean %>%
+        dplyr::filter(.data$velocity > 0.5, .data$velocity < 15)  # 0.5-15 m/s reasonable range
+    } else {
+      stream_clean <- stream_clean %>%
+        dplyr::filter(.data$watts > 0, .data$watts < 2000)  # 0-2000W reasonable range
+    }
+    
+    stream_clean <- stream_clean %>%
+      dplyr::filter(.data$heartrate > 50, .data$heartrate < 220)
+    
+    if (nrow(stream_clean) < 100) {
+      return(data.frame(
+        date = activity_date,
+        activity_type = act_type,
+        ef_value = NA_real_,
+        status = "insufficient_data_after_quality_filter",
+        stringsAsFactors = FALSE
+      ))
+    }
+  }
+  
+  # Check minimum duration
+  duration_minutes <- (max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)) / 60
+  if (duration_minutes < min_steady_minutes) {
+    return(data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = NA_real_,
+      status = "too_short",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Find steady-state windows using rolling coefficient of variation
+  window_size <- min(300, nrow(stream_clean) %/% 4)  # 5-minute windows or 1/4 of data
+  if (window_size < 60) window_size <- 60  # Minimum 1-minute windows
+  
+  if (ef_metric == "pace_hr") {
+    # Calculate rolling CV for velocity
+    stream_clean <- stream_clean %>%
+      dplyr::arrange(.data$time) %>%
+      dplyr::mutate(
+        velocity_rollmean = zoo::rollmean(.data$velocity, window_size, fill = NA, align = "center"),
+        velocity_rollsd = zoo::rollapply(.data$velocity, window_size, sd, fill = NA, align = "center"),
+        velocity_cv = .data$velocity_rollsd / .data$velocity_rollmean
+      )
+    
+    # Find steady-state periods (CV < threshold)
+    steady_periods <- stream_clean %>%
+      dplyr::filter(!is.na(.data$velocity_cv), .data$velocity_cv < steady_cv_threshold)
+    
+  } else {
+    # Calculate rolling CV for power
+    stream_clean <- stream_clean %>%
+      dplyr::arrange(.data$time) %>%
+      dplyr::mutate(
+        watts_rollmean = zoo::rollmean(.data$watts, window_size, fill = NA, align = "center"),
+        watts_rollsd = zoo::rollapply(.data$watts, window_size, sd, fill = NA, align = "center"),
+        watts_cv = .data$watts_rollsd / .data$watts_rollmean
+      )
+    
+    # Find steady-state periods (CV < threshold)
+    steady_periods <- stream_clean %>%
+      dplyr::filter(!is.na(.data$watts_cv), .data$watts_cv < steady_cv_threshold)
+  }
+  
+  if (nrow(steady_periods) < 100) {
+    return(data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = NA_real_,
+      status = "non_steady",
+      stringsAsFactors = FALSE
+    ))
+  }
+  
+  # Calculate EF from steady-state periods
+  if (ef_metric == "pace_hr") {
+    ef_value <- median(steady_periods$velocity / steady_periods$heartrate, na.rm = TRUE)
+  } else {
+    ef_value <- median(steady_periods$watts / steady_periods$heartrate, na.rm = TRUE)
+  }
+  
+  if (!is.na(ef_value) && ef_value > 0) {
+    data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = ef_value,
+      status = "ok",
+      stringsAsFactors = FALSE
+    )
+  } else {
+    data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = NA_real_,
+      status = "calculation_failed",
+      stringsAsFactors = FALSE
+    )
+  }
 }
