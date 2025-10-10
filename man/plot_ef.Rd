@@ -13,7 +13,9 @@ plot_ef(
   min_duration_mins = 20,
   add_trend_line = TRUE,
   smoothing_method = "loess",
-  ef_df = NULL
+  ef_df = NULL,
+  group_var = NULL,
+  group_colors = NULL
 )
 }
 \arguments{

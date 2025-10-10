@@ -14,7 +14,9 @@ plot_decoupling(
   max_activities = 50,
   add_trend_line = TRUE,
   smoothing_method = "loess",
-  decoupling_df = NULL
+  decoupling_df = NULL,
+  group_var = NULL,
+  group_colors = NULL
 )
 }
 \arguments{

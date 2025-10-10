@@ -1,32 +1,105 @@
 # R/calculate_acwr.R
 
-#' Calculate ACWR Data
+#' Calculate Acute:Chronic Workload Ratio (ACWR)
 #'
-#' Calculates the Acute:Chronic Workload Ratio (ACWR) from Strava data.
+#' Computes the Acute:Chronic Workload Ratio (ACWR) from local Strava activity data
+#' using rolling average methods. ACWR is a key metric for monitoring training load
+#' and injury risk in athletes (Gabbett, 2016; Hulin et al., 2016).
 #'
-#' Calculates daily load, ATL, CTL, raw ACWR, and smoothed ACWR from Strava activities.
+#' @description
+#' This function calculates daily training load and derives acute (short-term) and
+#' chronic (long-term) load averages, then computes their ratio (ACWR). The ACWR
+#' helps identify periods of rapid training load increases that may elevate injury risk.
+#' 
+#' **Key Concepts:**
+#' \itemize{
+#'   \item **Acute Load (ATL)**: Rolling average of recent training (default: 7 days)
+#'   \item **Chronic Load (CTL)**: Rolling average of longer-term training (default: 28 days)
+#'   \item **ACWR**: Ratio of ATL to CTL (ATL / CTL)
+#'   \item **Safe Zone**: ACWR between 0.8-1.3 (optimal training stimulus)
+#'   \item **Danger Zone**: ACWR > 1.5 (increased injury risk)
+#' }
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
-#'   Must contain columns: date, distance, moving_time, elapsed_time, 
-#'   average_heartrate, average_watts, type, elevation_gain.
-#' @param activity_type Optional. Filter activities by type (e.g., "Run", "Ride").
-#'   Default `NULL` includes all types.
-#' @param load_metric Method for calculating daily load (e.g., "duration_mins",
-#'   "distance_km", "tss", "hrss"). Default "duration_mins".
-#' @param acute_period Days for the acute load window (e.g., 7).
-#' @param chronic_period Days for the chronic load window (e.g., 28). Must be greater than `acute_period`.
-#' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.
-#' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
-#' @param user_ftp Required if `load_metric = "tss"`. Your Functional Threshold Power.
-#' @param user_max_hr Required if `load_metric = "hrss"`. Your maximum heart rate.
-#' @param user_resting_hr Required if `load_metric = "hrss"`. Your resting heart rate.
-#' @param smoothing_period Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.
+#'   Must contain columns: `date`, `distance`, `moving_time`, `elapsed_time`, 
+#'   `average_heartrate`, `average_watts`, `type`, `elevation_gain`.
+#' @param activity_type Optional character vector. Filter activities by type 
+#'   (e.g., `"Run"`, `"Ride"`, `c("Run", "Ride")`). Default `NULL` includes all types.
+#' @param load_metric Character string specifying the load calculation method:
+#'   \itemize{
+#'     \item `"duration_mins"`: Training duration in minutes (default)
+#'     \item `"distance_km"`: Distance in kilometers
+#'     \item `"elapsed_time_mins"`: Total elapsed time including stops
+#'     \item `"tss"`: Training Stress Score (requires `user_ftp`)
+#'     \item `"hrss"`: Heart Rate Stress Score (requires `user_max_hr` and `user_resting_hr`)
+#'     \item `"elevation_gain_m"`: Elevation gain in meters
+#'   }
+#' @param acute_period Integer. Number of days for the acute load window (default: 7).
+#'   Represents recent training stimulus. Common values: 3-7 days.
+#' @param chronic_period Integer. Number of days for the chronic load window (default: 28).
+#'   Represents fitness/adaptation level. Must be greater than `acute_period`.
+#'   Common values: 21-42 days.
+#' @param start_date Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
+#'   Defaults to one year before `end_date`. Earlier data is used for calculating
+#'   initial chronic load.
+#' @param end_date Optional. Analysis end date (YYYY-MM-DD string, Date, or POSIXct).
+#'   Defaults to current date (Sys.Date()).
+#' @param user_ftp Numeric. Your Functional Threshold Power in watts. Required only
+#'   when `load_metric = "tss"`. Used to normalize power-based training stress.
+#' @param user_max_hr Numeric. Your maximum heart rate in bpm. Required only when
+#'   `load_metric = "hrss"`. Used for heart rate reserve calculations.
+#' @param user_resting_hr Numeric. Your resting heart rate in bpm. Required only when
+#'   `load_metric = "hrss"`. Used for heart rate reserve calculations.
+#' @param smoothing_period Integer. Number of days for smoothing the ACWR using a
+#'   rolling mean (default: 7). Reduces day-to-day noise for clearer trend visualization.
 #'
-#' @return A data frame with columns: `date`, `atl` (Acute Load), `ctl` (Chronic Load),
-#' `acwr` (raw ACWR), and `acwr_smooth` (smoothed ACWR) for the specified date range.
+#' @return A tibble with the following columns:
+#' \describe{
+#'   \item{date}{Date (Date class)}
+#'   \item{atl}{Acute Training Load - rolling average over `acute_period` days (numeric)}
+#'   \item{ctl}{Chronic Training Load - rolling average over `chronic_period` days (numeric)}
+#'   \item{acwr}{Raw ACWR value (atl / ctl) (numeric)}
+#'   \item{acwr_smooth}{Smoothed ACWR using `smoothing_period` rolling mean (numeric)}
+#' }
 #'
-#' @details Provides data for `plot_acwr`. Requires extra prior data for accurate
-#'   initial CTL (automatic buffering by chronic_period days).
+#' @details
+#' **Algorithm:**
+#' 1. Aggregate activities by date to compute daily load
+#' 2. Calculate acute load: rolling mean over `acute_period` days
+#' 3. Calculate chronic load: rolling mean over `chronic_period` days
+#' 4. Compute ACWR: ATL / CTL (set to NA when CTL < 0.01)
+#' 5. Apply smoothing: rolling mean over `smoothing_period` days
+#'
+#' **Data Requirements:**
+#' The function automatically fetches additional historical data (chronic_period days
+#' before start_date) to ensure accurate chronic load calculations at the analysis
+#' start point. Ensure your Strava export contains sufficient historical activities.
+#'
+#' **Interpretation Guidelines:**
+#' \itemize{
+#'   \item ACWR < 0.8: May indicate detraining or insufficient load
+#'   \item ACWR 0.8-1.3: "Sweet spot" - optimal training stimulus with lower injury risk
+#'   \item ACWR 1.3-1.5: Caution zone - monitor for fatigue
+#'   \item ACWR > 1.5: High risk zone - consider load management
+#' }
+#'
+#' **Multi-Athlete Studies:**
+#' For cohort analyses, add an `athlete_id` column before calculation and use
+#' `group_by(athlete_id)` with `do()`. See vignettes for examples.
+#'
+#' @references
+#' Gabbett, T. J. (2016). The training-injury prevention paradox: should athletes
+#' be training smarter and harder? *British Journal of Sports Medicine*, 50(5), 273-280.
+#'
+#' Hulin, B. T., et al. (2016). The acute:chronic workload ratio predicts injury:
+#' high chronic workload may decrease injury risk in elite rugby league players.
+#' *British Journal of Sports Medicine*, 50(4), 231-236.
+#'
+#' @seealso
+#' \code{\link{plot_acwr}} for visualization,
+#' \code{\link{calculate_acwr_ewma}} for EWMA-based ACWR,
+#' \code{\link{load_local_activities}} for data loading,
+#' \code{\link{cohort_reference}} for multi-athlete comparisons
 #'
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
 #' @importFrom lubridate as_date date days ymd ymd_hms as_datetime

@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_ef.R
 \name{calculate_ef}
 \alias{calculate_ef}
-\title{Calculate Efficiency Factor (EF) Data}
+\title{Calculate Efficiency Factor (EF)}
 \usage{
 calculate_ef(
   activities_data,
@@ -15,27 +15,100 @@ calculate_ef(
 }
 \arguments{
 \item{activities_data}{A data frame of activities from `load_local_activities()`.
-Must contain columns: date, type, moving_time, distance, average_heartrate, average_watts.}
+Must contain columns: `date`, `type`, `moving_time`, `distance`, 
+`average_heartrate`, and `average_watts` (for Power_HR metric).}
 
-\item{activity_type}{Character vector or single string specifying activity type(s).}
+\item{activity_type}{Character vector or single string specifying activity type(s)
+to analyze. Common values: `"Run"`, `"Ride"`, or `c("Run", "Ride")`.
+Default: `c("Run", "Ride")`.}
 
-\item{ef_metric}{Character string specifying the EF metric ("Pace_HR" or "Power_HR").}
+\item{ef_metric}{Character string specifying the efficiency metric:
+\itemize{
+  \item `"Pace_HR"`: Pace-based efficiency (for running). Formula: (distance / moving_time) / avg_HR
+  \item `"Power_HR"`: Power-based efficiency (for cycling). Formula: avg_watts / avg_HR
+}
+Default: `c("Pace_HR", "Power_HR")` (uses first matching metric for activity type).}
 
-\item{start_date}{Optional start date (YYYY-MM-DD string or Date object). Defaults to one year ago.}
+\item{start_date}{Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
+Defaults to one year before `end_date`.}
 
-\item{end_date}{Optional end date (YYYY-MM-DD string or Date object). Defaults to today.}
+\item{end_date}{Optional. Analysis end date (YYYY-MM-DD string, Date, or POSIXct).
+Defaults to current date (Sys.Date()).}
 
-\item{min_duration_mins}{Numeric, minimum activity duration in minutes. Default 20.}
+\item{min_duration_mins}{Numeric. Minimum activity duration in minutes to include
+in analysis (default: 20). Filters out very short activities that may not
+represent steady-state aerobic efforts.}
 }
 \value{
-A data frame with columns: date, activity_type, ef_value.
+A tibble with the following columns:
+\describe{
+  \item{date}{Activity date (Date class)}
+  \item{activity_type}{Activity type (character: "Run" or "Ride")}
+  \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.}
+}
 }
 \description{
-Calculates Efficiency Factor (Pace/HR or Power/HR) from Strava activities.
+Efficiency Factor measures how much work you perform per unit of cardiovascular
+effort. Higher EF indicates better aerobic fitness - you're able to maintain faster
+pace or higher power at the same heart rate. Tracking EF over time helps monitor
+aerobic base development and training effectiveness.
+
+**EF Metrics:**
+\itemize{
+  \item **Pace_HR** (for running): Speed (m/s) / Average HR
+    - Higher values = faster pace at same HR = better fitness
+  \item **Power_HR** (for cycling): Average Power (watts) / Average HR
+    - Higher values = more power at same HR = better fitness
+}
+
+**What Improves EF?**
+\itemize{
+  \item Aerobic base building (Zone 2 training)
+  \item Improved running/cycling economy
+  \item Enhanced cardiovascular efficiency
+  \item Increased mitochondrial density
+}
 }
 \details{
-Calculates EF (output/HR) for each activity from local export data.
-Provides the data used by `plot_ef`.
+Computes Efficiency Factor (EF) for endurance activities, quantifying the
+relationship between performance output (pace or power) and heart rate.
+EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 2019).
+
+
+**Algorithm:**
+1. Filter activities by type, date range, and minimum duration
+2. For each activity, calculate:
+   - Pace_HR: (distance / moving_time) / average_heartrate
+   - Power_HR: average_watts / average_heartrate
+3. Return one EF value per activity
+
+**Data Quality Considerations:**
+\itemize{
+  \item Requires heart rate data (activities without HR are excluded)
+  \item Power_HR requires power meter data (cycling with power)
+  \item Best for steady-state endurance efforts (tempo runs, long rides)
+  \item Interval workouts may give misleading EF values
+  \item Environmental factors (heat, altitude) can affect EF
+}
+
+**Interpretation:**
+\itemize{
+  \item **Upward trend**: Improving aerobic fitness
+  \item **Stable**: Maintenance phase
+  \item **Downward trend**: Possible overtraining, fatigue, or environmental stress
+  \item **Sudden drop**: Check for illness, equipment change, or data quality
+}
+
+**Typical EF Ranges (Pace_HR for running):**
+\itemize{
+  \item Beginner: 0.01 - 0.015 (m/s per bpm)
+  \item Intermediate: 0.015 - 0.020
+  \item Advanced: 0.020 - 0.025
+  \item Elite: > 0.025
+}
+
+Note: EF values are relative to individual baseline. Focus on personal trends
+rather than absolute comparisons with other athletes.
 }
 \examples{
 # Example using simulated data
@@ -58,4 +131,13 @@ ef_data_ride <- calculate_ef(activities_data = activities,
                               ef_metric = "Power_HR")
 print(tail(ef_data_ride))
 }
+}
+\references{
+Allen, H., Coggan, A. R., & McGregor, S. (2019). *Training and Racing with a
+Power Meter* (3rd ed.). VeloPress.
+}
+\seealso{
+\code{\link{plot_ef}} for visualization with trend lines,
+\code{\link{calculate_decoupling}} for within-activity efficiency analysis,
+\code{\link{load_local_activities}} for data loading
 }
