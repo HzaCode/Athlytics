@@ -3,14 +3,14 @@
 effort. Higher EF indicates better aerobic fitness - you're able to maintain faster
 pace or higher power at the same heart rate. Tracking EF over time helps monitor
 aerobic base development and training effectiveness.
-**EF Metrics:**
-**Pace_HR** (for running): Speed (m/s) / Average HR
-    - Higher values = faster pace at same HR = better fitness
-**Power_HR** (for cycling): Average Power (watts) / Average HR
-    - Higher values = more power at same HR = better fitness
+EF Metrics:
+pace_hr (for running): Speed (m/s) / Average HR
+- Higher values = faster pace at same HR = better fitness
+power_hr (for cycling): Average Power (watts) / Average HR
+- Higher values = more power at same HR = better fitness
 
 
-**What Improves EF?**
+What Improves EF?
 Aerobic base building (Zone 2 training)
 Improved running/cycling economy
 Enhanced cardiovascular efficiency
@@ -20,14 +20,14 @@ Increased mitochondrial density
 effort. Higher EF indicates better aerobic fitness - you're able to maintain faster
 pace or higher power at the same heart rate. Tracking EF over time helps monitor
 aerobic base development and training effectiveness.
-**EF Metrics:**
-**Pace_HR** (for running): Speed (m/s) / Average HR
-    - Higher values = faster pace at same HR = better fitness
-**Power_HR** (for cycling): Average Power (watts) / Average HR
-    - Higher values = more power at same HR = better fitness
+EF Metrics:
+pace_hr (for running): Speed (m/s) / Average HR
+- Higher values = faster pace at same HR = better fitness
+power_hr (for cycling): Average Power (watts) / Average HR
+- Higher values = more power at same HR = better fitness
 
 
-**What Improves EF?**
+What Improves EF?
 Aerobic base building (Zone 2 training)
 Improved running/cycling economy
 Enhanced cardiovascular efficiency
@@ -77,11 +77,11 @@ Increased mitochondrial density
 effort. Higher EF indicates better aerobic fitness - you're able to maintain faster
 pace or higher power at the same heart rate. Tracking EF over time helps monitor
 aerobic base development and training effectiveness.</p>
-<p>**EF Metrics:**</p><ul><li><p>**Pace_HR** (for running): Speed (m/s) / Average HR
-    - Higher values = faster pace at same HR = better fitness</p></li>
-<li><p>**Power_HR** (for cycling): Average Power (watts) / Average HR
-    - Higher values = more power at same HR = better fitness</p></li>
-</ul><p>**What Improves EF?**</p><ul><li><p>Aerobic base building (Zone 2 training)</p></li>
+<p><strong>EF Metrics:</strong></p><ul><li><p><strong>pace_hr</strong> (for running): Speed (m/s) / Average HR
+- Higher values = faster pace at same HR = better fitness</p></li>
+<li><p><strong>power_hr</strong> (for cycling): Average Power (watts) / Average HR
+- Higher values = more power at same HR = better fitness</p></li>
+</ul><p><strong>What Improves EF?</strong></p><ul><li><p>Aerobic base building (Zone 2 training)</p></li>
 <li><p>Improved running/cycling economy</p></li>
 <li><p>Enhanced cardiovascular efficiency</p></li>
 <li><p>Increased mitochondrial density</p></li>
@@ -92,10 +92,15 @@ aerobic base development and training effectiveness.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calculate_ef</span><span class="op">(</span></span>
 <span>  <span class="va">activities_data</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pace_HR"</span>, <span class="st">"Power_HR"</span><span class="op">)</span>,</span>
+<span>  ef_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  min_duration_mins <span class="op">=</span> <span class="fl">20</span></span>
+<span>  min_duration_mins <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  min_steady_minutes <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  steady_cv_threshold <span class="op">=</span> <span class="fl">0.08</span>,</span>
+<span>  min_hr_coverage <span class="op">=</span> <span class="fl">0.9</span>,</span>
+<span>  quality_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"off"</span>, <span class="st">"flag"</span>, <span class="st">"filter"</span><span class="op">)</span>,</span>
+<span>  export_dir <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -104,26 +109,28 @@ aerobic base development and training effectiveness.</p>
 
 
 <dl><dt id="arg-activities-data">activities_data<a class="anchor" aria-label="anchor" href="#arg-activities-data"></a></dt>
-<dd><p>A data frame of activities from `load_local_activities()`.
-Must contain columns: `date`, `type`, `moving_time`, `distance`,
-`average_heartrate`, and `average_watts` (for Power_HR metric).</p></dd>
+<dd><p>A data frame of activities from <code><a href="load_local_activities.html">load_local_activities()</a></code>.
+Must contain columns: <code>date</code>, <code>type</code>, <code>moving_time</code>, <code>distance</code>,
+<code>average_heartrate</code>, and <code>average_watts</code> (for power_hr metric).</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
 <dd><p>Character vector or single string specifying activity type(s)
-to analyze. Common values: `"Run"`, `"Ride"`, or `c("Run", "Ride")`.
-Default: `c("Run", "Ride")`.</p></dd>
+to analyze. Common values: <code>"Run"</code>, <code>"Ride"</code>, or <code>c("Run", "Ride")</code>.
+Default: <code>c("Run", "Ride")</code>.</p></dd>
 
 
 <dt id="arg-ef-metric">ef_metric<a class="anchor" aria-label="anchor" href="#arg-ef-metric"></a></dt>
-<dd><p>Character string specifying the efficiency metric:</p><ul><li><p>`"Pace_HR"`: Pace-based efficiency (for running). Formula: (distance / moving_time) / avg_HR</p></li>
-<li><p>`"Power_HR"`: Power-based efficiency (for cycling). Formula: avg_watts / avg_HR</p></li>
-</ul><p>Default: `c("Pace_HR", "Power_HR")` (uses first matching metric for activity type).</p></dd>
+<dd><p>Character string specifying the efficiency metric:</p><ul><li><p><code>"pace_hr"</code>: Pace-based efficiency (for running).
+Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)</p></li>
+<li><p><code>"power_hr"</code>: Power-based efficiency (for cycling).
+Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)</p></li>
+</ul><p>Default: <code>c("pace_hr", "power_hr")</code> (uses first matching metric for activity type).</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
 <dd><p>Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
-Defaults to one year before `end_date`.</p></dd>
+Defaults to one year before <code>end_date</code>.</p></dd>
 
 
 <dt id="arg-end-date">end_date<a class="anchor" aria-label="anchor" href="#arg-end-date"></a></dt>
@@ -136,17 +143,48 @@ Defaults to current date (Sys.Date()).</p></dd>
 in analysis (default: 20). Filters out very short activities that may not
 represent steady-state aerobic efforts.</p></dd>
 
+
+<dt id="arg-min-steady-minutes">min_steady_minutes<a class="anchor" aria-label="anchor" href="#arg-min-steady-minutes"></a></dt>
+<dd><p>Numeric. Minimum duration (minutes) for steady-state segment (default: 20).
+Activities shorter than this are automatically rejected for EF calculation.</p></dd>
+
+
+<dt id="arg-steady-cv-threshold">steady_cv_threshold<a class="anchor" aria-label="anchor" href="#arg-steady-cv-threshold"></a></dt>
+<dd><p>Numeric. Coefficient of variation threshold for steady-state (default: 0.08 = 8%).
+Activities with higher variability are rejected as non-steady-state.</p></dd>
+
+
+<dt id="arg-min-hr-coverage">min_hr_coverage<a class="anchor" aria-label="anchor" href="#arg-min-hr-coverage"></a></dt>
+<dd><p>Numeric. Minimum HR data coverage threshold (default: 0.9 = 90%).
+Activities with lower HR coverage are rejected as insufficient data quality.</p></dd>
+
+
+<dt id="arg-quality-control">quality_control<a class="anchor" aria-label="anchor" href="#arg-quality-control"></a></dt>
+<dd><p>Character. Quality control mode: "off" (no filtering), "flag" (mark issues),
+or "filter" (exclude flagged data). Default "filter" for scientific rigor.</p></dd>
+
+
+<dt id="arg-export-dir">export_dir<a class="anchor" aria-label="anchor" href="#arg-export-dir"></a></dt>
+<dd><p>Optional. Path to Strava export directory containing activity files.
+When provided, enables stream data analysis for more accurate steady-state detection.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with the following columns:</p><dl><dt>date</dt>
 <dd><p>Activity date (Date class)</p></dd>
 
-  <dt>activity_type</dt>
+<dt>activity_type</dt>
 <dd><p>Activity type (character: "Run" or "Ride")</p></dd>
 
-  <dt>ef_value</dt>
-<dd><p>Efficiency Factor value (numeric). Higher = better fitness.</p></dd>
+<dt>ef_value</dt>
+<dd><p>Efficiency Factor value (numeric). Higher = better fitness.
+Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.</p></dd>
+
+<dt>status</dt>
+<dd><p>Character. "ok" for successful calculation, "non_steady" if steady-state
+criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
+"insufficient_hr_data" if HR coverage below threshold.</p></dd>
 
 
 </dl></div>
@@ -155,23 +193,21 @@ represent steady-state aerobic efforts.</p></dd>
     <p>Computes Efficiency Factor (EF) for endurance activities, quantifying the
 relationship between performance output (pace or power) and heart rate.
 EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 2019).</p>
-
-<p>**Algorithm:**
-1. Filter activities by type, date range, and minimum duration
-2. For each activity, calculate:
-   - Pace_HR: (distance / moving_time) / average_heartrate
-   - Power_HR: average_watts / average_heartrate
-3. Return one EF value per activity</p>
-<p>**Data Quality Considerations:**</p><ul><li><p>Requires heart rate data (activities without HR are excluded)</p></li>
-<li><p>Power_HR requires power meter data (cycling with power)</p></li>
+<p><strong>Algorithm:</strong></p><ol><li><p>Filter activities by type, date range, and minimum duration</p></li>
+<li><p>For each activity, calculate:</p><ul><li><p>pace_hr: (distance / moving_time) / average_heartrate</p></li>
+<li><p>power_hr: average_watts / average_heartrate</p></li>
+</ul></li>
+<li><p>Return one EF value per activity</p></li>
+</ol><p><strong>Data Quality Considerations:</strong></p><ul><li><p>Requires heart rate data (activities without HR are excluded)</p></li>
+<li><p>power_hr requires power meter data (cycling with power)</p></li>
 <li><p>Best for steady-state endurance efforts (tempo runs, long rides)</p></li>
 <li><p>Interval workouts may give misleading EF values</p></li>
 <li><p>Environmental factors (heat, altitude) can affect EF</p></li>
-</ul><p>**Interpretation:**</p><ul><li><p>**Upward trend**: Improving aerobic fitness</p></li>
-<li><p>**Stable**: Maintenance phase</p></li>
-<li><p>**Downward trend**: Possible overtraining, fatigue, or environmental stress</p></li>
-<li><p>**Sudden drop**: Check for illness, equipment change, or data quality</p></li>
-</ul><p>**Typical EF Ranges (Pace_HR for running):**</p><ul><li><p>Beginner: 0.01 - 0.015 (m/s per bpm)</p></li>
+</ul><p><strong>Interpretation:</strong></p><ul><li><p><strong>Upward trend</strong>: Improving aerobic fitness</p></li>
+<li><p><strong>Stable</strong>: Maintenance phase</p></li>
+<li><p><strong>Downward trend</strong>: Possible overtraining, fatigue, or environmental stress</p></li>
+<li><p><strong>Sudden drop</strong>: Check for illness, equipment change, or data quality</p></li>
+</ul><p><strong>Typical EF Ranges (pace_hr for running):</strong></p><ul><li><p>Beginner: 0.01 - 0.015 (m/s per bpm)</p></li>
 <li><p>Intermediate: 0.015 - 0.020</p></li>
 <li><p>Advanced: 0.020 - 0.025</p></li>
 <li><p>Elite: &gt; 0.025</p></li>
@@ -180,8 +216,8 @@ rather than absolute comparisons with other athletes.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Allen, H., Coggan, A. R., &amp; McGregor, S. (2019). *Training and Racing with a
-Power Meter* (3rd ed.). VeloPress.</p>
+    <p>Allen, H., Coggan, A. R., &amp; McGregor, S. (2019). <em>Training and Racing with a
+Power Meter</em> (3rd ed.). VeloPress.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -193,18 +229,15 @@ Power Meter* (3rd ed.). VeloPress.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using simulated data</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">athlytics_sample_data</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘athlytics_sample_data’ not found</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">athlytics_sample_ef</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">athlytics_sample_ef</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   date       activity_type ef_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2023-01-02 Ride              1.70</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2023-01-11 Run               2.05</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2023-01-14 Run               1.58</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2023-01-17 Ride              1.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-01-22 Run               1.77</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-01-27 Run               1.58</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         date activity_type ef_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2023-10-28          Ride 0.024177</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2023-09-25          Ride 0.033798</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2023-10-25          Ride 0.033060</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2023-06-03          Ride 0.029016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 2023-04-22           Run 0.031326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 2023-06-14          Ride 0.027555</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
@@ -213,13 +246,13 @@ Power Meter* (3rd ed.). VeloPress.</p>
 <span class="r-in"><span><span class="co"># Calculate Pace/HR efficiency factor for Runs</span></span></span>
 <span class="r-in"><span><span class="va">ef_data_run</span> <span class="op">&lt;-</span> <span class="fu">calculate_ef</span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, </span></span>
 <span class="r-in"><span>                             activity_type <span class="op">=</span> <span class="st">"Run"</span>, </span></span>
-<span class="r-in"><span>                             ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                             ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">ef_data_run</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate Power/HR efficiency factor for Rides</span></span></span>
 <span class="r-in"><span><span class="va">ef_data_ride</span> <span class="op">&lt;-</span> <span class="fu">calculate_ef</span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
 <span class="r-in"><span>                              activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
-<span class="r-in"><span>                              ef_metric <span class="op">=</span> <span class="st">"Power_HR"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                              ef_metric <span class="op">=</span> <span class="st">"power_hr"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">ef_data_ride</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

@@ -45,10 +45,13 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_pbs</span><span class="op">(</span></span>
-<span>  <span class="va">pbs_df</span>,</span>
+<span>  <span class="va">data</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
-<span>  distance_meters <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  add_trend_line <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="va">distance_meters</span>,</span>
+<span>  max_activities <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  date_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  add_trend_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  pbs_df <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -56,22 +59,35 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-pbs-df">pbs_df<a class="anchor" aria-label="anchor" href="#arg-pbs-df"></a></dt>
-<dd><p>A data frame from `calculate_pbs` containing PB data.
-Must contain columns: 'activity_date', 'time_seconds', 'distance_label', 'is_pb'.</p></dd>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
+<dd><p><strong>Recommended: Pass pre-calculated data via <code>pbs_df</code> (local export preferred).</strong>
+A data frame from <code><a href="calculate_pbs.html">calculate_pbs()</a></code> or activities data from <code><a href="load_local_activities.html">load_local_activities()</a></code>.</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
-<dd><p>Type(s) of activities to display (e.g., "Run"). Default "Run".</p></dd>
+<dd><p>Type(s) of activities to search (e.g., "Run"). Default "Run".</p></dd>
 
 
 <dt id="arg-distance-meters">distance_meters<a class="anchor" aria-label="anchor" href="#arg-distance-meters"></a></dt>
-<dd><p>Optional. Numeric vector of distances (meters) to filter.
-If NULL, all distances in pbs_df are plotted.</p></dd>
+<dd><p>Numeric vector of distances (meters) to plot PBs for (e.g., <code>c(1000, 5000)</code>).
+Relies on Strava's <code>best_efforts</code> data.</p></dd>
+
+
+<dt id="arg-max-activities">max_activities<a class="anchor" aria-label="anchor" href="#arg-max-activities"></a></dt>
+<dd><p>Max number of recent activities to check. Default 500. Reduce for speed.</p></dd>
+
+
+<dt id="arg-date-range">date_range<a class="anchor" aria-label="anchor" href="#arg-date-range"></a></dt>
+<dd><p>Optional. Filter activities by date <code>c("YYYY-MM-DD", "YYYY-MM-DD")</code>.</p></dd>
 
 
 <dt id="arg-add-trend-line">add_trend_line<a class="anchor" aria-label="anchor" href="#arg-add-trend-line"></a></dt>
 <dd><p>Logical. Whether to add a trend line to the plot. Default TRUE.</p></dd>
+
+
+<dt id="arg-pbs-df">pbs_df<a class="anchor" aria-label="anchor" href="#arg-pbs-df"></a></dt>
+<dd><p><strong>Recommended.</strong> A pre-calculated data frame from <code><a href="calculate_pbs.html">calculate_pbs()</a></code>.
+When provided, analysis uses local data only (no API calls).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -80,31 +96,87 @@ If NULL, all distances in pbs_df are plotted.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots the trend of best efforts for specified distances, highlighting new PBs
-using pre-calculated data from `calculate_pbs`.</p>
-<p>Visualizes data from `calculate_pbs`. Points show best efforts;
-  solid points mark new PBs. Y-axis is MM:SS.
-  Users must first call `calculate_pbs` to generate the required data.</p>
+    <p>Plots the trend of best efforts for specified distances, highlighting new PBs.
+<strong>Recommended workflow: Use local data via <code>pbs_df</code>.</strong></p>
+<p>Visualizes data from <code>calculate_pbs</code>. Points show best efforts;
+solid points mark new PBs. Y-axis is MM:SS.
+<strong>Best practice: Use <code><a href="load_local_activities.html">load_local_activities()</a></code> + <code><a href="calculate_pbs.html">calculate_pbs()</a></code> + this function.</strong>
+Legacy API mode is maintained for backward compatibility only.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># First calculate PBs using calculate_pbs function</span></span></span>
-<span class="r-in"><span><span class="co"># pbs_data &lt;- calculate_pbs(</span></span></span>
-<span class="r-in"><span><span class="co">#   activities_data = your_activities,</span></span></span>
-<span class="r-in"><span><span class="co">#   activity_type = "Run",</span></span></span>
-<span class="r-in"><span><span class="co">#   distances_m = c(1000, 5000, 10000)</span></span></span>
-<span class="r-in"><span><span class="co"># )</span></span></span>
-<span class="r-in"><span><span class="co"># </span></span></span>
-<span class="r-in"><span><span class="co"># Then plot the PBs</span></span></span>
-<span class="r-in"><span><span class="co"># plot_pbs(pbs_data)</span></span></span>
-<span class="r-in"><span><span class="co"># </span></span></span>
-<span class="r-in"><span><span class="co"># Plot only specific distances</span></span></span>
-<span class="r-in"><span><span class="co"># plot_pbs(pbs_data, distance_meters = c(5000, 10000))</span></span></span>
-<span class="r-in"><span><span class="co"># </span></span></span>
-<span class="r-in"><span><span class="co"># Plot without trend line</span></span></span>
-<span class="r-in"><span><span class="co"># plot_pbs(pbs_data, add_trend_line = FALSE)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using simulated data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Athlytics_sample_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># athlytics_sample_pbs should contain the PBs to be plotted</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">athlytics_sample_pbs</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">athlytics_sample_pbs</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">sample_pbs_for_plot</span> <span class="op">&lt;-</span> <span class="va">athlytics_sample_pbs</span></span></span>
+<span class="r-in"><span>  </span></span>
+<span class="r-in"><span>  <span class="co"># Ensure the date column is named 'activity_date' and is of Date type for plot_pbs</span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="st">"date"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="st">"activity_date"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span> <span class="op">==</span> <span class="st">"date"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"activity_date"</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="st">"activity_date"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">sample_pbs_for_plot</span><span class="op">$</span><span class="va">activity_date</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">$</span><span class="va">activity_date</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Relevant date column not found in sample PBs for example."</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span>  </span></span>
+<span class="r-in"><span>  <span class="co"># plot_pbs requires distance_meters. Extract from sample data.</span></span></span>
+<span class="r-in"><span>  <span class="va">req_dist_meters</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="st">"distance"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">req_dist_meters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">$</span><span class="va">distance</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="st">"distance_target_m"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">req_dist_meters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">$</span><span class="va">distance_target_m</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span>  </span></span>
+<span class="r-in"><span>  <span class="va">can_plot</span> <span class="op">&lt;-</span> <span class="st">"activity_date"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sample_pbs_for_plot</span><span class="op">)</span> <span class="op">&amp;&amp;</span> </span></span>
+<span class="r-in"><span>              <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">req_dist_meters</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">req_dist_meters</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="va">can_plot</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_pbs</span><span class="op">(</span>pbs_df <span class="op">=</span> <span class="va">sample_pbs_for_plot</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span>, </span></span>
+<span class="r-in"><span>                  distance_meters <span class="op">=</span> <span class="va">req_dist_meters</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Sample PBs data lacks required date or distance info for example."</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"athlytics_sample_pbs is empty or not found, skipping example plot."</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating plot...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `geom_smooth()` using formula = 'y ~ x'</span>
+<span class="r-plt img"><img src="plot_pbs-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
+<span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Plot PBS trend for Runs (last 6 months)</span></span></span>
+<span class="r-in"><span><span class="va">pb_data_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_pbs.html">calculate_pbs</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, </span></span>
+<span class="r-in"><span>                             activity_type <span class="op">=</span> <span class="st">"Run"</span>, </span></span>
+<span class="r-in"><span>                             distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>,<span class="fl">5000</span>,<span class="fl">10000</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>                             date_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/weekday.POSIXt.html" class="external-link">months</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                                          <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pb_data_run</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu">plot_pbs</span><span class="op">(</span>pbs_df <span class="op">=</span> <span class="va">pb_data_run</span>, distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>,<span class="fl">5000</span>,<span class="fl">10000</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)</span></span></span>
+<span class="r-in"><span><span class="va">pb_data_ride</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_pbs.html">calculate_pbs</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, </span></span>
+<span class="r-in"><span>                               activity_type <span class="op">=</span> <span class="st">"Ride"</span>, </span></span>
+<span class="r-in"><span>                               distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="fl">20000</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pb_data_ride</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>   <span class="fu">plot_pbs</span><span class="op">(</span>pbs_df <span class="op">=</span> <span class="va">pb_data_ride</span>, distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="fl">20000</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Plot PBS trend for multiple Run types (no trend line)</span></span></span>
+<span class="r-in"><span><span class="va">pb_data_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_pbs.html">calculate_pbs</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, </span></span>
+<span class="r-in"><span>                               activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"VirtualRun"</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>                               distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>,<span class="fl">5000</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pb_data_multi</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="fu">plot_pbs</span><span class="op">(</span>pbs_df <span class="op">=</span> <span class="va">pb_data_multi</span>, distance_meters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>,<span class="fl">5000</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>           add_trend_line <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

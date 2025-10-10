@@ -57,7 +57,7 @@ Designed to work with Strava's official bulk data export
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">load_local_activities</span><span class="op">(</span></span>
-<span>  csv_path <span class="op">=</span> <span class="st">"strava_export_data/activities.csv"</span>,</span>
+<span>  path <span class="op">=</span> <span class="st">"strava_export_data/activities.csv"</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  activity_types <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -68,10 +68,10 @@ Designed to work with Strava's official bulk data export
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-csv-path">csv_path<a class="anchor" aria-label="anchor" href="#arg-csv-path"></a></dt>
-<dd><p>Path to the activities.csv file OR a .zip archive from Strava export.
-If a .zip file is provided, the function will automatically extract and read
-the activities.csv file from within the archive.
+<dl><dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
+<dd><p>Path to activities.csv file OR a .zip archive from Strava export.
+Supports both CSV and ZIP formats. If a .zip file is provided, the function
+will automatically extract and read the activities.csv file from within the archive.
 Default is "strava_export_data/activities.csv".</p></dd>
 
 
@@ -93,7 +93,7 @@ Defaults to NULL (no filtering).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble of activity data with standardized column names compatible
-  with Athlytics functions. Key columns include:</p><ul><li><p><code>id</code>: Activity ID (numeric)</p></li>
+with Athlytics functions. Key columns include:</p><ul><li><p><code>id</code>: Activity ID (numeric)</p></li>
 <li><p><code>name</code>: Activity name</p></li>
 <li><p><code>type</code>: Activity type (Run, Ride, etc.)</p></li>
 <li><p><code>start_date_local</code>: Activity start datetime (POSIXct)</p></li>
@@ -114,10 +114,9 @@ analysis functions. The transformation includes:</p><ul><li><p>Converting column
 <li><p>Converting distances to meters</p></li>
 <li><p>Converting times to seconds</p></li>
 <li><p>Filtering by date range and activity type if specified</p></li>
-</ul><p>**Important Note**: Due to Strava API terms of service restrictions,
-this function should be used for personal analysis of your own exported
-data only. When using this package for academic research, ensure compliance
-with Strava's API Agreement and data usage policies.</p>
+</ul><p><strong>Privacy Note</strong>: This function processes local export data only and does not
+connect to the internet. Ensure you have permission to analyze the data and
+follow applicable privacy regulations when using this data for research purposes.</p>
     </div>
 
     <div class="section level2">
@@ -131,18 +130,18 @@ with Strava's API Agreement and data usage policies.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Load only running activities from 2023</span></span></span>
 <span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu">load_local_activities</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  csv_path <span class="op">=</span> <span class="st">"export_12345678.zip"</span>,</span></span>
+<span class="r-in"><span>  path <span class="op">=</span> <span class="st">"export_12345678.zip"</span>,</span></span>
 <span class="r-in"><span>  start_date <span class="op">=</span> <span class="st">"2023-01-01"</span>,</span></span>
 <span class="r-in"><span>  end_date <span class="op">=</span> <span class="st">"2023-12-31"</span>,</span></span>
 <span class="r-in"><span>  activity_types <span class="op">=</span> <span class="st">"Run"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Use with Athlytics functions</span></span></span>
-<span class="r-in"><span><span class="va">acwr_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span><span class="va">activities</span>, load_metric <span class="op">=</span> <span class="st">"distance"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">acwr_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span><span class="va">activities</span>, load_metric <span class="op">=</span> <span class="st">"distance_km"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">acwr_data</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Multi-metric analysis</span></span></span>
-<span class="r-in"><span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">activities</span>, ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">activities</span>, ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_data</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

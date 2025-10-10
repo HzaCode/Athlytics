@@ -45,7 +45,7 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_exposure</span><span class="op">(</span></span>
-<span>  <span class="va">stoken</span>,</span>
+<span>  <span class="va">data</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span>, <span class="st">"VirtualRide"</span>, <span class="st">"VirtualRun"</span><span class="op">)</span>,</span>
 <span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span>
 <span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span>
@@ -63,8 +63,8 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-stoken">stoken<a class="anchor" aria-label="anchor" href="#arg-stoken"></a></dt>
-<dd><p>A valid Strava token from `rStrava::strava_oauth()`. Required unless `exposure_df` is provided.</p></dd>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
+<dd><p>A data frame from <code><a href="load_local_activities.html">load_local_activities()</a></code>. Required unless <code>exposure_df</code> is provided.</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
@@ -73,7 +73,7 @@
 
 <dt id="arg-load-metric">load_metric<a class="anchor" aria-label="anchor" href="#arg-load-metric"></a></dt>
 <dd><p>Method for calculating daily load (e.g., "duration_mins", "tss", "hrss"). Default "duration_mins".
-See `calculate_exposure` for details on approximate TSS/HRSS calculations.</p></dd>
+See <code>calculate_exposure</code> for details on approximate TSS/HRSS calculations.</p></dd>
 
 
 <dt id="arg-acute-period">acute_period<a class="anchor" aria-label="anchor" href="#arg-acute-period"></a></dt>
@@ -81,19 +81,19 @@ See `calculate_exposure` for details on approximate TSS/HRSS calculations.</p></
 
 
 <dt id="arg-chronic-period">chronic_period<a class="anchor" aria-label="anchor" href="#arg-chronic-period"></a></dt>
-<dd><p>Days for chronic load window (e.g., 42). Must be &gt; `acute_period`.</p></dd>
+<dd><p>Days for chronic load window (e.g., 42). Must be &gt; <code>acute_period</code>.</p></dd>
 
 
 <dt id="arg-user-ftp">user_ftp<a class="anchor" aria-label="anchor" href="#arg-user-ftp"></a></dt>
-<dd><p>Required if `load_metric = "tss"`. Your FTP.</p></dd>
+<dd><p>Required if <code>load_metric = "tss"</code>. Your FTP.</p></dd>
 
 
 <dt id="arg-user-max-hr">user_max_hr<a class="anchor" aria-label="anchor" href="#arg-user-max-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"`. Your max HR.</p></dd>
+<dd><p>Required if <code>load_metric = "hrss"</code>. Your max HR.</p></dd>
 
 
 <dt id="arg-user-resting-hr">user_resting_hr<a class="anchor" aria-label="anchor" href="#arg-user-resting-hr"></a></dt>
-<dd><p>Required if `load_metric = "hrss"`. Your resting HR.</p></dd>
+<dd><p>Required if <code>load_metric = "hrss"</code>. Your resting HR.</p></dd>
 
 
 <dt id="arg-end-date">end_date<a class="anchor" aria-label="anchor" href="#arg-end-date"></a></dt>
@@ -101,13 +101,13 @@ See `calculate_exposure` for details on approximate TSS/HRSS calculations.</p></
 
 
 <dt id="arg-risk-zones">risk_zones<a class="anchor" aria-label="anchor" href="#arg-risk-zones"></a></dt>
-<dd><p>Add background shading for typical ACWR risk zones? Default `TRUE`.</p></dd>
+<dd><p>Add background shading for typical ACWR risk zones? Default <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-exposure-df">exposure_df<a class="anchor" aria-label="anchor" href="#arg-exposure-df"></a></dt>
-<dd><p>Optional. A pre-calculated data frame from `calculate_exposure`.
-If provided, `stoken` and other calculation parameters are ignored. Must contain
-`date`, `atl`, `ctl` (and `acwr` if `risk_zones = TRUE`).</p></dd>
+<dd><p>Optional. A pre-calculated data frame from <code>calculate_exposure</code>.
+If provided, <code>data</code> and other calculation parameters are ignored. Must contain
+<code>date</code>, <code>atl</code>, <code>ctl</code> (and <code>acwr</code> if <code>risk_zones = TRUE</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -117,47 +117,43 @@ If provided, `stoken` and other calculation parameters are ignored. Must contain
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
-pre-calculated data or calls `calculate_exposure`.</p>
+pre-calculated data or calls <code>calculate_exposure</code>.</p>
 <p>Visualizes training state by plotting ATL vs CTL (related to PMC charts).
-  Points are colored by date, latest point is highlighted (red triangle).
-  Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
-  If `exposure_df` is not provided, it calls `calculate_exposure` first.</p>
+Points are colored by date, latest point is highlighted (red triangle).
+Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
+If <code>exposure_df</code> is not provided, it calls <code>calculate_exposure</code> first.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using pre-calculated sample data</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"athlytics_sample_exposure"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘athlytics_sample_exposure’ not found</span>
-<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_exposure</span><span class="op">(</span><span class="va">athlytics_sample_exposure</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in calculate_exposure(stoken = stoken, activity_type = activity_type,     load_metric = load_metric, acute_period = acute_period, chronic_period = chronic_period,     user_ftp = user_ftp, user_max_hr = user_max_hr, user_resting_hr = user_resting_hr,     end_date = end_date):</span> unused argument (stoken = stoken)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using simulated data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">Athlytics_sample_data</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Ensure exposure_df is named and other necessary parameters like activity_type are provided</span></span></span>
+<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_exposure</span><span class="op">(</span>exposure_df <span class="op">=</span> <span class="va">athlytics_sample_exposure</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating plot...</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'p' not found</span>
+<span class="r-plt img"><img src="plot_exposure-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Example using real data (requires authentication)</span></span></span>
-<span class="r-in"><span><span class="co"># stoken &lt;- rStrava::strava_oauth("YOUR_APP_NAME",</span></span></span>
-<span class="r-in"><span><span class="co">#                                "YOUR_APP_CLIENT_ID",</span></span></span>
-<span class="r-in"><span><span class="co">#                                "YOUR_APP_SECRET",</span></span></span>
-<span class="r-in"><span><span class="co">#                                cache = TRUE)</span></span></span>
+<span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
+<span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Exposure trend for Runs (last 6 months)</span></span></span>
-<span class="r-in"><span><span class="co"># plot_exposure(stoken = stoken, # Replace stoken with a valid token object</span></span></span>
-<span class="r-in"><span><span class="co">#               activity_type = "Run",</span></span></span>
-<span class="r-in"><span><span class="co">#               end_date = Sys.Date(), # For internal calculate_exposure: fetches prior data.</span></span></span>
-<span class="r-in"><span><span class="co">#               # Note: start_date applies to the internal calculate_exposure call.</span></span></span>
-<span class="r-in"><span><span class="co">#               user_ftp = 280) # Example, if load_metric = "tss"</span></span></span>
+<span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span>data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>              activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>              end_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              user_ftp <span class="op">=</span> <span class="fl">280</span><span class="op">)</span> <span class="co"># Example, if load_metric = "tss"</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Exposure trend for Rides</span></span></span>
-<span class="r-in"><span><span class="co"># plot_exposure(stoken = stoken, # Replace stoken with a valid token object</span></span></span>
-<span class="r-in"><span><span class="co">#               activity_type = "Ride",</span></span></span>
-<span class="r-in"><span><span class="co">#               user_ftp = 280) # Example, provide if load_metric = "tss"</span></span></span>
+<span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span>data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>              activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
+<span class="r-in"><span>              user_ftp <span class="op">=</span> <span class="fl">280</span><span class="op">)</span> <span class="co"># Example, provide if load_metric = "tss"</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)</span></span></span>
-<span class="r-in"><span><span class="co"># plot_exposure(stoken = stoken, # Replace stoken with a valid token object</span></span></span>
-<span class="r-in"><span><span class="co">#               activity_type = c("Run", "VirtualRun"),</span></span></span>
-<span class="r-in"><span><span class="co">#               risk_zones = FALSE,</span></span></span>
-<span class="r-in"><span><span class="co">#               user_ftp = 280) # Example, provide if load_metric = "tss"</span></span></span>
+<span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span>data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>              activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"VirtualRun"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>              risk_zones <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>              user_ftp <span class="op">=</span> <span class="fl">280</span><span class="op">)</span> <span class="co"># Example, provide if load_metric = "tss"</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

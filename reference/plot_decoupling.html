@@ -45,18 +45,15 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_decoupling</span><span class="op">(</span></span>
-<span>  <span class="va">stoken</span>,</span>
+<span>  <span class="va">data</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
-<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Pace_HR"</span>, <span class="st">"Power_HR"</span><span class="op">)</span>,</span>
+<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">45</span>,</span>
-<span>  max_activities <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  add_trend_line <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  smoothing_method <span class="op">=</span> <span class="st">"loess"</span>,</span>
-<span>  decoupling_df <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  group_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  group_colors <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  decoupling_df <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -64,8 +61,9 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-stoken">stoken<a class="anchor" aria-label="anchor" href="#arg-stoken"></a></dt>
-<dd><p>A valid Strava token from `rStrava::strava_oauth()`. Required unless `decoupling_df` is provided.</p></dd>
+<dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
+<dd><p><strong>Recommended: Pass pre-calculated data via <code>decoupling_df</code> (local export preferred).</strong>
+A data frame from <code><a href="calculate_decoupling.html">calculate_decoupling()</a></code> or activities data from <code><a href="load_local_activities.html">load_local_activities()</a></code>.</p></dd>
 
 
 <dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
@@ -73,7 +71,7 @@
 
 
 <dt id="arg-decouple-metric">decouple_metric<a class="anchor" aria-label="anchor" href="#arg-decouple-metric"></a></dt>
-<dd><p>Metric basis: "Pace_HR" or "Power_HR".</p></dd>
+<dd><p>Metric basis: "pace_hr" or "power_hr".</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -88,12 +86,8 @@
 <dd><p>Minimum activity duration (minutes) to include. Default 45.</p></dd>
 
 
-<dt id="arg-max-activities">max_activities<a class="anchor" aria-label="anchor" href="#arg-max-activities"></a></dt>
-<dd><p>Max number of recent activities to fetch/analyze when `stoken` is used. Default 50.</p></dd>
-
-
 <dt id="arg-add-trend-line">add_trend_line<a class="anchor" aria-label="anchor" href="#arg-add-trend-line"></a></dt>
-<dd><p>Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.</p></dd>
+<dd><p>Add a smoothed trend line (<code>geom_smooth</code>)? Default <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-smoothing-method">smoothing_method<a class="anchor" aria-label="anchor" href="#arg-smoothing-method"></a></dt>
@@ -101,17 +95,9 @@
 
 
 <dt id="arg-decoupling-df">decoupling_df<a class="anchor" aria-label="anchor" href="#arg-decoupling-df"></a></dt>
-<dd><p>Optional. A pre-calculated data frame from `calculate_decoupling`.
-If provided, `stoken` and other calculation parameters are ignored.
+<dd><p><strong>Recommended.</strong> A pre-calculated data frame from <code><a href="calculate_decoupling.html">calculate_decoupling()</a></code>.
+When provided, analysis uses local data only (no API calls).
 Must contain 'date' and 'decoupling' columns.</p></dd>
-
-
-<dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
-<dd><p>Optional. Column name for grouping/faceting (e.g., "athlete_id").</p></dd>
-
-
-<dt id="arg-group-colors">group_colors<a class="anchor" aria-label="anchor" href="#arg-group-colors"></a></dt>
-<dd><p>Optional. Named vector of colors for groups.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -120,103 +106,56 @@ Must contain 'date' and 'decoupling' columns.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots the aerobic decoupling trend over time. Uses pre-calculated data
-or calls `calculate_decoupling` (can be slow).</p>
+    <p>Plots the aerobic decoupling trend over time. <strong>Recommended workflow: Use local data via <code>decoupling_df</code>.</strong></p>
 <p>Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
-  Positive values mean HR drifted relative to output. A 5<!-- % threshold line is often -->
-  used as reference. If `decoupling_df` is not provided, calls `calculate_decoupling` first
-  (can be slow and hit API limits).</p>
+Positive values mean HR drifted relative to output. A 5\% threshold line is often
+used as reference. <strong>Best practice: Use <code><a href="load_local_activities.html">load_local_activities()</a></code> + <code><a href="calculate_decoupling.html">calculate_decoupling()</a></code> + this function.</strong></p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using pre-calculated sample data</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"athlytics_sample_decoupling"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘athlytics_sample_decoupling’ not found</span>
 <span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_decoupling</span><span class="op">(</span><span class="va">athlytics_sample_decoupling</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> No pre-calculated decoupling_df provided. Calculating data now... (This may take a while)</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in calculate_decoupling(stoken = stoken, activity_type = activity_type,     decouple_metric = decouple_metric_label, start_date = start_date,     end_date = end_date, min_duration_mins = min_duration_mins,     max_activities = max_activities):</span> `stoken` must be a valid Token2.0 object from rStrava::strava_oauth().</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating decoupling (pace_hr) from 2024-10-10 to 2025-10-10.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in dplyr::filter(., .data$date &gt;= analysis_start_date, .data$date &lt;=     analysis_end_date, .data$type %in% activity_type, (.data$moving_time/60) &gt;=     min_duration_mins):</span> <span style="color: #00BBBB;">ℹ</span> In argument: `.data$type %in% activity_type`.</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Caused by error in `.data$type`:</span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> Column `type` not found in `.data`.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'p' not found</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Example using real data (requires authentication)</span></span></span>
-<span class="r-in"><span><span class="co"># NOTE: The following rStrava::strava_oauth call is a placeholder.</span></span></span>
-<span class="r-in"><span><span class="co"># You MUST replace placeholders with your actual Strava API credentials.</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">stoken_example</span> <span class="op">&lt;-</span> <span class="fu">rStrava</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rStrava/man/strava_oauth.html" class="external-link">strava_oauth</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    app_name <span class="op">=</span> <span class="st">"YOUR_APP_NAME_PLACEHOLDER"</span>,</span></span>
-<span class="r-in"><span>    app_client_id <span class="op">=</span> <span class="st">"YOUR_CLIENT_ID_PLACEHOLDER"</span>,     <span class="co"># CORRECTED</span></span></span>
-<span class="r-in"><span>    app_secret <span class="op">=</span> <span class="st">"YOUR_CLIENT_SECRET_PLACEHOLDER"</span>,  <span class="co"># CORRECTED</span></span></span>
-<span class="r-in"><span>    cache <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>    app_scope <span class="op">=</span> <span class="st">"activity:read_all"</span> <span class="co"># Recommended scope</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
+<span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">stoken_example</span>, <span class="st">"Token2.0"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Placeholder stoken_example created for athlytics examples."</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Example 1: Plot Decoupling trend for Runs (last 6 months)</span></span></span>
+<span class="r-in"><span><span class="va">decoupling_runs_6mo</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>    export_dir <span class="op">=</span> <span class="st">"strava_export_data"</span>,</span></span>
+<span class="r-in"><span>    activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>    decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span>,</span></span>
+<span class="r-in"><span>    start_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/weekday.POSIXt.html" class="external-link">months</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_decoupling</span><span class="op">(</span><span class="va">decoupling_runs_6mo</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>    <span class="co"># Example 1: Plot Decoupling trend for Runs (last 6 months)</span></span></span>
-<span class="r-in"><span>    <span class="co"># This first calculates the data, then plots it.</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Calculating decoupling for Runs (last 6 months) - may take a moment..."</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="va">decoupling_runs_6mo</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>        <span class="fu"><a href="calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>            stoken <span class="op">=</span> <span class="va">stoken_example</span>,</span></span>
-<span class="r-in"><span>            activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
-<span class="r-in"><span>            decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span></span>
-<span class="r-in"><span>            date_range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu">months</span><span class="op">(</span><span class="fl">6</span><span class="op">)</span>, <span class="st">"%Y-%m-%d"</span><span class="op">)</span>, </span></span>
-<span class="r-in"><span>                           <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"%Y-%m-%d"</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>            max_activities <span class="op">=</span> <span class="fl">5</span> <span class="co"># Keep low for example</span></span></span>
-<span class="r-in"><span>        <span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">}</span>, error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e_calc</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>        <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Could not calculate decoupling data in example:"</span>, <span class="va">e_calc</span><span class="op">$</span><span class="va">message</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># Return empty tibble on error</span></span></span>
-<span class="r-in"><span>    <span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Example 2: Plot Decoupling trend for Rides</span></span></span>
+<span class="r-in"><span><span class="va">decoupling_rides</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>  export_dir <span class="op">=</span> <span class="st">"strava_export_data"</span>,</span></span>
+<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
+<span class="r-in"><span>  decouple_metric <span class="op">=</span> <span class="st">"power_hr"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_decoupling</span><span class="op">(</span><span class="va">decoupling_rides</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">decoupling_runs_6mo</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="st">"decoupling"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">decoupling_runs_6mo</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>      <span class="va">p_runs_6mo</span> <span class="op">&lt;-</span> <span class="fu">plot_decoupling</span><span class="op">(</span>decoupling_df <span class="op">=</span> <span class="va">decoupling_runs_6mo</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span><span class="op">)</span></span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p_runs_6mo</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"No decoupling data for Runs (last 6 months) to plot, or calculation failed."</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">}</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span>    <span class="co"># Example 2: Plot Decoupling trend for Rides</span></span></span>
-<span class="r-in"><span>    <span class="co"># decoupling_rides &lt;- calculate_decoupling(</span></span></span>
-<span class="r-in"><span>    <span class="co">#   stoken = stoken_example,</span></span></span>
-<span class="r-in"><span>    <span class="co">#   activity_type = "Ride",</span></span></span>
-<span class="r-in"><span>    <span class="co">#   decouple_metric = "Power_HR",</span></span></span>
-<span class="r-in"><span>    <span class="co">#   max_activities = 5</span></span></span>
-<span class="r-in"><span>    <span class="co"># )</span></span></span>
-<span class="r-in"><span>    <span class="co"># if (nrow(decoupling_rides) &gt; 0 &amp;&amp; "decoupling" %in% names(decoupling_rides)) {</span></span></span>
-<span class="r-in"><span>    <span class="co">#   p_rides &lt;- plot_decoupling(decoupling_df = decoupling_rides, activity_type = "Ride")</span></span></span>
-<span class="r-in"><span>    <span class="co">#   print(p_rides)</span></span></span>
-<span class="r-in"><span>    <span class="co"># } else {</span></span></span>
-<span class="r-in"><span>    <span class="co">#   message("No decoupling data for Rides to plot, or calculation failed.")</span></span></span>
-<span class="r-in"><span>    <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span>    <span class="co"># Example 3: Plot Decoupling trend for multiple Run types (no trend line)</span></span></span>
-<span class="r-in"><span>    <span class="co"># decoupling_multi_run &lt;- calculate_decoupling(</span></span></span>
-<span class="r-in"><span>    <span class="co">#   stoken = stoken_example,</span></span></span>
-<span class="r-in"><span>    <span class="co">#   activity_type = c("Run", "VirtualRun"),</span></span></span>
-<span class="r-in"><span>    <span class="co">#   decouple_metric = "Pace_HR",</span></span></span>
-<span class="r-in"><span>    <span class="co">#   max_activities = 5</span></span></span>
-<span class="r-in"><span>    <span class="co"># )</span></span></span>
-<span class="r-in"><span>    <span class="co"># if (nrow(decoupling_multi_run) &gt; 0 &amp;&amp; "decoupling" %in% names(decoupling_multi_run)) {</span></span></span>
-<span class="r-in"><span>    <span class="co">#   p_multi_run &lt;- plot_decoupling(</span></span></span>
-<span class="r-in"><span>    <span class="co">#     decoupling_df = decoupling_multi_run,</span></span></span>
-<span class="r-in"><span>    <span class="co">#     activity_type = c("Run", "VirtualRun"),</span></span></span>
-<span class="r-in"><span>    <span class="co">#     add_trend_line = FALSE</span></span></span>
-<span class="r-in"><span>    <span class="co">#   )</span></span></span>
-<span class="r-in"><span>    <span class="co">#   print(p_multi_run)</span></span></span>
-<span class="r-in"><span>    <span class="co"># } else {</span></span></span>
-<span class="r-in"><span>    <span class="co">#   message("No decoupling data for multi-run types to plot, or calculation failed.")</span></span></span>
-<span class="r-in"><span>    <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Failed to create placeholder stoken for plot_decoupling examples."</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">}</span></span></span>
-<span class="r-in"><span><span class="op">}</span>, error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e_auth</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Error during rStrava authentication in example:"</span>, <span class="va">e_auth</span><span class="op">$</span><span class="va">message</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Example 3: Plot Decoupling trend for multiple Run types (no trend line)</span></span></span>
+<span class="r-in"><span><span class="va">decoupling_multi_run</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>  export_dir <span class="op">=</span> <span class="st">"strava_export_data"</span>,</span></span>
+<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"VirtualRun"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_decoupling</span><span class="op">(</span><span class="va">decoupling_multi_run</span>, add_trend_line <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

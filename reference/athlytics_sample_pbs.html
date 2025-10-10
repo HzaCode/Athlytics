@@ -52,34 +52,34 @@ derived from simulated Strava data. Used in examples and tests.</p>
 
     <div class="section level2">
     <h2 id="format">Format<a class="anchor" aria-label="anchor" href="#format"></a></h2>
-    <p>A tibble with X rows and 10 variables:</p><dl><dt>activity_id</dt>
+    <p>A tibble with 100 rows and 10 variables:</p><dl><dt>activity_id</dt>
 <dd><p>ID of the activity where the effort occurred, as a character string.</p></dd>
 
-  <dt>activity_date</dt>
+<dt>activity_date</dt>
 <dd><p>Date and time of the activity, as a POSIXct object.</p></dd>
 
-  <dt>distance</dt>
+<dt>distance</dt>
 <dd><p>Target distance in meters for the best effort, as a numeric value.</p></dd>
 
-  <dt>elapsed_time</dt>
+<dt>elapsed_time</dt>
 <dd><p>Elapsed time for the effort in seconds, as a numeric value.</p></dd>
 
-  <dt>moving_time</dt>
+<dt>moving_time</dt>
 <dd><p>Moving time for the effort in seconds, as a numeric value.</p></dd>
 
-  <dt>time_seconds</dt>
+<dt>time_seconds</dt>
 <dd><p>Typically the same as elapsed_time for best efforts, in seconds, as a numeric value.</p></dd>
 
-  <dt>cumulative_pb_seconds</dt>
+<dt>cumulative_pb_seconds</dt>
 <dd><p>The personal best time for that distance up to that date, in seconds, as a numeric value.</p></dd>
 
-  <dt>is_pb</dt>
+<dt>is_pb</dt>
 <dd><p>Logical, TRUE if this effort set a new personal best.</p></dd>
 
-  <dt>distance_label</dt>
+<dt>distance_label</dt>
 <dd><p>Factor representing the distance (e.g., "1k", "5k").</p></dd>
 
-  <dt>time_period</dt>
+<dt>time_period</dt>
 <dd><p>Formatted time of the effort, as a Period object from lubridate.</p></dd>
 
 

@@ -391,7 +391,7 @@ loss</li>
 <span><span class="va">ef_runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>  <span class="co"># Pace divided by HR</span></span>
+<span>  ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span>  <span class="co"># Pace divided by HR</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># For cycling (Power/HR)</span></span>
@@ -399,7 +399,7 @@ loss</li>
 <span><span class="va">ef_cycling</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">rides</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="st">"Power_HR"</span>  <span class="co"># Power divided by HR</span></span>
+<span>  ef_metric <span class="op">=</span> <span class="st">"power_hr"</span>  <span class="co"># Power divided by HR</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># View results</span></span>
@@ -500,7 +500,7 @@ insufficient base fitness)</li>
 <span><span class="va">decoupling_runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
-<span>  decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span>,</span>
+<span>  decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">60</span>  <span class="co"># Only analyze runs ≥ 60 minutes</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -508,7 +508,7 @@ insufficient base fitness)</li>
 <span><span class="va">decoupling_rides</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">rides</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span>
-<span>  decouple_metric <span class="op">=</span> <span class="st">"Power_HR"</span>,</span>
+<span>  decouple_metric <span class="op">=</span> <span class="st">"power_hr"</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">90</span>  <span class="co"># Longer threshold for cycling</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -534,7 +534,7 @@ insufficient base fitness)</li>
 <span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_runs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># With metric specification</span></span>
-<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_runs</span>, decouple_metric <span class="op">=</span> <span class="st">"Pace_HR"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_runs</span>, decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="practical-applications">Practical Applications<a class="anchor" aria-label="anchor" href="#practical-applications"></a>
@@ -684,7 +684,7 @@ up training)</li>
 <span><span class="co"># ---- 3. Aerobic Fitness Tracking ----</span></span>
 <span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span></span>
+<span>  ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Calculate fitness trend</span></span>
@@ -772,7 +772,7 @@ activities</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Filter before calculating</span></span>
 <span><span class="va">runs_with_hr</span> <span class="op">&lt;-</span> <span class="va">runs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">avg_hr</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">runs_with_hr</span>, ef_metric <span class="op">=</span> <span class="st">"Pace_HR"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">runs_with_hr</span>, ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="plots-look-strange-or-empty">Plots look strange or empty<a class="anchor" aria-label="anchor" href="#plots-look-strange-or-empty"></a>
