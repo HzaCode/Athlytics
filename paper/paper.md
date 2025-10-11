@@ -30,7 +30,7 @@ license: MIT
 
 Analyzing endurance training data in R often requires stitching together API clients, file parsers, and custom scripts. This creates workflows that are fragile and difficult to reproduce, especially for **cohort-scale** research. **Athlytics** addresses this gap by providing a **single, research-oriented pipeline** that works offline with local archives, offers an integrated suite of physiological models, and is built from the ground up for multi-athlete analysis. This design **reduces "glue code"** and makes cohort-scale analyses auditable and easy to reproduce.
 
-# Related Work (R ecosystem, feature matrix)
+# Related Work 
 
 We provide a direct feature comparison to highlight the capabilities essential for reproducible, cohort-scale research.
 
