@@ -108,12 +108,11 @@ start point. Ensure your Strava export contains sufficient historical activities
 
 \strong{Load Metric Implementations:}
 \itemize{
-\item \code{"tss"}: Uses normalized power (NP) and FTP to approximate Training Stress Score.
-Formula: \code{(duration * NP * (NP/FTP)^2) / (FTP * 3600) * 100}. This is an approximation
-and may differ from TrainingPeaks' official TSS calculation.
-\item \code{"hrss"}: Uses simplified TRIMP (Training Impulse) based on heart rate reserve.
-Formula: \code{duration * (HR - resting_HR) / (max_HR - resting_HR)}. This is a simplified
-version and may differ from other HRSS implementations.
+\item \code{"tss"}: Uses normalized power (NP) and FTP to approximate Training Stress Score (TSS).
+Formula: \verb{(duration_sec × NP × IF) / (FTP × 3600) × 100}, where \code{IF = NP/FTP}
+(equivalently: \verb{hours × IF^2 × 100}).
+\item \code{"hrss"}: HR-based load using heart rate reserve (simplified TRIMP; \strong{not} TrainingPeaks hrTSS).
+Formula: \code{duration_sec * (HR - resting_HR) / (max_HR - resting_HR)}.
 }
 
 \strong{Interpretation Guidelines:}
