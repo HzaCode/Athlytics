@@ -152,7 +152,7 @@ plot_pbs <- function(data,
     ggplot2::scale_shape_manual(values = c("TRUE" = 19, "FALSE" = 1), 
                        name = "Personal Best", labels = c("TRUE" = "Yes", "FALSE" = "No")) +
     ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
-    ggplot2::scale_y_continuous(labels = function(x) sprintf('%02d:%02d', floor(x/60), floor(x) %% 60)) + 
+    ggplot2::scale_y_continuous(labels = function(x) sprintf('%02d:%02d', floor(x/60), x %% 60)) + 
     viridis::scale_color_viridis(discrete = TRUE, option = "C", name = "Distance") + 
     ggplot2::labs(
       title = "Personal Best Running Times Trend",
@@ -165,6 +165,7 @@ plot_pbs <- function(data,
     ggplot2::theme(
       legend.position = "bottom",
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      axis.text.y = ggplot2::element_text(angle = 0, hjust = 1, size = 10),
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"),
       plot.subtitle = ggplot2::element_text(hjust = 0.5)
     ) +
