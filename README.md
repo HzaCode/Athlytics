@@ -208,7 +208,7 @@ plot_acwr(acwr_data, highlight_zones = TRUE)
 Track aerobic fitness adaptations over time
 
 **Key Metrics**  
-Pace/HR Ratio (runs) • Power/HR Ratio (cycling) • Normalized Power efficiency • Fitness trend analysis
+Pace/HR efficiency (running) • Power/HR efficiency (cycling) • Fitness trend analysis
 
 **Use Cases**  
 🏃 Aerobic base development • 📊 Training effectiveness • 🎯 Periodization monitoring

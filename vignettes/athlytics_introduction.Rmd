@@ -363,8 +363,10 @@ Decoupling quantifies cardiovascular drift—the phenomenon where heart rate gra
 The function compares efficiency (pace/HR or power/HR) between the first half and second half of an activity:
 
 $$
-\text{Decoupling \%} = \left(\frac{\text{EF}_{\text{2nd half}}}{\text{EF}_{\text{1st half}}} - 1\right) \times 100
+\text{Decoupling \%} = \frac{\text{EF}_{\text{first half}} - \text{EF}_{\text{second half}}}{\text{EF}_{\text{first half}}} \times 100
 $$
+
+正值 = 后半效率下降（HR 漂移）；<5% 常作参考阈值，需结合稳态与环境解读。
 
 **Interpretation:**
 
