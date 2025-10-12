@@ -31,10 +31,10 @@ mock_activity_streams <- data.frame(
   latlng = I(latlng_list),
   distance = seq(0, 10000, length.out = 3601),
   altitude = rnorm(3601, 100, 10),
-  velocity_smooth = rnorm(3601, 3, 0.5),
-  heartrate = round(runif(3601, 130, 170) + sin(seq(0, 4 * pi, length.out = 3601)) * 10),
+  velocity_smooth = rnorm(3601, 3, 0.1),  # Reduced variation for steady state
+  heartrate = round(rnorm(3601, 150, 5)),  # More stable HR
   cadence = round(runif(3601, 85, 95)),
-  watts = round(runif(3601, 150, 250) + sin(seq(0, 2 * pi, length.out = 3601)) * 20),
+  watts = round(rnorm(3601, 200, 10)),  # More stable power
   grade_smooth = rnorm(3601, 0, 1),
   moving = sample(c(TRUE, FALSE), 3601, replace = TRUE, prob = c(0.95, 0.05)),
   temp = rnorm(3601, 20, 3)

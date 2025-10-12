@@ -1,6 +1,6 @@
 # tests/testthat/test-ef.R
 
-context("Efficiency Factor Calculation")
+# Efficiency Factor Calculation Tests
 
 library(Athlytics)
 library(testthat)
@@ -61,4 +61,71 @@ test_that("calculate_ef works with sample data", {
   expect_s3_class(athlytics_sample_ef, "data.frame")
   # Sample data may have either ef_value or efficiency_factor
   expect_true(any(c("ef_value", "efficiency_factor") %in% colnames(athlytics_sample_ef)))
+})
+
+test_that("plot_ef works with pre-calculated data", {
+  skip_if(is.null(athlytics_sample_ef), "Sample EF data not available")
+  
+  p <- plot_ef(athlytics_sample_ef)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("plot_ef works with activities data", {
+  mock_activities <- create_mock_activities(50)
+  
+  # Test with pace_hr
+  p1 <- plot_ef(
+    data = mock_activities,
+    activity_type = "Run",
+    ef_metric = "pace_hr"
+  )
+  expect_s3_class(p1, "ggplot")
+  
+  # Test with power_hr
+  p2 <- plot_ef(
+    data = mock_activities,
+    activity_type = "Ride",
+    ef_metric = "power_hr"
+  )
+  expect_s3_class(p2, "ggplot")
+})
+
+test_that("plot_ef handles various options", {
+  mock_activities <- create_mock_activities(50)
+  
+  # Test without trend line
+  p1 <- plot_ef(
+    data = mock_activities,
+    activity_type = "Run",
+    ef_metric = "pace_hr",
+    add_trend_line = FALSE
+  )
+  expect_s3_class(p1, "ggplot")
+  
+  # Test with different smoothing method
+  p2 <- plot_ef(
+    data = mock_activities,
+    activity_type = "Run",
+    ef_metric = "pace_hr",
+    smoothing_method = "lm"
+  )
+  expect_s3_class(p2, "ggplot")
+  
+  # Test with date range
+  p3 <- plot_ef(
+    data = mock_activities,
+    activity_type = "Run",
+    ef_metric = "pace_hr",
+    start_date = Sys.Date() - 30,
+    end_date = Sys.Date()
+  )
+  expect_s3_class(p3, "ggplot")
+})
+
+test_that("plot_ef works with ef_df parameter", {
+  skip_if(is.null(athlytics_sample_ef), "Sample EF data not available")
+  
+  # Plot already calculated EF data
+  p <- plot_ef(athlytics_sample_ef)
+  expect_s3_class(p, "ggplot")
 })

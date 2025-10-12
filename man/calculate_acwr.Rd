@@ -126,7 +126,7 @@ version and may differ from other HRSS implementations.
 
 \strong{Multi-Athlete Studies:}
 For cohort analyses, add an \code{athlete_id} column before calculation and use
-\code{group_by(athlete_id)} with \code{do()}. See vignettes for examples.
+\code{group_by(athlete_id)} with \code{group_modify()}. See examples below and vignettes for details.
 }
 \examples{
 # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
@@ -160,6 +160,30 @@ print(tail(ride_acwr_tss))
 
 # Plot the results
 plot_acwr(run_acwr, highlight_zones = TRUE)
+
+# Multi-athlete cohort analysis
+library(dplyr)
+
+# Load data for multiple athletes and add athlete_id
+athlete1 <- load_local_activities("athlete1_export.zip") \%>\%
+  mutate(athlete_id = "athlete1")
+
+athlete2 <- load_local_activities("athlete2_export.zip") \%>\%
+  mutate(athlete_id = "athlete2")
+
+# Combine all athletes
+cohort_data <- bind_rows(athlete1, athlete2)
+
+# Calculate ACWR for each athlete using group_modify()
+cohort_acwr <- cohort_data \%>\%
+  group_by(athlete_id) \%>\%
+  group_modify(~ calculate_acwr(.x, 
+                                 activity_type = "Run",
+                                 load_metric = "duration_mins")) \%>\%
+  ungroup()
+
+# View results
+print(cohort_acwr)
 }
 }
 \references{

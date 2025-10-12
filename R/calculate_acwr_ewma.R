@@ -70,7 +70,6 @@
 #' # Compare both methods
 #' head(acwr_ewma)
 #' }
-#'
 #' @export
 calculate_acwr_ewma <- function(activities_data,
                                activity_type = NULL,

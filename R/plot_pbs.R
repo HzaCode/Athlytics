@@ -119,9 +119,9 @@ plot_pbs <- function(data,
       pbs_df <- calculate_pbs(
           activities_data = data,
           activity_type = activity_type,
-          distance_meters = distance_meters,
-          max_activities = max_activities,
-          date_range = date_range
+          start_date = if (!is.null(date_range)) date_range[1] else NULL,
+          end_date = if (!is.null(date_range)) date_range[2] else NULL,
+          distances_m = distance_meters
       )
   }
   

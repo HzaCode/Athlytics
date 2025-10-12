@@ -94,7 +94,7 @@
 #'
 #' **Multi-Athlete Studies:**
 #' For cohort analyses, add an `athlete_id` column before calculation and use
-#' `group_by(athlete_id)` with `do()`. See vignettes for examples.
+#' `group_by(athlete_id)` with `group_modify()`. See examples below and vignettes for details.
 #'
 #' @references
 #' Gabbett, T. J. (2016). The training-injury prevention paradox: should athletes
@@ -149,6 +149,30 @@
 #' 
 #' # Plot the results
 #' plot_acwr(run_acwr, highlight_zones = TRUE)
+#' 
+#' # Multi-athlete cohort analysis
+#' library(dplyr)
+#' 
+#' # Load data for multiple athletes and add athlete_id
+#' athlete1 <- load_local_activities("athlete1_export.zip") %>%
+#'   mutate(athlete_id = "athlete1")
+#' 
+#' athlete2 <- load_local_activities("athlete2_export.zip") %>%
+#'   mutate(athlete_id = "athlete2")
+#' 
+#' # Combine all athletes
+#' cohort_data <- bind_rows(athlete1, athlete2)
+#' 
+#' # Calculate ACWR for each athlete using group_modify()
+#' cohort_acwr <- cohort_data %>%
+#'   group_by(athlete_id) %>%
+#'   group_modify(~ calculate_acwr(.x, 
+#'                                  activity_type = "Run",
+#'                                  load_metric = "duration_mins")) %>%
+#'   ungroup()
+#' 
+#' # View results
+#' print(cohort_acwr)
 #' }
 calculate_acwr <- function(activities_data,
                            activity_type = NULL,

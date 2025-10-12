@@ -228,15 +228,3 @@ plot_acwr <- function(data,
                    
   return(p)
 }
-
-
-# 1. Implement the actual Strava data fetching logic (replace placeholder).
-#    - Need a helper function `fetch_strava_activities`.
-#    - Handle pagination and potential API rate limits.
-#    - Consider using `rStrava::get_activity_list` then loop `rStrava::get_activity`? Or is there a bulk way? Check rStrava docs.
-# 2. Implement TSS calculation robustly (requires Normalized Power ideally).
-# 3. Implement HR TRIMP calculation.
-# 4. Add more input validation for parameters.
-# 5. Refine error handling and messages.
-# 6. Consider options for handling missing data (power, HR).
-# 7. Create the helper function e.g. in R/utils.R or R/strava_helpers.R 

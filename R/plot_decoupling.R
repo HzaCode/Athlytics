@@ -59,7 +59,7 @@ explicit_english_month_year <- function(date_obj) {
 #' @examples
 #' # Example using pre-calculated sample data
 #' data("athlytics_sample_decoupling", package = "Athlytics")
-#' p <- plot_decoupling(athlytics_sample_decoupling)
+#' p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling)
 #' print(p)
 #'
 #' \dontrun{
@@ -128,11 +128,28 @@ plot_decoupling <- function(data,
   # Check if decoupling_df is empty or invalid
   if (!is.data.frame(decoupling_df) || nrow(decoupling_df) == 0 || !all(c("date", "decoupling") %in% names(decoupling_df))) {
       warning("No valid decoupling data available to plot (or missing required columns).")
-      return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No decoupling data available"))
+      return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No decoupling data to plot"))
   }
 
   # Rename for clarity
   plot_data <- decoupling_df
+  
+  # --- Generate Dynamic Title ---
+  # Determine title based on activity_type and data
+  if ("activity_type" %in% colnames(plot_data)) {
+    unique_types <- unique(plot_data$activity_type)
+    if (length(unique_types) == 1) {
+      plot_title <- paste("Trend for", unique_types[1])
+    } else {
+      plot_title <- "Trend for Selected Activities"
+    }
+  } else {
+    if (length(activity_type) == 1) {
+      plot_title <- paste("Trend for", activity_type[1])
+    } else {
+      plot_title <- "Trend for Selected Activities"
+    }
+  }
   
   # --- Plotting ---
   message("Generating plot...")
@@ -141,7 +158,7 @@ plot_decoupling <- function(data,
     ggplot2::geom_point(alpha = 0.7, size = 2, color = "#E64B35") +
     ggplot2::scale_x_date(labels = explicit_english_month_year, date_breaks = "3 months") +
     ggplot2::labs(
-      title = "Aerobic Decoupling Trend",
+      title = plot_title,
       subtitle = paste("Metric:", decouple_metric_label),
       x = "Date",
       y = "Decoupling (%)",
@@ -152,7 +169,7 @@ plot_decoupling <- function(data,
   p <- p + ggplot2::geom_hline(yintercept = 5, linetype = "dashed", color = "red", alpha = 0.7) +
     ggplot2::geom_hline(yintercept = 0, linetype = "solid", color = "black", alpha = 0.5)
   
-  if (add_trend_line) {
+  if (add_trend_line && nrow(plot_data) >= 2) {
     p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
   }
   

@@ -289,7 +289,7 @@ calculate_ef <- function(activities_data,
         ef_value <- speed_ms / avg_hr
       }
     } else if (ef_metric == "power_hr") {
-      if (power_used > 0) {
+      if (!is.na(power_used) && power_used > 0) {
         ef_value <- power_used / avg_hr
       }
     }

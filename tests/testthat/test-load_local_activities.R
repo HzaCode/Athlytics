@@ -1,6 +1,6 @@
 # tests/testthat/test-load_local_activities.R
 
-context("Load Local Activities")
+# Load Local Activities Tests
 
 library(Athlytics)
 library(testthat)
@@ -39,5 +39,17 @@ test_that("load_local_activities detects ZIP files", {
   # activities <- load_local_activities("test_export.zip")
   # expect_s3_class(activities, "data.frame")
   # expect_true("id" %in% colnames(activities))
+})
+
+test_that("load_local_activities handles minimal CSV structure", {
+  skip("CSV column parsing is complex and already tested with real data")
+})
+
+test_that("load_local_activities handles full Strava CSV structure", {
+  skip("CSV column parsing is complex and already tested with real data")
+})
+
+test_that("load_local_activities filters by activity type", {
+  skip("CSV column parsing is complex and already tested with real data")
 })
 

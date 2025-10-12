@@ -1,6 +1,6 @@
 # tests/testthat/test-acwr.R
 
-context("ACWR Calculation and Plotting")
+# ACWR Calculation and Plotting Tests
 
 library(Athlytics)
 library(testthat)

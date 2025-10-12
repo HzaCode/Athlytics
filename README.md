@@ -6,7 +6,7 @@
 
 *A Comprehensive R Framework for Exercise Physiology Analytics*
 
-[![Awesome Sports Analytics](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports)
+[![Awesome Sports Analytics](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports#software-)
 [![CRAN Status](https://img.shields.io/badge/CRAN-Athlytics-orange?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?color=blue&style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![R-CMD-check](https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)

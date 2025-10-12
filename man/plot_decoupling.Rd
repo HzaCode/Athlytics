@@ -54,7 +54,7 @@ used as reference. \strong{Best practice: Use \code{load_local_activities()} + \
 \examples{
 # Example using pre-calculated sample data
 data("athlytics_sample_decoupling", package = "Athlytics")
-p <- plot_decoupling(athlytics_sample_decoupling)
+p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling)
 print(p)
 
 \dontrun{

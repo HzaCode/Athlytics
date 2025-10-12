@@ -109,5 +109,4 @@ acwr_ewma <- calculate_acwr_ewma(
 # Compare both methods
 head(acwr_ewma)
 }
-
 }

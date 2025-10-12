@@ -55,7 +55,7 @@ athlytics_palette_academic <- function() {
     "#9DB4B8",  # Powder blue
     "#B8A68E",  # Sand
     "#8B9E9F",  # Sage
-    "#A8968E"   # Stone
+    "#B0A698"   # Stone (different shade)
   )
 }
 

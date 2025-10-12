@@ -1,6 +1,6 @@
 # tests/testthat/test-calculate_exposure.R
 
-context("Exposure Calculation")
+# Exposure Calculation Tests
 
 library(Athlytics)
 library(testthat)
