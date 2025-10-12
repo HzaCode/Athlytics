@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-This vignette demonstrates the advanced features of Athlytics for research-grade sports physiology analysis:
+This vignette demonstrates the advanced features of Athlytics for sports physiology analysis:
 
 1. **Data Quality Control**: Detecting and flagging HR/power spikes, GPS drift
 2. **ACWR with EWMA**: Exponentially weighted moving average with confidence bands
@@ -383,19 +383,10 @@ A: Set `min_athletes = 3`, but report this limitation. Percentiles with n < 5 ar
 A: **No**. These are **descriptive monitoring tools**. Injury prediction requires proper case-control studies, controlling for confounders, and validation. See Carey et al. (2018) for discussion of ACWR limitations.
 
 **Q: How do I cite Athlytics?**  
-A: (Wait for JOSS publication; include version number and DOI)
+A: Use the standard software citation format with version number and repository URL. See the main tutorial for the complete citation.
 
 ---
 
-# References
-
-1. **Moving-block bootstrap**: Künsch, H. R. (1989). The jackknife and the bootstrap for general stationary observations. *Annals of Statistics*, 17(3), 1217-1241.
-
-2. **ACWR critical review**: Carey, D. L., et al. (2018). Training loads and injury risk in Australian football—differing acute: chronic workload ratios influence match injury risk. *BJSM*, 52(16), 1088-1094.
-
-3. **EWMA in sports monitoring**: Williams, S., et al. (2017). Better way to determine the acute:chronic workload ratio? *BJSM*, 51(3), 209-210.
-
----
 
 # Session Info
 

@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 # Welcome to Athlytics
 
-This tutorial will guide you through a complete workflow—from loading your Strava data to generating publication-ready training analytics. By the end, you'll understand how to use all core features of Athlytics for longitudinal exercise physiology analysis.
+This tutorial will guide you through a complete workflow—from loading your Strava data to generating training analytics. By the end, you'll understand how to use all core features of Athlytics for longitudinal exercise physiology analysis.
 
 **What You'll Learn:**
 
@@ -693,10 +693,14 @@ If you're using Athlytics for research:
 
 If you use Athlytics in your research, please cite:
 
-```
-He, Z. (2025). Athlytics: A Computational Framework for Longitudinal 
-Analysis of Exercise Physiology. R package version 1.0.0.
-https://github.com/HzaCode/Athlytics
+```bibtex
+@software{athlytics2025,
+  title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
+  author  = {Zhiang He},
+  year    = {2025},
+  version = {1.0.0},
+  url     = {https://github.com/HzaCode/Athlytics}
+}
 ```
 
 ---

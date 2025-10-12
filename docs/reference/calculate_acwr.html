@@ -199,7 +199,7 @@ version and may differ from other HRSS implementations.</p></li>
 <li><p>ACWR &gt; 1.5: High risk zone - consider load management</p></li>
 </ul><p><strong>Multi-Athlete Studies:</strong>
 For cohort analyses, add an <code>athlete_id</code> column before calculation and use
-<code>group_by(athlete_id)</code> with <code><a href="https://dplyr.tidyverse.org/reference/do.html" class="external-link">do()</a></code>. See vignettes for examples.</p>
+<code>group_by(athlete_id)</code> with <code><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify()</a></code>. See examples below and vignettes for details.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -259,6 +259,30 @@ high chronic workload may decrease injury risk in elite rugby league players.
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Plot the results</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">run_acwr</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Multi-athlete cohort analysis</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Load data for multiple athletes and add athlete_id</span></span></span>
+<span class="r-in"><span><span class="va">athlete1</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete1_export.zip"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>athlete_id <span class="op">=</span> <span class="st">"athlete1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">athlete2</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete2_export.zip"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>athlete_id <span class="op">=</span> <span class="st">"athlete2"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Combine all athletes</span></span></span>
+<span class="r-in"><span><span class="va">cohort_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">athlete1</span>, <span class="va">athlete2</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Calculate ACWR for each athlete using group_modify()</span></span></span>
+<span class="r-in"><span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">calculate_acwr</span><span class="op">(</span><span class="va">.x</span>, </span></span>
+<span class="r-in"><span>                                 activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>                                 load_metric <span class="op">=</span> <span class="st">"duration_mins"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># View results</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cohort_acwr</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

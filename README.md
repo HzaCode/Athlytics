@@ -4,7 +4,7 @@
 
 # Athlytics
 
-*A Comprehensive R Framework for Exercise Physiology Analytics*
+*An R Framework for Exercise Physiology Analytics*
 
 [![Awesome Sports Analytics](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports#software-)
 [![CRAN Status](https://img.shields.io/badge/CRAN-Athlytics-orange?style=flat-square)](https://cran.r-project.org/package=Athlytics)
@@ -22,7 +22,7 @@
 
 <img src="man/figures/Athlytics_Final.png" alt="Athlytics Downloads Growth" width="650"/>
 
-*Trusted by researchers, coaches, and athletes worldwide*
+*Used by researchers, coaches, and athletes*
 
 </div>
 
@@ -30,7 +30,7 @@
 
 ## 🎯 Overview
 
-**Athlytics** provides a comprehensive computational framework for longitudinal analysis of exercise physiology metrics using **local Strava data exports**. Designed for sports scientists, coaches, and athletes seeking standardized, reproducible workflows to quantify training load, performance, and physiological adaptation.
+**Athlytics** provides a computational framework for longitudinal analysis of exercise physiology metrics using **local Strava data exports**. Designed for sports scientists, coaches, and athletes seeking standardized, reproducible workflows to quantify training load, performance, and physiological adaptation.
 
 ### Core Capabilities
 
@@ -52,10 +52,10 @@ Local processing only • No API authentication • Complete data ownership • 
 ACWR injury risk monitoring • Efficiency Factor analysis • Cardiovascular decoupling • Training Stress Score
 
 ### 📦 Developer Friendly
-Direct ZIP loading • Tidy `tibble` output • Extensible architecture • Comprehensive docs
+Direct ZIP loading • Tidy `tibble` output • Extensible architecture • Complete docs
 
 ### 📈 Publication Ready
-High-quality visualizations • Cohort comparison • Reproducible workflows • Export-ready figures
+Standard visualizations • Cohort comparison • Reproducible workflows • Export-ready figures
 
 ---
 
@@ -66,12 +66,12 @@ High-quality visualizations • Cohort comparison • Reproducible workflows •
 install.packages("Athlytics")
 ```
 
-**Latest Version 1.0.0 (GitHub - Recommended)**
+**Version 1.0.0 (GitHub - Recommended)**
 ```r
 # Install remotes if needed
 install.packages("remotes")
 
-# Get the latest v1.0.0 with new features
+# Get v1.0.0 with new features
 remotes::install_github('HzaCode/Athlytics')
 ```
 
@@ -273,7 +273,7 @@ If you use **Athlytics** in your research, please cite:
 
 ```bibtex
 @software{athlytics2025,
-  title   = {Athlytics: An R Framework for Longitudinal Analysis of Exercise Physiology},
+  title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
   author  = {Zhiang He},
   year    = {2025},
   version = {1.0.0},
