@@ -4,7 +4,7 @@
 
 # Athlytics
 
-*An R Framework for Exercise Physiology Analytics*
+*An all-in-one, offline R toolkit for endurance analytics — from FIT/TCX/GPX & Strava exports to core models (ACWR, EF, Pa:Hr decoupling, PB, Exposure) with built-in QC & uncertainty.*
 
 [![Awesome Sports Analytics](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-)
 [![CRAN Status](https://img.shields.io/badge/CRAN-Athlytics-orange?style=flat-square)](https://cran.r-project.org/package=Athlytics)

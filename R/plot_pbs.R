@@ -179,7 +179,12 @@ plot_pbs <- function(data,
 
   if (length(unique(pbs_df$distance_label)) > 1) {
     p <- p + ggplot2::facet_wrap(~ .data$distance_label, scales = "free_y", ncol = 1) +
-      ggplot2::theme(strip.text = ggplot2::element_text(face = "bold"))
+      ggplot2::theme(
+        strip.text = ggplot2::element_text(face = "bold"),
+        strip.background = ggplot2::element_rect(fill = "grey90", color = NA),
+        panel.spacing = ggplot2::unit(0.5, "lines"),
+        axis.text.y = ggplot2::element_text(size = 9, margin = ggplot2::margin(r = 5))
+      )
   }
 
   return(p)

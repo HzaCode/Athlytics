@@ -2,7 +2,7 @@ url: https://hezhiang.com/Athlytics/
 
 template:
   bootstrap: 5
-  bootswatch: flatly
+  bootswatch: litera
 
 navbar:
   structure:

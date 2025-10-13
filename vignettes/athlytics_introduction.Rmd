@@ -366,7 +366,7 @@ $$
 \text{Decoupling \%} = \frac{\text{EF}_{\text{first half}} - \text{EF}_{\text{second half}}}{\text{EF}_{\text{first half}}} \times 100
 $$
 
-正值 = 后半效率下降（HR 漂移）；<5% 常作参考阈值，需结合稳态与环境解读。
+Positive values = efficiency decline in second half (HR drift); <5% commonly used as reference threshold, requires interpretation in context of steady-state and environmental conditions.
 
 **Interpretation:**
 
