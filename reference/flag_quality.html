@@ -7,7 +7,7 @@ suitable for physiological metrics calculation."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
@@ -143,7 +143,7 @@ measurements. Expected columns: <code>time</code> (seconds), <code>heartrate</co
 sudden jumps (Delta HR &gt; 10 bpm/s, Delta P &gt; 300 W/s).</p></li>
 <li><p><strong>GPS Drift</strong>: Flags implausible speeds or accelerations based on sport type.</p></li>
 <li><p><strong>Steady-State Detection</strong>: Identifies segments with low variability
-(CV &lt; 8%) lasting &gt;= 20 minutes, suitable for EF/decoupling calculations.</p></li>
+(CV &lt; 8\<!-- %) lasting &gt;= 20 minutes, suitable for EF/decoupling calculations. --></p></li>
 </ul><p>The function is sport-aware and adjusts thresholds accordingly. All thresholds
 are configurable to accommodate different athlete profiles and data quality.</p>
     </div>
