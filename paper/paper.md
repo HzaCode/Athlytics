@@ -1,4 +1,4 @@
-﻿---
+---
 title: 'Athlytics: Reproducible Scientific Workflows for Cohort Analysis of Endurance Training using Local Strava Data'
 tags:
   - R
