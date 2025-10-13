@@ -8,6 +8,7 @@
 </div>
 
 <p align="center">
+    <a href="https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-"><img src="https://awesome.re/badge-flat.svg" alt="Awesome Sports Analytics"></a>
     <a href="https://cran.r-project.org/web/views/SportsAnalytics.html"><img src="https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square" alt="CRAN Listed"></a>
     <a href="https://cran.r-project.org/package/Athlytics"><img src="https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square" alt="CRAN Status"></a>
     <a href="https://cran.r-project.org/package/Athlytics"><img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?color=blue&style=flat-square" alt="Total Downloads"></a>
