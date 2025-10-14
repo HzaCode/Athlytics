@@ -175,8 +175,9 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) gu
 ---
 
 <p align="center">
-  <a href="https://hezhiang.com/Athlytics/"><strong>Documentation</strong></a> &nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="https://github.com/HzaCode/Athlytics"><strong>GitHub</strong></a> &nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a> &nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a>
+  📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;|&nbsp;
+  📦 <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;|&nbsp;
+  🧾 <a href="https://github.com/HzaCode/Athlytics/blob/main/paper/paper.md"><strong>Paper</strong></a> &nbsp;|&nbsp;
+  🐞 <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
 </p>
+
