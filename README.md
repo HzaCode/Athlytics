@@ -72,7 +72,7 @@ remotes::install_github('HzaCode/Athlytics')
 **2. Stable Release (CRAN)**
 ```r
 # Note: This version may be behind the GitHub release
-install.packages("Athlytics")
+# install.packages("Athlytics")
 ```
 
 ---
