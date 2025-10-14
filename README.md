@@ -1,42 +1,59 @@
 ﻿<div align="center">
 
-<img src="man/figures/image.png" alt="Athlytics Logo" width="220"/>
+<img src="man/figures/image.png" alt="Athlytics logo" width="220"/>
 
 # Athlytics
 *An all-in-one, offline R toolkit for endurance analytics — from FIT/TCX/GPX & Strava exports to core models (ACWR, EF, Pa:Hr decoupling, PB, Exposure) with built-in QC & uncertainty.*
 
-</div>
-
-<p align="center">
-    <a href="https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-"><img src="https://awesome.re/badge-flat.svg" alt="Awesome Sports Analytics"></a>
-    <a href="https://cran.r-project.org/web/views/SportsAnalytics.html"><img src="https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square" alt="CRAN Listed"></a>
-    <a href="https://cran.r-project.org/package/Athlytics"><img src="https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square" alt="CRAN Status"></a>
-    <a href="https://cran.r-project.org/package/Athlytics"><img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?color=blue&style=flat-square" alt="Total Downloads"></a>
-    <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml"><img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check" alt="R-CMD-check"></a>
-    <a href="https://app.codecov.io/gh/HzaCode/Athlytics"><img src="https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square" alt="Code Coverage"></a>
-    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a>
+<p>
+  📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;&bull;&nbsp;
+  📦 <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;&bull;&nbsp;
+  🧾 <a href="https://github.com/HzaCode/Athlytics/blob/main/paper/paper.md"><strong>Paper</strong></a> &nbsp;&bull;&nbsp;
+  🐞 <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
 </p>
 
-<h3 align="center">
-  <a href="https://hezhiang.com/Athlytics/"><strong>📖 Docs</strong></a>
-  &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-  <a href="#-quick-start"><strong>🚀 Quick Start</strong></a>
-  &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-  <a href="#-core-analyses"><strong>📊 Core Analyses</strong></a>
-  &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-  <a href="https://github.com/HzaCode/Athlytics/issues"><strong>💬 Issues</strong></a>
+<p>
+  <a href="https://cran.r-project.org/package=Athlytics">
+    <img src="https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square" alt="CRAN">
+  </a>
+  <a href="https://cran.r-project.org/web/views/SportsAnalytics.html">
+    <img src="https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square" alt="CRAN Listed">
+  </a>
+  <a href="https://cran.r-project.org/package=Athlytics">
+    <img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square" alt="CRAN downloads (total)">
+  </a>
+  <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check" alt="R-CMD-check">
+  </a>
+  <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
+    <img src="https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square" alt="Coverage">
+  </a>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License">
+  </a>
+  <a href="https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-">
+    <img src="https://awesome.re/badge-flat.svg" alt="Awesome list">
+  </a>
+</p>
+
+<h3>
+  <a href="#quick-start"><strong>🚀 Quick Start</strong></a> &nbsp;&bull;&nbsp;
+  <a href="#core-analyses"><strong>📊 Core Analyses</strong></a> &nbsp;&bull;&nbsp;
+  <a href="#citation"><strong>📝 Citation</strong></a>
 </h3>
+
+</div>
 
 
 ## 🎯 Overview
 
-**Athlytics** is a powerful R package for analyzing your endurance training data from **local Strava exports**. It provides a complete, offline toolkit to transform your raw data into meaningful insights about fitness, fatigue, and performance.
+**Athlytics** is a powerful R package for analyzing your endurance training data from **local Strava exports**. It provides a complete, **offline** toolkit to transform your raw data into meaningful insights about fitness, fatigue, and performance.
 
-Designed for athletes, coaches, and sports scientists, Athlytics standardizes the entire analysis process—from loading your data to generating publication-quality plots. Because it works offline without needing API keys, your data remains completely private and your workflows are stable and reproducible forever.
+Designed for athletes, coaches, and sports scientists, Athlytics standardizes the entire analysis process—from loading your data to generating publication-quality plots. Because it works **offline** without needing API keys, your data remains completely **private** and your workflows are **stable and reproducible** forever.
 
 <br>
 <div align="center">
-<img src="man/figures/Athlytics_Final.png" alt="Athlytics Downloads Growth" width="700"/>
+<img src="man/figures/Athlytics_Final.png" alt="Athlytics overview diagram" width="900">
 </div>
 <br>
 
@@ -58,21 +75,19 @@ Designed for athletes, coaches, and sports scientists, Athlytics standardizes th
 
 ## 📦 Installation
 
-The latest version is available on GitHub. The CRAN release is awaiting approval and may not have the newest features like direct ZIP file support.
+**1. Stable Release (CRAN)**
+```r
+install.packages("Athlytics")
+```
+*Note: The CRAN version may not include the latest features like direct ZIP file support.*
 
-**1. Development Version (GitHub - Recommended)**
+**2. Development Version (GitHub - Recommended)**
 ```r
 # First, install remotes if you don't have it
 # install.packages("remotes")
 
-# Now, install Athlytics from GitHub
-remotes::install_github('HzaCode/Athlytics')
-```
-
-**2. Stable Release (CRAN)**
-```r
-# Note: This version may be behind the GitHub release
-# install.packages("Athlytics")
+# Install the latest development version from GitHub
+remotes::install_github("HzaCode/Athlytics")
 ```
 
 ---
@@ -174,10 +189,4 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) gu
 
 ---
 
-<p align="center">
-  📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;|&nbsp;
-  📦 <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;|&nbsp;
-  🧾 <a href="https://github.com/HzaCode/Athlytics/blob/main/paper/paper.md"><strong>Paper</strong></a> &nbsp;|&nbsp;
-  🐞 <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
-</p>
 
