@@ -84,6 +84,6 @@ plot_with_reference(individual = individual_acwr, reference = reference_bands)
 
 # Acknowledgements
 
-We thank the pyOpenSci community for their valuable feedback, Professor Iztok Fister Jr. for his insightful suggestions, and the maintainers and contributors of the cited R packages.
+We thank the pyOpenSci community for their valuable feedback, Professors Benjamin S. Baumer and Iztok Fister Jr. for their insightful suggestions, and the maintainers and contributors of the cited R packages.
 
 # References
