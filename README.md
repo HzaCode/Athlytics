@@ -163,7 +163,7 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
 
 ---
 
-## 📝 Citation
+## 📝 Citation {#citation}
 
 If you use **Athlytics** in your research, please cite the software. We also recommend citing the original methodological papers for any metrics used (see documentation for references).
 
