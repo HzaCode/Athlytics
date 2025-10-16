@@ -107,21 +107,19 @@ must be long enough to contain the target distance segments.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using simulated data</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">athlytics_sample_pbs</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>data set ‘athlytics_sample_pbs’ not found</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">athlytics_sample_pbs</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   activity_date distance activity_id elapsed_time moving_time time_seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    2023-11-25     1000       act_1     252.3211    252.3211     252.3211</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2    2023-11-09     1000       act_2     226.0516    226.0516     226.0516</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    2023-04-05     1000       act_3     210.5546    210.5546     210.5546</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4    2023-07-28     1000       act_4     280.8748    280.8748     280.8748</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    2023-12-17     1000       act_5     266.8137    266.8137     266.8137</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6    2023-11-13     1000       act_6     283.1445    283.1445     283.1445</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   cumulative_pb_seconds is_pb distance_label          time_period</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1              252.3211  TRUE             1k 4M 12.3211096982517S</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2              226.0516  TRUE             1k 3M 46.0515683174948S</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3              210.5546  TRUE             1k 3M 30.5546321902747S</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4              280.8748  TRUE             1k 4M 40.8747571984383S</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5              266.8137  TRUE             1k 4M 26.8137161221827S</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6              283.1445  TRUE             1k 4M 43.1445347480063S</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   activity_id activity_date       distance elapsed_time moving_time time_seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> activity_1… 2023-03-12 <span style="color: #949494;">00:00:00</span>     <span style="text-decoration: underline;">1</span>000         240         235.         240 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> activity_1… 2023-03-19 <span style="color: #949494;">00:00:00</span>     <span style="text-decoration: underline;">1</span>000         237.        233.         237.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> activity_1… 2023-03-27 <span style="color: #949494;">00:00:00</span>     <span style="text-decoration: underline;">1</span>000         235.        230.         235.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> activity_1… 2023-04-20 <span style="color: #949494;">00:00:00</span>     <span style="text-decoration: underline;">1</span>000         232.        227.         232.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> activity_1… 2023-04-27 <span style="color: #949494;">00:00:00</span>     <span style="text-decoration: underline;">1</span>000         229.        225.         229.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> activity_1… 2023-04-30 <span style="color: #949494;">00:00:00</span>     <span style="text-decoration: underline;">1</span>000         226.        222.         226.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: cumulative_pb_seconds &lt;dbl&gt;, is_pb &lt;lgl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   distance_label &lt;fct&gt;, time_period &lt;Period&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Load local activities</span></span></span>
