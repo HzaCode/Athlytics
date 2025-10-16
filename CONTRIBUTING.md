@@ -1,6 +1,6 @@
 # Contributing to athlytics
 
-Thank you for considering contributing to athlytics! We welcome contributions from the community.
+Thank you for considering contributing to Athlytics! We welcome contributions from the community.
 
 ## How to Contribute
 
