@@ -2,7 +2,7 @@
 
 #' Parse Activity File (FIT, TCX, or GPX)
 #'
-#' Internal function to parse activity files from Strava export data.
+#' Parse activity files from Strava export data.
 #' Supports FIT, TCX, and GPX formats (including .gz compressed files).
 #'
 #' @param file_path Path to the activity file (can be .fit, .tcx, .gpx, or .gz compressed)
@@ -12,7 +12,7 @@
 #'   heart_rate, power, cadence, speed (all optional depending on file content)
 #'
 #' @importFrom utils read.csv
-#' @keywords internal
+#' @export
 parse_activity_file <- function(file_path, export_dir = NULL) {
   
   # Resolve full path
@@ -72,12 +72,16 @@ parse_activity_file <- function(file_path, export_dir = NULL) {
 #' @keywords internal
 parse_fit_file <- function(file_path) {
   if (!requireNamespace("FITfileR", quietly = TRUE)) {
-    warning("Package 'FITfileR' is required to parse FIT files. Please install it.")
+    warning("Package 'FITfileR' is required to parse FIT files. Please install it from GitHub: remotes::install_github('grimbough/FITfileR')")
     return(NULL)
   }
   
-  fit_data <- FITfileR::readFitFile(file_path)
-  records <- FITfileR::records(fit_data)
+  # Use getFromNamespace to avoid R CMD check warnings about undeclared imports
+  readFitFile <- getFromNamespace("readFitFile", "FITfileR")
+  records_fn <- getFromNamespace("records", "FITfileR")
+  
+  fit_data <- readFitFile(file_path)
+  records <- records_fn(fit_data)
   
   if (is.null(records) || nrow(records) == 0) {
     return(NULL)
