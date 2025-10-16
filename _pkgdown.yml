@@ -33,6 +33,7 @@ reference:
     - calculate_acwr
     - calculate_acwr_ewma
     - calculate_ef
+    - calculate_ef_from_stream
     - calculate_decoupling
     - calculate_exposure
     - calculate_pbs
