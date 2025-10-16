@@ -160,6 +160,9 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
   message("Found ", nrow(activities_raw), " activities in CSV file.")
   
   # --- Transform Data ---
+  # Store column names to avoid using `.` inside mutate
+  col_names <- names(activities_raw)
+  
   activities_df <- activities_raw %>%
     dplyr::mutate(
       # ID
@@ -180,40 +183,40 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
       
       # Distance - CSV has two "Distance" columns, use the second (more detailed)
       # R renames duplicate columns by appending .1, .2, etc.
-      distance = as.numeric(if("Distance.1" %in% names(.)) .data$Distance.1 
-                           else if("Distance...18" %in% names(.)) .data$`Distance...18`
+      distance = as.numeric(if("Distance.1" %in% col_names) .data$Distance.1 
+                           else if("Distance...18" %in% col_names) .data$`Distance...18`
                            else .data$Distance),
       
       # Times - CSV shows seconds, has duplicate columns
       # Handle different possible column names based on how R reads the CSV
-      moving_time = as.integer(if("Moving.Time" %in% names(.)) .data$Moving.Time else .data$`Moving Time`),
-      elapsed_time = as.integer(if("Elapsed.Time.1" %in% names(.)) .data$Elapsed.Time.1
-                               else if("Elapsed Time...16" %in% names(.)) .data$`Elapsed Time...16`
+      moving_time = as.integer(if("Moving.Time" %in% col_names) .data$Moving.Time else .data$`Moving Time`),
+      elapsed_time = as.integer(if("Elapsed.Time.1" %in% col_names) .data$Elapsed.Time.1
+                               else if("Elapsed Time...16" %in% col_names) .data$`Elapsed Time...16`
                                else .data$`Elapsed Time`),
       
       # Heart Rate - handle duplicate columns
-      average_heartrate = as.numeric(if("Average.Heart.Rate" %in% names(.)) .data$Average.Heart.Rate else .data$`Average Heart Rate`),
-      max_heartrate = as.numeric(if("Max.Heart.Rate.1" %in% names(.)) .data$Max.Heart.Rate.1
-                                else if("Max Heart Rate...31" %in% names(.)) .data$`Max Heart Rate...31`
+      average_heartrate = as.numeric(if("Average.Heart.Rate" %in% col_names) .data$Average.Heart.Rate else .data$`Average Heart Rate`),
+      max_heartrate = as.numeric(if("Max.Heart.Rate.1" %in% col_names) .data$Max.Heart.Rate.1
+                                else if("Max Heart Rate...31" %in% col_names) .data$`Max Heart Rate...31`
                                 else .data$`Max Heart Rate`),
       
       # Power
-      average_watts = as.numeric(if("Average.Watts" %in% names(.)) .data$Average.Watts else .data$`Average Watts`),
-      max_watts = as.numeric(if("Max.Watts" %in% names(.)) .data$Max.Watts else .data$`Max Watts`),
-      weighted_average_watts = as.numeric(if("Weighted Average Power" %in% names(.)) .data$`Weighted Average Power` else NA_real_),
+      average_watts = as.numeric(if("Average.Watts" %in% col_names) .data$Average.Watts else .data$`Average Watts`),
+      max_watts = as.numeric(if("Max.Watts" %in% col_names) .data$Max.Watts else .data$`Max Watts`),
+      weighted_average_watts = as.numeric(if("Weighted Average Power" %in% col_names) .data$`Weighted Average Power` else NA_real_),
       
       # Elevation
-      elevation_gain = as.numeric(if("Elevation.Gain" %in% names(.)) .data$Elevation.Gain else .data$`Elevation Gain`),
-      elevation_loss = as.numeric(if("Elevation.Loss" %in% names(.)) .data$Elevation.Loss else .data$`Elevation Loss`),
+      elevation_gain = as.numeric(if("Elevation.Gain" %in% col_names) .data$Elevation.Gain else .data$`Elevation Gain`),
+      elevation_loss = as.numeric(if("Elevation.Loss" %in% col_names) .data$Elevation.Loss else .data$`Elevation Loss`),
       
       # Speed
-      average_speed = as.numeric(if("Average.Speed" %in% names(.)) .data$Average.Speed else .data$`Average Speed`),
-      max_speed = as.numeric(if("Max.Speed" %in% names(.)) .data$Max.Speed else .data$`Max Speed`),
+      average_speed = as.numeric(if("Average.Speed" %in% col_names) .data$Average.Speed else .data$`Average Speed`),
+      max_speed = as.numeric(if("Max.Speed" %in% col_names) .data$Max.Speed else .data$`Max Speed`),
       
       # Other useful metrics
       calories = as.numeric(.data$Calories),
-      relative_effort = as.numeric(if("Relative.Effort.1" %in% names(.)) .data$Relative.Effort.1
-                                  else if("Relative Effort...38" %in% names(.)) .data$`Relative Effort...38`
+      relative_effort = as.numeric(if("Relative.Effort.1" %in% col_names) .data$Relative.Effort.1
+                                  else if("Relative Effort...38" %in% col_names) .data$`Relative Effort...38`
                                   else .data$`Relative Effort`),
       
       # File path for detailed activity data (for decoupling, pbs analysis)

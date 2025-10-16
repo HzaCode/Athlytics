@@ -42,3 +42,38 @@ node_modules/
 /Meta/
 
 # Paper drafts and submissions
+
+# Batch and PowerShell scripts (installation helpers)
+*.bat
+*.ps1
+
+# R temporary and debug files
+*.Rout
+*.rds
+*_coverage*.R
+*_debug*.R
+*_test*.R
+check_*.R
+debug_*.R
+final_*.R
+improve_*.R
+install_*.R
+parallel_*.R
+performance_*.R
+quick_*.R
+run_coverage*.R
+run_specific_*.R
+run_tests*.R
+serial_*.R
+simple_*.R
+stable_*.R
+coverage_*.R
+test_*.R
+rename_*.R
+调试.R
+.lang
+temp_order.txt
+test-results.txt
+
+# Strava data
+strava_data/
