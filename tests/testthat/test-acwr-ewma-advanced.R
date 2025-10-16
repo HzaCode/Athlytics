@@ -176,3 +176,6 @@ test_that("calculate_acwr_ewma handles date range filtering", {
   
   expect_s3_class(result, "data.frame")
 })
+
+
+
