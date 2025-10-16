@@ -32,7 +32,6 @@ Imports:
     tools
 Suggests:
     devtools,
-    FITfileR,
     knitr,
     pkgdown,
     rmarkdown,
