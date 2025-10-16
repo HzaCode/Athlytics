@@ -73,7 +73,6 @@
 ^tests/manual_tests$
 ^CRAN-SUBMISSION$
 ^Untitled\.R$
-^run_coverage\.R$
 
 # User's private data - exclude from R package build
 ^strava_export_data$
