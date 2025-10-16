@@ -1,6 +1,6 @@
 
 test_that("additional edge cases for coverage", {
-  # 测试极小的数值 - 使用更合理的日期范围
+  # Test with very small numeric values - using reasonable date range
   activities <- data.frame(
     date = as.Date("2023-06-01"),
     type = "Run",
@@ -13,7 +13,7 @@ test_that("additional edge cases for coverage", {
   result <- calculate_ef(activities, start_date = "2023-05-01", end_date = "2023-07-01", quality_control = "off")
   expect_s3_class(result, "data.frame")
   
-  # 测试极大数值
+  # Test with very large numeric values
   activities2 <- data.frame(
     date = as.Date("2023-06-01"),
     type = "Run",
@@ -26,7 +26,7 @@ test_that("additional edge cases for coverage", {
   result2 <- calculate_ef(activities2, start_date = "2023-05-01", end_date = "2023-07-01", quality_control = "off")
   expect_s3_class(result2, "data.frame")
   
-  # 测试包含NA的数据
+  # Test with NA values in data
   activities3 <- data.frame(
     date = as.Date("2023-06-01"),
     type = "Run",
