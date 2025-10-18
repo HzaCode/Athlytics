@@ -13,7 +13,7 @@ We follow a "GitHub Flow" like process where contributions are made through Pull
     *   **For Feature Requests:** If you have an idea for a new feature, please open an issue to discuss it. This allows us to discuss the potential feature and ensure it aligns with the project's goals before significant development effort is made.
     *   **For Other Contributions:** If you want to contribute in other ways (e.g., documentation improvements, refactoring), it's still a good idea to open an issue first to discuss your proposed changes.
 
-3.  **Fork the Repository:** Fork the [athlytics repository](https://github.com/HzaCode/athlytics) to your own GitHub account.
+3.  **Fork the Repository:** Fork the [Athlytics repository](https://github.com/HzaCode/athlytics) to your own GitHub account.
 
 4.  **Create a Branch:** Create a new branch in your forked repository for your contribution. Choose a descriptive branch name (e.g., `fix-plot-bug`, `add-new-metric`).
 
