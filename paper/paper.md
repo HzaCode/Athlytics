@@ -34,7 +34,7 @@ Analyzing endurance training data in R often requires stitching together API cli
 
 We provide a direct feature comparison to highlight the capabilities essential for reproducible, cohort-scale research.
 
-| Feature (research-relevant) | **Athlytics** | rStrava [@rStrava] | trackeR [@trackeR_jss] | activatr [@activatr] | ACWR | injurytools [@injurytools] |
+| Feature (research-relevant) | **Athlytics** | rStrava [@rStrava] | trackeR [@trackeR_jss] | activatr [@activatr] | ACWR [@ACWR] | injurytools [@injurytools] |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Offline archives; No OAuth/tokens/quotas** | ✓ | ✕ (API) | ✓ | ✓ | ✓ (tabular) | ✓ (tabular) |
 | **API-limited (OAuth, scope, rate-limits)** | ✕ | ✓ | ✕ | ✕ | ✕ | ✕ |

@@ -1,11 +1,10 @@
-citHeader("To cite package 'Athlytics' in publications use:")
-
-citEntry(entry = "Manual",
-         title = "Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology",
-         author = personList(as.person("Zhiang He")),
-         year = 2025,
-         version = "1.0.0",
-         url = "https://github.com/HzaCode/Athlytics",
-         textVersion = paste("Zhiang He (2025). Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology. R package version 1.0.0. https://github.com/HzaCode/Athlytics")
+bibentry(
+  bibtype = "Manual",
+  title = "Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology",
+  author = person("Zhiang", "He", email = "ang@hezhiang.com"),
+  year = 2025,
+  note = "R package version 1.0.0",
+  url = "https://github.com/HzaCode/Athlytics",
+  textVersion = paste("Zhiang He (2025). Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology. R package version 1.0.0. https://github.com/HzaCode/Athlytics")
 )
 

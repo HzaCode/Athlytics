@@ -23,9 +23,6 @@ reference:
     contents:
     - load_local_activities
     - parse_activity_file
-    - parse_fit_file
-    - parse_gpx_file
-    - parse_tcx_file
     
   - title: Core Metrics Calculation
     desc: Calculate key physiological metrics

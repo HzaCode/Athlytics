@@ -4,7 +4,8 @@ Version: 1.0.0
 Author: Zhiang He [aut, cre]
 Maintainer: Zhiang He <ang@hezhiang.com>
 Authors@R: 
-    person("Zhiang", "He", email = "ang@hezhiang.com", role = c("aut", "cre"))
+    person("Zhiang", "He", email = "ang@hezhiang.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0009-0171-4578"))
 Description: An open-source computational framework for longitudinal analysis of 
     exercise physiology metrics using local 'Strava' data exports. Designed 
     for personal analysis and sports science applications, this package provides 
