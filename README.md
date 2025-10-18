@@ -37,10 +37,11 @@
 </p>
 
 <h3 align="center">
-  <a href="#quick-start"><strong>🚀 Quick Start</strong></a> &nbsp;&bull;&nbsp;
-  <a href="#core-analyses"><strong>📊 Core Analyses</strong></a> &nbsp;&bull;&nbsp;
-  <a href="#citation"><strong>📝 Citation</strong></a>
+  <a href="https://github.com/HzaCode/Athlytics/blob/main/README.md#quick-start"><strong>🚀 Quick Start</strong></a> &nbsp;&bull;&nbsp;
+  <a href="https://github.com/HzaCode/Athlytics/blob/main/README.md#core-analyses"><strong>📊 Core Analyses</strong></a> &nbsp;&bull;&nbsp;
+  <a href="https://github.com/HzaCode/Athlytics/blob/main/README.md#citation"><strong>📝 Citation</strong></a>
 </h3>
+
 
 </div>
 
