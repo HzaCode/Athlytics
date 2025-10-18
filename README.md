@@ -1,4 +1,5 @@
-﻿<div align="center">
+
+<div align="center">
 
 <img src="man/figures/image.png" alt="Athlytics logo" width="220"/>
 
@@ -187,5 +188,4 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) gu
 *   **🔧 Submit a Pull Request**: We appreciate your help in improving Athlytics.
 
 ---
-
-
+```
