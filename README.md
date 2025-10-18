@@ -1,4 +1,3 @@
-
 <div align="center">
 
 <img src="man/figures/image.png" alt="Athlytics logo" width="220"/>
@@ -7,9 +6,9 @@
 *An offline, reproducible R toolkit for endurance-exercise data: from FIT/TCX/GPX & Strava archives to validated models (ACWR, EF, pa:hr decoupling, PB, exposure), with built-in QC and uncertainty estimation.*
 
 <p>
-  📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;&bull;&nbsp;
-  📦 <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;&bull;&nbsp;
-  🐞 <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
+  <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;|&nbsp;
+  <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;|&nbsp;
+  <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
 </p>
 
 <p>
@@ -25,6 +24,9 @@
   <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check" alt="R-CMD-check">
   </a>
+  <a href="https://hezhiang.com/Athlytics/">
+    <img src="https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square" alt="Documentation">
+  </a>
   <a href="https://app.codecov.io/gh/HzaCode/Athlytics">
     <img src="https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square" alt="Coverage">
   </a>
@@ -37,16 +39,16 @@
 </p>
 
 <h3 align="center">
-  <a href="#-quick-start"><strong>🚀 Quick Start</strong></a> &nbsp;&bull;&nbsp;
-  <a href="#-core-analyses"><strong>📊 Core Analyses</strong></a> &nbsp;&bull;&nbsp;
-  <a href="#-citation"><strong>📝 Citation</strong></a>
+  <a href="#quick-start"><strong>Quick Start</strong></a> &nbsp;&bull;&nbsp;
+  <a href="#core-analyses"><strong>Core Analyses</strong></a> &nbsp;&bull;&nbsp;
+  <a href="#citation"><strong>Citation</strong></a>
 </h3>
 
 
 </div>
 
 
-## 🎯 Overview
+## Overview
 
 **Athlytics** is a research-oriented R package for the longitudinal analysis of endurance training. It operates entirely on **local Strava exports** (or FIT/TCX/GPX files), avoiding API dependencies to ensure **privacy** and long-term **reproducibility**.
 
@@ -60,9 +62,9 @@ The package standardizes the workflow from data ingestion and quality control to
 
 
 
-## ✨ Key Features
+## Key Features
 
-*   ✅ **Reproducible by design** – Fully offline; no API keys. Deterministic pipelines suitable for longitudinal studies.
+*   **Reproducible by design** – Fully offline; no API keys. Deterministic pipelines suitable for longitudinal studies.
 *   ✅ **Validated metrics** – Implements ACWR, EF, and decoupling commonly used in exercise physiology; integrated **QC** checks.
 *   ✅ **Uncertainty-aware** – Functions return estimates with variance/intervals where applicable, enabling principled inference.
 *   ✅ **Cohort support** – Built-in helpers for multi-athlete datasets and percentile-band references.
@@ -70,7 +72,7 @@ The package standardizes the workflow from data ingestion and quality control to
 
 ---
 
-## 📦 Installation
+## Installation
 
 **1. Stable Release (CRAN)**
 ```r
@@ -88,17 +90,17 @@ remotes::install_github("HzaCode/Athlytics")
 ```
 
 ---
-### 🚀 Quick Start
+### Quick Start
 
 
-### 📥 Step 1: Export Your Strava Data
+### Step 1: Export Your Strava Data
 
 1.  Navigate to **[Strava Settings → My Account](https://www.strava.com/settings/profile)**.
 2.  Under "Download or Delete Your Account," click **"Get Started"** and then **"Request Your Archive"**.
 3.  You'll receive an email with a download link — this sometimes takes a few hours.
 4.  Download the ZIP file (e.g., `export_12345678.zip`). **There is no need to unzip it.**
 
-### 💻 Step 2: Load and Analyze (Cohort Example)
+### Step 2: Load and Analyze (Cohort Example)
 
 This example shows a common workflow: loading data for several athletes, calculating their training load, and comparing one athlete to the group average.
 
@@ -127,11 +129,11 @@ plot_with_reference(individual = individual_acwr, reference = reference_bands)
 
 ---
 
-## 📊 Core Analyses
+## Core Analyses
 
 All functions return clean, tidy `tibble` data frames, making it easy to perform your own custom analysis or visualizations.
 
-### 1️⃣ Training Load Monitoring (ACWR)
+### 1. Training Load Monitoring (ACWR)
 Track how your training load is progressing to avoid ramping up too quickly, which can help in managing injury risk.
 
 <p align="center">
@@ -140,7 +142,7 @@ Track how your training load is progressing to avoid ramping up too quickly, whi
   <em><a href="https://hezhiang.com/Athlytics/reference/calculate_acwr.html">Learn more about ACWR analysis...</a></em>
 </p>
 
-### 2️⃣ Aerobic Efficiency (EF)
+### 2. Aerobic Efficiency (EF)
 See how your aerobic fitness is changing over time by comparing your output (pace or power) to your effort (heart rate). A rising trend is a great sign of improving fitness.
 
 <p align="center">
@@ -149,7 +151,7 @@ See how your aerobic fitness is changing over time by comparing your output (pac
   <em><a href="https://hezhiang.com/Athlytics/reference/calculate_ef.html">Learn more about Aerobic Efficiency...</a></em>
 </p>
 
-### 3️⃣ Cardiovascular Decoupling
+### 3. Cardiovascular Decoupling
 Measure your endurance by analyzing how much your heart rate "drifts" upward during a steady-state workout. A low decoupling rate (<5%) is a marker of excellent aerobic conditioning.
 
 <p align="center">
@@ -160,7 +162,7 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
 
 ---
 
-## 📐 Methods & Validation
+## Methods & Validation
 
 This release implements widely used constructs in endurance-exercise analytics:
 - **ACWR**: rolling acute (e.g., 7-day) vs chronic (e.g., 28-day) load ratios with smoothing options.
@@ -171,7 +173,7 @@ We provide input validation, outlier handling, and activity-level QC filters (e.
 
 ---
 
-## 📝 Citation
+## Citation
 
 If you use **Athlytics** in academic work, please cite the software as well as the original methodological sources for specific metrics.
 
@@ -187,22 +189,22 @@ If you use **Athlytics** in academic work, please cite the software as well as t
 
 ---
 
-## ⚖️ Ethical Considerations
+## Ethical Considerations
 
 Athlytics processes personal training records. Ensure appropriate consent for cohort analyses, de-identify outputs where required, and comply with local IRB/ethics and data-protection regulations.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-*   **🐛 Report an Issue**: [Open an Issue](https://github.com/HzaCode/Athlytics/issues)
-*   **💡 Suggest a Feature**: [Start a Discussion](https://github.com/HzaCode/Athlytics/discussions)
-*   **🔧 Submit a Pull Request**: We appreciate your help in improving Athlytics.
+*   **Report an Issue**: [Open an Issue](https://github.com/HzaCode/Athlytics/issues)
+*   **Suggest a Feature**: [Start a Discussion](https://github.com/HzaCode/Athlytics/discussions)
+*   **Submit a Pull Request**: We appreciate your help in improving Athlytics.
 
 ---
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 We thank the [pyOpenSci](https://www.pyopensci.org/) community, [Prof. Benjamin S. Baumer](https://github.com/beanumber), and [Prof. Iztok Fister Jr.](https://github.com/firefly-cpp) for their valuable feedback and suggestions.
