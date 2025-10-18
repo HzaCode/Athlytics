@@ -171,15 +171,6 @@ We provide input validation, outlier handling, and activity-level QC filters (e.
 
 ---
 
-## 🔁 Reproducibility & Data Privacy
-
-Analyses are file-based and fully **offline**, ensuring privacy of personally identifiable training data. We recommend:
-1) Versioning your Strava ZIP archives;
-2) Pinning Athlytics and dependent package versions;
-3) Archiving code and rendered artifacts (e.g., via Zenodo) with a clear computational environment manifest.
-
----
-
 ## 📝 Citation
 
 If you use **Athlytics** in academic work, please cite the software as well as the original methodological sources for specific metrics.
@@ -214,4 +205,4 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) gu
 
 ## 🙏 Acknowledgements
 
-The author acknowledges the helpful feedback from the pyOpenSci community, and the constructive suggestions provided by Professors [Benjamin S. Baumer](https://github.com/beanumber) and [Iztok Fister Jr.](https://github.com/firefly-cpp), as well as the developers of the referenced R packages. We also thank the endurance-analytics and open-source communities for constructive feedback on data quality, modeling choices, and reproducibility practices.
+We thank the [pyOpenSci](https://www.pyopensci.org/) community, [Prof. Benjamin S. Baumer](https://github.com/beanumber), and [Prof. Iztok Fister Jr.](https://github.com/firefly-cpp) for their valuable feedback and suggestions.
