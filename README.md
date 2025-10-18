@@ -189,4 +189,8 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) gu
 *   **💡 Suggest a Feature**: [Start a Discussion](https://github.com/HzaCode/Athlytics/discussions)
 *   **🔧 Submit a Pull Request**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+***
 
+## 🙏 Acknowledgements
+
+We thank the [pyOpenSci](https://www.pyopensci.org/) community, [Prof. Benjamin S. Baumer](https://github.com/beanumber), and [Prof. Iztok Fister Jr.](https://github.com/firefly-cpp) for their valuable feedback and suggestions.
