@@ -1,4 +1,4 @@
-# Contributing to athlytics
+# Contributing to Athlytics
 
 Thank you for considering contributing to Athlytics! We welcome contributions from the community.
 
