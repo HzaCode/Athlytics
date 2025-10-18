@@ -92,7 +92,8 @@ remotes::install_github("HzaCode/Athlytics")
 
 ---
 
-## 🚀 Quick Start
+<a href="#-quick-start">🚀 Quick Start</a>
+
 
 ### 📥 Step 1: Export Your Strava Data
 
