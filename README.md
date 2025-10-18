@@ -4,7 +4,7 @@
 <img src="man/figures/image.png" alt="Athlytics logo" width="220"/>
 
 # Athlytics
-*An all-in-one, offline R toolkit for endurance analytics — from FIT/TCX/GPX & Strava exports to core models (ACWR, EF, Pa:Hr decoupling, PB, Exposure) with built-in QC & uncertainty.*
+*An offline, reproducible R toolkit for endurance-exercise data: from FIT/TCX/GPX & Strava archives to validated models (ACWR, EF, pa:hr decoupling, PB, exposure), with built-in QC and uncertainty estimation.*
 
 <p>
   📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;&bull;&nbsp;
@@ -48,9 +48,9 @@
 
 ## 🎯 Overview
 
-**Athlytics** is a powerful R package for analyzing your endurance training data from **local Strava exports**. It provides a complete, **offline** toolkit to transform your raw data into meaningful insights about fitness, fatigue, and performance.
+**Athlytics** is a research-oriented R package for the longitudinal analysis of endurance training. It operates entirely on **local Strava exports** (or FIT/TCX/GPX files), avoiding API dependencies to ensure **privacy** and long-term **reproducibility**.
 
-Designed for athletes, coaches, and sports scientists, Athlytics standardizes the entire analysis process—from loading your data to generating publication-quality plots. Because it works **offline** without needing API keys, your data remains completely **private** and your workflows are **stable and reproducible** forever.
+The package standardizes the workflow from data ingestion and quality control to model estimation and uncertainty quantification. Implemented endpoints include **acute-to-chronic workload ratio (ACWR)**, **aerobic efficiency (EF)**, and **cardiovascular decoupling (pa:hr)**, alongside personal-best and exposure profiles suitable for **single-subject** and **cohort** designs. All functions return tidy data, facilitating statistical modeling and figure generation for academic reporting.
 
 <br>
 <div align="center">
@@ -62,17 +62,13 @@ Designed for athletes, coaches, and sports scientists, Athlytics standardizes th
 
 ## ✨ Key Features
 
-*   ✅ **100% Local and Private**: Works directly with your Strava ZIP export. No data is ever uploaded, and no internet connection or API keys are needed. You have full control over your information.
+*   ✅ **Reproducible by design** – Fully offline; no API keys. Deterministic pipelines suitable for longitudinal studies.
+*   ✅ **Validated metrics** – Implements ACWR, EF, and decoupling commonly used in exercise physiology; integrated **QC** checks.
+*   ✅ **Uncertainty-aware** – Functions return estimates with variance/intervals where applicable, enabling principled inference.
+*   ✅ **Cohort support** – Built-in helpers for multi-athlete datasets and percentile-band references.
+*   ✅ **Tidy outputs** – Consistent, analysis-ready tibbles for downstream modeling and figure pipelines.
 
-*   ✅ **All-in-One Analysis Pipeline**: Handles everything from loading and cleaning raw data to calculating advanced metrics and creating visualizations. No more patching together different tools.
-
-*   ✅ **Robust Scientific Metrics**: Implements widely used metrics for performance analysis, including Acute-to-Chronic Workload Ratio (ACWR), Aerobic Efficiency (EF), and Cardiovascular Decoupling, with built-in quality checks.
-
-*   ✅ **Powerful Cohort Analysis**: Purpose-built for comparing multiple athletes. Easily load data for a team or group and benchmark an individual's progress against the cohort.
-
-*   ✅ **Reproducible and Shareable**: Because the workflow is self-contained, your analysis scripts are easy to share and will produce the same results every time, making it ideal for reliable, long-term tracking.
-
-***
+---
 
 ## 📦 Installation
 
@@ -91,8 +87,7 @@ install.packages("Athlytics")
 remotes::install_github("HzaCode/Athlytics")
 ```
 
-***
-
+---
 ### 🚀 Quick Start
 
 
@@ -100,7 +95,7 @@ remotes::install_github("HzaCode/Athlytics")
 
 1.  Navigate to **[Strava Settings → My Account](https://www.strava.com/settings/profile)**.
 2.  Under "Download or Delete Your Account," click **"Get Started"** and then **"Request Your Archive"**.
-3.  You will receive an email with a download link (it may take a little while).
+3.  You'll receive an email with a download link — this sometimes takes a few hours.
 4.  Download the ZIP file (e.g., `export_12345678.zip`). **There is no need to unzip it.**
 
 ### 💻 Step 2: Load and Analyze (Cohort Example)
@@ -119,7 +114,7 @@ cohort_data <- bind_rows(athlete1, athlete2)
 # 2. Calculate ACWR for each athlete in the cohort
 cohort_acwr <- cohort_data %>%
   group_by(athlete_id) %>%
-  group_modify(~ calculate_acwr(.x, load_metric = "duration_mins")) %>%
+  group_modify(~ calculate_acwr(.x, activity_type = "Run", load_metric = "duration_mins")) %>%
   ungroup()
 
 # 3. Generate percentile bands to serve as a reference for the cohort
@@ -130,7 +125,7 @@ individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")
 plot_with_reference(individual = individual_acwr, reference = reference_bands)
 ```
 
-***
+---
 
 ## 📊 Core Analyses
 
@@ -163,15 +158,26 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
   <em><a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html">Learn more about Decoupling...</a></em>
 </p>
 
-***
+---
+
+## 📐 Methods & Validation
+
+This release implements widely used constructs in endurance-exercise analytics:
+- **ACWR**: rolling acute (e.g., 7-day) vs chronic (e.g., 28-day) load ratios with smoothing options.
+- **Aerobic Efficiency (EF)**: output (pace/power) relative to effort (heart rate) over time.
+- **Cardiovascular Decoupling (pa:hr)**: drift between pace/power and heart rate during steady efforts.
+
+We provide input validation, outlier handling, and activity-level QC filters (e.g., minimal duration, HR plausibility ranges). For cohort summarization, Athlytics computes percentile bands and supports stratification by sport, sex, or other covariates when available.
+
+---
 
 ## 📝 Citation
 
-If you use **Athlytics** in your research, please cite the software. We also recommend citing the original methodological papers for any metrics used (see documentation for references).
+If you use **Athlytics** in academic work, please cite the software as well as the original methodological sources for specific metrics.
 
 ```bibtex
 @software{athlytics2025,
-  title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
+  title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
   author  = {Zhiang He},
   year    = {2025},
   version = {1.0.0},
@@ -179,7 +185,13 @@ If you use **Athlytics** in your research, please cite the software. We also rec
 }
 ```
 
-***
+---
+
+## ⚖️ Ethical Considerations
+
+Athlytics processes personal training records. Ensure appropriate consent for cohort analyses, de-identify outputs where required, and comply with local IRB/ethics and data-protection regulations.
+
+---
 
 ## 🤝 Contributing
 
@@ -187,9 +199,9 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) gu
 
 *   **🐛 Report an Issue**: [Open an Issue](https://github.com/HzaCode/Athlytics/issues)
 *   **💡 Suggest a Feature**: [Start a Discussion](https://github.com/HzaCode/Athlytics/discussions)
-*   **🔧 Submit a Pull Request**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+*   **🔧 Submit a Pull Request**: We appreciate your help in improving Athlytics.
 
-***
+---
 
 ## 🙏 Acknowledgements
 
