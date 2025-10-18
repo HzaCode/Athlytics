@@ -16,7 +16,6 @@ A data frame with columns: time, latitude, longitude, elevation,
 heart_rate, power, cadence, speed (all optional depending on file content)
 }
 \description{
-Internal function to parse activity files from Strava export data.
+Parse activity files from Strava export data.
 Supports FIT, TCX, and GPX formats (including .gz compressed files).
 }
-\keyword{internal}

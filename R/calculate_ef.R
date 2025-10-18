@@ -327,9 +327,23 @@ calculate_ef <- function(activities_data,
   return(ef_data)
 }
 
-#' Internal: Calculate EF from Stream Data with Steady-State Analysis
-#' @keywords internal
-#' @noRd
+#' Calculate EF from Stream Data with Steady-State Analysis
+#' 
+#' Calculate efficiency factor (EF) from detailed stream data using steady-state analysis.
+#' This function analyzes heart rate and power/pace data to find periods of steady effort
+#' and calculates the efficiency factor for those periods.
+#'
+#' @param stream_data Data frame with stream data (time, heartrate, watts/distance columns)
+#' @param activity_date Date of the activity
+#' @param act_type Activity type (e.g., "Run", "Ride")
+#' @param ef_metric Efficiency metric to calculate ("pace_hr" or "power_hr")
+#' @param min_steady_minutes Minimum duration for steady-state analysis (minutes)
+#' @param steady_cv_threshold Coefficient of variation threshold for steady state
+#' @param min_hr_coverage Minimum heart rate data coverage required
+#' @param quality_control Quality control setting ("off", "flag", "filter")
+#'
+#' @return Data frame with EF calculation results
+#' @export
 calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_metric, 
                                    min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control) {
   

@@ -72,7 +72,7 @@ Designed for athletes, coaches, and sports scientists, Athlytics standardizes th
 
 *   ✅ **Reproducible and Shareable**: Because the workflow is self-contained, your analysis scripts are easy to share and will produce the same results every time, making it ideal for reliable, long-term tracking.
 
----
+***
 
 ## 📦 Installation
 
@@ -91,7 +91,8 @@ install.packages("Athlytics")
 remotes::install_github("HzaCode/Athlytics")
 ```
 
----
+***
+
 ### 🚀 Quick Start
 
 
@@ -129,7 +130,7 @@ individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")
 plot_with_reference(individual = individual_acwr, reference = reference_bands)
 ```
 
----
+***
 
 ## 📊 Core Analyses
 
@@ -162,7 +163,7 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
   <em><a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html">Learn more about Decoupling...</a></em>
 </p>
 
----
+***
 
 ## 📝 Citation
 
@@ -178,7 +179,7 @@ If you use **Athlytics** in your research, please cite the software. We also rec
 }
 ```
 
----
+***
 
 ## 🤝 Contributing
 
