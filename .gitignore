@@ -8,6 +8,8 @@ CRAN-SUBMISSION
 /Athlytics.Rcheck/00_pkg_src/Athlytics/.aspell
 /Athlytics.Rcheck/00_pkg_src/Athlytics
 /Athlytics.Rcheck
+*.Rcheck/
+*.Rproj.Rcheck/
 # Archive files
 *.gz
 *.tar.gz
@@ -35,6 +37,8 @@ strava_export_data/
 # Temporary test files
 test-*.html
 test-*.md
+*_test.md
+README_test*
 
 # Node modules (if accidentally created)
 node_modules/
