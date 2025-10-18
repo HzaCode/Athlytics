@@ -7,14 +7,14 @@ assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**Problem or motivation**
+What problem would this feature solve?
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Proposed solution**
+Describe the feature you'd like to see.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**Alternatives considered**
+Other approaches you've evaluated.
 
 **Use case**
 How would this feature be used? What problem does it solve?
@@ -33,7 +33,7 @@ result <- new_function(
 ```
 
 **Additional context**
-Add any other context, screenshots, or references about the feature request here.
+Any other relevant information.
 
 **References**
 If this feature is based on published research or methodology, please cite the relevant papers:

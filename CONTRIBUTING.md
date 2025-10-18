@@ -1,7 +1,5 @@
 # Contributing to Athlytics
 
-Thank you for considering contributing to Athlytics! We welcome contributions from the community.
-
 ## How to Contribute
 
 We follow a "GitHub Flow" like process where contributions are made through Pull Requests. To make a contribution, please follow these steps:
@@ -38,4 +36,4 @@ By participating in this project, you are expected to uphold our [Code of Conduc
 
 ## Questions?
 
-If you have any questions, feel free to open an issue or reach out to the maintainers. 
+Open an issue for questions or clarifications. 

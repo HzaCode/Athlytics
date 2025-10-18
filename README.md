@@ -187,6 +187,6 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) gu
 
 *   **🐛 Report an Issue**: [Open an Issue](https://github.com/HzaCode/Athlytics/issues)
 *   **💡 Suggest a Feature**: [Start a Discussion](https://github.com/HzaCode/Athlytics/discussions)
-*   **🔧 Submit a Pull Request**: We appreciate your help in improving Athlytics.
+*   **🔧 Submit a Pull Request**: See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 

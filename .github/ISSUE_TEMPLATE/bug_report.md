@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve Athlytics
+about: Report a bug in Athlytics
 title: '[BUG] '
 labels: bug
 assignees: ''
