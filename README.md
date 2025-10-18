@@ -36,7 +36,7 @@
   </a>
 </p>
 
-<h3>
+<h3 align="center">
   <a href="#quick-start"><strong>🚀 Quick Start</strong></a> &nbsp;&bull;&nbsp;
   <a href="#core-analyses"><strong>📊 Core Analyses</strong></a> &nbsp;&bull;&nbsp;
   <a href="#citation"><strong>📝 Citation</strong></a>
@@ -91,8 +91,7 @@ remotes::install_github("HzaCode/Athlytics")
 ```
 
 ---
-
-<a href="#-quick-start">🚀 Quick Start</a>
+### 🚀 Quick Start
 
 
 ### 📥 Step 1: Export Your Strava Data
