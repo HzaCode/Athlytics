@@ -8,7 +8,6 @@
 <p>
   📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;&bull;&nbsp;
   📦 <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;&bull;&nbsp;
-  🧾 <a href="https://github.com/HzaCode/Athlytics/blob/main/paper/paper.md"><strong>Paper</strong></a> &nbsp;&bull;&nbsp;
   🐞 <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
 </p>
 
