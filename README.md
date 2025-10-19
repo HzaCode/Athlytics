@@ -7,9 +7,9 @@
 *An offline, reproducible R toolkit for endurance-exercise data: from FIT/TCX/GPX & Strava archives to validated models (ACWR, EF, pa:hr decoupling, PB, exposure), with built-in QC and uncertainty estimation.*
 
 <p>
-  📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;&bull;&nbsp;
-  📦 <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;&bull;&nbsp;
-  🐞 <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
+📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a> &nbsp;&bull;&nbsp;
+📦 <a href="https://cran.r-project.org/package=Athlytics"><strong>CRAN</strong></a> &nbsp;&bull;&nbsp;
+🐞 <a href="https://github.com/HzaCode/Athlytics/issues"><strong>Issues</strong></a>
 </p>
 
 <p>
@@ -33,6 +33,15 @@
   </a>
   <a href="https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-">
     <img src="https://awesome.re/badge-flat.svg" alt="Awesome list">
+  </a>
+  <a href="https://docs.ropensci.org/pkgcheck/">
+    <img src="https://img.shields.io/badge/rOpenSci-pkgcheck-brightgreen?style=flat-square" alt="rOpenSci pkgcheck">
+  </a>
+  <a href="https://github.com/HzaCode/Athlytics">
+    <img src="https://img.shields.io/badge/code%20quality-A-brightgreen?style=flat-square" alt="Code Quality">
+  </a>
+  <a href="https://www.repostatus.org/#active">
+    <img src="https://www.repostatus.org/badges/latest/active.svg?style=flat-square" alt="Project Status: Active">
   </a>
 </p>
 

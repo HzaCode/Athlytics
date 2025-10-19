@@ -40,3 +40,20 @@ Calculate efficiency factor (EF) from detailed stream data using steady-state an
 This function analyzes heart rate and power/pace data to find periods of steady effort
 and calculates the efficiency factor for those periods.
 }
+\examples{
+\dontrun{
+# Parse activity file and calculate EF from streams
+streams <- parse_activity_file("activity_12345.fit")
+ef_result <- calculate_ef_from_stream(
+  stream_data = streams,
+  activity_date = as.Date("2025-01-15"),
+  act_type = "Run",
+  ef_metric = "pace_hr",
+  min_steady_minutes = 20,
+  steady_cv_threshold = 0.08,
+  min_hr_coverage = 0.9,
+  quality_control = "filter"
+)
+}
+
+}

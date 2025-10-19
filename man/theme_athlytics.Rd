@@ -11,6 +11,17 @@ theme_athlytics(base_size = 12, base_family = "")
 
 \item{base_family}{Font family (default: "")}
 }
+\value{
+A ggplot2 theme object that can be added to plots
+}
 \description{
 Publication-ready ggplot2 theme with sensible defaults for scientific figures.
+}
+\examples{
+library(ggplot2)
+# Apply theme to a plot
+ggplot(mtcars, aes(mpg, wt)) +
+  geom_point() +
+  theme_athlytics()
+
 }

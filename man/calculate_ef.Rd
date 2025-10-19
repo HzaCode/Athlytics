@@ -30,9 +30,9 @@ Default: \code{c("Run", "Ride")}.}
 \item{ef_metric}{Character string specifying the efficiency metric:
 \itemize{
 \item \code{"pace_hr"}: Pace-based efficiency (for running).
-Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)
+Formula: speed (m/s) / avg_HR. Units: m/s/bpm (higher = better fitness)
 \item \code{"power_hr"}: Power-based efficiency (for cycling).
-Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)
+Formula: avg_watts / avg_HR. Units: W/bpm (higher = better fitness)
 }
 Default: \code{c("pace_hr", "power_hr")} (uses first matching metric for activity type).}
 
@@ -67,7 +67,7 @@ A tibble with the following columns:
 \item{date}{Activity date (Date class)}
 \item{activity_type}{Activity type (character: "Run" or "Ride")}
 \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
-Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.}
+Units: m/s/bpm for pace_hr, W/bpm for power_hr.}
 \item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for
 activity-level calculation without stream data, "non_steady" if steady-state
 criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,

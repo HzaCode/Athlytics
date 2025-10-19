@@ -29,7 +29,8 @@ Imports:
     viridis,
     zoo,
     R.utils,
-    tools
+    tools,
+    utils
 Suggests:
     devtools,
     knitr,
@@ -37,7 +38,10 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     mockery,
-    XML
+    XML,
+    FITfileR,
+    rStrava,
+    xml2
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)

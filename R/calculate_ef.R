@@ -37,9 +37,9 @@
 #' @param ef_metric Character string specifying the efficiency metric:
 #'   \itemize{
 #'     \item `"pace_hr"`: Pace-based efficiency (for running). 
-#'       Formula: speed (m/s) / avg_HR. Units: m·s⁻¹·bpm⁻¹ (higher = better fitness)
+#'       Formula: speed (m/s) / avg_HR. Units: m/s/bpm (higher = better fitness)
 #'     \item `"power_hr"`: Power-based efficiency (for cycling). 
-#'       Formula: avg_watts / avg_HR. Units: W·bpm⁻¹ (higher = better fitness)
+#'       Formula: avg_watts / avg_HR. Units: W/bpm (higher = better fitness)
 #'   }
 #'   Default: `c("pace_hr", "power_hr")` (uses first matching metric for activity type).
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
@@ -65,7 +65,7 @@
 #'   \item{date}{Activity date (Date class)}
 #'   \item{activity_type}{Activity type (character: "Run" or "Ride")}
 #'   \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
-#'     Units: m·s⁻¹·bpm⁻¹ for pace_hr, W·bpm⁻¹ for power_hr.}
+#'     Units: m/s/bpm for pace_hr, W/bpm for power_hr.}
 #'   \item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for 
 #'     activity-level calculation without stream data, "non_steady" if steady-state 
 #'     criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
@@ -343,6 +343,23 @@ calculate_ef <- function(activities_data,
 #' @param quality_control Quality control setting ("off", "flag", "filter")
 #'
 #' @return Data frame with EF calculation results
+#'
+#' @examples
+#' \dontrun{
+#' # Parse activity file and calculate EF from streams
+#' streams <- parse_activity_file("activity_12345.fit")
+#' ef_result <- calculate_ef_from_stream(
+#'   stream_data = streams,
+#'   activity_date = as.Date("2025-01-15"),
+#'   act_type = "Run",
+#'   ef_metric = "pace_hr",
+#'   min_steady_minutes = 20,
+#'   steady_cv_threshold = 0.08,
+#'   min_hr_coverage = 0.9,
+#'   quality_control = "filter"
+#' )
+#' }
+#'
 #' @export
 calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_metric, 
                                    min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control) {

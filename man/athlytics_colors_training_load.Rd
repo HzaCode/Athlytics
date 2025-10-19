@@ -6,6 +6,18 @@
 \usage{
 athlytics_colors_training_load()
 }
+\value{
+A named list with three color codes:
+\item{acute}{Red for short-term load (7-day)}
+\item{chronic}{Blue for long-term load (28-day)}
+\item{ratio}{Teal for ACWR ratio}
+}
 \description{
 Colors for acute and chronic training load visualization.
+}
+\examples{
+# Get training load colors
+colors <- athlytics_colors_training_load()
+colors$acute  # Red for acute load
+
 }

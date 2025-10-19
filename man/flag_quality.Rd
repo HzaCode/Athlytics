@@ -29,9 +29,9 @@ measurements. Expected columns: \code{time} (seconds), \code{heartrate} (bpm),
 
 \item{pw_range}{Valid power range as c(min, max). Default c(0, 1500).}
 
-\item{max_run_speed}{Maximum plausible running speed in m/s. Default 7.0 (≈2:23/km).}
+\item{max_run_speed}{Maximum plausible running speed in m/s. Default 7.0 (approx. 2:23/km).}
 
-\item{max_ride_speed}{Maximum plausible riding speed in m/s. Default 25.0 (≈90 km/h).}
+\item{max_ride_speed}{Maximum plausible riding speed in m/s. Default 25.0 (approx. 90 km/h).}
 
 \item{max_accel}{Maximum plausible acceleration in m/s². Default 3.0.}
 

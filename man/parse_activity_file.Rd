@@ -13,9 +13,20 @@ parse_activity_file(file_path, export_dir = NULL)
 }
 \value{
 A data frame with columns: time, latitude, longitude, elevation,
-heart_rate, power, cadence, speed (all optional depending on file content)
+heart_rate, power, cadence, speed (all optional depending on file content).
+Returns NULL if file cannot be parsed or does not exist.
 }
 \description{
 Parse activity files from Strava export data.
 Supports FIT, TCX, and GPX formats (including .gz compressed files).
+}
+\examples{
+\dontrun{
+# Parse a FIT file
+streams <- parse_activity_file("activity_12345.fit", export_dir = "strava_export/")
+
+# Parse a compressed GPX file
+streams <- parse_activity_file("activity_12345.gpx.gz")
+}
+
 }

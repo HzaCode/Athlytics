@@ -6,6 +6,19 @@
 \usage{
 athlytics_colors_ef()
 }
+\value{
+A named list with four color codes by sport:
+\item{run}{Navy blue for running}
+\item{ride}{Coral for cycling}
+\item{swim}{Cyan for swimming}
+\item{other}{Slate for other activities}
+}
 \description{
 Colors for efficiency factor trends by activity type.
+}
+\examples{
+# Get EF colors by sport
+colors <- athlytics_colors_ef()
+colors$run  # Navy for running
+
 }

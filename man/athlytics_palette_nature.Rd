@@ -6,6 +6,9 @@
 \usage{
 athlytics_palette_nature()
 }
+\value{
+A character vector of 9 hex color codes
+}
 \description{
 Professional, colorblind-friendly palette based on Nature journal's
 visualization guidelines. Suitable for multi-series plots.

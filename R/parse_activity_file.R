@@ -9,7 +9,17 @@
 #' @param export_dir Base directory of the Strava export (for resolving relative paths)
 #'
 #' @return A data frame with columns: time, latitude, longitude, elevation, 
-#'   heart_rate, power, cadence, speed (all optional depending on file content)
+#'   heart_rate, power, cadence, speed (all optional depending on file content).
+#'   Returns NULL if file cannot be parsed or does not exist.
+#'
+#' @examples
+#' \dontrun{
+#' # Parse a FIT file
+#' streams <- parse_activity_file("activity_12345.fit", export_dir = "strava_export/")
+#'
+#' # Parse a compressed GPX file
+#' streams <- parse_activity_file("activity_12345.gpx.gz")
+#' }
 #'
 #' @importFrom utils read.csv
 #' @export
@@ -77,8 +87,8 @@ parse_fit_file <- function(file_path) {
   }
   
   # Use getFromNamespace to avoid R CMD check warnings about undeclared imports
-  readFitFile <- getFromNamespace("readFitFile", "FITfileR")
-  records_fn <- getFromNamespace("records", "FITfileR")
+  readFitFile <- utils::getFromNamespace("readFitFile", "FITfileR")
+  records_fn <- utils::getFromNamespace("records", "FITfileR")
   
   fit_data <- readFitFile(file_path)
   records <- records_fn(fit_data)

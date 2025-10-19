@@ -6,6 +6,9 @@
 \usage{
 athlytics_palette_academic()
 }
+\value{
+A character vector of 8 hex color codes
+}
 \description{
 Low-saturation, elegant palette suitable for formal publications and
 technical reports. Emphasizes clarity over visual impact.

@@ -6,6 +6,9 @@
 \usage{
 athlytics_palette_vibrant()
 }
+\value{
+A character vector of 8 hex color codes
+}
 \description{
 High-saturation palette optimized for presentations and posters.
 Maximum visual impact while maintaining colorblind accessibility.

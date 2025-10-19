@@ -6,7 +6,16 @@
 \usage{
 athlytics_palette_cell()
 }
+\value{
+A character vector of 8 hex color codes
+}
 \description{
 Modern palette based on Cell Press visualization standards.
 Balances professional appearance with visual clarity.
+}
+\examples{
+# Get Cell palette colors
+colors <- athlytics_palette_cell()
+colors[1]  # Blue
+
 }

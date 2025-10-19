@@ -12,8 +12,8 @@
 #' @param sport Type of activity (e.g., "Run", "Ride"). Default "Run".
 #' @param hr_range Valid heart rate range as c(min, max). Default c(30, 220).
 #' @param pw_range Valid power range as c(min, max). Default c(0, 1500).
-#' @param max_run_speed Maximum plausible running speed in m/s. Default 7.0 (≈2:23/km).
-#' @param max_ride_speed Maximum plausible riding speed in m/s. Default 25.0 (≈90 km/h).
+#' @param max_run_speed Maximum plausible running speed in m/s. Default 7.0 (approx. 2:23/km).
+#' @param max_ride_speed Maximum plausible riding speed in m/s. Default 25.0 (approx. 90 km/h).
 #' @param max_accel Maximum plausible acceleration in m/s². Default 3.0.
 #' @param max_hr_jump Maximum plausible HR change per second (bpm/s). Default 10.
 #' @param max_pw_jump Maximum plausible power change per second (W/s). Default 300.

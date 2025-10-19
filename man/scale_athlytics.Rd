@@ -11,6 +11,17 @@ scale_athlytics(palette_name = "nature", type = "color")
 
 \item{type}{Either "color" or "fill"}
 }
+\value{
+A ggplot2 scale object (scale_color_manual or scale_fill_manual)
+}
 \description{
 Helper function to apply Athlytics color palettes to existing plots.
+}
+\examples{
+library(ggplot2)
+# Apply nature palette to plot
+ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
+  geom_point() +
+  scale_athlytics("nature", "color")
+
 }

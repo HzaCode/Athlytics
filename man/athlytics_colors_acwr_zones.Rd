@@ -6,6 +6,19 @@
 \usage{
 athlytics_colors_acwr_zones()
 }
+\value{
+A named list with four color codes for ACWR zones:
+\item{undertraining}{Light blue for low load}
+\item{safe}{Green for optimal training zone}
+\item{caution}{Orange for moderate risk}
+\item{high_risk}{Red for high injury risk}
+}
 \description{
 Standardized colors for ACWR risk zones following sports science conventions.
+}
+\examples{
+# Get ACWR zone colors
+colors <- athlytics_colors_acwr_zones()
+colors$safe  # Returns green color code
+
 }
