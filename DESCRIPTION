@@ -39,9 +39,10 @@ Suggests:
     testthat (>= 3.0.0),
     mockery,
     XML,
-    FITfileR,
     rStrava,
     xml2
+Remotes:
+    grimbough/FITfileR
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
