@@ -96,7 +96,6 @@
 ^strava_api.*\.md$
 ^提交指南.*\.md$
 ^export_data$
-^analysis_output$
 ^athlytics_downloads_raw_data\.csv$
 ^Athlytics_.*\.tar\.gz$
 ^tatus$

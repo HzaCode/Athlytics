@@ -1,7 +1,7 @@
 
 <div align="center">
 
-<img src="man/figures/image.png" alt="Athlytics logo" width="220"/>
+<img src="analysis_output/logo.png" alt="Athlytics logo" width="220"/>
 
 # Athlytics
 *An offline, reproducible R toolkit for endurance-exercise data: from FIT/TCX/GPX & Strava archives to validated models (ACWR, EF, pa:hr decoupling, PB, exposure), with built-in QC and uncertainty estimation.*
@@ -144,7 +144,7 @@ All functions return clean, tidy `tibble` data frames, making it easy to perform
 Track how your training load is progressing to avoid ramping up too quickly, which can help in managing injury risk.
 
 <p align="center">
-  <img src="man/figures/01b_acwr_multi_group.png" alt="ACWR Analysis" width="750"/>
+  <img src="analysis_output/01b_acwr_multi_group.png" alt="ACWR Analysis" width="750"/>
   <br>
   <em><a href="https://hezhiang.com/Athlytics/reference/calculate_acwr.html">Learn more about ACWR analysis...</a></em>
 </p>
@@ -153,7 +153,7 @@ Track how your training load is progressing to avoid ramping up too quickly, whi
 See how your aerobic fitness is changing over time by comparing your output (pace or power) to your effort (heart rate). A rising trend is a great sign of improving fitness.
 
 <p align="center">
-  <img src="man/figures/02b_ef_multi_group.png" alt="Efficiency Factor" width="750"/>
+  <img src="analysis_output/02b_ef_multi_group.png" alt="Efficiency Factor" width="750"/>
   <br>
   <em><a href="https://hezhiang.com/Athlytics/reference/calculate_ef.html">Learn more about Aerobic Efficiency...</a></em>
 </p>
@@ -162,7 +162,7 @@ See how your aerobic fitness is changing over time by comparing your output (pac
 Measure your endurance by analyzing how much your heart rate "drifts" upward during a steady-state workout. A low decoupling rate (<5%) is a marker of excellent aerobic conditioning.
 
 <p align="center">
-  <img src="man/figures/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"/>
+  <img src="analysis_output/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"/>
   <br>
   <em><a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html">Learn more about Decoupling...</a></em>
 </p>
