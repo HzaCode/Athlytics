@@ -82,3 +82,6 @@ test-results.txt
 
 # Strava data
 strava_data/
+
+# Auto-generated library files (for HTML reports)
+lib/
