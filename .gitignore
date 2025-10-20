@@ -85,3 +85,10 @@ strava_data/
 
 # Auto-generated library files (for HTML reports)
 lib/
+
+# Auto-generated documentation (built by pkgdown CI)
+docs/
+
+# Temporary image files
+image.png
+image/
