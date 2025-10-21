@@ -22,6 +22,9 @@
   <a href="https://cran.r-project.org/package=Athlytics">
     <img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square" alt="CRAN downloads (total)">
   </a>
+  <a href="https://hzacode.r-universe.dev/Athlytics">
+    <img src="https://hzacode.r-universe.dev/badges/Athlytics" alt="R-Universe">
+  </a>
   <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check" alt="R-CMD-check">
   </a>
