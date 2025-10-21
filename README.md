@@ -87,7 +87,17 @@ install.packages("Athlytics")
 ```
 *Note: The CRAN version may not include the latest features like direct ZIP file support.*
 
-**2. Development Version (GitHub - Recommended)**
+**2. R-Universe**
+```r
+# Enable repository from r-universe
+options(repos = c(
+  hzacode = 'https://hzacode.r-universe.dev'))
+
+# Install Athlytics
+install.packages('Athlytics')
+```
+
+**3. Development Version (GitHub - Recommended)**
 ```r
 # First, install remotes if you don't have it
 # install.packages("remotes")
