@@ -47,8 +47,34 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">athlytics_colors_acwr_zones</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>A named list with four color codes for ACWR zones:</p>
+<dl><dt>undertraining</dt>
+<dd><p>Light blue for low load</p></dd>
 
-  </main></div>
+<dt>safe</dt>
+<dd><p>Green for optimal training zone</p></dd>
+
+<dt>caution</dt>
+<dd><p>Orange for moderate risk</p></dd>
+
+<dt>high_risk</dt>
+<dd><p>Red for high injury risk</p></dd>
+
+</dl></div>
+
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Get ACWR zone colors</span></span></span>
+<span class="r-in"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">athlytics_colors_acwr_zones</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">colors</span><span class="op">$</span><span class="va">safe</span>  <span class="co"># Returns green color code</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "#A9DFBF"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

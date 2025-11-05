@@ -47,8 +47,34 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">athlytics_colors_ef</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>A named list with four color codes by sport:</p>
+<dl><dt>run</dt>
+<dd><p>Navy blue for running</p></dd>
 
-  </main></div>
+<dt>ride</dt>
+<dd><p>Coral for cycling</p></dd>
+
+<dt>swim</dt>
+<dd><p>Cyan for swimming</p></dd>
+
+<dt>other</dt>
+<dd><p>Slate for other activities</p></dd>
+
+</dl></div>
+
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Get EF colors by sport</span></span></span>
+<span class="r-in"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">athlytics_colors_ef</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">colors</span><span class="op">$</span><span class="va">run</span>  <span class="co"># Navy for running</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "#3C5488"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

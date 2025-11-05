@@ -53,45 +53,26 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><div align="center">
-<p><img src="reference/figures/image.png" alt="Athlytics logo" width="220"></p>
-<div class="section level1">
+  <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="athlytics">Athlytics<a class="anchor" aria-label="anchor" href="#athlytics"></a>
 </h1></div>
-<p><em>An all-in-one, offline R toolkit for endurance analytics — from FIT/TCX/GPX &amp; Strava exports to core models (ACWR, EF, Pa:Hr decoupling, PB, Exposure) with built-in QC &amp; uncertainty.</em></p>
-<p>
-📘 <a href="https://hezhiang.com/Athlytics/"><strong>Docs</strong></a>  •  📦 <a href="https://cran.r-project.org/package=Athlytics" class="external-link"><strong>CRAN</strong></a>  •  🐞 <a href="https://github.com/HzaCode/Athlytics/issues" class="external-link"><strong>Issues</strong></a>
-</p>
-<p>
-<a href="https://cran.r-project.org/package=Athlytics" class="external-link"> <img src="https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square" alt="CRAN"></a> <a href="https://cran.r-project.org/web/views/SportsAnalytics.html" class="external-link"> <img src="https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square" alt="CRAN Listed"></a> <a href="https://cran.r-project.org/package=Athlytics" class="external-link"> <img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square" alt="CRAN downloads (total)"></a> <a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml" class="external-link"> <img src="https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&amp;label=R-CMD-check" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/HzaCode/Athlytics" class="external-link"> <img src="https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square" alt="Coverage"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"> <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a> <a href="https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-" class="external-link"> <img src="https://awesome.re/badge-flat.svg" alt="Awesome list"></a>
-</p>
-<h3 align="center" id="athlytics-1">
-<a href="#-quick-start"><strong>🚀 Quick Start</strong></a>  •  <a href="#-core-analyses"><strong>📊 Core Analyses</strong></a>  •  <a href="#-citation"><strong>📝 Citation</strong></a>
-<a class="anchor" aria-label="anchor" href="#athlytics-1"></a>
-</h3>
-</div>
-</div>
+<p><a href="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml" class="external-link"><img src="https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg" alt="R-CMD-check"></a> <a href="https://cran.r-project.org/package=Athlytics" class="external-link"><img src="https://www.r-pkg.org/badges/version/Athlytics" alt="CRAN Status"></a> <a href="https://app.codecov.io/gh/HzaCode/Athlytics" class="external-link"><img src="https://codecov.io/gh/HzaCode/Athlytics/branch/main/graph/badge.svg" alt="Codecov"></a> <a href="https://www.repostatus.org/#active" class="external-link"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status"></a></p>
 <div class="section level2">
-<h2 id="id_-overview">🎯 Overview<a class="anchor" aria-label="anchor" href="#id_-overview"></a>
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p><strong>Athlytics</strong> is a powerful R package for analyzing your endurance training data from <strong>local Strava exports</strong>. It provides a complete, <strong>offline</strong> toolkit to transform your raw data into meaningful insights about fitness, fatigue, and performance.</p>
-<p>Designed for athletes, coaches, and sports scientists, Athlytics standardizes the entire analysis process—from loading your data to generating publication-quality plots. Because it works <strong>offline</strong> without needing API keys, your data remains completely <strong>private</strong> and your workflows are <strong>stable and reproducible</strong> forever.</p>
-<br><div align="center">
-<p><img src="reference/figures/Athlytics_Final.png" alt="Athlytics overview diagram" width="900"></p>
-</div>
-<p><br></p>
+<p><strong>Athlytics</strong> is a research-oriented R package for the longitudinal analysis of endurance training. It operates entirely on <strong>local Strava exports</strong> (or FIT/TCX/GPX files), avoiding API dependencies to ensure <strong>privacy</strong> and long-term <strong>reproducibility</strong>.</p>
+<p>The package standardizes the workflow from data ingestion and quality control to model estimation and uncertainty quantification. Implemented endpoints include <strong>acute-to-chronic workload ratio (ACWR)</strong>, <strong>aerobic efficiency (EF)</strong>, and <strong>cardiovascular decoupling (pa:hr)</strong>, alongside personal-best and exposure profiles suitable for <strong>single-subject</strong> and <strong>cohort</strong> designs. All functions return tidy data, facilitating statistical modeling and figure generation for academic reporting.</p>
 </div>
 <div class="section level2">
-<h2 id="id_-key-features">✨ Key Features<a class="anchor" aria-label="anchor" href="#id_-key-features"></a>
+<h2 id="key-features">Key Features<a class="anchor" aria-label="anchor" href="#key-features"></a>
 </h2>
 <ul>
-<li><p>✅ <strong>100% Local and Private</strong>: Works directly with your Strava ZIP export. No data is ever uploaded, and no internet connection or API keys are needed. You have full control over your information.</p></li>
-<li><p>✅ <strong>All-in-One Analysis Pipeline</strong>: Handles everything from loading and cleaning raw data to calculating advanced metrics and creating visualizations. No more patching together different tools.</p></li>
-<li><p>✅ <strong>Robust Scientific Metrics</strong>: Implements widely used metrics for performance analysis, including Acute-to-Chronic Workload Ratio (ACWR), Aerobic Efficiency (EF), and Cardiovascular Decoupling, with built-in quality checks.</p></li>
-<li><p>✅ <strong>Powerful Cohort Analysis</strong>: Purpose-built for comparing multiple athletes. Easily load data for a team or group and benchmark an individual’s progress against the cohort.</p></li>
-<li><p>✅ <strong>Reproducible and Shareable</strong>: Because the workflow is self-contained, your analysis scripts are easy to share and will produce the same results every time, making it ideal for reliable, long-term tracking.</p></li>
+<li>�?<strong>Reproducible by design</strong> �?Fully offline; no API keys. Deterministic pipelines suitable for longitudinal studies.</li>
+<li>�?<strong>Validated metrics</strong> �?Implements ACWR, EF, and decoupling commonly used in exercise physiology; integrated <strong>QC</strong> checks.</li>
+<li>�?<strong>Uncertainty-aware</strong> �?Functions return estimates with variance/intervals where applicable, enabling principled inference.</li>
+<li>�?<strong>Cohort support</strong> �?Built-in helpers for multi-athlete datasets and percentile-band references.</li>
+<li>�?<strong>Tidy outputs</strong> �?Consistent, analysis-ready tibbles for downstream modeling and figure pipelines.</li>
 </ul>
-<hr>
 </div>
 <div class="section level2">
 <h2 id="id_-installation">📦 Installation<a class="anchor" aria-label="anchor" href="#id_-installation"></a>
@@ -100,14 +81,21 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"Athlytics"</span><span class="op">)</span></span></code></pre></div>
 <p><em>Note: The CRAN version may not include the latest features like direct ZIP file support.</em></p>
-<p><strong>2. Development Version (GitHub - Recommended)</strong></p>
+<p><strong>2. R-Universe</strong></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Enable repository from r-universe</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  hzacode <span class="op">=</span> <span class="st">'https://hzacode.r-universe.dev'</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install Athlytics</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'Athlytics'</span><span class="op">)</span></span></code></pre></div>
+<p><strong>3. Development Version (GitHub - Recommended)</strong></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># First, install remotes if you don't have it</span></span>
 <span><span class="co"># install.packages("remotes")</span></span>
 <span></span>
 <span><span class="co"># Install the latest development version from GitHub</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"HzaCode/Athlytics"</span><span class="op">)</span></span></code></pre></div>
-<hr>
 <div class="section level3">
 <h3 id="id_-quick-start">🚀 Quick Start<a class="anchor" aria-label="anchor" href="#id_-quick-start"></a>
 </h3>
@@ -116,9 +104,9 @@
 <h3 id="id_-step-1-export-your-strava-data">📥 Step 1: Export Your Strava Data<a class="anchor" aria-label="anchor" href="#id_-step-1-export-your-strava-data"></a>
 </h3>
 <ol style="list-style-type: decimal">
-<li>Navigate to <strong><a href="https://www.strava.com/settings/profile" class="external-link">Strava Settings → My Account</a></strong>.</li>
+<li>Navigate to <strong><a href="https://www.strava.com/settings/profile" class="external-link">Strava Settings �?My Account</a></strong>.</li>
 <li>Under “Download or Delete Your Account,” click <strong>“Get Started”</strong> and then <strong>“Request Your Archive”</strong>.</li>
-<li>You will receive an email with a download link (it may take a little while).</li>
+<li>You’ll receive an email with a download link �?this may take some time.</li>
 <li>Download the ZIP file (e.g., <code>export_12345678.zip</code>). <strong>There is no need to unzip it.</strong>
 </li>
 </ol>
@@ -127,7 +115,7 @@
 <h3 id="id_-step-2-load-and-analyze-cohort-example">💻 Step 2: Load and Analyze (Cohort Example)<a class="anchor" aria-label="anchor" href="#id_-step-2-load-and-analyze-cohort-example"></a>
 </h3>
 <p>This example shows a common workflow: loading data for several athletes, calculating their training load, and comparing one athlete to the group average.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hezhiang.com/Athlytics/">Athlytics</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
@@ -139,7 +127,7 @@
 <span><span class="co"># 2. Calculate ACWR for each athlete in the cohort</span></span>
 <span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span><span class="va">.x</span>, load_metric <span class="op">=</span> <span class="st">"duration_mins"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span><span class="va">.x</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span>, load_metric <span class="op">=</span> <span class="st">"duration_mins"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3. Generate percentile bands to serve as a reference for the cohort</span></span>
@@ -148,7 +136,6 @@
 <span><span class="co"># 4. Plot an individual's data against the cohort reference bands</span></span>
 <span><span class="va">individual_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_acwr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">athlete_id</span> <span class="op">==</span> <span class="st">"A1"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/plot_with_reference.html">plot_with_reference</a></span><span class="op">(</span>individual <span class="op">=</span> <span class="va">individual_acwr</span>, reference <span class="op">=</span> <span class="va">reference_bands</span><span class="op">)</span></span></code></pre></div>
-<hr>
 </div>
 </div>
 <div class="section level2">
@@ -156,43 +143,55 @@
 </h2>
 <p>All functions return clean, tidy <code>tibble</code> data frames, making it easy to perform your own custom analysis or visualizations.</p>
 <div class="section level3">
-<h3 id="id_1️⃣-training-load-monitoring-acwr">1️⃣ Training Load Monitoring (ACWR)<a class="anchor" aria-label="anchor" href="#id_1%EF%B8%8F%E2%83%A3-training-load-monitoring-acwr"></a>
+<h3 id="training-load-monitoring-acwr">Training Load Monitoring (ACWR)<a class="anchor" aria-label="anchor" href="#training-load-monitoring-acwr"></a>
 </h3>
 <p>Track how your training load is progressing to avoid ramping up too quickly, which can help in managing injury risk.</p>
-<p align="center">
-<img src="reference/figures/01b_acwr_multi_group.png" alt="ACWR Analysis" width="750"><br><em><a href="https://hezhiang.com/Athlytics/reference/calculate_acwr.html">Learn more about ACWR analysis…</a></em>
-</p>
+<div class="float">
+<img src="analysis_output/01b_acwr_multi_group.png" alt="ACWR Analysis"><div class="figcaption">ACWR Analysis</div>
+</div>
+<p><em><a href="https://hezhiang.com/Athlytics/reference/calculate_acwr.html">Learn more about ACWR analysis</a></em></p>
 </div>
 <div class="section level3">
-<h3 id="id_2️⃣-aerobic-efficiency-ef">2️⃣ Aerobic Efficiency (EF)<a class="anchor" aria-label="anchor" href="#id_2%EF%B8%8F%E2%83%A3-aerobic-efficiency-ef"></a>
+<h3 id="aerobic-efficiency-ef">Aerobic Efficiency (EF)<a class="anchor" aria-label="anchor" href="#aerobic-efficiency-ef"></a>
 </h3>
 <p>See how your aerobic fitness is changing over time by comparing your output (pace or power) to your effort (heart rate). A rising trend is a great sign of improving fitness.</p>
-<p align="center">
-<img src="reference/figures/02b_ef_multi_group.png" alt="Efficiency Factor" width="750"><br><em><a href="https://hezhiang.com/Athlytics/reference/calculate_ef.html">Learn more about Aerobic Efficiency…</a></em>
-</p>
+<div class="float">
+<img src="analysis_output/02b_ef_multi_group.png" alt="Efficiency Factor"><div class="figcaption">Efficiency Factor</div>
+</div>
+<p><em><a href="https://hezhiang.com/Athlytics/reference/calculate_ef.html">Learn more about Aerobic Efficiency</a></em></p>
 </div>
 <div class="section level3">
-<h3 id="id_3️⃣-cardiovascular-decoupling">3️⃣ Cardiovascular Decoupling<a class="anchor" aria-label="anchor" href="#id_3%EF%B8%8F%E2%83%A3-cardiovascular-decoupling"></a>
+<h3 id="cardiovascular-decoupling">Cardiovascular Decoupling<a class="anchor" aria-label="anchor" href="#cardiovascular-decoupling"></a>
 </h3>
 <p>Measure your endurance by analyzing how much your heart rate “drifts” upward during a steady-state workout. A low decoupling rate (&lt;5%) is a marker of excellent aerobic conditioning.</p>
-<p align="center">
-<img src="reference/figures/05b_decoupling_multi_group.png" alt="Decoupling Analysis" width="750"><br><em><a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html">Learn more about Decoupling…</a></em>
-</p>
-<hr>
+<div class="float">
+<img src="analysis_output/05b_decoupling_multi_group.png" alt="Decoupling Analysis"><div class="figcaption">Decoupling Analysis</div>
 </div>
+<p><em><a href="https://hezhiang.com/Athlytics/reference/calculate_decoupling.html">Learn more about Decoupling</a></em></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="id_-methods--validation">📐 Methods &amp; Validation<a class="anchor" aria-label="anchor" href="#id_-methods--validation"></a>
+</h2>
+<p>This release implements widely used constructs in endurance-exercise analytics: - <strong>ACWR</strong>: rolling acute (e.g., 7-day) vs chronic (e.g., 28-day) load ratios with smoothing options. - <strong>Aerobic Efficiency (EF)</strong>: output (pace/power) relative to effort (heart rate) over time. - <strong>Cardiovascular Decoupling (pa:hr)</strong>: drift between pace/power and heart rate during steady efforts.</p>
+<p>We provide input validation, outlier handling, and activity-level QC filters (e.g., minimal duration, HR plausibility ranges). For cohort summarization, Athlytics computes percentile bands and supports stratification by sport, sex, or other covariates when available.</p>
 </div>
 <div class="section level2">
 <h2 id="id_-citation">📝 Citation<a class="anchor" aria-label="anchor" href="#id_-citation"></a>
 </h2>
-<p>If you use <strong>Athlytics</strong> in your research, please cite the software. We also recommend citing the original methodological papers for any metrics used (see documentation for references).</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co">@software{athlytics2025,</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">  title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">  author  = {Zhiang He},</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">  year    = {2025},</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">  version = {1.0.0},</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">  url     = {https://github.com/HzaCode/Athlytics}</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
-<hr>
+<p>If you use <strong>Athlytics</strong> in academic work, please cite the software as well as the original methodological sources for specific metrics.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co">@software{athlytics2025,</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">  title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">  author  = {Zhiang He},</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">  year    = {2025},</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">  version = {1.0.0},</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">  url     = {https://github.com/HzaCode/Athlytics}</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="id_️-ethical-considerations">⚖️ Ethical Considerations<a class="anchor" aria-label="anchor" href="#id_%EF%B8%8F-ethical-considerations"></a>
+</h2>
+<p>Athlytics processes personal training records. Ensure appropriate consent for cohort analyses, de-identify outputs where required, and comply with local IRB/ethics and data-protection regulations.</p>
 </div>
 <div class="section level2">
 <h2 id="id_-contributing">🤝 Contributing<a class="anchor" aria-label="anchor" href="#id_-contributing"></a>
@@ -206,16 +205,15 @@
 <strong>💡 Suggest a Feature</strong>: <a href="https://github.com/HzaCode/Athlytics/discussions" class="external-link">Start a Discussion</a>
 </li>
 <li>
-<strong>🔧 Submit a Pull Request</strong>: See <a href="CONTRIBUTING.html">CONTRIBUTING.md</a> for guidelines.</li>
+<strong>🔧 Submit a Pull Request</strong>: We appreciate your help in improving Athlytics.</li>
 </ul>
-<hr>
 </div>
 <div class="section level2">
 <h2 id="id_-acknowledgements">🙏 Acknowledgements<a class="anchor" aria-label="anchor" href="#id_-acknowledgements"></a>
 </h2>
 <p>We thank the <a href="https://www.pyopensci.org/" class="external-link">pyOpenSci</a> community, <a href="https://github.com/beanumber" class="external-link">Prof. Benjamin S. Baumer</a>, and <a href="https://github.com/firefly-cpp" class="external-link">Prof. Iztok Fister Jr.</a> for their valuable feedback and suggestions.</p>
 </div>
-
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
@@ -252,7 +250,7 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Zhiang He <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0009-0009-0171-4578" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Zhiang He <br><small class="roles"> Author, maintainer </small>   </li>
 </ul>
 </div>
 

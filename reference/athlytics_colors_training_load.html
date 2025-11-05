@@ -47,8 +47,31 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">athlytics_colors_training_load</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p>A named list with three color codes:</p>
+<dl><dt>acute</dt>
+<dd><p>Red for short-term load (7-day)</p></dd>
 
-  </main></div>
+<dt>chronic</dt>
+<dd><p>Blue for long-term load (28-day)</p></dd>
+
+<dt>ratio</dt>
+<dd><p>Teal for ACWR ratio</p></dd>
+
+</dl></div>
+
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Get training load colors</span></span></span>
+<span class="r-in"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">athlytics_colors_training_load</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">colors</span><span class="op">$</span><span class="va">acute</span>  <span class="co"># Red for acute load</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "#E64B35"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
