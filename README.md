@@ -13,11 +13,11 @@ The package standardizes the workflow from data ingestion and quality control to
 
 ## Key Features
 
-*   �?**Reproducible by design** �?Fully offline; no API keys. Deterministic pipelines suitable for longitudinal studies.
-*   �?**Validated metrics** �?Implements ACWR, EF, and decoupling commonly used in exercise physiology; integrated **QC** checks.
-*   �?**Uncertainty-aware** �?Functions return estimates with variance/intervals where applicable, enabling principled inference.
-*   �?**Cohort support** �?Built-in helpers for multi-athlete datasets and percentile-band references.
-*   �?**Tidy outputs** �?Consistent, analysis-ready tibbles for downstream modeling and figure pipelines.
+* **Reproducible by design** - Fully offline; no API keys. Deterministic pipelines suitable for longitudinal studies.
+* **Validated metrics** - Implements ACWR, EF, and decoupling commonly used in exercise physiology; integrated **QC** checks.
+* **Uncertainty-aware** - Functions return estimates with variance/intervals where applicable, enabling principled inference.
+* **Cohort support** - Built-in helpers for multi-athlete datasets and percentile-band references.
+* **Tidy outputs** - Consistent, analysis-ready tibbles for downstream modeling and figure pipelines.
 
 
 
@@ -54,9 +54,9 @@ remotes::install_github("HzaCode/Athlytics")
 
 ### 📥 Step 1: Export Your Strava Data
 
-1.  Navigate to **[Strava Settings �?My Account](https://www.strava.com/settings/profile)**.
+1.  Navigate to **[Strava Settings - My Account](https://www.strava.com/settings/profile)**.
 2.  Under "Download or Delete Your Account," click **"Get Started"** and then **"Request Your Archive"**.
-3.  You'll receive an email with a download link �?this may take some time.
+3.  You'll receive an email with a download link - this may take some time.
 4.  Download the ZIP file (e.g., `export_12345678.zip`). **There is no need to unzip it.**
 
 ### 💻 Step 2: Load and Analyze (Cohort Example)
