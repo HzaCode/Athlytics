@@ -11,6 +11,9 @@ name: pkgcheck
 jobs:
   pkgcheck:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
 
@@ -26,4 +29,5 @@ jobs:
       - uses: ropensci-review-tools/pkgcheck-action@main
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
 

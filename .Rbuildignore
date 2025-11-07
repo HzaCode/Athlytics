@@ -100,9 +100,11 @@
 ^Athlytics_.*\.tar\.gz$
 ^tatus$
 ^check_output\.txt$
+^final_check\.txt$
+^pkgcheck.*\.txt$
+^analysis_output$
+^Athlytics$
 ^\.lang$
-^\.cursor$
-^\.cursor/
 ^.*调试.*$
 ^create_multi_athlete_sample_data\.R$
 ^regenerate_figures\.R$
