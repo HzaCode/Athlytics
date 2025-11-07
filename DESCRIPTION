@@ -40,7 +40,8 @@ Suggests:
     mockery,
     XML,
     rStrava,
-    xml2
+    xml2,
+    FITfileR
 Remotes:
     grimbough/FITfileR
 VignetteBuilder: knitr
