@@ -1,8 +1,13 @@
 # Athlytics
 
-[![R-CMD-check](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
-[![CRAN Status](https://www.r-pkg.org/badges/version/Athlytics)](https://cran.r-project.org/package=Athlytics)
-[![Codecov](https://codecov.io/gh/HzaCode/Athlytics/branch/main/graph/badge.svg)](https://app.codecov.io/gh/HzaCode/Athlytics)
+[![CRAN Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
+[![CRAN Listed](https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square)](https://cran.r-project.org/web/views/SportsAnalytics.html)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square)](https://cran.r-project.org/package=Athlytics)
+[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
+[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://hezhiang.com/Athlytics/)
+[![Codecov](https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square)](https://app.codecov.io/gh/HzaCode/Athlytics)
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Awesome](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-)
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 ## Overview
