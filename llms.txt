@@ -1,0 +1,333 @@
+# Athlytics
+
+[![CRAN
+Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
+[![CRAN
+Listed](https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square)](https://cran.r-project.org/web/views/SportsAnalytics.html)
+[![CRAN
+Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square)](https://cran.r-project.org/package=Athlytics)
+[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
+[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://hezhiang.com/Athlytics/)
+[![Codecov](https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square)](https://app.codecov.io/gh/HzaCode/Athlytics)
+[![MIT
+License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Awesome](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-)
+[![Project
+Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+
+## Overview
+
+**Athlytics** is a research-oriented R package for the longitudinal
+analysis of endurance training. It operates entirely on **local Strava
+exports** (or FIT/TCX/GPX files), avoiding API dependencies to ensure
+**privacy** and long-term **reproducibility**.
+
+The package standardizes the workflow from data ingestion and quality
+control to model estimation and uncertainty quantification. Implemented
+endpoints include **acute-to-chronic workload ratio (ACWR)**, **aerobic
+efficiency (EF)**, and **cardiovascular decoupling (pa:hr)**, alongside
+personal-best and exposure profiles suitable for **single-subject** and
+**cohort** designs. All functions return tidy data, facilitating
+statistical modeling and figure generation for academic reporting.
+
+## Key Features
+
+- **Reproducible by design** - Fully offline; no API keys. Deterministic
+  pipelines suitable for longitudinal studies.
+- **Validated metrics** - Implements ACWR, EF, and decoupling commonly
+  used in exercise physiology; integrated **QC** checks.
+- **Uncertainty-aware** - Functions return estimates with
+  variance/intervals where applicable, enabling principled inference.
+- **Cohort support** - Built-in helpers for multi-athlete datasets and
+  percentile-band references.
+- **Tidy outputs** - Consistent, analysis-ready tibbles for downstream
+  modeling and figure pipelines.
+
+## 📦 Installation
+
+**1. Stable Release (CRAN)**
+
+``` r
+install.packages("Athlytics")
+```
+
+*Note: The CRAN version may not include the latest features like direct
+ZIP file support.*
+
+**2. R-Universe**
+
+``` r
+# Enable repository from r-universe
+options(repos = c(
+  hzacode = 'https://hzacode.r-universe.dev'))
+
+# Install Athlytics
+install.packages('Athlytics')
+```
+
+**3. Development Version (GitHub - Recommended)**
+
+``` r
+# First, install remotes if you don't have it
+# install.packages("remotes")
+
+# Install the latest development version from GitHub
+remotes::install_github("HzaCode/Athlytics")
+```
+
+### 🚀 Quick Start
+
+### 📥 Step 1: Export Your Strava Data
+
+1.  Navigate to **[Strava Settings - My
+    Account](https://www.strava.com/settings/profile)**.
+2.  Under “Download or Delete Your Account,” click **“Get Started”** and
+    then **“Request Your Archive”**.
+3.  You’ll receive an email with a download link - this may take some
+    time.
+4.  Download the ZIP file (e.g., `export_12345678.zip`). **There is no
+    need to unzip it.**
+
+### 💻 Step 2: Load and Analyze (Cohort Example)
+
+This example shows a common workflow: loading data for several athletes,
+calculating their training load, and comparing one athlete to the group
+average.
+
+``` r
+library(Athlytics)
+library(dplyr)
+
+# 1. Load data for a cohort of athletes, adding unique IDs
+athlete1 <- load_local_activities("path/to/athlete1_export.zip") %>% mutate(athlete_id = "A1")
+athlete2 <- load_local_activities("path/to/athlete2_export.zip") %>% mutate(athlete_id = "A2")
+cohort_data <- bind_rows(athlete1, athlete2)
+
+# 2. Calculate ACWR for each athlete in the cohort
+cohort_acwr <- cohort_data %>%
+  group_by(athlete_id) %>%
+  group_modify(~ calculate_acwr(.x, activity_type = "Run", load_metric = "duration_mins")) %>%
+  ungroup()
+
+# 3. Generate percentile bands to serve as a reference for the cohort
+reference_bands <- cohort_reference(cohort_acwr, metric = "acwr_smooth")
+
+# 4. Plot an individual's data against the cohort reference bands
+individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")
+plot_with_reference(individual = individual_acwr, reference = reference_bands)
+```
+
+## 📊 Core Analyses
+
+All functions return clean, tidy `tibble` data frames, making it easy to
+perform your own custom analysis or visualizations.
+
+### Training Load Monitoring (ACWR)
+
+Track how your training load is progressing to avoid ramping up too
+quickly, which can help in managing injury risk.
+
+![ACWR Analysis](analysis_output/01b_acwr_multi_group.png)
+
+ACWR Analysis
+
+*[Learn more about ACWR
+analysis](https://hezhiang.com/Athlytics/reference/calculate_acwr.html)*
+
+### Aerobic Efficiency (EF)
+
+See how your aerobic fitness is changing over time by comparing your
+output (pace or power) to your effort (heart rate). A rising trend is a
+great sign of improving fitness.
+
+![Efficiency Factor](analysis_output/02b_ef_multi_group.png)
+
+Efficiency Factor
+
+*[Learn more about Aerobic
+Efficiency](https://hezhiang.com/Athlytics/reference/calculate_ef.html)*
+
+### Cardiovascular Decoupling
+
+Measure your endurance by analyzing how much your heart rate “drifts”
+upward during a steady-state workout. A low decoupling rate (\<5%) is a
+marker of excellent aerobic conditioning.
+
+![Decoupling Analysis](analysis_output/05b_decoupling_multi_group.png)
+
+Decoupling Analysis
+
+*[Learn more about
+Decoupling](https://hezhiang.com/Athlytics/reference/calculate_decoupling.html)*
+
+## 📐 Methods & Validation
+
+This release implements widely used constructs in endurance-exercise
+analytics: - **ACWR**: rolling acute (e.g., 7-day) vs chronic (e.g.,
+28-day) load ratios with smoothing options. - **Aerobic Efficiency
+(EF)**: output (pace/power) relative to effort (heart rate) over time. -
+**Cardiovascular Decoupling (pa:hr)**: drift between pace/power and
+heart rate during steady efforts.
+
+We provide input validation, outlier handling, and activity-level QC
+filters (e.g., minimal duration, HR plausibility ranges). For cohort
+summarization, Athlytics computes percentile bands and supports
+stratification by sport, sex, or other covariates when available.
+
+## 📝 Citation
+
+If you use **Athlytics** in academic work, please cite the software as
+well as the original methodological sources for specific metrics.
+
+``` bibtex
+@software{athlytics2025,
+  title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
+  author  = {Zhiang He},
+  year    = {2025},
+  version = {1.0.0},
+  url     = {https://github.com/HzaCode/Athlytics}
+}
+```
+
+## ⚖️ Ethical Considerations
+
+Athlytics processes personal training records. Ensure appropriate
+consent for cohort analyses, de-identify outputs where required, and
+comply with local IRB/ethics and data-protection regulations.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our
+[CONTRIBUTING.md](https://hezhiang.com/Athlytics/CONTRIBUTING.md) guide
+and follow our [Code of
+Conduct](https://hezhiang.com/Athlytics/CODE_OF_CONDUCT.md).
+
+- **🐛 Report an Issue**: [Open an
+  Issue](https://github.com/HzaCode/Athlytics/issues)
+- **💡 Suggest a Feature**: [Start a
+  Discussion](https://github.com/HzaCode/Athlytics/discussions)
+- **🔧 Submit a Pull Request**: We appreciate your help in improving
+  Athlytics.
+
+## 🙏 Acknowledgements
+
+We thank the [pyOpenSci](https://www.pyopensci.org/) community,
+[Prof. Benjamin S. Baumer](https://github.com/beanumber), and
+[Prof. Iztok Fister Jr.](https://github.com/firefly-cpp) for their
+valuable feedback and suggestions.
+
+# Package index
+
+## Data Loading
+
+Functions for loading and parsing local Strava data
+
+- [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md)
+  : Load Activities from Local Strava Export
+- [`parse_activity_file()`](https://hezhiang.com/Athlytics/reference/parse_activity_file.md)
+  : Parse Activity File (FIT, TCX, or GPX)
+
+## Core Metrics Calculation
+
+Calculate key physiological metrics
+
+- [`calculate_acwr()`](https://hezhiang.com/Athlytics/reference/calculate_acwr.md)
+  : Calculate Acute:Chronic Workload Ratio (ACWR)
+- [`calculate_acwr_ewma()`](https://hezhiang.com/Athlytics/reference/calculate_acwr_ewma.md)
+  : Calculate ACWR using EWMA Method with Confidence Bands
+- [`calculate_ef()`](https://hezhiang.com/Athlytics/reference/calculate_ef.md)
+  : Calculate Efficiency Factor (EF)
+- [`calculate_ef_from_stream()`](https://hezhiang.com/Athlytics/reference/calculate_ef_from_stream.md)
+  : Calculate EF from Stream Data with Steady-State Analysis
+- [`calculate_decoupling()`](https://hezhiang.com/Athlytics/reference/calculate_decoupling.md)
+  : Calculate Aerobic Decoupling
+- [`calculate_exposure()`](https://hezhiang.com/Athlytics/reference/calculate_exposure.md)
+  : Calculate Training Load Exposure (ATL, CTL, ACWR)
+- [`calculate_pbs()`](https://hezhiang.com/Athlytics/reference/calculate_pbs.md)
+  : Calculate Personal Bests (PBs) from Local Strava Data
+
+## Visualization
+
+Plot and visualize training metrics
+
+- [`plot_acwr()`](https://hezhiang.com/Athlytics/reference/plot_acwr.md)
+  : Plot ACWR Trend
+- [`plot_acwr_enhanced()`](https://hezhiang.com/Athlytics/reference/plot_acwr_enhanced.md)
+  : Enhanced ACWR Plot with Confidence Bands and Reference
+- [`plot_acwr_comparison()`](https://hezhiang.com/Athlytics/reference/plot_acwr_comparison.md)
+  : Compare RA and EWMA Methods Side-by-Side
+- [`plot_ef()`](https://hezhiang.com/Athlytics/reference/plot_ef.md) :
+  Plot Efficiency Factor (EF) Trend
+- [`plot_decoupling()`](https://hezhiang.com/Athlytics/reference/plot_decoupling.md)
+  : Plot Aerobic Decoupling Trend
+- [`plot_exposure()`](https://hezhiang.com/Athlytics/reference/plot_exposure.md)
+  : Plot Training Load Exposure (ATL vs CTL)
+- [`plot_pbs()`](https://hezhiang.com/Athlytics/reference/plot_pbs.md) :
+  Plot Personal Best (PB) Trends
+- [`plot_with_reference()`](https://hezhiang.com/Athlytics/reference/plot_with_reference.md)
+  : Plot Individual Metric with Cohort Reference
+
+## Advanced Analysis
+
+Cohort analysis and quality control
+
+- [`cohort_reference()`](https://hezhiang.com/Athlytics/reference/cohort_reference.md)
+  : Calculate Cohort Reference Percentiles
+- [`add_reference_bands()`](https://hezhiang.com/Athlytics/reference/add_reference_bands.md)
+  : Add Cohort Reference Bands to Existing Plot
+- [`flag_quality()`](https://hezhiang.com/Athlytics/reference/flag_quality.md)
+  : Flag Data Quality Issues in Activity Streams
+- [`quality_summary()`](https://hezhiang.com/Athlytics/reference/quality_summary.md)
+  : Get Quality Summary Statistics
+
+## Themes and Colors
+
+Visualization customization
+
+- [`theme_athlytics()`](https://hezhiang.com/Athlytics/reference/theme_athlytics.md)
+  : Get Athlytics Theme
+- [`scale_athlytics()`](https://hezhiang.com/Athlytics/reference/scale_athlytics.md)
+  : Apply Color Palette to ggplot
+- [`athlytics_colors_acwr_zones()`](https://hezhiang.com/Athlytics/reference/athlytics_colors_acwr_zones.md)
+  : ACWR Zone Colors
+- [`athlytics_colors_ef()`](https://hezhiang.com/Athlytics/reference/athlytics_colors_ef.md)
+  : Efficiency Factor Colors
+- [`athlytics_colors_training_load()`](https://hezhiang.com/Athlytics/reference/athlytics_colors_training_load.md)
+  : Training Load Colors
+- [`athlytics_palette_academic()`](https://hezhiang.com/Athlytics/reference/athlytics_palette_academic.md)
+  : Academic Muted Color Palette
+- [`athlytics_palette_cell()`](https://hezhiang.com/Athlytics/reference/athlytics_palette_cell.md)
+  : Cell Journal Palette
+- [`athlytics_palette_nature()`](https://hezhiang.com/Athlytics/reference/athlytics_palette_nature.md)
+  : Nature-Inspired Color Palette
+- [`athlytics_palette_science()`](https://hezhiang.com/Athlytics/reference/athlytics_palette_science.md)
+  : Science Magazine Palette
+- [`athlytics_palette_vibrant()`](https://hezhiang.com/Athlytics/reference/athlytics_palette_vibrant.md)
+  : Vibrant High-Contrast Palette
+
+## Sample Data
+
+Example datasets for testing and learning
+
+- [`athlytics_sample_acwr`](https://hezhiang.com/Athlytics/reference/athlytics_sample_acwr.md)
+  : Sample ACWR Data for Athlytics
+- [`athlytics_sample_decoupling`](https://hezhiang.com/Athlytics/reference/athlytics_sample_decoupling.md)
+  : Sample Aerobic Decoupling Data for Athlytics
+- [`athlytics_sample_ef`](https://hezhiang.com/Athlytics/reference/athlytics_sample_ef.md)
+  : Sample Efficiency Factor (EF) Data for Athlytics
+- [`athlytics_sample_exposure`](https://hezhiang.com/Athlytics/reference/athlytics_sample_exposure.md)
+  : Sample Training Load Exposure Data for Athlytics
+- [`athlytics_sample_pbs`](https://hezhiang.com/Athlytics/reference/athlytics_sample_pbs.md)
+  : Sample Personal Bests (PBs) Data for Athlytics
+
+# Articles
+
+### Getting Started
+
+- [Getting Started with
+  Athlytics](https://hezhiang.com/Athlytics/articles/athlytics_introduction.md):
+
+### Advanced Usage
+
+- [Advanced Features: EWMA, Quality Control, and Cohort
+  Analysis](https://hezhiang.com/Athlytics/articles/advanced_features.md):

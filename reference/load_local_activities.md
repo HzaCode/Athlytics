@@ -1,0 +1,120 @@
+# Load Activities from Local Strava Export
+
+Reads and processes activity data from a local Strava export, supporting
+both direct CSV files and compressed ZIP archives. This function
+converts Strava export data to a format compatible with all Athlytics
+analysis functions. Designed to work with Strava's official bulk data
+export (Settings \> My Account \> Download or Delete Your Account \> Get
+Started).
+
+## Usage
+
+``` r
+load_local_activities(
+  path = "strava_export_data/activities.csv",
+  start_date = NULL,
+  end_date = NULL,
+  activity_types = NULL
+)
+```
+
+## Arguments
+
+- path:
+
+  Path to activities.csv file OR a .zip archive from Strava export.
+  Supports both CSV and ZIP formats. If a .zip file is provided, the
+  function will automatically extract and read the activities.csv file
+  from within the archive. Default is
+  "strava_export_data/activities.csv".
+
+- start_date:
+
+  Optional. Start date (YYYY-MM-DD or Date/POSIXct) for filtering
+  activities. Defaults to NULL (no filtering).
+
+- end_date:
+
+  Optional. End date (YYYY-MM-DD or Date/POSIXct) for filtering
+  activities. Defaults to NULL (no filtering).
+
+- activity_types:
+
+  Optional. Character vector of activity types to include (e.g.,
+  c("Run", "Ride")). Defaults to NULL (include all types).
+
+## Value
+
+A tibble of activity data with standardized column names compatible with
+Athlytics functions. Key columns include:
+
+- `id`: Activity ID (numeric)
+
+- `name`: Activity name
+
+- `type`: Activity type (Run, Ride, etc.)
+
+- `start_date_local`: Activity start datetime (POSIXct)
+
+- `date`: Activity date (Date)
+
+- `distance`: Distance in meters (numeric)
+
+- `moving_time`: Moving time in seconds (integer)
+
+- `elapsed_time`: Elapsed time in seconds (integer)
+
+- `average_heartrate`: Average heart rate (numeric)
+
+- `average_watts`: Average power in watts (numeric)
+
+- `elevation_gain`: Elevation gain in meters (numeric)
+
+## Details
+
+This function reads the activities.csv file from a Strava data export
+and transforms the data to match the structure expected by Athlytics
+analysis functions. The transformation includes:
+
+- Converting column names to match API format
+
+- Parsing dates into POSIXct format
+
+- Converting distances to meters
+
+- Converting times to seconds
+
+- Filtering by date range and activity type if specified
+
+**Privacy Note**: This function processes local export data only and
+does not connect to the internet. Ensure you have permission to analyze
+the data and follow applicable privacy regulations when using this data
+for research purposes.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Load all activities from local CSV
+activities <- load_local_activities("strava_export_data/activities.csv")
+
+# Load directly from ZIP archive (no need to extract manually!)
+activities <- load_local_activities("export_12345678.zip")
+
+# Load only running activities from 2023
+activities <- load_local_activities(
+  path = "export_12345678.zip",
+  start_date = "2023-01-01",
+  end_date = "2023-12-31",
+  activity_types = "Run"
+)
+
+# Use with Athlytics functions
+acwr_data <- calculate_acwr(activities, load_metric = "distance_km")
+plot_acwr(acwr_data, highlight_zones = TRUE)
+
+# Multi-metric analysis
+ef_data <- calculate_ef(activities, ef_metric = "pace_hr")
+plot_ef(ef_data, add_trend_line = TRUE)
+} # }
+```
