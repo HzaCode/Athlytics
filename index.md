@@ -1,5 +1,7 @@
 # Athlytics
 
+![Athlytics logo](reference/figures/image.png)
+
 [![CRAN
 Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![CRAN
