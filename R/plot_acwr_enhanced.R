@@ -42,6 +42,13 @@
 #' @export
 #'
 #' @examples
+#' # Example using sample data
+#' data("athlytics_sample_acwr", package = "Athlytics")
+#' if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
+#'   p <- plot_acwr_enhanced(athlytics_sample_acwr, show_ci = FALSE)
+#'   print(p)
+#' }
+#'
 #' \dontrun{
 #' # Load activities
 #' activities <- load_local_activities("export.zip")
@@ -187,7 +194,7 @@ plot_acwr_enhanced <- function(acwr_data,
   p <- p + ggplot2::geom_line(
     data = acwr_data,
     ggplot2::aes(x = .data$date, y = .data$acwr_smooth),
-    color = "black", linewidth = 1.2
+    color = "#E64B35", linewidth = 2, alpha = 0.9
   )
   
   # --- Labels and Theme ---
@@ -222,13 +229,17 @@ plot_acwr_enhanced <- function(acwr_data,
         "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
       } else NULL
     ) +
-    ggplot2::scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
-    ggplot2::theme_minimal() +
+    ggplot2::scale_x_date(
+      date_breaks = "3 months",
+      labels = function(x) {
+        months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
+      }
+    ) +
+    theme_athlytics() +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-      plot.title = ggplot2::element_text(face = "bold", size = 14),
-      plot.subtitle = ggplot2::element_text(size = 10, color = "gray30"),
-      plot.caption = ggplot2::element_text(size = 8, hjust = 0, color = "gray50")
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
     )
   
   return(p)
@@ -250,6 +261,18 @@ plot_acwr_enhanced <- function(acwr_data,
 #' @export
 #'
 #' @examples
+#' # Example using sample data
+#' data("athlytics_sample_acwr", package = "Athlytics")
+#' if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
+#'   # Create two versions for comparison (simulate RA vs EWMA)
+#'   acwr_ra <- athlytics_sample_acwr
+#'   acwr_ewma <- athlytics_sample_acwr
+#'   acwr_ewma$acwr_smooth <- acwr_ewma$acwr_smooth * runif(nrow(acwr_ewma), 0.95, 1.05)
+#'   
+#'   p <- plot_acwr_comparison(acwr_ra, acwr_ewma)
+#'   print(p)
+#' }
+#'
 #' \dontrun{
 #' activities <- load_local_activities("export.zip")
 #'
@@ -269,23 +292,30 @@ plot_acwr_comparison <- function(acwr_ra,
   )
   
   # Create faceted plot
-  p <- ggplot2::ggplot(combined, ggplot2::aes(x = .data$date, y = .data$acwr_smooth)) +
+  p <- ggplot2::ggplot(combined, ggplot2::aes(x = .data$date, y = .data$acwr_smooth, color = .data$method)) +
     ggplot2::geom_hline(yintercept = c(0.8, 1.3, 1.5), 
-                       linetype = "dotted", color = "gray50") +
-    ggplot2::geom_line(color = "black", linewidth = 1) +
-    ggplot2::facet_wrap(~method, ncol = 1) +
+                       linetype = "dotted", color = "gray50", alpha = 0.5) +
+    ggplot2::geom_line(linewidth = 1.8, alpha = 0.9) +
+    ggplot2::scale_color_manual(values = c("Rolling Average (RA)" = "#4DBBD5", "EWMA" = "#E64B35")) +
+    ggplot2::facet_wrap(~.data$method, ncol = 1) +
     ggplot2::labs(
       title = title,
       subtitle = "Dotted lines: 0.8 (low load) | 1.3 (sweet spot max) | 1.5 (high risk)",
       x = "Date",
       y = "ACWR (Smoothed)"
     ) +
-    ggplot2::scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
-    ggplot2::theme_minimal() +
+    ggplot2::scale_x_date(
+      date_breaks = "3 months",
+      labels = function(x) {
+        months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
+      }
+    ) +
+    theme_athlytics() +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-      plot.title = ggplot2::element_text(face = "bold"),
-      strip.text = ggplot2::element_text(face = "bold", size = 11)
+      legend.position = "none"
     )
   
   return(p)

@@ -27,51 +27,23 @@
 #' @importFrom purrr map_dfr map_chr possibly quietly
 #' @importFrom tidyr unnest pivot_longer
 #' @importFrom lubridate as_datetime ymd_hms seconds_to_period parse_date_time
+#' @importFrom scales pretty_breaks
 #' @import ggplot2
-#' @importFrom viridis scale_color_viridis
 #' @importFrom rlang .data
 #' @export
 #'
 #' @examples
-#' # Example using simulated data
-#' data(athlytics_sample_pbs)
-#' # athlytics_sample_pbs should contain the PBs to be plotted
+#' # Example using the built-in sample data
+#' # This data now contains a simulated history of performance improvements
+#' data("athlytics_sample_pbs", package = "Athlytics")
+#' 
 #' if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
-#'   sample_pbs_for_plot <- athlytics_sample_pbs
-#'   
-#'   # Ensure the date column is named 'activity_date' and is of Date type for plot_pbs
-#'   if ("date" %in% names(sample_pbs_for_plot) && !"activity_date" %in% names(sample_pbs_for_plot)) {
-#'     names(sample_pbs_for_plot)[names(sample_pbs_for_plot) == "date"] <- "activity_date"
-#'   }
-#'   if ("activity_date" %in% names(sample_pbs_for_plot)) {
-#'     sample_pbs_for_plot$activity_date <- as.Date(sample_pbs_for_plot$activity_date)
-#'   } else {
-#'     message("Relevant date column not found in sample PBs for example.")
-#'   }
-#'   
-#'   # plot_pbs requires distance_meters. Extract from sample data.
-#'   req_dist_meters <- NULL
-#'   if ("distance" %in% names(sample_pbs_for_plot)) {
-#'     req_dist_meters <- unique(sample_pbs_for_plot$distance)
-#'   } else if ("distance_target_m" %in% names(sample_pbs_for_plot)) {
-#'     req_dist_meters <- unique(sample_pbs_for_plot$distance_target_m)
-#'   }
-#'   
-#'   can_plot <- "activity_date" %in% names(sample_pbs_for_plot) && 
-#'               !is.null(req_dist_meters) && length(req_dist_meters) > 0
-#'
-#'   if (can_plot) {
-#'     p <- plot_pbs(pbs_df = sample_pbs_for_plot, activity_type = "Run", 
-#'                   distance_meters = req_dist_meters)
-#'     print(p)
-#'   } else {
-#'     message("Sample PBs data lacks required date or distance info for example.")
-#'   }
-#' } else {
-#'   message("athlytics_sample_pbs is empty or not found, skipping example plot.")
+#'   # Plot PBs using the package sample data directly
+#'   p <- plot_pbs(pbs_df = athlytics_sample_pbs, activity_type = "Run")
+#'   print(p)
 #' }
-#'
-#' \dontrun{
+#' 
+#' if (FALSE) {
 #' # Example using local Strava export data
 #' activities <- load_local_activities("strava_export_data/activities.csv")
 #' 
@@ -84,7 +56,7 @@
 #' if(nrow(pb_data_run) > 0) {
 #'   plot_pbs(pbs_df = pb_data_run, distance_meters = c(1000,5000,10000))
 #' }
-#'
+#' 
 #' # Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)
 #' pb_data_ride <- calculate_pbs(activities_data = activities, 
 #'                                activity_type = "Ride", 
@@ -92,7 +64,7 @@
 #' if(nrow(pb_data_ride) > 0) {
 #'    plot_pbs(pbs_df = pb_data_ride, distance_meters = c(10000, 20000))
 #' }
-#'
+#' 
 #' # Plot PBS trend for multiple Run types (no trend line)
 #' pb_data_multi <- calculate_pbs(activities_data = activities, 
 #'                                activity_type = c("Run", "VirtualRun"), 
@@ -102,7 +74,16 @@
 #'            add_trend_line = FALSE)
 #' }
 #' }
-
+#'
+#' @importFrom dplyr filter select mutate arrange group_by slice bind_rows summarise distinct rename %>% left_join
+#' @importFrom purrr map_dfr map_chr possibly quietly
+#' @importFrom tidyr unnest pivot_longer
+#' @importFrom lubridate as_datetime ymd_hms seconds_to_period parse_date_time
+#' @importFrom scales pretty_breaks
+#' @import ggplot2
+#' @importFrom rlang .data
+#' @export
+#'
 plot_pbs <- function(data,
                      activity_type = "Run",
                      distance_meters,
@@ -144,16 +125,64 @@ plot_pbs <- function(data,
 
   # --- Plotting ---
   message("Generating plot...")
+  
+  # Ensure activity_date is Date type
+  pbs_df$activity_date <- as.Date(pbs_df$activity_date)
+  
+  # Create distance_label if it doesn't exist
+  if (!"distance_label" %in% names(pbs_df)) {
+    pbs_df$distance_label <- dplyr::case_when(
+      pbs_df$distance == 1000 ~ "1k",
+      pbs_df$distance == 5000 ~ "5k",
+      pbs_df$distance == 10000 ~ "10k",
+      pbs_df$distance == 21097.5 ~ "Half Marathon",
+      pbs_df$distance == 42195 ~ "Marathon",
+      TRUE ~ paste0(round(pbs_df$distance), "m")
+    )
+    pbs_df$distance_label <- factor(pbs_df$distance_label, 
+                                    levels = c("1k", "5k", "10k", "Half Marathon", "Marathon"))
+  }
+  
+  # Ensure required columns exist
+  if (!"time_seconds" %in% names(pbs_df)) {
+    if ("elapsed_time" %in% names(pbs_df)) {
+      pbs_df$time_seconds <- pbs_df$elapsed_time
+    } else {
+      stop("pbs_df must contain either 'time_seconds' or 'elapsed_time' column")
+    }
+  }
+  
+  if (!"is_pb" %in% names(pbs_df)) {
+    if ("is_new_pb" %in% names(pbs_df)) {
+      pbs_df$is_pb <- pbs_df$is_new_pb
+    } else {
+      pbs_df$is_pb <- TRUE
+    }
+  }
+  
+  # Sort by distance_label and date for proper line drawing
+  pbs_df <- pbs_df[order(pbs_df$distance_label, pbs_df$activity_date), ]
 
-  # Create the base plot
-  p <- ggplot2::ggplot(pbs_df, ggplot2::aes(x = .data$activity_date, y = .data$time_seconds, color = .data$distance_label)) +
-    ggplot2::geom_line(alpha = 0.5) + 
-    ggplot2::geom_point(ggplot2::aes(shape = .data$is_pb), size = 2.5) + 
-    ggplot2::scale_shape_manual(values = c("TRUE" = 19, "FALSE" = 1), 
+  # Create the base plot with Athlytics theme
+  p <- ggplot2::ggplot(pbs_df, ggplot2::aes(x = .data$activity_date, y = .data$time_seconds, 
+                                             color = .data$distance_label, group = .data$distance_label)) +
+    ggplot2::geom_line(linewidth = 1.8, alpha = 0.85) + 
+    ggplot2::geom_point(ggplot2::aes(shape = .data$is_pb), size = 4.5, alpha = 0.95, stroke = 1.2) + 
+    ggplot2::scale_shape_manual(values = c("TRUE" = 19, "FALSE" = 21), 
                        name = "Personal Best", labels = c("TRUE" = "Yes", "FALSE" = "No")) +
-    ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
-    ggplot2::scale_y_continuous(labels = function(x) sprintf('%02d:%02d', floor(x/60), x %% 60)) + 
-    viridis::scale_color_viridis(discrete = TRUE, option = "C", name = "Distance") + 
+    ggplot2::scale_x_date(
+      date_breaks = "2 months", 
+      labels = function(x) {
+        months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
+      }
+    ) +
+    ggplot2::scale_y_continuous(
+      labels = function(x) sprintf('%02d:%02d', floor(x/60), x %% 60),
+      breaks = scales::pretty_breaks(n = 2)
+    ) + 
+    ggplot2::scale_color_manual(values = athlytics_palette_vibrant(), name = "Distance") + 
     ggplot2::labs(
       title = "Personal Best Running Times Trend",
       subtitle = "Showing best efforts for specified distances over time",
@@ -161,29 +190,26 @@ plot_pbs <- function(data,
       y = "Best Time (MM:SS)",
       caption = "Data from local Strava export"
     ) +
-    ggplot2::theme_minimal(base_size = 12) +
+    theme_athlytics() +
     ggplot2::theme(
       legend.position = "bottom",
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-      axis.text.y = ggplot2::element_text(angle = 0, hjust = 1, size = 10),
-      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"),
+      plot.title = ggplot2::element_text(hjust = 0.5),
       plot.subtitle = ggplot2::element_text(hjust = 0.5)
     ) +
-    ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 3)))
+    ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 4)))
 
   # Add trend line if requested (though typically not used for PB plots)
   if (add_trend_line) {
-    # Trend line might not be meaningful for PBs, but included for consistency
-    p <- p + ggplot2::geom_smooth(method = "loess", se = FALSE, aes(group = .data$distance_label), linewidth = 0.7)
+    # Use linear model (lm) instead of loess to avoid errors with sparse data
+    # and to better represent the overall improvement trend
+    p <- p + ggplot2::geom_smooth(method = "lm", se = TRUE, aes(group = .data$distance_label), 
+                                   linewidth = 1.0, alpha = 0.15, linetype = "dashed")
   }
 
   if (length(unique(pbs_df$distance_label)) > 1) {
     p <- p + ggplot2::facet_wrap(~ .data$distance_label, scales = "free_y", ncol = 1) +
       ggplot2::theme(
-        strip.text = ggplot2::element_text(face = "bold"),
-        strip.background = ggplot2::element_rect(fill = "grey90", color = NA),
-        panel.spacing = ggplot2::unit(0.5, "lines"),
-        axis.text.y = ggplot2::element_text(size = 9, margin = ggplot2::margin(r = 5))
+        panel.spacing = ggplot2::unit(2, "lines")
       )
   }
 

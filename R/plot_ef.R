@@ -165,17 +165,9 @@ plot_ef <- function(data,
   }
   
   p <- p +
-    ggplot2::theme_minimal(base_size = 12) +
+    theme_athlytics() +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
-      axis.text.y = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 11, face = "bold"),
-      plot.title = ggplot2::element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 10)),
-      plot.subtitle = ggplot2::element_text(size = 10, color = "gray40", margin = ggplot2::margin(b = 15)),
-      panel.grid.minor = ggplot2::element_blank(),
-      legend.position = "bottom",
-      legend.title = ggplot2::element_text(face = "bold", size = 10),
-      legend.text = ggplot2::element_text(size = 9)
+      legend.position = "bottom"
     )
 
   return(p)

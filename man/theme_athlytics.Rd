@@ -4,7 +4,7 @@
 \alias{theme_athlytics}
 \title{Get Athlytics Theme}
 \usage{
-theme_athlytics(base_size = 12, base_family = "")
+theme_athlytics(base_size = 13, base_family = "")
 }
 \arguments{
 \item{base_size}{Base font size (default: 12)}
@@ -18,10 +18,9 @@ A ggplot2 theme object that can be added to plots
 Publication-ready ggplot2 theme with sensible defaults for scientific figures.
 }
 \examples{
-library(ggplot2)
 # Apply theme to a plot
-ggplot(mtcars, aes(mpg, wt)) +
-  geom_point() +
+ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
+  ggplot2::geom_point() +
   theme_athlytics()
 
 }

@@ -63,6 +63,13 @@ The layering order (bottom to top):
 }
 }
 \examples{
+# Example using sample data
+data("athlytics_sample_acwr", package = "Athlytics")
+if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
+  p <- plot_acwr_enhanced(athlytics_sample_acwr, show_ci = FALSE)
+  print(p)
+}
+
 \dontrun{
 # Load activities
 activities <- load_local_activities("export.zip")

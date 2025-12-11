@@ -117,9 +117,9 @@ plot_exposure <- function(data,
   latest_point <- load_ts %>% dplyr::filter(.data$date == plot_end_date)
 
   p <- ggplot2::ggplot(load_ts, ggplot2::aes(x = .data$ctl, y = .data$atl)) +
-    ggplot2::geom_point(ggplot2::aes(color = .data$date), alpha = 0.7, size = 2) + 
-    viridis::scale_color_viridis(option = "plasma", name = "Date") +
-    ggplot2::geom_point(data = latest_point, ggplot2::aes(x = .data$ctl, y = .data$atl), color = "red", size = 4, shape = 17) + 
+    ggplot2::geom_point(ggplot2::aes(color = .data$date), alpha = 0.7, size = 2.5) + 
+    ggplot2::scale_color_gradient(low = athlytics_palette_nature()[1], high = athlytics_palette_nature()[5], name = "Date") +
+    ggplot2::geom_point(data = latest_point, ggplot2::aes(x = .data$ctl, y = .data$atl), color = "#E64B35", size = 5, shape = 17) + 
     ggplot2::labs(
       title = paste("Training Load Exposure (ATL vs CTL):", metric_label),
       subtitle = sprintf("Acute: %d days, Chronic: %d days | End Date: %s",
@@ -128,10 +128,10 @@ plot_exposure <- function(data,
       y = sprintf("Acute Training Load (ATL - %d day avg)", acute_period),
       caption = "Data from local Strava export. Red triangle is latest data point."
     ) +
-    ggplot2::theme_minimal(base_size = 12) +
+    theme_athlytics() +
     ggplot2::theme(
-        plot.title = ggplot2::element_text(hjust = 0.5, face = "bold"),
-        plot.subtitle = ggplot2::element_text(hjust = 0.5, size=10),
+        plot.title = ggplot2::element_text(hjust = 0.5),
+        plot.subtitle = ggplot2::element_text(hjust = 0.5),
         legend.position = "right"
     )
 

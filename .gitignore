@@ -92,3 +92,7 @@ docs/
 # Temporary image files
 image.png
 image/
+preview_*.png
+reproduce_*.png
+reproduce_*.R
+temp_*.png

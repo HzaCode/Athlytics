@@ -15,9 +15,8 @@ visualization guidelines. Suitable for multi-series plots.
 }
 \examples{
 \dontrun{
-library(ggplot2)
-ggplot(data, aes(x, y, color = group)) +
-  geom_line() +
-  scale_color_manual(values = athlytics_palette_nature())
+ggplot2::ggplot(data, ggplot2::aes(x, y, color = group)) +
+  ggplot2::geom_line() +
+  ggplot2::scale_color_manual(values = athlytics_palette_nature())
 }
 }

@@ -15,9 +15,8 @@ Maximum visual impact while maintaining colorblind accessibility.
 }
 \examples{
 \dontrun{
-library(ggplot2)
-ggplot(data, aes(x, y, fill = category)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = athlytics_palette_vibrant())
+ggplot2::ggplot(data, ggplot2::aes(x, y, fill = category)) +
+  ggplot2::geom_bar(stat = "identity") +
+  ggplot2::scale_fill_manual(values = athlytics_palette_vibrant())
 }
 }

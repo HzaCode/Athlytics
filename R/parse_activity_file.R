@@ -120,17 +120,18 @@ parse_fit_file <- function(file_path) {
 #' Parse TCX file
 #' @keywords internal
 parse_tcx_file <- function(file_path) {
-  if (!requireNamespace("XML", quietly = TRUE)) {
-    warning("Package 'XML' is required to parse TCX files. Please install it.")
+  if (!requireNamespace("xml2", quietly = TRUE)) {
+    warning("Package 'xml2' is required to parse TCX files. Please install it.")
     return(NULL)
   }
   
-  doc <- XML::xmlParse(file_path)
-  root <- XML::xmlRoot(doc)
+  doc <- xml2::read_xml(file_path)
+  
+  # Define namespaces
+  ns <- xml2::xml_ns(doc)
   
   # Find all Trackpoint nodes
-  ns <- c(ns = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2")
-  trackpoints <- XML::getNodeSet(doc, "//ns:Trackpoint", namespaces = ns)
+  trackpoints <- xml2::xml_find_all(doc, ".//d1:Trackpoint", ns)
   
   if (length(trackpoints) == 0) {
     return(NULL)
@@ -138,17 +139,30 @@ parse_tcx_file <- function(file_path) {
   
   # Extract data from each trackpoint
   extract_trackpoint <- function(tp) {
-    time <- XML::xpathSApply(tp, "./ns:Time", XML::xmlValue, namespaces = ns)
-    lat <- XML::xpathSApply(tp, "./ns:Position/ns:LatitudeDegrees", XML::xmlValue, namespaces = ns)
-    lon <- XML::xpathSApply(tp, "./ns:Position/ns:LongitudeDegrees", XML::xmlValue, namespaces = ns)
-    alt <- XML::xpathSApply(tp, "./ns:AltitudeMeters", XML::xmlValue, namespaces = ns)
-    hr <- XML::xpathSApply(tp, ".//ns:HeartRateBpm/ns:Value", XML::xmlValue, namespaces = ns)
-    cadence <- XML::xpathSApply(tp, "./ns:Cadence", XML::xmlValue, namespaces = ns)
-    dist <- XML::xpathSApply(tp, "./ns:DistanceMeters", XML::xmlValue, namespaces = ns)
+    time_node <- xml2::xml_find_first(tp, "./d1:Time", ns)
+    time <- if (length(time_node) > 0) xml2::xml_text(time_node) else character(0)
+    
+    lat_node <- xml2::xml_find_first(tp, "./d1:Position/d1:LatitudeDegrees", ns)
+    lat <- if (length(lat_node) > 0) xml2::xml_text(lat_node) else character(0)
+    
+    lon_node <- xml2::xml_find_first(tp, "./d1:Position/d1:LongitudeDegrees", ns)
+    lon <- if (length(lon_node) > 0) xml2::xml_text(lon_node) else character(0)
+    
+    alt_node <- xml2::xml_find_first(tp, "./d1:AltitudeMeters", ns)
+    alt <- if (length(alt_node) > 0) xml2::xml_text(alt_node) else character(0)
+    
+    hr_node <- xml2::xml_find_first(tp, ".//d1:HeartRateBpm/d1:Value", ns)
+    hr <- if (length(hr_node) > 0) xml2::xml_text(hr_node) else character(0)
+    
+    cadence_node <- xml2::xml_find_first(tp, "./d1:Cadence", ns)
+    cadence <- if (length(cadence_node) > 0) xml2::xml_text(cadence_node) else character(0)
+    
+    dist_node <- xml2::xml_find_first(tp, "./d1:DistanceMeters", ns)
+    dist <- if (length(dist_node) > 0) xml2::xml_text(dist_node) else character(0)
     
     # Extensions for power
-    power <- XML::xpathSApply(tp, ".//ns3:Watts", XML::xmlValue, 
-                              namespaces = c(ns3 = "http://www.garmin.com/xmlschemas/ActivityExtension/v2"))
+    power_node <- xml2::xml_find_first(tp, ".//ns3:Watts", ns)
+    power <- if (length(power_node) > 0) xml2::xml_text(power_node) else character(0)
     
     data.frame(
       time = if (length(time) > 0) as.POSIXct(time[1], format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC") else NA,
@@ -179,21 +193,18 @@ parse_tcx_file <- function(file_path) {
 #' Parse GPX file
 #' @keywords internal
 parse_gpx_file <- function(file_path) {
-  if (!requireNamespace("XML", quietly = TRUE)) {
-    warning("Package 'XML' is required to parse GPX files. Please install it.")
+  if (!requireNamespace("xml2", quietly = TRUE)) {
+    warning("Package 'xml2' is required to parse GPX files. Please install it.")
     return(NULL)
   }
   
-  doc <- XML::xmlParse(file_path)
+  doc <- xml2::read_xml(file_path)
   
-  # Define namespaces
-  ns <- c(
-    gpx = "http://www.topografix.com/GPX/1/1",
-    gpxtpx = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
-  )
+  # Get namespaces from document
+  ns <- xml2::xml_ns(doc)
   
   # Find all track points
-  trackpoints <- XML::getNodeSet(doc, "//gpx:trkpt", namespaces = ns)
+  trackpoints <- xml2::xml_find_all(doc, ".//d1:trkpt", ns)
   
   if (length(trackpoints) == 0) {
     return(NULL)
@@ -201,12 +212,20 @@ parse_gpx_file <- function(file_path) {
   
   # Extract data from each trackpoint
   extract_trkpt <- function(trkpt) {
-    lat <- XML::xmlGetAttr(trkpt, "lat")
-    lon <- XML::xmlGetAttr(trkpt, "lon")
-    ele <- XML::xpathSApply(trkpt, "./gpx:ele", XML::xmlValue, namespaces = ns)
-    time <- XML::xpathSApply(trkpt, "./gpx:time", XML::xmlValue, namespaces = ns)
-    hr <- XML::xpathSApply(trkpt, ".//gpxtpx:hr", XML::xmlValue, namespaces = ns)
-    cad <- XML::xpathSApply(trkpt, ".//gpxtpx:cad", XML::xmlValue, namespaces = ns)
+    lat <- xml2::xml_attr(trkpt, "lat")
+    lon <- xml2::xml_attr(trkpt, "lon")
+    
+    ele_node <- xml2::xml_find_first(trkpt, "./d1:ele", ns)
+    ele <- if (length(ele_node) > 0) xml2::xml_text(ele_node) else character(0)
+    
+    time_node <- xml2::xml_find_first(trkpt, "./d1:time", ns)
+    time <- if (length(time_node) > 0) xml2::xml_text(time_node) else character(0)
+    
+    hr_node <- xml2::xml_find_first(trkpt, ".//gpxtpx:hr", ns)
+    hr <- if (length(hr_node) > 0) xml2::xml_text(hr_node) else character(0)
+    
+    cad_node <- xml2::xml_find_first(trkpt, ".//gpxtpx:cad", ns)
+    cad <- if (length(cad_node) > 0) xml2::xml_text(cad_node) else character(0)
     
     data.frame(
       time = if (length(time) > 0) as.POSIXct(time[1], format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC") else NA,

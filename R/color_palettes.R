@@ -16,10 +16,9 @@ NULL
 #' @export
 #' @examples
 #' \dontrun{
-#' library(ggplot2)
-#' ggplot(data, aes(x, y, color = group)) +
-#'   geom_line() +
-#'   scale_color_manual(values = athlytics_palette_nature())
+#' ggplot2::ggplot(data, ggplot2::aes(x, y, color = group)) +
+#'   ggplot2::geom_line() +
+#'   ggplot2::scale_color_manual(values = athlytics_palette_nature())
 #' }
 athlytics_palette_nature <- function() {
   c(
@@ -45,10 +44,9 @@ athlytics_palette_nature <- function() {
 #' @export
 #' @examples
 #' \dontrun{
-#' library(ggplot2)
-#' ggplot(data, aes(x, y, color = group)) +
-#'   geom_line() +
-#'   scale_color_manual(values = athlytics_palette_academic())
+#' ggplot2::ggplot(data, ggplot2::aes(x, y, color = group)) +
+#'   ggplot2::geom_line() +
+#'   ggplot2::scale_color_manual(values = athlytics_palette_academic())
 #' }
 athlytics_palette_academic <- function() {
   c(
@@ -73,10 +71,9 @@ athlytics_palette_academic <- function() {
 #' @export
 #' @examples
 #' \dontrun{
-#' library(ggplot2)
-#' ggplot(data, aes(x, y, fill = category)) +
-#'   geom_bar(stat = "identity") +
-#'   scale_fill_manual(values = athlytics_palette_vibrant())
+#' ggplot2::ggplot(data, ggplot2::aes(x, y, fill = category)) +
+#'   ggplot2::geom_bar(stat = "identity") +
+#'   ggplot2::scale_fill_manual(values = athlytics_palette_vibrant())
 #' }
 athlytics_palette_vibrant <- function() {
   c(
@@ -226,62 +223,109 @@ athlytics_colors_ef <- function() {
 #' @return A ggplot2 theme object that can be added to plots
 #'
 #' @examples
-#' library(ggplot2)
 #' # Apply theme to a plot
-#' ggplot(mtcars, aes(mpg, wt)) +
-#'   geom_point() +
+#' ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
+#'   ggplot2::geom_point() +
 #'   theme_athlytics()
 #'
 #' @export
 #' @import ggplot2
-theme_athlytics <- function(base_size = 12, base_family = "") {
+theme_athlytics <- function(base_size = 13, base_family = "") {
   ggplot2::theme_minimal(base_size = base_size, base_family = base_family) +
     ggplot2::theme(
-      # Plot
+      # Plot background - clean white
+      plot.background = ggplot2::element_rect(fill = "white", color = NA),
+      panel.background = ggplot2::element_rect(fill = "white", color = NA),
+      
+      # Plot titles - modern, bold, left-aligned
       plot.title = ggplot2::element_text(
         face = "bold", 
-        size = base_size * 1.2,
+        size = base_size * 1.4,
         hjust = 0,
-        margin = ggplot2::margin(b = base_size * 0.5)
+        color = "#2c3e50",
+        margin = ggplot2::margin(b = base_size * 0.8)
       ),
       plot.subtitle = ggplot2::element_text(
-        size = base_size * 0.9,
-        color = "gray40",
+        size = base_size * 0.95,
+        color = "#7f8c8d",
         hjust = 0,
-        margin = ggplot2::margin(b = base_size * 0.5)
+        lineheight = 1.2,
+        margin = ggplot2::margin(b = base_size * 1)
       ),
       plot.caption = ggplot2::element_text(
-        size = base_size * 0.8,
-        color = "gray50",
+        size = base_size * 0.75,
+        color = "#95a5a6",
         hjust = 1,
-        margin = ggplot2::margin(t = base_size * 0.5)
+        margin = ggplot2::margin(t = base_size * 0.8)
       ),
+      plot.margin = ggplot2::margin(t = 15, r = 15, b = 15, l = 15),
       
-      # Axes
-      axis.title = ggplot2::element_text(size = base_size, face = "bold"),
-      axis.text = ggplot2::element_text(size = base_size * 0.9, color = "gray20"),
-      axis.line = ggplot2::element_line(color = "gray40", linewidth = 0.5),
+      # Axes - clean and minimal
+      axis.title.x = ggplot2::element_text(
+        size = base_size * 1.05, 
+        face = "bold",
+        color = "#34495e",
+        margin = ggplot2::margin(t = base_size * 0.6)
+      ),
+      axis.title.y = ggplot2::element_text(
+        size = base_size * 1.05, 
+        face = "bold",
+        color = "#34495e",
+        margin = ggplot2::margin(r = base_size * 0.6)
+      ),
+      axis.text.x = ggplot2::element_text(
+        size = base_size * 0.9, 
+        color = "#7f8c8d",
+        margin = ggplot2::margin(t = base_size * 0.3)
+      ),
+      axis.text.y = ggplot2::element_text(
+        size = base_size * 0.9, 
+        color = "#7f8c8d",
+        margin = ggplot2::margin(r = base_size * 0.3)
+      ),
+      axis.line = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_line(color = "#bdc3c7", linewidth = 0.3),
+      axis.ticks.length = ggplot2::unit(4, "pt"),
       
-      # Legend
+      # Legend - modern and spacious
       legend.position = "bottom",
-      legend.title = ggplot2::element_text(size = base_size, face = "bold"),
-      legend.text = ggplot2::element_text(size = base_size * 0.9),
-      legend.key.size = ggplot2::unit(1, "lines"),
+      legend.direction = "horizontal",
+      legend.title = ggplot2::element_text(
+        size = base_size * 0.95, 
+        face = "bold",
+        color = "#34495e"
+      ),
+      legend.text = ggplot2::element_text(
+        size = base_size * 0.85,
+        color = "#7f8c8d"
+      ),
+      legend.key.size = ggplot2::unit(1.2, "lines"),
+      legend.key = ggplot2::element_blank(),
+      legend.spacing.x = ggplot2::unit(0.5, "lines"),
+      legend.box.spacing = ggplot2::unit(0.5, "lines"),
+      legend.margin = ggplot2::margin(t = base_size),
       
-      # Panel
-      panel.grid.major = ggplot2::element_line(color = "gray90", linewidth = 0.3),
+      # Panel grid - subtle and elegant
+      panel.grid.major = ggplot2::element_line(
+        color = "#ecf0f1", 
+        linewidth = 0.5,
+        linetype = "solid"
+      ),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_blank(),
+      panel.spacing = ggplot2::unit(1.5, "lines"),
       
-      # Strip (for facets)
+      # Strip (for facets) - clean and modern
       strip.text = ggplot2::element_text(
-        size = base_size,
+        size = base_size * 1.05,
         face = "bold",
-        color = "gray20"
+        color = "#2c3e50",
+        margin = ggplot2::margin(b = base_size * 0.5, t = base_size * 0.5)
       ),
       strip.background = ggplot2::element_rect(
-        fill = "gray95",
-        color = NA
+        fill = "#f8f9fa",
+        color = "#dee2e6",
+        linewidth = 0.5
       )
     )
 }
@@ -296,10 +340,9 @@ theme_athlytics <- function(base_size = 12, base_family = "") {
 #' @return A ggplot2 scale object (scale_color_manual or scale_fill_manual)
 #'
 #' @examples
-#' library(ggplot2)
 #' # Apply nature palette to plot
-#' ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
-#'   geom_point() +
+#' ggplot2::ggplot(iris, ggplot2::aes(Sepal.Length, Sepal.Width, color = Species)) +
+#'   ggplot2::geom_point() +
 #'   scale_athlytics("nature", "color")
 #'
 #' @export

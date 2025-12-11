@@ -48,45 +48,17 @@ solid points mark new PBs. Y-axis is MM:SS.
 Legacy API mode is maintained for backward compatibility only.
 }
 \examples{
-# Example using simulated data
-data(athlytics_sample_pbs)
-# athlytics_sample_pbs should contain the PBs to be plotted
-if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
-  sample_pbs_for_plot <- athlytics_sample_pbs
-  
-  # Ensure the date column is named 'activity_date' and is of Date type for plot_pbs
-  if ("date" \%in\% names(sample_pbs_for_plot) && !"activity_date" \%in\% names(sample_pbs_for_plot)) {
-    names(sample_pbs_for_plot)[names(sample_pbs_for_plot) == "date"] <- "activity_date"
-  }
-  if ("activity_date" \%in\% names(sample_pbs_for_plot)) {
-    sample_pbs_for_plot$activity_date <- as.Date(sample_pbs_for_plot$activity_date)
-  } else {
-    message("Relevant date column not found in sample PBs for example.")
-  }
-  
-  # plot_pbs requires distance_meters. Extract from sample data.
-  req_dist_meters <- NULL
-  if ("distance" \%in\% names(sample_pbs_for_plot)) {
-    req_dist_meters <- unique(sample_pbs_for_plot$distance)
-  } else if ("distance_target_m" \%in\% names(sample_pbs_for_plot)) {
-    req_dist_meters <- unique(sample_pbs_for_plot$distance_target_m)
-  }
-  
-  can_plot <- "activity_date" \%in\% names(sample_pbs_for_plot) && 
-              !is.null(req_dist_meters) && length(req_dist_meters) > 0
+# Example using the built-in sample data
+# This data now contains a simulated history of performance improvements
+data("athlytics_sample_pbs", package = "Athlytics")
 
-  if (can_plot) {
-    p <- plot_pbs(pbs_df = sample_pbs_for_plot, activity_type = "Run", 
-                  distance_meters = req_dist_meters)
-    print(p)
-  } else {
-    message("Sample PBs data lacks required date or distance info for example.")
-  }
-} else {
-  message("athlytics_sample_pbs is empty or not found, skipping example plot.")
+if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
+  # Plot PBs using the package sample data directly
+  p <- plot_pbs(pbs_df = athlytics_sample_pbs, activity_type = "Run")
+  print(p)
 }
 
-\dontrun{
+if (FALSE) {
 # Example using local Strava export data
 activities <- load_local_activities("strava_export_data/activities.csv")
 
@@ -117,4 +89,5 @@ if(nrow(pb_data_multi) > 0) {
            add_trend_line = FALSE)
 }
 }
+
 }

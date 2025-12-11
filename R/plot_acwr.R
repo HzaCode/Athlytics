@@ -184,7 +184,7 @@ plot_acwr <- function(data,
       )
     }
   } else {
-    p <- p + ggplot2::geom_line(color = "#3C5488", linewidth = 1.2)
+    p <- p + ggplot2::geom_line(color = "#E64B35", linewidth = 2, alpha = 0.9)
   }
 
   # Define y-limits and breaks for better scaling
@@ -212,18 +212,9 @@ plot_acwr <- function(data,
     ) +
     ggplot2::scale_y_continuous(limits = c(0, y_max_limit), breaks = y_breaks) +
     ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
-    ggplot2::theme_minimal(base_size = 12) +
+    theme_athlytics() +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
-      axis.text.y = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 11, face = "bold"),
-      plot.title = ggplot2::element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 10)),
-      plot.subtitle = ggplot2::element_text(size = 10, color = "gray40", margin = ggplot2::margin(b = 15)),
-      panel.grid.minor = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_line(color = "gray90", linewidth = 0.3),
-      legend.position = if(has_groups) "bottom" else "none",
-      legend.title = ggplot2::element_text(face = "bold", size = 10),
-      legend.text = ggplot2::element_text(size = 9)
+      legend.position = if(has_groups) "bottom" else "none"
     )
                    
   return(p)

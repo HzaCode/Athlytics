@@ -265,9 +265,29 @@ add_reference_bands <- function(p,
 #' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal scale_x_date
 #' @importFrom dplyr %>%
 #' @importFrom rlang %||% .data
+#' @importFrom tidyr pivot_wider
+#' @importFrom tools toTitleCase
 #' @export
 #'
 #' @examples
+#' # Simple example with fixed data
+#' individual_data <- data.frame(
+#'   date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
+#'   acwr_smooth = c(1.0, 1.2, 0.9, 1.1)
+#' )
+#' reference_data <- data.frame(
+#'   date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
+#'   percentile = rep(c("p05", "p25", "p50", "p75", "p95"), 4),
+#'   value = c(0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5)
+#' )
+#' 
+#' p <- plot_with_reference(
+#'   individual = individual_data,
+#'   reference = reference_data,
+#'   metric = "acwr_smooth"
+#' )
+#' print(p)
+#'
 #' \dontrun{
 #' plot_with_reference(
 #'   individual = athlete_acwr,
@@ -298,40 +318,36 @@ plot_with_reference <- function(individual,
   # Create base plot with reference bands
   p <- ggplot2::ggplot()
   
-  # Add reference bands (outermost first)
+  # Add reference bands (outermost first) - using enhanced colors
   if ("p05_p95" %in% bands && all(c("p05", "p95") %in% colnames(ref_wide))) {
     p <- p + ggplot2::geom_ribbon(
       data = ref_wide,
       ggplot2::aes(x = .data$date, ymin = .data$p05, ymax = .data$p95),
-      fill = "#3B528BFF", alpha = 0.15
-    ) +
-    ggplot2::annotate("text", x = min(ref_wide$date), y = max(ref_wide$p95, na.rm = TRUE),
-                     label = "P5-P95", hjust = 0, vjust = 1, size = 3, color = "#3B528BFF", alpha = 0.7)
+      fill = "#FFB6C1", alpha = 0.3
+    )
   }
   
   if ("p25_p75" %in% bands && all(c("p25", "p75") %in% colnames(ref_wide))) {
     p <- p + ggplot2::geom_ribbon(
       data = ref_wide,
       ggplot2::aes(x = .data$date, ymin = .data$p25, ymax = .data$p75),
-      fill = "#440154FF", alpha = 0.25
-    ) +
-    ggplot2::annotate("text", x = min(ref_wide$date), y = max(ref_wide$p75, na.rm = TRUE),
-                     label = "P25-P75", hjust = 0, vjust = 1, size = 3, color = "#440154FF", alpha = 0.7)
+      fill = "#87CEEB", alpha = 0.4
+    )
   }
   
   if ("p50" %in% bands && "p50" %in% colnames(ref_wide)) {
     p <- p + ggplot2::geom_line(
       data = ref_wide,
       ggplot2::aes(x = .data$date, y = .data$p50),
-      color = "#21908CFF", linetype = "dashed", linewidth = 0.8
+      color = "#4682B4", linetype = "dashed", linewidth = 1.5
     )
   }
   
-  # Add individual line on top
+  # Add individual line on top with enhanced visibility
   p <- p + ggplot2::geom_line(
     data = individual,
     ggplot2::aes(x = .data[[date_col]], y = .data[[metric]]),
-    color = "black", linewidth = 1.2
+    color = "#DC143C", linewidth = 2.5, alpha = 1.0
   )
   
   # Formatting
@@ -340,15 +356,23 @@ plot_with_reference <- function(individual,
   p <- p +
     ggplot2::labs(
       title = plot_title,
-      subtitle = "Black line = Individual | Shaded areas = Cohort percentiles",
+      subtitle = "Individual athlete metrics compared to cohort reference bands",
       x = "Date",
-      y = tools::toTitleCase(metric)
+      y = tools::toTitleCase(metric),
+      caption = "Red line: Individual athlete | Shaded bands: Cohort percentile ranges"
     ) +
-    ggplot2::scale_x_date(date_breaks = "3 months", date_labels = "%b %Y") +
-    ggplot2::theme_minimal() +
+    ggplot2::scale_x_date(
+      date_breaks = "3 months", 
+      labels = function(x) {
+        months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
+      }
+    ) +
+    theme_athlytics() +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-      plot.title = ggplot2::element_text(face = "bold")
+      plot.margin = ggplot2::margin(20, 20, 20, 20)
     )
   
   return(p)

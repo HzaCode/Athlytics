@@ -161,25 +161,24 @@ print(tail(ride_acwr_tss))
 plot_acwr(run_acwr, highlight_zones = TRUE)
 
 # Multi-athlete cohort analysis
-library(dplyr)
 
 # Load data for multiple athletes and add athlete_id
 athlete1 <- load_local_activities("athlete1_export.zip") \%>\%
-  mutate(athlete_id = "athlete1")
+  dplyr::mutate(athlete_id = "athlete1")
 
 athlete2 <- load_local_activities("athlete2_export.zip") \%>\%
-  mutate(athlete_id = "athlete2")
+  dplyr::mutate(athlete_id = "athlete2")
 
 # Combine all athletes
-cohort_data <- bind_rows(athlete1, athlete2)
+cohort_data <- dplyr::bind_rows(athlete1, athlete2)
 
 # Calculate ACWR for each athlete using group_modify()
 cohort_acwr <- cohort_data \%>\%
-  group_by(athlete_id) \%>\%
-  group_modify(~ calculate_acwr(.x, 
+  dplyr::group_by(athlete_id) \%>\%
+  dplyr::group_modify(~ calculate_acwr(.x, 
                                  activity_type = "Run",
                                  load_metric = "duration_mins")) \%>\%
-  ungroup()
+  dplyr::ungroup()
 
 # View results
 print(cohort_acwr)

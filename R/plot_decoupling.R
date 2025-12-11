@@ -1,25 +1,5 @@
 # R/plot_decoupling.R
 
-# Helper function for explicit English month-year labels, avoiding locale issues
-explicit_english_month_year <- function(date_obj) {
-  # Handle NA inputs: return NA_character_ for each NA in date_obj
-  if (all(is.na(date_obj))) { # If all are NA (covers single NA and vector of all NAs)
-    return(rep(NA_character_, length(date_obj)))
-  }
-
-  m <- lubridate::month(date_obj)
-  y <- lubridate::year(date_obj)
-  eng_months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-  # Initial paste might produce "NA NA" for NA dates
-  formatted_dates <- paste(eng_months[m], y)
-  
-  # Correctly set NA_character_ for positions where original date_obj was NA
-  formatted_dates[is.na(date_obj)] <- NA_character_
-  
-  return(formatted_dates)
-}
-
 #' Plot Aerobic Decoupling Trend
 #'
 #' Visualizes the trend of aerobic decoupling over time.
@@ -156,7 +136,7 @@ plot_decoupling <- function(data,
   
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling)) +
     ggplot2::geom_point(alpha = 0.7, size = 2, color = "#E64B35") +
-    ggplot2::scale_x_date(labels = explicit_english_month_year, date_breaks = "3 months") +
+    ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
     ggplot2::labs(
       title = plot_title,
       subtitle = paste("Metric:", decouple_metric_label),
@@ -174,16 +154,7 @@ plot_decoupling <- function(data,
   }
   
   p <- p +
-    ggplot2::theme_minimal(base_size = 12) +
-    ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 10),
-      axis.text.y = ggplot2::element_text(size = 10),
-      axis.title = ggplot2::element_text(size = 11, face = "bold"),
-      plot.title = ggplot2::element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 10)),
-      plot.subtitle = ggplot2::element_text(size = 10, color = "gray40", margin = ggplot2::margin(b = 15)),
-      plot.caption = ggplot2::element_text(size = 9, color = "gray50", hjust = 0),
-      panel.grid.minor = ggplot2::element_blank()
-    )
+    theme_athlytics()
 
   return(p)
 }

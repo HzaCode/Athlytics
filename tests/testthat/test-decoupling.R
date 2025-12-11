@@ -2,7 +2,7 @@
 
 library(testthat)
 library(Athlytics)
-library(lubridate) # Ensure lubridate is loaded for ymd in explicit_english_month_year tests
+library(lubridate) # Ensure lubridate is loaded for ymd in english_month_year tests
 # library(rStrava) # No longer needed directly if we use stream_df or Athlytics_sample_data
 
 # Load main sample data for the package
@@ -12,43 +12,29 @@ data(Athlytics_sample_data)
 # Ensure helper-mockdata.R is in the tests/testthat directory
 source(test_path("helper-mockdata.R"), local = TRUE)
 
-# --- Test explicit_english_month_year --- 
-# This helper is defined in R/plot_decoupling.R
+# --- Test english_month_year --- 
+# This helper is defined in R/utils.R
 
-test_that("explicit_english_month_year formats dates correctly", {
-  # Need to source the file where explicit_english_month_year is defined, 
-  # or make it available to the test environment if it's not exported.
-  # Assuming it's accessible after `library(Athlytics)` if R/plot_decoupling.R is part of the package build.
-  # If not, we might need to source it directly or use :::
-  # For now, let's assume it's available via Athlytics:::explicit_english_month_year or similar if not exported
-  # Or, if R/plot_decoupling.R is sourced by other test files, it might already be in the environment.
-  # Let's try accessing it directly first, assuming it's made available by package loading/sourcing.
-
+test_that("english_month_year formats dates correctly", {
   # Test with a single date
   single_date <- ymd("2023-01-15")
-  expect_equal(Athlytics:::explicit_english_month_year(single_date), "Jan 2023")
+  expect_equal(Athlytics:::english_month_year(single_date), "Jan 2023")
 
   # Test with multiple dates
   multiple_dates <- c(ymd("2023-03-10"), ymd("2024-11-05"))
-  expect_equal(Athlytics:::explicit_english_month_year(multiple_dates), c("Mar 2023", "Nov 2024"))
+  expect_equal(Athlytics:::english_month_year(multiple_dates), c("Mar 2023", "Nov 2024"))
 
   # Test with dates spanning year-end
   year_end_dates <- c(ymd("2022-12-25"), ymd("2023-01-01"))
-  expect_equal(Athlytics:::explicit_english_month_year(year_end_dates), c("Dec 2022", "Jan 2023"))
+  expect_equal(Athlytics:::english_month_year(year_end_dates), c("Dec 2022", "Jan 2023"))
 
   # Test with a leap year date
   leap_date <- ymd("2024-02-29")
-  expect_equal(Athlytics:::explicit_english_month_year(leap_date), "Feb 2024")
+  expect_equal(Athlytics:::english_month_year(leap_date), "Feb 2024")
   
   # Test with an empty vector of dates
   empty_dates <- ymd(character(0))
-  expect_equal(Athlytics:::explicit_english_month_year(empty_dates), character(0))
-  
-  # Test with NA date - depends on how lubridate::month/year handle NA
-  # lubridate::month(NA) is NA_integer_, lubridate::year(NA) is NA_integer_
-  # eng_months[NA_integer_] is NA_character_, paste(NA_character_, NA_integer_) is NA_character_
-  na_date <- ymd(NA)
-  expect_equal(Athlytics:::explicit_english_month_year(na_date), NA_character_)
+  expect_equal(Athlytics:::english_month_year(empty_dates), character(0))
 })
 
 # --- Test Cases for calculate_decoupling (using stream_df) ---

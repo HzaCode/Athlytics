@@ -34,6 +34,24 @@ Creates a complete plot showing an individual's metric trend with cohort
 reference percentile bands.
 }
 \examples{
+# Simple example with fixed data
+individual_data <- data.frame(
+  date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
+  acwr_smooth = c(1.0, 1.2, 0.9, 1.1)
+)
+reference_data <- data.frame(
+  date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
+  percentile = rep(c("p05", "p25", "p50", "p75", "p95"), 4),
+  value = c(0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5)
+)
+
+p <- plot_with_reference(
+  individual = individual_data,
+  reference = reference_data,
+  metric = "acwr_smooth"
+)
+print(p)
+
 \dontrun{
 plot_with_reference(
   individual = athlete_acwr,
