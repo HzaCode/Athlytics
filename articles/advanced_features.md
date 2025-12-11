@@ -417,6 +417,6 @@ sessionInfo()
 #>  [9] rmarkdown_2.30    lifecycle_1.0.4   cli_3.6.5         sass_0.4.10      
 #> [13] pkgdown_2.2.0     textshaping_1.0.4 jquerylib_0.1.4   systemfonts_1.3.1
 #> [17] compiler_4.5.2    tools_4.5.2       ragg_1.5.0        bslib_0.9.0      
-#> [21] evaluate_1.0.5    yaml_2.3.11       jsonlite_2.0.0    rlang_1.1.6      
+#> [21] evaluate_1.0.5    yaml_2.3.12       jsonlite_2.0.0    rlang_1.1.6      
 #> [25] fs_1.6.6          htmlwidgets_1.6.4
 ```

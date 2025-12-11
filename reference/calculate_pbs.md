@@ -73,12 +73,12 @@ print(head(athlytics_sample_pbs))
 #> # A tibble: 6 × 10
 #>   activity_id activity_date       distance elapsed_time moving_time time_seconds
 #>   <chr>       <dttm>                 <dbl>        <dbl>       <dbl>        <dbl>
-#> 1 activity_1… 2023-03-12 00:00:00     1000         240         235.         240 
-#> 2 activity_1… 2023-03-19 00:00:00     1000         237.        233.         237.
-#> 3 activity_1… 2023-03-27 00:00:00     1000         235.        230.         235.
-#> 4 activity_1… 2023-04-20 00:00:00     1000         232.        227.         232.
-#> 5 activity_1… 2023-04-27 00:00:00     1000         229.        225.         229.
-#> 6 activity_1… 2023-04-30 00:00:00     1000         226.        222.         226.
+#> 1 activity_1  2023-01-01 00:00:00     1000         307.        307.         307.
+#> 2 activity_2  2023-01-01 00:00:00     5000        1479.       1479.        1479.
+#> 3 activity_3  2023-01-01 00:00:00    10000        3047.       3047.        3047.
+#> 4 activity_4  2023-02-01 00:00:00     1000         293.        293.         293.
+#> 5 activity_5  2023-03-01 00:00:00     1000         294.        294.         294.
+#> 6 activity_6  2023-03-01 00:00:00     5000        1451.       1451.        1451.
 #> # ℹ 4 more variables: cumulative_pb_seconds <dbl>, is_pb <lgl>,
 #> #   distance_label <fct>, time_period <Period>
 

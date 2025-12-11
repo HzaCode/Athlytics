@@ -25,10 +25,9 @@ A ggplot2 scale object (scale_color_manual or scale_fill_manual)
 ## Examples
 
 ``` r
-library(ggplot2)
 # Apply nature palette to plot
-ggplot(iris, aes(Sepal.Length, Sepal.Width, color = Species)) +
-  geom_point() +
+ggplot2::ggplot(iris, ggplot2::aes(Sepal.Length, Sepal.Width, color = Species)) +
+  ggplot2::geom_point() +
   scale_athlytics("nature", "color")
 
 ```

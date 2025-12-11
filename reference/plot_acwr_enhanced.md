@@ -93,6 +93,17 @@ The layering order (bottom to top):
 ## Examples
 
 ``` r
+# Example using sample data
+data("athlytics_sample_acwr", package = "Athlytics")
+if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
+  p <- plot_acwr_enhanced(athlytics_sample_acwr, show_ci = FALSE)
+  print(p)
+}
+#> No reference data provided. Setting show_reference = FALSE.
+#> Warning: Removed 18 rows containing missing values or values outside the scale range
+#> (`geom_line()`).
+
+
 if (FALSE) { # \dontrun{
 # Load activities
 activities <- load_local_activities("export.zip")

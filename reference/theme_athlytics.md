@@ -6,7 +6,7 @@ figures.
 ## Usage
 
 ``` r
-theme_athlytics(base_size = 12, base_family = "")
+theme_athlytics(base_size = 13, base_family = "")
 ```
 
 ## Arguments
@@ -26,10 +26,9 @@ A ggplot2 theme object that can be added to plots
 ## Examples
 
 ``` r
-library(ggplot2)
 # Apply theme to a plot
-ggplot(mtcars, aes(mpg, wt)) +
-  geom_point() +
+ggplot2::ggplot(mtcars, ggplot2::aes(mpg, wt)) +
+  ggplot2::geom_point() +
   theme_athlytics()
 
 ```
