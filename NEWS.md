@@ -1,4 +1,18 @@
-﻿# Athlytics 1.0.0
+﻿# Athlytics 1.0.1
+
+## Code Quality Improvements
+
+* **Reduced Cyclomatic Complexity**: Refactored `calculate_acwr()` and `calculate_exposure()` by extracting shared load calculation logic into internal helper functions (`calculate_daily_load_internal()`, `compute_single_load()`, `validate_load_metric_params()`). This improves code maintainability and testability without changing the public API.
+
+* **Dependency Cleanup**: Removed unused `viridis` package from Imports. The package was declared as a dependency but never actually called (ggplot2's built-in `scale_color_viridis_d()` was used instead).
+
+* **Documentation Fixes**: Fixed Rd line width issues in `plot_with_reference()` examples.
+
+* **Build Configuration**: Updated `.Rbuildignore` to properly exclude development files.
+
+---
+
+# Athlytics 1.0.0
 
 This major release transitions from Strava API to **local data export processing**, prioritizing user privacy and data ownership while eliminating API rate limits and authentication requirements.
 

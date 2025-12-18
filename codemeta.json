@@ -7,7 +7,7 @@
   "codeRepository": "https://github.com/HzaCode/Athlytics",
   "issueTracker": "https://github.com/HzaCode/Athlytics/issues",
   "license": "https://spdx.org/licenses/MIT",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",

@@ -9,7 +9,7 @@
     "\nLoading Athlytics version ", pkg_version, ".\n",
     "Analyze your Strava data locally with ease!\n",
     "Use load_local_activities() to get started.\n",
-    "For documentation, see: https://hzacode.github.io/athlytics/"
+    "For documentation, see: https://hzacode.github.io/Athlytics/"
   )
 
 

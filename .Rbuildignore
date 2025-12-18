@@ -146,3 +146,5 @@
 ^lib$
 ^strava_data$
 
+^data-raw$
+^generate_plot_examples\.R$
