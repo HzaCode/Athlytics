@@ -195,11 +195,9 @@ calculate_acwr <- function(activities_data,
   if (!is.numeric(acute_period) || acute_period <= 0) stop("`acute_period` must be a positive integer.")
   if (!is.numeric(chronic_period) || chronic_period <= 0) stop("`chronic_period` must be a positive integer.")
   if (acute_period >= chronic_period) stop("`acute_period` must be less than `chronic_period`.")
-  if (load_metric == "tss" && is.null(user_ftp)) stop("`user_ftp` is required when `load_metric` is 'tss'.")
-
-  valid_load_metrics <- c("duration_mins", "distance_km", "elapsed_time_mins", "tss", "hrss", "elevation_gain_m")
-  if (!load_metric %in% valid_load_metrics) stop("Invalid `load_metric`. Choose from: ", paste(valid_load_metrics, collapse = ", "))
-  if (load_metric == "hrss" && (is.null(user_max_hr) || is.null(user_resting_hr))) stop("`user_max_hr` and `user_resting_hr` are required when `load_metric` is 'hrss'.")
+  
+  # Validate load metric parameters using internal helper
+  validate_load_metric_params(load_metric, user_ftp, user_max_hr, user_resting_hr)
   
   # Force explicit activity_type specification to prevent mixing incompatible sports
   if (is.null(activity_type) || length(activity_type) == 0) {
@@ -238,84 +236,15 @@ calculate_acwr <- function(activities_data,
     stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date,").")
   }
 
-  # --- Process Activities into Daily Load ---
-  `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
-  safe_as_numeric <- function(x) { as.numeric(x %||% 0) }
-
-  # Convert data frame to list format for processing
-  daily_load_df <- purrr::map_dfr(1:nrow(activities_df_filtered), function(i) {
-    activity <- activities_df_filtered[i, ]
-    # Get activity date and type
-    activity_date <- activity$date
-    act_type <- activity$type %||% "Unknown"
-
-    # Extract metrics from data frame columns
-    duration_sec <- safe_as_numeric(activity$moving_time)
-    distance_m <- safe_as_numeric(activity$distance)
-    elapsed_sec <- safe_as_numeric(activity$elapsed_time)
-    avg_hr <- safe_as_numeric(activity$average_heartrate)
-    avg_power <- safe_as_numeric(activity$average_watts)
-    elevation_gain <- safe_as_numeric(activity$elevation_gain)
-    # Use weighted_average_watts if available, otherwise average_watts
-    np_proxy <- safe_as_numeric(activity$weighted_average_watts %||% activity$average_watts %||% 0) 
-    # message(sprintf("    Duration: %.0f sec", duration_sec))
-
-    # --- Added Debugging and Refined Logic --- 
-    # message(sprintf("    Inputs check: load_metric='%s', duration_sec=%.1f, distance_m=%.1f, avg_hr=%.1f, np_proxy=%.1f, user_ftp=%s, user_max_hr=%s, user_resting_hr=%s", 
-    #                 load_metric, duration_sec, distance_m, avg_hr, np_proxy, 
-    #                 deparse(user_ftp), deparse(user_max_hr), deparse(user_resting_hr)))
-    
-    if (duration_sec > 0) {
-      # Initialize load_value outside case_when to handle default case cleanly
-      load_value <- 0 
-      
-      if (load_metric == "duration_mins") {
-          load_value <- duration_sec / 60
-      } else if (load_metric == "distance_km") {
-          load_value <- distance_m / 1000
-      } else if (load_metric == "elapsed_time_mins") {
-          load_value <- elapsed_sec / 60
-      } else if (load_metric == "elevation_gain_m") {
-          load_value <- elevation_gain
-      } else if (load_metric == "hrss") {
-          # Check required HR parameters before calculating
-          if (!is.null(user_max_hr) && !is.null(user_resting_hr) && is.numeric(user_max_hr) && is.numeric(user_resting_hr) && 
-              user_max_hr > user_resting_hr && avg_hr > user_resting_hr && avg_hr <= user_max_hr) {
-            hr_reserve <- user_max_hr - user_resting_hr
-            avg_hr_rel <- (avg_hr - user_resting_hr) / hr_reserve
-            load_value <- (duration_sec / 60) * avg_hr_rel # Simplified TRIMP
-          } else {
-              # message("    Skipping HRSS calculation: Missing/invalid HR parameters or avg_hr out of range.")
-          }
-      } else if (load_metric == "tss") {
-           # Check required FTP parameter before calculating
-           if (!is.null(user_ftp) && is.numeric(user_ftp) && user_ftp > 0 && np_proxy > 0) {
-             intensity_factor <- np_proxy / user_ftp
-             load_value <- (duration_sec * np_proxy * intensity_factor) / (user_ftp * 3600) * 100
-           } else {
-               # message("    Skipping TSS calculation: Missing/invalid FTP or power data (np_proxy).")
-           }
-      }
-      
-      # message(sprintf("    Calculated load_value: %.2f", load_value))
-    } else {
-        # message("    Duration <= 0, load is 0.")
-        load_value <- 0 # Define load_value even if duration is 0
-    }
-
-    if (!is.na(load_value) && load_value > 0) {
-      # message("    -> Activity PASSED filters, returning load data.")
-      data.frame(
-        date = activity_date,
-        load = load_value,
-        stringsAsFactors = FALSE
-      )
-    } else {
-      # message("    -> Activity FAILED final check (load NA or <= 0).")
-      NULL
-    }
-  })
-
+  # --- Process Activities into Daily Load (using internal helper) ---
+  daily_load_df <- calculate_daily_load_internal(
+    activities_df = activities_df_filtered,
+    load_metric = load_metric,
+    user_ftp = user_ftp,
+    user_max_hr = user_max_hr,
+    user_resting_hr = user_resting_hr
+  )
+  
   message("Finished processing activity list.")
 
   if (is.null(daily_load_df) || nrow(daily_load_df) == 0) {

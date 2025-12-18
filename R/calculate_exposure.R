@@ -82,19 +82,12 @@ calculate_exposure <- function(activities_data,
     stop("`activities_data` must be a data frame (e.g., from load_local_activities()).")
   }
   
-  load_metric_options <- c("duration_mins", "distance_km", "hrss", "tss", "elevation_gain_m")
-  if (!load_metric %in% load_metric_options) {
-    stop(paste("'load_metric' must be one of:", paste(load_metric_options, collapse=", ")))
-  }
-  if (load_metric == "tss" && is.null(user_ftp)) {
-    stop("user_ftp is required when load_metric = 'tss'.")
-  }
-  if (load_metric == "hrss" && (is.null(user_max_hr) || is.null(user_resting_hr))) {
-    stop("user_max_hr and user_resting_hr are required when load_metric = 'hrss'.")
-  }
   if (acute_period >= chronic_period) {
     stop("acute_period must be less than chronic_period.")
   }
+  
+  # Validate load metric parameters using internal helper
+  validate_load_metric_params(load_metric, user_ftp, user_max_hr, user_resting_hr)
   
   `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
   
@@ -124,58 +117,16 @@ calculate_exposure <- function(activities_data,
     stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date,").")
   }
 
-  # --- Process Activities into Daily Load ---
-  safe_as_numeric <- function(x) { as.numeric(x %||% 0) }
+  # --- Process Activities into Daily Load (using internal helper) ---
+  daily_load_df <- calculate_daily_load_internal(
+    activities_df = activities_df_filtered,
+    load_metric = load_metric,
+    user_ftp = user_ftp,
+    user_max_hr = user_max_hr,
+    user_resting_hr = user_resting_hr
+  )
 
-  daily_load_df <- purrr::map_dfr(1:nrow(activities_df_filtered), function(i) {
-    activity <- activities_df_filtered[i, ]
-    activity_date <- activity$date
-    act_type <- activity$type %||% "Unknown"
-
-    duration_sec <- safe_as_numeric(activity$moving_time)
-    distance_m <- safe_as_numeric(activity$distance)
-    elapsed_sec <- safe_as_numeric(activity$elapsed_time)
-    avg_hr <- safe_as_numeric(activity$average_heartrate)
-    avg_power <- safe_as_numeric(activity$average_watts)
-    elevation_gain <- safe_as_numeric(activity$elevation_gain)
-    np_proxy <- safe_as_numeric(activity$weighted_average_watts %||% activity$average_watts %||% 0)
-
-    current_load <- 0
-    if (load_metric == "duration_mins") {
-      current_load <- duration_sec / 60
-    } else if (load_metric == "distance_km") {
-      current_load <- distance_m / 1000
-    } else if (load_metric == "hrss") {
-      if (avg_hr > 0 && !is.null(user_max_hr) && !is.null(user_resting_hr)) {
-        hr_reserve <- user_max_hr - user_resting_hr
-        if (hr_reserve > 0) {
-          percent_hrr <- (avg_hr - user_resting_hr) / hr_reserve
-          if (percent_hrr > 0) {
-            current_load <- (duration_sec / 3600) * percent_hrr * 100
-          }
-        }
-      }
-    } else if (load_metric == "tss") {
-      if (np_proxy > 0 && !is.null(user_ftp) && user_ftp > 0) {
-        intensity_factor <- np_proxy / user_ftp
-        current_load <- (duration_sec / 3600) * (intensity_factor^2) * 100
-      }
-    } else if (load_metric == "elevation_gain_m") {
-      current_load <- elevation_gain
-    }
-
-    if (current_load > 0) {
-      data.frame(
-        date = activity_date,
-        load = current_load,
-        stringsAsFactors = FALSE
-      )
-    } else {
-      NULL
-    }
-  })
-
-  if (nrow(daily_load_df) == 0) {
+  if (is.null(daily_load_df) || nrow(daily_load_df) == 0) {
     stop("No valid load data could be calculated from activities. Check if activities have the required metrics (HR, power, duration, distance).")
   }
 

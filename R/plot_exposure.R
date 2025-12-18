@@ -32,7 +32,6 @@
 #' @importFrom lubridate ymd_hms as_date days floor_date ceiling_date interval duration
 #' @importFrom zoo rollmean
 #' @import ggplot2
-#' @importFrom viridis scale_color_viridis
 #' @importFrom rlang .data
 #' @export
 #'

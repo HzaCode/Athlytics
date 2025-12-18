@@ -154,17 +154,6 @@
     },
     "9": {
       "@type": "SoftwareApplication",
-      "identifier": "viridis",
-      "name": "viridis",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      }
-    },
-    "10": {
-      "@type": "SoftwareApplication",
       "identifier": "zoo",
       "name": "zoo",
       "provider": {
@@ -174,7 +163,7 @@
         "url": "https://cran.r-project.org"
       }
     },
-    "11": {
+    "10": {
       "@type": "SoftwareApplication",
       "identifier": "R.utils",
       "name": "R.utils",
@@ -185,7 +174,7 @@
         "url": "https://cran.r-project.org"
       }
     },
-    "12": {
+    "11": {
       "@type": "SoftwareApplication",
       "identifier": "tools",
       "name": "tools"

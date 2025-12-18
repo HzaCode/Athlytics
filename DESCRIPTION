@@ -27,7 +27,6 @@ Imports:
     rlang (>= 0.4.0),
     scales,
     tidyr,
-    viridis,
     zoo,
     R.utils,
     tools,
