@@ -210,14 +210,15 @@ calculate_ef <- function(activities_data,
   }
 
   # --- Process Activities & Calculate EF ---
-  safe_as_numeric <- function(x) { as.numeric(rlang::`%||%`(x, 0)) }
-
   ef_data <- purrr::map_dfr(1:nrow(activities_df_filtered), function(i) {
     activity <- activities_df_filtered[i, ]
     act_type <- activity$type %||% "Unknown"
     activity_date <- activity$date
-    duration_sec <- safe_as_numeric(activity$moving_time)
-    avg_hr <- safe_as_numeric(activity$average_heartrate)
+    duration_sec <- as.numeric(activity$moving_time %||% 0)
+    avg_hr <- as.numeric(activity$average_heartrate %||% 0)
+    distance_m <- as.numeric(activity$distance %||% 0)
+    avg_power <- as.numeric(activity$average_watts %||% 0)
+    weighted_power <- as.numeric(activity$weighted_average_watts %||% 0)
     distance_m <- safe_as_numeric(activity$distance)
     avg_power <- safe_as_numeric(activity$average_watts)
     weighted_power <- safe_as_numeric(activity$weighted_average_watts)
