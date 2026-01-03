@@ -37,7 +37,7 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(Athlytics_sample_data)
+#' data(athlytics_sample_exposure)
 #' # Ensure exposure_df is named and other necessary parameters like activity_type are provided
 #' p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
 #' print(p)
