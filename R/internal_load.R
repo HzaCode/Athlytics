@@ -25,8 +25,7 @@ calculate_daily_load_internal <- function(activities_df,
                                           user_max_hr = NULL,
                                           user_resting_hr = NULL) {
   
- `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
-  safe_as_numeric <- function(x) { as.numeric(x %||% 0) }
+  safe_as_numeric <- function(x) { as.numeric(rlang::`%||%`(x, 0)) }
   
   purrr::map_dfr(seq_len(nrow(activities_df)), function(i) {
     activity <- activities_df[i, ]

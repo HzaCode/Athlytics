@@ -82,7 +82,7 @@ and the efficiency factor (output/HR) is compared between halves.
 }
 \examples{
 # Example using simulated data
-data(Athlytics_sample_data)
+data(athlytics_sample_decoupling)
 print(head(athlytics_sample_decoupling))
 
 \dontrun{

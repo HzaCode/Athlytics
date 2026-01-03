@@ -89,8 +89,6 @@ calculate_exposure <- function(activities_data,
   # Validate load metric parameters using internal helper
   validate_load_metric_params(load_metric, user_ftp, user_max_hr, user_resting_hr)
   
-  `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
-  
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
   analysis_start_date <- analysis_end_date - lubridate::days(chronic_period) + lubridate::days(1)
 

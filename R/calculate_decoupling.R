@@ -125,7 +125,6 @@ calculate_decoupling <- function(activities_data = NULL,
   quality_control <- match.arg(quality_control)
   
   # --- Date Handling ---
-  `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), 
                                  error = function(e) Sys.Date())
   analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), 

@@ -185,7 +185,6 @@ calculate_ef <- function(activities_data,
   quality_control <- match.arg(quality_control)
 
   # --- Date Handling ---
-  `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
   analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
   if (analysis_start_date >= analysis_end_date) stop("start_date must be before end_date.")
@@ -211,7 +210,7 @@ calculate_ef <- function(activities_data,
   }
 
   # --- Process Activities & Calculate EF ---
-  safe_as_numeric <- function(x) { as.numeric(x %||% 0) }
+  safe_as_numeric <- function(x) { as.numeric(rlang::`%||%`(x, 0)) }
 
   ef_data <- purrr::map_dfr(1:nrow(activities_df_filtered), function(i) {
     activity <- activities_df_filtered[i, ]

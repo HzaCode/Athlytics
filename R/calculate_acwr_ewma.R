@@ -130,7 +130,6 @@ calculate_acwr_ewma <- function(activities_data,
   }
   
   # --- Date Handling ---
-  `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), 
                                  error = function(e) Sys.Date())
   analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), 
@@ -185,9 +184,9 @@ calculate_acwr_ewma <- function(activities_data,
     stop("No activities found for the specified criteria.")
   }
   
-  # Calculate daily load (simplified - you may want to use the full logic from calculate_acwr)
-  daily_load_df <- calculate_daily_load(activities_df_filtered, load_metric, 
-                                        user_ftp, user_max_hr, user_resting_hr)
+  # Calculate daily load using internal helper
+  daily_load_df <- calculate_daily_load_internal(activities_df_filtered, load_metric, 
+                                                  user_ftp, user_max_hr, user_resting_hr)
   
   daily_load_summary <- daily_load_df %>%
     dplyr::group_by(date) %>%
@@ -214,60 +213,6 @@ calculate_acwr_ewma <- function(activities_data,
   
   message("Calculation complete.")
   return(acwr_data)
-}
-
-
-#' Internal: Calculate Daily Load
-#' @keywords internal
-#' @noRd
-calculate_daily_load <- function(activities_df, load_metric, user_ftp, user_max_hr, user_resting_hr) {
-  `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
-  safe_as_numeric <- function(x) { as.numeric(x %||% 0) }
-  
-  purrr::map_dfr(1:nrow(activities_df), function(i) {
-    activity <- activities_df[i, ]
-    activity_date <- activity$date
-    
-    duration_sec <- safe_as_numeric(activity$moving_time)
-    distance_m <- safe_as_numeric(activity$distance)
-    elapsed_sec <- safe_as_numeric(activity$elapsed_time)
-    avg_hr <- safe_as_numeric(activity$average_heartrate)
-    avg_power <- safe_as_numeric(activity$average_watts)
-    elevation_gain <- safe_as_numeric(activity$elevation_gain)
-    np_proxy <- safe_as_numeric(activity$weighted_average_watts %||% activity$average_watts %||% 0)
-    
-    load_value <- 0
-    
-    if (duration_sec > 0) {
-      if (load_metric == "duration_mins") {
-        load_value <- duration_sec / 60
-      } else if (load_metric == "distance_km") {
-        load_value <- distance_m / 1000
-      } else if (load_metric == "elapsed_time_mins") {
-        load_value <- elapsed_sec / 60
-      } else if (load_metric == "elevation_gain_m") {
-        load_value <- elevation_gain
-      } else if (load_metric == "hrss") {
-        if (!is.null(user_max_hr) && !is.null(user_resting_hr) && 
-            avg_hr > user_resting_hr && avg_hr <= user_max_hr) {
-          hr_reserve <- user_max_hr - user_resting_hr
-          avg_hr_rel <- (avg_hr - user_resting_hr) / hr_reserve
-          load_value <- (duration_sec / 60) * avg_hr_rel
-        }
-      } else if (load_metric == "tss") {
-        if (!is.null(user_ftp) && user_ftp > 0 && np_proxy > 0) {
-          intensity_factor <- np_proxy / user_ftp
-          load_value <- (duration_sec * np_proxy * intensity_factor) / (user_ftp * 3600) * 100
-        }
-      }
-    }
-    
-    if (!is.na(load_value) && load_value > 0) {
-      data.frame(date = activity_date, load = load_value, stringsAsFactors = FALSE)
-    } else {
-      NULL
-    }
-  })
 }
 
 
