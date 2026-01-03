@@ -63,7 +63,7 @@ steps:
 ## Code of Conduct
 
 By participating in this project, you are expected to uphold our [Code
-of Conduct](https://hezhiang.com/Athlytics/CODE_OF_CONDUCT.md).
+of Conduct](https://hzacode.github.io/Athlytics/CODE_OF_CONDUCT.md).
 
 ## Questions?
 

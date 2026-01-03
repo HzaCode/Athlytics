@@ -30,9 +30,9 @@ plot_acwr(
 
   **Recommended: Pass pre-calculated data via `acwr_df` (local export
   preferred).** A data frame from
-  [`calculate_acwr()`](https://hezhiang.com/Athlytics/reference/calculate_acwr.md)
+  [`calculate_acwr()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md)
   or activities data from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
 
 - activity_type:
 
@@ -89,9 +89,9 @@ plot_acwr(
 - acwr_df:
 
   **Recommended.** A pre-calculated data frame from
-  [`calculate_acwr()`](https://hezhiang.com/Athlytics/reference/calculate_acwr.md)
+  [`calculate_acwr()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md)
   or
-  [`calculate_acwr_ewma()`](https://hezhiang.com/Athlytics/reference/calculate_acwr_ewma.md).
+  [`calculate_acwr_ewma()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.md).
   When provided, analysis uses local data only (no API calls).
 
 - group_var:
@@ -109,8 +109,8 @@ A ggplot object showing the ACWR trend.
 ## Details
 
 Plots the ACWR trend over time. **Best practice: Use
-[`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md) +
-[`calculate_acwr()`](https://hezhiang.com/Athlytics/reference/calculate_acwr.md) +
+[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md) +
+[`calculate_acwr()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md) +
 this function.** ACWR is calculated as acute load / chronic load. A
 ratio of 0.8-1.3 is often considered the "sweet spot".
 

@@ -200,9 +200,9 @@ comply with local IRB/ethics and data-protection regulations.
 ## 🤝 Contributing
 
 Contributions are welcome! Please read our
-[CONTRIBUTING.md](https://hezhiang.com/Athlytics/CONTRIBUTING.md) guide
-and follow our [Code of
-Conduct](https://hezhiang.com/Athlytics/CODE_OF_CONDUCT.md).
+[CONTRIBUTING.md](https://hzacode.github.io/Athlytics/CONTRIBUTING.md)
+guide and follow our [Code of
+Conduct](https://hzacode.github.io/Athlytics/CODE_OF_CONDUCT.md).
 
 - **🐛 Report an Issue**: [Open an
   Issue](https://github.com/HzaCode/Athlytics/issues)

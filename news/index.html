@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,16 @@
       <small>Source: <a href="https://github.com/HzaCode/Athlytics/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.1" id="athlytics-101">Athlytics 1.0.1<a class="anchor" aria-label="anchor" href="#athlytics-101"></a></h2>
+<div class="section level3">
+<h3 id="code-quality-improvements-1-0-1">Code Quality Improvements<a class="anchor" aria-label="anchor" href="#code-quality-improvements-1-0-1"></a></h3>
+<ul><li><p><strong>Reduced Cyclomatic Complexity</strong>: Refactored <code><a href="../reference/calculate_acwr.html">calculate_acwr()</a></code> and <code><a href="../reference/calculate_exposure.html">calculate_exposure()</a></code> by extracting shared load calculation logic into internal helper functions (<code>calculate_daily_load_internal()</code>, <code>compute_single_load()</code>, <code>validate_load_metric_params()</code>). This improves code maintainability and testability without changing the public API.</p></li>
+<li><p><strong>Dependency Cleanup</strong>: Removed unused <code>viridis</code> package from Imports. The package was declared as a dependency but never actually called (ggplot2’s built-in <code><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_d()</a></code> was used instead).</p></li>
+<li><p><strong>Documentation Fixes</strong>: Fixed Rd line width issues in <code><a href="../reference/plot_with_reference.html">plot_with_reference()</a></code> examples.</p></li>
+<li><p><strong>Build Configuration</strong>: Updated <code>.Rbuildignore</code> to properly exclude development files.</p></li>
+</ul><hr></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="athlytics-100">Athlytics 1.0.0<a class="anchor" aria-label="anchor" href="#athlytics-100"></a></h2>
 <p>This major release transitions from Strava API to <strong>local data export processing</strong>, prioritizing user privacy and data ownership while eliminating API rate limits and authentication requirements.</p>

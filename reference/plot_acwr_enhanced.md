@@ -24,13 +24,13 @@ plot_acwr_enhanced(
 - acwr_data:
 
   A data frame from
-  [`calculate_acwr_ewma()`](https://hezhiang.com/Athlytics/reference/calculate_acwr_ewma.md)
+  [`calculate_acwr_ewma()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.md)
   containing ACWR values.
 
 - reference_data:
 
   Optional. A data frame from
-  [`cohort_reference()`](https://hezhiang.com/Athlytics/reference/cohort_reference.md)
+  [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
   for adding cohort reference bands.
 
 - show_ci:

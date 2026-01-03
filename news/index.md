@@ -1,5 +1,33 @@
 # Changelog
 
+## Athlytics 1.0.1
+
+### Code Quality Improvements
+
+- **Reduced Cyclomatic Complexity**: Refactored
+  [`calculate_acwr()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md)
+  and
+  [`calculate_exposure()`](https://hzacode.github.io/Athlytics/reference/calculate_exposure.md)
+  by extracting shared load calculation logic into internal helper
+  functions (`calculate_daily_load_internal()`, `compute_single_load()`,
+  `validate_load_metric_params()`). This improves code maintainability
+  and testability without changing the public API.
+
+- **Dependency Cleanup**: Removed unused `viridis` package from Imports.
+  The package was declared as a dependency but never actually called
+  (ggplot2’s built-in
+  [`scale_color_viridis_d()`](https://ggplot2.tidyverse.org/reference/scale_viridis.html)
+  was used instead).
+
+- **Documentation Fixes**: Fixed Rd line width issues in
+  [`plot_with_reference()`](https://hzacode.github.io/Athlytics/reference/plot_with_reference.md)
+  examples.
+
+- **Build Configuration**: Updated `.Rbuildignore` to properly exclude
+  development files.
+
+------------------------------------------------------------------------
+
 ## Athlytics 1.0.0
 
 This major release transitions from Strava API to **local data export
@@ -11,7 +39,7 @@ eliminating API rate limits and authentication requirements.
 - **Privacy-First Architecture**: Complete shift from Strava API to
   local ZIP file processing
   - New
-    [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md)
+    [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
     function supports direct ZIP file loading (no manual extraction
     needed)
   - Removed API dependencies and authentication requirements
@@ -23,15 +51,15 @@ eliminating API rate limits and authentication requirements.
   - Added algorithm descriptions and best practices
   - Expanded with academic references and cross-function links
   - Enhanced
-    [`calculate_acwr()`](https://hezhiang.com/Athlytics/reference/calculate_acwr.md),
-    [`calculate_ef()`](https://hezhiang.com/Athlytics/reference/calculate_ef.md),
+    [`calculate_acwr()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md),
+    [`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md),
     and
-    [`calculate_decoupling()`](https://hezhiang.com/Athlytics/reference/calculate_decoupling.md)
+    [`calculate_decoupling()`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md)
     documentation
 - **Multi-Athlete Cohort Analysis**: Improved support for research and
   team analytics
   - Better documentation for
-    [`cohort_reference()`](https://hezhiang.com/Athlytics/reference/cohort_reference.md)
+    [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
     and multi-athlete workflows
   - Examples updated to show intervention/control group comparisons
   - Proper use of

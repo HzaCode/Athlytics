@@ -26,9 +26,9 @@ plot_ef(
 
   **Recommended: Pass pre-calculated data via `ef_df` (local export
   preferred).** A data frame from
-  [`calculate_ef()`](https://hezhiang.com/Athlytics/reference/calculate_ef.md)
+  [`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md)
   or activities data from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
 
 - activity_type:
 
@@ -64,7 +64,7 @@ plot_ef(
 - ef_df:
 
   **Recommended.** A pre-calculated data frame from
-  [`calculate_ef()`](https://hezhiang.com/Athlytics/reference/calculate_ef.md).
+  [`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md).
   When provided, analysis uses local data only (no API calls).
 
 - group_var:
@@ -87,8 +87,8 @@ workflow: Use local data via `ef_df`.**
 Plots EF (output/HR based on activity averages). An upward trend often
 indicates improved aerobic fitness. Points colored by activity type.
 **Best practice: Use
-[`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md) +
-[`calculate_ef()`](https://hezhiang.com/Athlytics/reference/calculate_ef.md) +
+[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md) +
+[`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md) +
 this function.**
 
 ## Examples

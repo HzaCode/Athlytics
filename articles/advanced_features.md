@@ -20,7 +20,7 @@ analysis and multi-athlete research studies.
 
 Before calculating physiological metrics, it’s crucial to ensure data
 quality. The
-[`flag_quality()`](https://hezhiang.com/Athlytics/reference/flag_quality.md)
+[`flag_quality()`](https://hzacode.github.io/Athlytics/reference/flag_quality.md)
 function detects common issues in activity stream data.
 
 ### Basic Quality Checking
@@ -413,10 +413,10 @@ sessionInfo()
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] digest_0.6.39     desc_1.4.3        R6_2.6.1          fastmap_1.2.0    
-#>  [5] xfun_0.54         cachem_1.1.0      knitr_1.50        htmltools_0.5.9  
+#>  [5] xfun_0.55         cachem_1.1.0      knitr_1.51        htmltools_0.5.9  
 #>  [9] rmarkdown_2.30    lifecycle_1.0.4   cli_3.6.5         sass_0.4.10      
 #> [13] pkgdown_2.2.0     textshaping_1.0.4 jquerylib_0.1.4   systemfonts_1.3.1
 #> [17] compiler_4.5.2    tools_4.5.2       ragg_1.5.0        bslib_0.9.0      
-#> [21] evaluate_1.0.5    yaml_2.3.12       jsonlite_2.0.0    rlang_1.1.6      
-#> [25] fs_1.6.6          htmlwidgets_1.6.4
+#> [21] evaluate_1.0.5    yaml_2.3.12       otel_0.2.0        jsonlite_2.0.0   
+#> [25] rlang_1.1.6       fs_1.6.6          htmlwidgets_1.6.4
 ```

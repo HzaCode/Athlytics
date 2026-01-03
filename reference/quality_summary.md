@@ -13,7 +13,7 @@ quality_summary(flagged_streams)
 - flagged_streams:
 
   A data frame returned by
-  [`flag_quality()`](https://hezhiang.com/Athlytics/reference/flag_quality.md).
+  [`flag_quality()`](https://hzacode.github.io/Athlytics/reference/flag_quality.md).
 
 ## Value
 

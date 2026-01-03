@@ -25,7 +25,7 @@ plot_with_reference(
 - reference:
 
   A data frame from
-  [`cohort_reference()`](https://hezhiang.com/Athlytics/reference/cohort_reference.md).
+  [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md).
 
 - metric:
 
@@ -58,7 +58,10 @@ individual_data <- data.frame(
 reference_data <- data.frame(
   date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
   percentile = rep(c("p05", "p25", "p50", "p75", "p95"), 4),
-  value = c(0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5, 0.7, 0.9, 1.1, 1.3, 1.5)
+  value = c(0.7, 0.9, 1.1, 1.3, 1.5,
+            0.7, 0.9, 1.1, 1.3, 1.5,
+            0.7, 0.9, 1.1, 1.3, 1.5,
+            0.7, 0.9, 1.1, 1.3, 1.5)
 )
 
 p <- plot_with_reference(

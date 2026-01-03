@@ -42,7 +42,7 @@ calculate_acwr(
 - activities_data:
 
   A data frame of activities from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
   Must contain columns: `date`, `distance`, `moving_time`,
   `elapsed_time`, `average_heartrate`, `average_watts`, `type`,
   `elevation_gain`.
@@ -211,13 +211,13 @@ league players. *British Journal of Sports Medicine*, 50(4), 231-236.
 
 ## See also
 
-[`plot_acwr`](https://hezhiang.com/Athlytics/reference/plot_acwr.md) for
-visualization,
-[`calculate_acwr_ewma`](https://hezhiang.com/Athlytics/reference/calculate_acwr_ewma.md)
+[`plot_acwr`](https://hzacode.github.io/Athlytics/reference/plot_acwr.md)
+for visualization,
+[`calculate_acwr_ewma`](https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.md)
 for EWMA-based ACWR,
-[`load_local_activities`](https://hezhiang.com/Athlytics/reference/load_local_activities.md)
+[`load_local_activities`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
 for data loading,
-[`cohort_reference`](https://hezhiang.com/Athlytics/reference/cohort_reference.md)
+[`cohort_reference`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
 for multi-athlete comparisons
 
 ## Examples

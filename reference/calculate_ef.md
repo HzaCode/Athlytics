@@ -47,7 +47,7 @@ calculate_ef(
 - activities_data:
 
   A data frame of activities from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
   Must contain columns: `date`, `type`, `moving_time`, `distance`,
   `average_heartrate`, and `average_watts` (for power_hr metric).
 
@@ -203,11 +203,11 @@ with a Power Meter* (3rd ed.). VeloPress.
 
 ## See also
 
-[`plot_ef`](https://hezhiang.com/Athlytics/reference/plot_ef.md) for
-visualization with trend lines,
-[`calculate_decoupling`](https://hezhiang.com/Athlytics/reference/calculate_decoupling.md)
+[`plot_ef`](https://hzacode.github.io/Athlytics/reference/plot_ef.md)
+for visualization with trend lines,
+[`calculate_decoupling`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md)
 for within-activity efficiency analysis,
-[`load_local_activities`](https://hezhiang.com/Athlytics/reference/load_local_activities.md)
+[`load_local_activities`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
 for data loading
 
 ## Examples

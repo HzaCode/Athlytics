@@ -107,4 +107,4 @@ NEWS.md is updated
 **Note:** By submitting this pull request, I confirm that my
 contribution is made under the terms of the MIT License and I have read
 and agree to the [Code of
-Conduct](https://hezhiang.com/Athlytics/CODE_OF_CONDUCT.md).
+Conduct](https://hzacode.github.io/Athlytics/CODE_OF_CONDUCT.md).

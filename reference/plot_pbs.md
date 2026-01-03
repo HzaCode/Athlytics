@@ -23,9 +23,9 @@ plot_pbs(
 
   **Recommended: Pass pre-calculated data via `pbs_df` (local export
   preferred).** A data frame from
-  [`calculate_pbs()`](https://hezhiang.com/Athlytics/reference/calculate_pbs.md)
+  [`calculate_pbs()`](https://hzacode.github.io/Athlytics/reference/calculate_pbs.md)
   or activities data from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
 
 - activity_type:
 
@@ -52,7 +52,7 @@ plot_pbs(
 - pbs_df:
 
   **Recommended.** A pre-calculated data frame from
-  [`calculate_pbs()`](https://hezhiang.com/Athlytics/reference/calculate_pbs.md).
+  [`calculate_pbs()`](https://hzacode.github.io/Athlytics/reference/calculate_pbs.md).
   When provided, analysis uses local data only (no API calls).
 
 ## Value
@@ -67,8 +67,8 @@ new PBs. **Recommended workflow: Use local data via `pbs_df`.**
 
 Visualizes data from `calculate_pbs`. Points show best efforts; solid
 points mark new PBs. Y-axis is MM:SS. **Best practice: Use
-[`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md) +
-[`calculate_pbs()`](https://hezhiang.com/Athlytics/reference/calculate_pbs.md) +
+[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md) +
+[`calculate_pbs()`](https://hzacode.github.io/Athlytics/reference/calculate_pbs.md) +
 this function.** Legacy API mode is maintained for backward
 compatibility only.
 

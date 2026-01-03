@@ -24,7 +24,7 @@ calculate_exposure(
 - activities_data:
 
   A data frame of activities from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
   Must contain columns: date, distance, moving_time, elapsed_time,
   average_heartrate, average_watts, type, elevation_gain.
 

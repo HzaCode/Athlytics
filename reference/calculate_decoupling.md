@@ -27,7 +27,7 @@ calculate_decoupling(
 - activities_data:
 
   A data frame from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
   Required unless `stream_df` is provided.
 
 - export_dir:
@@ -120,7 +120,7 @@ between first and second halves of activities. Positive values indicate
 HR drift (cardiovascular drift).
 
 **Best practice**: Use
-[`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md)
+[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
 to load data, then pass to this function.
 
 The function parses FIT/TCX/GPX files from your Strava export to extract

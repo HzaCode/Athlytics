@@ -24,9 +24,9 @@ plot_decoupling(
 
   **Recommended: Pass pre-calculated data via `decoupling_df` (local
   export preferred).** A data frame from
-  [`calculate_decoupling()`](https://hezhiang.com/Athlytics/reference/calculate_decoupling.md)
+  [`calculate_decoupling()`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md)
   or activities data from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
 
 - activity_type:
 
@@ -62,7 +62,7 @@ plot_decoupling(
 - decoupling_df:
 
   **Recommended.** A pre-calculated data frame from
-  [`calculate_decoupling()`](https://hezhiang.com/Athlytics/reference/calculate_decoupling.md).
+  [`calculate_decoupling()`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md).
   When provided, analysis uses local data only (no API calls). Must
   contain 'date' and 'decoupling' columns.
 
@@ -78,8 +78,8 @@ Use local data via `decoupling_df`.**
 Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half
 \* 100). Positive values mean HR drifted relative to output. A 5\\
 threshold line is often used as reference. **Best practice: Use
-[`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md) +
-[`calculate_decoupling()`](https://hezhiang.com/Athlytics/reference/calculate_decoupling.md) +
+[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md) +
+[`calculate_decoupling()`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md) +
 this function.**
 
 ## Examples

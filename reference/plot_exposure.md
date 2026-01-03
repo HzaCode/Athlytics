@@ -25,7 +25,7 @@ plot_exposure(
 - data:
 
   A data frame from
-  [`load_local_activities()`](https://hezhiang.com/Athlytics/reference/load_local_activities.md).
+  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
   Required unless `exposure_df` is provided.
 
 - activity_type:
