@@ -144,7 +144,7 @@ Athlytics reads ZIP files directly</p>
 <span><span class="co"># Example output: [1] 847</span></span>
 <span></span>
 <span><span class="co"># What sports are in your data?</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">sport</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">type</span><span class="op">)</span></span>
 <span><span class="co"># Example output:</span></span>
 <span><span class="co">#   Ride  Run  Swim</span></span>
 <span><span class="co">#    312  498    37</span></span>
@@ -746,10 +746,10 @@ activities</p>
 <p><strong>Solutions:</strong></p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check activity types in your data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">sport</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">type</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check for HR data availability</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">avg_hr</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">average_heartrate</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Verify date range</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">date</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>

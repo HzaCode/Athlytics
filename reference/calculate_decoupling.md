@@ -132,8 +132,7 @@ between halves.
 
 ``` r
 # Example using simulated data
-data(Athlytics_sample_data)
-#> Warning: data set ‘Athlytics_sample_data’ not found
+data(athlytics_sample_decoupling)
 print(head(athlytics_sample_decoupling))
 #> # A tibble: 6 × 2
 #>   date       decoupling

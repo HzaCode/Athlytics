@@ -77,7 +77,7 @@ nrow(activities)
 # Example output: [1] 847
 
 # What sports are in your data?
-table(activities$sport)
+table(activities$type)
 # Example output:
 #   Ride  Run  Swim
 #    312  498    37
@@ -625,10 +625,10 @@ metrics (e.g., HR) are missing - Date range has no activities
 
 ``` r
 # Check activity types in your data
-table(activities$sport)
+table(activities$type)
 
 # Check for HR data availability
-sum(!is.na(activities$avg_hr))
+sum(!is.na(activities$average_heartrate))
 
 # Verify date range
 range(activities$date, na.rm = TRUE)
