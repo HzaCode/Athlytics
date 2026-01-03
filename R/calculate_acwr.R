@@ -277,15 +277,6 @@ calculate_acwr <- function(activities_data,
     warning("Not enough data points (after fetching) to calculate the full chronic period. Results may be unreliable.")
   }
   
-  # --- DEBUG REMOVED: Pause before main calculation pipeline ---
-  # message("--- Pausing execution before main ACWR calculation pipeline. Type 'c' to continue or 'n' to step through the pipe. ---")
-  # browser()
-  # --- End DEBUG ---
-
-  # --- DEBUG: Check colnames before the main pipeline ---
-  message("DEBUG: Colnames of daily_load_complete BEFORE main ACWR pipeline:")
-  # print(colnames(daily_load_complete))
-
   acwr_data_intermediate <- daily_load_complete %>%
     dplyr::mutate(
       # Convert daily_load to numeric before rollmean
@@ -295,13 +286,7 @@ calculate_acwr <- function(activities_data,
     ) %>%
     # --- Add check/coercion for chronic_load before filtering/mutate ---
     dplyr::mutate(chronic_load = as.numeric(.data$chronic_load)) %>%
-    dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date)
-
-  # --- DEBUG: Check colnames after adding acute_load and chronic_load ---
-  message("DEBUG: Colnames AFTER adding acute/chronic load and filtering date:")
-  # print(colnames(acwr_data_intermediate))
-
-  acwr_data_intermediate <- acwr_data_intermediate %>% # Continue pipe from intermediate result
+    dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date) %>%
     dplyr::mutate(
       # Explicitly handle potential NA in chronic_load within the condition
       acwr = ifelse(!is.na(.data$chronic_load) & .data$chronic_load > 0.01,
@@ -314,16 +299,9 @@ calculate_acwr <- function(activities_data,
       acwr_smooth = zoo::rollmean(.data$acwr, k = smoothing_period, align = "right", fill = NA)
     )
 
-  # --- DEBUG: Check colnames right BEFORE the final select ---
-  message("DEBUG: Colnames right BEFORE final select:")
-  # print(colnames(acwr_data_intermediate))
-
   acwr_data <- acwr_data_intermediate %>%
     dplyr::select(.data$date, atl = .data$acute_load, ctl = .data$chronic_load, .data$acwr, .data$acwr_smooth)
 
-  # --- DEBUG: Check colnames AFTER the final select ---
-  message("DEBUG: Colnames AFTER final select (in acwr_data):")
-  # print(colnames(acwr_data))
 
   if (nrow(acwr_data) == 0) {
     stop("Could not calculate ACWR after processing. Check data availability and periods.")
