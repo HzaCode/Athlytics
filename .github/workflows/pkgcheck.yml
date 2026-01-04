@@ -1,33 +1,21 @@
+name: pkgcheck
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-
-name: pkgcheck
 
 jobs:
   pkgcheck:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       issues: write
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          r-version: 'release'
-          use-public-rspm: true
-
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck, any::roxygen2, any::pkgbuild
-
       - uses: ropensci-review-tools/pkgcheck-action@main
-        env:
-          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
 
