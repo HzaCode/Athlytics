@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/HzaCode/Athlytics/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/HzaCode/Athlytics/blob/v1.0.2/inst/CITATION)
 
 Zhiang He (2025). Athlytics: A Computational Framework for Longitudinal
 Analysis of Exercise Physiology. R package version 1.0.0.
