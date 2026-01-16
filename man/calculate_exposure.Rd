@@ -55,8 +55,8 @@ accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_exposure)
-print(head(athlytics_sample_exposure))
+data(sample_exposure)
+print(head(sample_exposure))
 
 \dontrun{
 # Example using local Strava export data

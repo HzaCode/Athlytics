@@ -6,7 +6,7 @@
 #' and cohort reference percentiles.
 #'
 #' @param acwr_data A data frame from `calculate_acwr_ewma()` containing ACWR values.
-#' @param reference_data Optional. A data frame from `cohort_reference()` for
+#' @param reference_data Optional. A data frame from `calculate_cohort_reference()` for
 #'   adding cohort reference bands.
 #' @param show_ci Logical. Whether to show confidence bands (if available in data).
 #'   Default TRUE.
@@ -43,9 +43,9 @@
 #'
 #' @examples
 #' # Example using sample data
-#' data("athlytics_sample_acwr", package = "Athlytics")
-#' if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
-#'   p <- plot_acwr_enhanced(athlytics_sample_acwr, show_ci = FALSE)
+#' data("sample_acwr", package = "Athlytics")
+#' if (!is.null(sample_acwr) && nrow(sample_acwr) > 0) {
+#'   p <- plot_acwr_enhanced(sample_acwr, show_ci = FALSE)
 #'   print(p)
 #' }
 #'
@@ -65,94 +65,99 @@
 #' plot_acwr_enhanced(acwr)
 #'
 #' # With cohort reference
-#' reference <- cohort_reference(cohort_data, metric = "acwr_smooth")
+#' reference <- calculate_cohort_reference(cohort_data, metric = "acwr_smooth")
 #' plot_acwr_enhanced(acwr, reference_data = reference)
 #' }
 plot_acwr_enhanced <- function(acwr_data,
-                              reference_data = NULL,
-                              show_ci = TRUE,
-                              show_reference = TRUE,
-                              reference_bands = c("p25_p75", "p05_p95", "p50"),
-                              highlight_zones = TRUE,
-                              title = NULL,
-                              subtitle = NULL,
-                              method_label = NULL) {
-  
+                               reference_data = NULL,
+                               show_ci = TRUE,
+                               show_reference = TRUE,
+                               reference_bands = c("p25_p75", "p05_p95", "p50"),
+                               highlight_zones = TRUE,
+                               title = NULL,
+                               subtitle = NULL,
+                               method_label = NULL) {
   # --- Input Validation ---
   if (!is.data.frame(acwr_data)) {
     stop("`acwr_data` must be a data frame from calculate_acwr_ewma().")
   }
-  
+
   required_cols <- c("date", "acwr_smooth")
   if (!all(required_cols %in% colnames(acwr_data))) {
     stop("acwr_data must contain columns: date, acwr_smooth")
   }
-  
+
   # Check for CI columns
   has_ci <- all(c("acwr_lower", "acwr_upper") %in% colnames(acwr_data))
   if (show_ci && !has_ci) {
     message("Confidence interval columns not found. Setting show_ci = FALSE.")
     show_ci <- FALSE
   }
-  
+
   # Check for reference data
   if (show_reference && is.null(reference_data)) {
     message("No reference data provided. Setting show_reference = FALSE.")
     show_reference <- FALSE
   }
-  
+
   # --- Create Base Plot ---
   p <- ggplot2::ggplot()
-  
+
   # --- Layer 1: Risk Zones (if enabled) ---
   if (highlight_zones) {
     sweet_spot_min <- 0.8
     sweet_spot_max <- 1.3
     high_risk_min <- 1.5
-    
+
     # Determine y-axis range for zones
     y_max <- max(acwr_data$acwr_smooth, na.rm = TRUE)
     if (has_ci && show_ci) {
       y_max <- max(c(y_max, acwr_data$acwr_upper), na.rm = TRUE)
     }
     y_max <- max(y_max, high_risk_min + 0.2)
-    
+
     # Add zone ribbons
     date_range <- range(acwr_data$date, na.rm = TRUE)
-    
+
     p <- p +
       # High Risk Zone (> 1.5)
-      ggplot2::annotate("rect", 
-                       xmin = date_range[1], xmax = date_range[2],
-                       ymin = high_risk_min, ymax = y_max,
-                       fill = "red", alpha = 0.1) +
+      ggplot2::annotate("rect",
+        xmin = date_range[1], xmax = date_range[2],
+        ymin = high_risk_min, ymax = y_max,
+        fill = "red", alpha = 0.1
+      ) +
       # Caution Zone (1.3 - 1.5)
       ggplot2::annotate("rect",
-                       xmin = date_range[1], xmax = date_range[2],
-                       ymin = sweet_spot_max, ymax = high_risk_min,
-                       fill = "orange", alpha = 0.1) +
+        xmin = date_range[1], xmax = date_range[2],
+        ymin = sweet_spot_max, ymax = high_risk_min,
+        fill = "orange", alpha = 0.1
+      ) +
       # Sweet Spot (0.8 - 1.3)
       ggplot2::annotate("rect",
-                       xmin = date_range[1], xmax = date_range[2],
-                       ymin = sweet_spot_min, ymax = sweet_spot_max,
-                       fill = "green", alpha = 0.1) +
+        xmin = date_range[1], xmax = date_range[2],
+        ymin = sweet_spot_min, ymax = sweet_spot_max,
+        fill = "green", alpha = 0.1
+      ) +
       # Low Load (< 0.8)
       ggplot2::annotate("rect",
-                       xmin = date_range[1], xmax = date_range[2],
-                       ymin = 0, ymax = sweet_spot_min,
-                       fill = "lightblue", alpha = 0.1) +
+        xmin = date_range[1], xmax = date_range[2],
+        ymin = 0, ymax = sweet_spot_min,
+        fill = "lightblue", alpha = 0.1
+      ) +
       # Zone reference lines
-      ggplot2::geom_hline(yintercept = c(sweet_spot_min, sweet_spot_max, high_risk_min),
-                         linetype = "dotted", color = "grey40", linewidth = 0.5)
+      ggplot2::geom_hline(
+        yintercept = c(sweet_spot_min, sweet_spot_max, high_risk_min),
+        linetype = "dotted", color = "grey40", linewidth = 0.5
+      )
   }
-  
+
   # --- Layer 2: Cohort Reference Bands (if provided) ---
   if (show_reference && !is.null(reference_data)) {
     # Pivot reference to wide format
     ref_wide <- reference_data %>%
       dplyr::select(.data$date, .data$percentile, .data$value) %>%
       tidyr::pivot_wider(names_from = .data$percentile, values_from = .data$value)
-    
+
     # Add P5-P95 band (outermost)
     if ("p05_p95" %in% reference_bands && all(c("p05", "p95") %in% colnames(ref_wide))) {
       p <- p + ggplot2::geom_ribbon(
@@ -161,7 +166,7 @@ plot_acwr_enhanced <- function(acwr_data,
         fill = "#3B528BFF", alpha = 0.15
       )
     }
-    
+
     # Add P25-P75 band (inner)
     if ("p25_p75" %in% reference_bands && all(c("p25", "p75") %in% colnames(ref_wide))) {
       p <- p + ggplot2::geom_ribbon(
@@ -170,7 +175,7 @@ plot_acwr_enhanced <- function(acwr_data,
         fill = "#440154FF", alpha = 0.25
       )
     }
-    
+
     # Add P50 line (median)
     if ("p50" %in% reference_bands && "p50" %in% colnames(ref_wide)) {
       p <- p + ggplot2::geom_line(
@@ -180,7 +185,7 @@ plot_acwr_enhanced <- function(acwr_data,
       )
     }
   }
-  
+
   # --- Layer 3: Confidence Bands (if available) ---
   if (show_ci && has_ci) {
     p <- p + ggplot2::geom_ribbon(
@@ -189,17 +194,17 @@ plot_acwr_enhanced <- function(acwr_data,
       fill = "steelblue", alpha = 0.3
     )
   }
-  
+
   # --- Layer 4: Individual ACWR Line ---
   p <- p + ggplot2::geom_line(
     data = acwr_data,
     ggplot2::aes(x = .data$date, y = .data$acwr_smooth),
     color = "#E64B35", linewidth = 2, alpha = 0.9
   )
-  
+
   # --- Labels and Theme ---
   plot_title <- title %||% "Acute:Chronic Workload Ratio (ACWR)"
-  
+
   # Auto-generate subtitle
   if (is.null(subtitle)) {
     subtitle_parts <- c()
@@ -218,7 +223,7 @@ plot_acwr_enhanced <- function(acwr_data,
       NULL
     }
   }
-  
+
   p <- p +
     ggplot2::labs(
       title = plot_title,
@@ -227,13 +232,17 @@ plot_acwr_enhanced <- function(acwr_data,
       y = "ACWR (Smoothed)",
       caption = if (highlight_zones) {
         "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
-      } else NULL
+      } else {
+        NULL
+      }
     ) +
     ggplot2::scale_x_date(
       date_breaks = "3 months",
       labels = function(x) {
-        months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        months <- c(
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        )
         paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
       }
     ) +
@@ -241,7 +250,7 @@ plot_acwr_enhanced <- function(acwr_data,
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
     )
-  
+
   return(p)
 }
 
@@ -262,13 +271,13 @@ plot_acwr_enhanced <- function(acwr_data,
 #'
 #' @examples
 #' # Example using sample data
-#' data("athlytics_sample_acwr", package = "Athlytics")
-#' if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
+#' data("sample_acwr", package = "Athlytics")
+#' if (!is.null(sample_acwr) && nrow(sample_acwr) > 0) {
 #'   # Create two versions for comparison (simulate RA vs EWMA)
-#'   acwr_ra <- athlytics_sample_acwr
-#'   acwr_ewma <- athlytics_sample_acwr
+#'   acwr_ra <- sample_acwr
+#'   acwr_ewma <- sample_acwr
 #'   acwr_ewma$acwr_smooth <- acwr_ewma$acwr_smooth * runif(nrow(acwr_ewma), 0.95, 1.05)
-#'   
+#'
 #'   p <- plot_acwr_comparison(acwr_ra, acwr_ewma)
 #'   print(p)
 #' }
@@ -282,22 +291,23 @@ plot_acwr_enhanced <- function(acwr_data,
 #' plot_acwr_comparison(acwr_ra, acwr_ewma)
 #' }
 plot_acwr_comparison <- function(acwr_ra,
-                                acwr_ewma,
-                                title = "ACWR Method Comparison: RA vs EWMA") {
-  
+                                 acwr_ewma,
+                                 title = "ACWR Method Comparison: RA vs EWMA") {
   # Combine data with method labels
   combined <- dplyr::bind_rows(
     acwr_ra %>% dplyr::mutate(method = "Rolling Average (RA)"),
     acwr_ewma %>% dplyr::mutate(method = "EWMA")
   )
-  
+
   # Create faceted plot
   p <- ggplot2::ggplot(combined, ggplot2::aes(x = .data$date, y = .data$acwr_smooth, color = .data$method)) +
-    ggplot2::geom_hline(yintercept = c(0.8, 1.3, 1.5), 
-                       linetype = "dotted", color = "gray50", alpha = 0.5) +
+    ggplot2::geom_hline(
+      yintercept = c(0.8, 1.3, 1.5),
+      linetype = "dotted", color = "gray50", alpha = 0.5
+    ) +
     ggplot2::geom_line(linewidth = 1.8, alpha = 0.9) +
     ggplot2::scale_color_manual(values = c("Rolling Average (RA)" = "#4DBBD5", "EWMA" = "#E64B35")) +
-    ggplot2::facet_wrap(~.data$method, ncol = 1) +
+    ggplot2::facet_wrap(~ .data$method, ncol = 1) +
     ggplot2::labs(
       title = title,
       subtitle = "Dotted lines: 0.8 (low load) | 1.3 (sweet spot max) | 1.5 (high risk)",
@@ -307,8 +317,10 @@ plot_acwr_comparison <- function(acwr_ra,
     ggplot2::scale_x_date(
       date_breaks = "3 months",
       labels = function(x) {
-        months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        months <- c(
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        )
         paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
       }
     ) +
@@ -317,8 +329,6 @@ plot_acwr_comparison <- function(acwr_ra,
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
       legend.position = "none"
     )
-  
+
   return(p)
 }
-
-

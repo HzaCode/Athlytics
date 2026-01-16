@@ -24,22 +24,23 @@ calculate_daily_load_internal <- function(activities_df,
                                           user_ftp = NULL,
                                           user_max_hr = NULL,
                                           user_resting_hr = NULL) {
-  
-  safe_as_numeric <- function(x) { as.numeric(rlang::`%||%`(x, 0)) }
-  
+  safe_as_numeric <- function(x) {
+    as.numeric(rlang::`%||%`(x, 0))
+  }
+
   purrr::map_dfr(seq_len(nrow(activities_df)), function(i) {
     activity <- activities_df[i, ]
     activity_date <- activity$date
-    
+
     # Extract metrics from data frame columns
     duration_sec <- safe_as_numeric(activity$moving_time)
     distance_m <- safe_as_numeric(activity$distance)
     elapsed_sec <- safe_as_numeric(activity$elapsed_time)
     avg_hr <- safe_as_numeric(activity$average_heartrate)
     elevation_gain <- safe_as_numeric(activity$elevation_gain)
-    np_proxy <- safe_as_numeric(activity$weighted_average_watts %||% 
-                                  activity$average_watts %||% 0)
-    
+    np_proxy <- safe_as_numeric(activity$weighted_average_watts %||%
+      activity$average_watts %||% 0)
+
     # Calculate load based on metric
     load_value <- compute_single_load(
       load_metric = load_metric,
@@ -53,7 +54,7 @@ calculate_daily_load_internal <- function(activities_df,
       user_max_hr = user_max_hr,
       user_resting_hr = user_resting_hr
     )
-    
+
     if (!is.na(load_value) && load_value > 0) {
       data.frame(
         date = activity_date,
@@ -97,25 +98,20 @@ compute_single_load <- function(load_metric,
                                 user_ftp,
                                 user_max_hr,
                                 user_resting_hr) {
-  
   if (duration_sec <= 0) {
     return(0)
   }
-  
+
   switch(load_metric,
     "duration_mins" = duration_sec / 60,
-    
     "distance_km" = distance_m / 1000,
-    
     "elapsed_time_mins" = elapsed_sec / 60,
-    
     "elevation_gain_m" = elevation_gain,
-    
     "hrss" = {
       if (!is.null(user_max_hr) && !is.null(user_resting_hr) &&
-          is.numeric(user_max_hr) && is.numeric(user_resting_hr) &&
-          user_max_hr > user_resting_hr &&
-          avg_hr > user_resting_hr && avg_hr <= user_max_hr) {
+        is.numeric(user_max_hr) && is.numeric(user_resting_hr) &&
+        user_max_hr > user_resting_hr &&
+        avg_hr > user_resting_hr && avg_hr <= user_max_hr) {
         hr_reserve <- user_max_hr - user_resting_hr
         avg_hr_rel <- (avg_hr - user_resting_hr) / hr_reserve
         (duration_sec / 60) * avg_hr_rel
@@ -123,17 +119,16 @@ compute_single_load <- function(load_metric,
         0
       }
     },
-    
     "tss" = {
-      if (!is.null(user_ftp) && is.numeric(user_ftp) && 
-          user_ftp > 0 && np_proxy > 0) {
+      if (!is.null(user_ftp) && is.numeric(user_ftp) &&
+        user_ftp > 0 && np_proxy > 0) {
         intensity_factor <- np_proxy / user_ftp
         (duration_sec * np_proxy * intensity_factor) / (user_ftp * 3600) * 100
       } else {
         0
       }
     },
-    
+
     # Default case
     0
   )
@@ -158,21 +153,22 @@ validate_load_metric_params <- function(load_metric,
                                         user_ftp = NULL,
                                         user_max_hr = NULL,
                                         user_resting_hr = NULL) {
-  
- valid_metrics <- c("duration_mins", "distance_km", "elapsed_time_mins", 
-                     "tss", "hrss", "elevation_gain_m")
-  
+  valid_metrics <- c(
+    "duration_mins", "distance_km", "elapsed_time_mins",
+    "tss", "hrss", "elevation_gain_m"
+  )
+
   if (!load_metric %in% valid_metrics) {
     stop("Invalid `load_metric`. Choose from: ", paste(valid_metrics, collapse = ", "))
   }
-  
+
   if (load_metric == "tss" && is.null(user_ftp)) {
     stop("`user_ftp` is required when `load_metric` is 'tss'.")
   }
-  
+
   if (load_metric == "hrss" && (is.null(user_max_hr) || is.null(user_resting_hr))) {
     stop("`user_max_hr` and `user_resting_hr` are required when `load_metric` is 'hrss'.")
   }
-  
+
   invisible(NULL)
 }

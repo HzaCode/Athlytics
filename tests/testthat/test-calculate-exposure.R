@@ -6,7 +6,7 @@ library(Athlytics)
 library(testthat)
 
 # Load sample data
-data(athlytics_sample_exposure)
+data(sample_exposure)
 
 # Create mock activities
 create_mock_activities <- function(n = 30) {
@@ -28,14 +28,14 @@ create_mock_activities <- function(n = 30) {
 
 test_that("calculate_exposure works with local activities data", {
   mock_activities <- create_mock_activities(60)
-  
+
   exposure_result <- calculate_exposure(
     activities_data = mock_activities,
     load_metric = "duration_mins",
     acute_period = 7,
     chronic_period = 28
   )
-  
+
   expect_s3_class(exposure_result, "data.frame")
   expect_true(all(c("date", "atl", "ctl") %in% colnames(exposure_result)))
   expect_gt(nrow(exposure_result), 0)
@@ -49,8 +49,8 @@ test_that("calculate_exposure validates input", {
 })
 
 test_that("calculate_exposure works with sample data", {
-  skip_if(is.null(athlytics_sample_exposure), "Sample exposure data not available")
-  
-  expect_s3_class(athlytics_sample_exposure, "data.frame")
-  expect_true("atl" %in% colnames(athlytics_sample_exposure))
+  skip_if(is.null(sample_exposure), "Sample exposure data not available")
+
+  expect_s3_class(sample_exposure, "data.frame")
+  expect_true("atl" %in% colnames(sample_exposure))
 })

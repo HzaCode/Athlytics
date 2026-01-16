@@ -67,8 +67,8 @@ ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often con
 }
 \examples{
 # Example using pre-calculated sample data
-data("athlytics_sample_acwr", package = "Athlytics")
-p <- plot_acwr(athlytics_sample_acwr)
+data("sample_acwr", package = "Athlytics")
+p <- plot_acwr(sample_acwr)
 print(p)
 
 \dontrun{
@@ -76,16 +76,20 @@ print(p)
 activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Plot ACWR trend for Runs (using duration as load metric)
-plot_acwr(data = activities,
-          activity_type = "Run",
-          load_metric = "duration_mins",
-          acute_period = 7,
-          chronic_period = 28)
+plot_acwr(
+  data = activities,
+  activity_type = "Run",
+  load_metric = "duration_mins",
+  acute_period = 7,
+  chronic_period = 28
+)
 
 # Plot ACWR trend for Rides (using TSS as load metric)
-plot_acwr(data = activities,
-          activity_type = "Ride",
-          load_metric = "tss",
-          user_ftp = 280)  # FTP value is required
+plot_acwr(
+  data = activities,
+  activity_type = "Ride",
+  load_metric = "tss",
+  user_ftp = 280
+) # FTP value is required
 }
 }

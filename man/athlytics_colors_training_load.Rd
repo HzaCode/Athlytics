@@ -18,6 +18,6 @@ Colors for acute and chronic training load visualization.
 \examples{
 # Get training load colors
 colors <- athlytics_colors_training_load()
-colors$acute  # Red for acute load
+colors$acute # Red for acute load
 
 }

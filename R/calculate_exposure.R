@@ -7,7 +7,7 @@
 #' Calculates daily load, ATL, CTL, and ACWR from Strava activities based on the chosen metric and periods.
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
-#'   Must contain columns: date, distance, moving_time, elapsed_time, 
+#'   Must contain columns: date, distance, moving_time, elapsed_time,
 #'   average_heartrate, average_watts, type, elevation_gain.
 #' @param activity_type Type(s) of activities to include (e.g., "Run", "Ride").
 #'   Default includes common run/ride types.
@@ -35,13 +35,13 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(athlytics_sample_exposure)
-#' print(head(athlytics_sample_exposure))
+#' data(sample_exposure)
+#' print(head(sample_exposure))
 #'
 #' \dontrun{
 #' # Example using local Strava export data
 #' activities <- load_local_activities("strava_export_data/activities.csv")
-#' 
+#'
 #' # Calculate training load for Rides using TSS
 #' ride_exposure_tss <- calculate_exposure(
 #'   activities_data = activities,
@@ -52,7 +52,7 @@
 #'   chronic_period = 28
 #' )
 #' print(head(ride_exposure_tss))
-#' 
+#'
 #' # Calculate training load for Runs using HRSS
 #' run_exposure_hrss <- calculate_exposure(
 #'   activities_data = activities,
@@ -72,47 +72,46 @@ calculate_exposure <- function(activities_data,
                                user_max_hr = NULL,
                                user_resting_hr = NULL,
                                end_date = NULL) {
-
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
   }
-  
+
   if (!is.data.frame(activities_data)) {
     stop("`activities_data` must be a data frame (e.g., from load_local_activities()).")
   }
-  
+
   if (acute_period >= chronic_period) {
     stop("acute_period must be less than chronic_period.")
   }
-  
+
   # Validate load metric parameters using internal helper
   validate_load_metric_params(load_metric, user_ftp, user_max_hr, user_resting_hr)
-  
+
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
   analysis_start_date <- analysis_end_date - lubridate::days(chronic_period) + lubridate::days(1)
 
   message(sprintf("Calculating load exposure data from %s to %s.", analysis_start_date, analysis_end_date))
-  message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type, collapse=", ")))
+  message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type, collapse = ", ")))
   message(sprintf("Acute period: %d days, Chronic period: %d days", acute_period, chronic_period))
 
   # --- Get Activity Data (Local Only) ---
   fetch_start_date <- analysis_start_date - lubridate::days(chronic_period)
-  
+
   message("Processing local activities data...")
   activities_df_filtered <- activities_data %>%
     dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
-  
+
   if (!is.null(activity_type)) {
     activities_df_filtered <- activities_df_filtered %>%
       dplyr::filter(.data$type %in% activity_type)
   }
-  
+
   activities_fetched_count <- nrow(activities_df_filtered)
   message(sprintf("Loaded %d activities from local data.", activities_fetched_count))
-  
+
   if (activities_fetched_count == 0) {
-    stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date,").")
+    stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date, ").")
   }
 
   # --- Process Activities into Daily Load (using internal helper) ---
@@ -131,7 +130,7 @@ calculate_exposure <- function(activities_data,
   # --- Aggregate Daily Load ---
   daily_load_agg <- daily_load_df %>%
     dplyr::group_by(.data$date) %>%
-    dplyr::summarise(daily_load = sum(.data$load, na.rm = TRUE), .groups = 'drop') %>%
+    dplyr::summarise(daily_load = sum(.data$load, na.rm = TRUE), .groups = "drop") %>%
     dplyr::arrange(.data$date)
 
   # --- Create Full Date Sequence ---

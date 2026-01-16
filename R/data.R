@@ -14,7 +14,7 @@
 #'   \item{acwr_smooth}{Smoothed ACWR, as a numeric value.}
 #' }
 #' @source Simulated data generated for package examples.
-"athlytics_sample_acwr"
+"sample_acwr"
 
 #' Sample Aerobic Decoupling Data for Athlytics
 #'
@@ -27,7 +27,7 @@
 #'   \item{decoupling}{Calculated decoupling percentage, as a numeric value.}
 #' }
 #' @source Simulated data generated for package examples.
-"athlytics_sample_decoupling"
+"sample_decoupling"
 
 #' Sample Efficiency Factor (EF) Data for Athlytics
 #'
@@ -41,7 +41,7 @@
 #'   \item{ef_value}{Calculated Efficiency Factor, as a numeric value.}
 #' }
 #' @source Simulated data generated for package examples.
-"athlytics_sample_ef"
+"sample_ef"
 
 #' Sample Training Load Exposure Data for Athlytics
 #'
@@ -57,7 +57,7 @@
 #'   \item{acwr}{Acute:Chronic Workload Ratio, as a numeric value.}
 #' }
 #' @source Simulated data generated for package examples.
-"athlytics_sample_exposure"
+"sample_exposure"
 
 #' Sample Personal Bests (PBs) Data for Athlytics
 #'
@@ -78,4 +78,4 @@
 #'   \item{time_period}{Formatted time of the effort, as a Period object from lubridate.}
 #' }
 #' @source Simulated data generated for package examples.
-"athlytics_sample_pbs" 
+"sample_pbs"

@@ -142,23 +142,27 @@ rather than absolute comparisons with other athletes.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_ef)
-print(head(athlytics_sample_ef))
+data(sample_ef)
+print(head(sample_ef))
 
 \dontrun{
 # Example using local Strava export data
 activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Calculate Pace/HR efficiency factor for Runs
-ef_data_run <- calculate_ef(activities_data = activities, 
-                             activity_type = "Run", 
-                             ef_metric = "pace_hr")
+ef_data_run <- calculate_ef(
+  activities_data = activities,
+  activity_type = "Run",
+  ef_metric = "pace_hr"
+)
 print(tail(ef_data_run))
 
 # Calculate Power/HR efficiency factor for Rides
-ef_data_ride <- calculate_ef(activities_data = activities,
-                              activity_type = "Ride",
-                              ef_metric = "power_hr")
+ef_data_ride <- calculate_ef(
+  activities_data = activities,
+  activity_type = "Ride",
+  ef_metric = "power_hr"
+)
 print(tail(ef_data_ride))
 }
 }

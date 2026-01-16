@@ -50,44 +50,54 @@ Legacy API mode is maintained for backward compatibility only.
 \examples{
 # Example using the built-in sample data
 # This data now contains a simulated history of performance improvements
-data("athlytics_sample_pbs", package = "Athlytics")
+data("sample_pbs", package = "Athlytics")
 
-if (!is.null(athlytics_sample_pbs) && nrow(athlytics_sample_pbs) > 0) {
+if (!is.null(sample_pbs) && nrow(sample_pbs) > 0) {
   # Plot PBs using the package sample data directly
-  p <- plot_pbs(pbs_df = athlytics_sample_pbs, activity_type = "Run")
+  p <- plot_pbs(pbs_df = sample_pbs, activity_type = "Run")
   print(p)
 }
 
 if (FALSE) {
-# Example using local Strava export data
-activities <- load_local_activities("strava_export_data/activities.csv")
+  # Example using local Strava export data
+  activities <- load_local_activities("strava_export_data/activities.csv")
 
-# Plot PBS trend for Runs (last 6 months)
-pb_data_run <- calculate_pbs(activities_data = activities, 
-                             activity_type = "Run", 
-                             distance_meters = c(1000,5000,10000), 
-                             date_range = c(format(Sys.Date() - months(6)),
-                                          format(Sys.Date())))
-if(nrow(pb_data_run) > 0) {
-  plot_pbs(pbs_df = pb_data_run, distance_meters = c(1000,5000,10000))
-}
+  # Plot PBS trend for Runs (last 6 months)
+  pb_data_run <- calculate_pbs(
+    activities_data = activities,
+    activity_type = "Run",
+    distance_meters = c(1000, 5000, 10000),
+    date_range = c(
+      format(Sys.Date() - months(6)),
+      format(Sys.Date())
+    )
+  )
+  if (nrow(pb_data_run) > 0) {
+    plot_pbs(pbs_df = pb_data_run, distance_meters = c(1000, 5000, 10000))
+  }
 
-# Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)
-pb_data_ride <- calculate_pbs(activities_data = activities, 
-                               activity_type = "Ride", 
-                               distance_meters = c(10000, 20000))
-if(nrow(pb_data_ride) > 0) {
-   plot_pbs(pbs_df = pb_data_ride, distance_meters = c(10000, 20000))
-}
+  # Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)
+  pb_data_ride <- calculate_pbs(
+    activities_data = activities,
+    activity_type = "Ride",
+    distance_meters = c(10000, 20000)
+  )
+  if (nrow(pb_data_ride) > 0) {
+    plot_pbs(pbs_df = pb_data_ride, distance_meters = c(10000, 20000))
+  }
 
-# Plot PBS trend for multiple Run types (no trend line)
-pb_data_multi <- calculate_pbs(activities_data = activities, 
-                               activity_type = c("Run", "VirtualRun"), 
-                               distance_meters = c(1000,5000))
-if(nrow(pb_data_multi) > 0) {
-  plot_pbs(pbs_df = pb_data_multi, distance_meters = c(1000,5000), 
-           add_trend_line = FALSE)
-}
+  # Plot PBS trend for multiple Run types (no trend line)
+  pb_data_multi <- calculate_pbs(
+    activities_data = activities,
+    activity_type = c("Run", "VirtualRun"),
+    distance_meters = c(1000, 5000)
+  )
+  if (nrow(pb_data_multi) > 0) {
+    plot_pbs(
+      pbs_df = pb_data_multi, distance_meters = c(1000, 5000),
+      add_trend_line = FALSE
+    )
+  }
 }
 
 }

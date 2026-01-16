@@ -89,8 +89,12 @@ and percentiles form the confidence bands. This accounts for temporal correlatio
 in training load patterns.
 }
 \examples{
+# Example using pre-calculated sample data
+data("sample_acwr", package = "Athlytics")
+head(sample_acwr)
+
 \dontrun{
-# Load local activities
+# Full workflow with real data - Load local activities
 activities <- load_local_activities("export_12345678.zip")
 
 # Calculate ACWR using Rolling Average (RA)

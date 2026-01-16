@@ -48,8 +48,8 @@ must be long enough to contain the target distance segments.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_pbs)
-print(head(athlytics_sample_pbs))
+data(sample_pbs)
+print(head(sample_pbs))
 
 \dontrun{
 # Load local activities

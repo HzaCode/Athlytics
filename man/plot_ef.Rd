@@ -58,8 +58,8 @@ often indicates improved aerobic fitness. Points colored by activity type.
 }
 \examples{
 # Example using pre-calculated sample data
-data("athlytics_sample_ef", package = "Athlytics")
-p <- plot_ef(athlytics_sample_ef)
+data("sample_ef", package = "Athlytics")
+p <- plot_ef(sample_ef)
 print(p)
 
 \dontrun{
@@ -67,20 +67,26 @@ print(p)
 activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Plot Pace/HR EF trend for Runs (last 6 months)
-plot_ef(data = activities,
-        activity_type = "Run",
-        ef_metric = "pace_hr",
-        start_date = Sys.Date() - months(6))
+plot_ef(
+  data = activities,
+  activity_type = "Run",
+  ef_metric = "pace_hr",
+  start_date = Sys.Date() - months(6)
+)
 
 # Plot Power/HR EF trend for Rides
-plot_ef(data = activities,
-        activity_type = "Ride",
-        ef_metric = "power_hr")
+plot_ef(
+  data = activities,
+  activity_type = "Ride",
+  ef_metric = "power_hr"
+)
 
 # Plot Pace/HR EF trend for multiple Run types (no trend line)
-plot_ef(data = activities,
-        activity_type = c("Run", "VirtualRun"),
-        ef_metric = "pace_hr",
-        add_trend_line = FALSE)
+plot_ef(
+  data = activities,
+  activity_type = c("Run", "VirtualRun"),
+  ef_metric = "pace_hr",
+  add_trend_line = FALSE
+)
 }
 }

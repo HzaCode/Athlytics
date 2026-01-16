@@ -10,7 +10,7 @@
 #' This function calculates daily training load and derives acute (short-term) and
 #' chronic (long-term) load averages, then computes their ratio (ACWR). The ACWR
 #' helps identify periods of rapid training load increases that may elevate injury risk.
-#' 
+#'
 #' **Key Concepts:**
 #' \itemize{
 #'   \item **Acute Load (ATL)**: Rolling average of recent training (default: 7 days)
@@ -21,9 +21,9 @@
 #' }
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
-#'   Must contain columns: `date`, `distance`, `moving_time`, `elapsed_time`, 
+#'   Must contain columns: `date`, `distance`, `moving_time`, `elapsed_time`,
 #'   `average_heartrate`, `average_watts`, `type`, `elevation_gain`.
-#' @param activity_type **Required** character vector. Filter activities by type 
+#' @param activity_type **Required** character vector. Filter activities by type
 #'   (e.g., `"Run"`, `"Ride"`). **Must specify** to avoid mixing incompatible load metrics.
 #' @param load_metric Character string specifying the load calculation method:
 #'   \itemize{
@@ -107,7 +107,7 @@
 #' \code{\link{plot_acwr}} for visualization,
 #' \code{\link{calculate_acwr_ewma}} for EWMA-based ACWR,
 #' \code{\link{load_local_activities}} for data loading,
-#' \code{\link{cohort_reference}} for multi-athlete comparisons
+#' \code{\link{calculate_cohort_reference}} for multi-athlete comparisons
 #'
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
 #' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
@@ -118,57 +118,62 @@
 #'
 #' @examples
 #' # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
-#' data(athlytics_sample_acwr)
-#' print(head(athlytics_sample_acwr))
+#' data(sample_acwr)
+#' print(head(sample_acwr))
 #'
 #' \dontrun{
 #' # Example using local Strava export data
 #' # Step 1: Download your Strava data export
 #' # Go to Strava.com > Settings > My Account > Download or Delete Your Account
 #' # You'll receive a ZIP file via email (e.g., export_12345678.zip)
-#' 
+#'
 #' # Step 2: Load activities directly from ZIP (no extraction needed!)
 #' activities <- load_local_activities("export_12345678.zip")
-#' 
+#'
 #' # Or from extracted CSV
 #' activities <- load_local_activities("strava_export_data/activities.csv")
-#' 
+#'
 #' # Step 3: Calculate ACWR for Runs (using distance)
-#' run_acwr <- calculate_acwr(activities_data = activities, 
-#'                            activity_type = "Run",
-#'                            load_metric = "distance_km")
+#' run_acwr <- calculate_acwr(
+#'   activities_data = activities,
+#'   activity_type = "Run",
+#'   load_metric = "distance_km"
+#' )
 #' print(tail(run_acwr))
-#' 
+#'
 #' # Calculate ACWR for Rides (using TSS, requires FTP)
-#' ride_acwr_tss <- calculate_acwr(activities_data = activities,
-#'                                 activity_type = "Ride",
-#'                                 load_metric = "tss", 
-#'                                 user_ftp = 280)
+#' ride_acwr_tss <- calculate_acwr(
+#'   activities_data = activities,
+#'   activity_type = "Ride",
+#'   load_metric = "tss",
+#'   user_ftp = 280
+#' )
 #' print(tail(ride_acwr_tss))
-#' 
+#'
 #' # Plot the results
 #' plot_acwr(run_acwr, highlight_zones = TRUE)
-#' 
+#'
 #' # Multi-athlete cohort analysis
-#' 
+#'
 #' # Load data for multiple athletes and add athlete_id
 #' athlete1 <- load_local_activities("athlete1_export.zip") %>%
 #'   dplyr::mutate(athlete_id = "athlete1")
-#' 
+#'
 #' athlete2 <- load_local_activities("athlete2_export.zip") %>%
 #'   dplyr::mutate(athlete_id = "athlete2")
-#' 
+#'
 #' # Combine all athletes
 #' cohort_data <- dplyr::bind_rows(athlete1, athlete2)
-#' 
+#'
 #' # Calculate ACWR for each athlete using group_modify()
 #' cohort_acwr <- cohort_data %>%
 #'   dplyr::group_by(athlete_id) %>%
-#'   dplyr::group_modify(~ calculate_acwr(.x, 
-#'                                  activity_type = "Run",
-#'                                  load_metric = "duration_mins")) %>%
+#'   dplyr::group_modify(~ calculate_acwr(.x,
+#'     activity_type = "Run",
+#'     load_metric = "duration_mins"
+#'   )) %>%
 #'   dplyr::ungroup()
-#' 
+#'
 #' # View results
 #' print(cohort_acwr)
 #' }
@@ -183,27 +188,28 @@ calculate_acwr <- function(activities_data,
                            user_max_hr = NULL,
                            user_resting_hr = NULL,
                            smoothing_period = 7) {
-
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
   }
-  
+
   if (!is.data.frame(activities_data)) {
     stop("`activities_data` must be a data frame (e.g., from load_local_activities()).")
   }
   if (!is.numeric(acute_period) || acute_period <= 0) stop("`acute_period` must be a positive integer.")
   if (!is.numeric(chronic_period) || chronic_period <= 0) stop("`chronic_period` must be a positive integer.")
   if (acute_period >= chronic_period) stop("`acute_period` must be less than `chronic_period`.")
-  
+
   # Validate load metric parameters using internal helper
   validate_load_metric_params(load_metric, user_ftp, user_max_hr, user_resting_hr)
-  
+
   # Force explicit activity_type specification to prevent mixing incompatible sports
   if (is.null(activity_type) || length(activity_type) == 0) {
-    stop("`activity_type` must be explicitly specified (e.g., 'Run' or 'Ride'). ",
-         "Mixing different activity types can lead to incompatible load metrics. ",
-         "Please specify the activity type(s) you want to analyze.")
+    stop(
+      "`activity_type` must be explicitly specified (e.g., 'Run' or 'Ride'). ",
+      "Mixing different activity types can lead to incompatible load metrics. ",
+      "Please specify the activity type(s) you want to analyze."
+    )
   }
 
   # --- Date Handling ---
@@ -212,28 +218,28 @@ calculate_acwr <- function(activities_data,
   if (analysis_start_date >= analysis_end_date) stop("start_date must be before end_date.")
 
   message(sprintf("Calculating ACWR data from %s to %s.", analysis_start_date, analysis_end_date))
-  message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type %||% "All", collapse=", ")))
+  message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type %||% "All", collapse = ", ")))
   message(sprintf("Acute period: %d days, Chronic period: %d days", acute_period, chronic_period))
 
   # --- Get Activities Data (Local Only) ---
   fetch_start_buffer_days <- chronic_period
   fetch_start_date <- analysis_start_date - lubridate::days(fetch_start_buffer_days)
-  
+
   # Use local activities data
   message("Processing local activities data...")
   activities_df_filtered <- activities_data %>%
     dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
-  
+
   if (!is.null(activity_type)) {
     activities_df_filtered <- activities_df_filtered %>%
       dplyr::filter(.data$type %in% activity_type)
   }
-  
+
   activities_fetched_count <- nrow(activities_df_filtered)
   message(sprintf("Loaded %d activities from local data.", activities_fetched_count))
-  
+
   if (activities_fetched_count == 0) {
-    stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date,").")
+    stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date, ").")
   }
 
   # --- Process Activities into Daily Load (using internal helper) ---
@@ -244,7 +250,7 @@ calculate_acwr <- function(activities_data,
     user_max_hr = user_max_hr,
     user_resting_hr = user_resting_hr
   )
-  
+
   message("Finished processing activity list.")
 
   if (is.null(daily_load_df) || nrow(daily_load_df) == 0) {
@@ -253,20 +259,20 @@ calculate_acwr <- function(activities_data,
 
   daily_load_summary <- daily_load_df %>%
     dplyr::group_by(date) %>%
-    dplyr::summarise(daily_load = sum(load, na.rm = TRUE), .groups = 'drop')
+    dplyr::summarise(daily_load = sum(load, na.rm = TRUE), .groups = "drop")
 
   # --- Create Full Time Series & Calculate ATL/CTL ---
   all_dates_sequence <- seq(fetch_start_date, analysis_end_date, by = "day")
 
   daily_load_complete <- dplyr::tibble(date = all_dates_sequence) %>%
     dplyr::left_join(daily_load_summary, by = "date") %>%
-    dplyr::mutate(daily_load = dplyr::coalesce(.data$daily_load, 0)) %>% 
+    dplyr::mutate(daily_load = dplyr::coalesce(.data$daily_load, 0)) %>%
     dplyr::arrange(.data$date)
-    
+
   # --- Force evaluation to potentially resolve lazy-eval issues ---
   force(daily_load_complete)
   # --- End force eval ---
-    
+
   # --- DEBUG REMOVED: Check daily_load_complete before pipeline ---
   # message("--- Checking daily_load_complete structure and summary ---")
   # print(utils::str(daily_load_complete))
@@ -276,7 +282,7 @@ calculate_acwr <- function(activities_data,
   if (nrow(daily_load_complete) < chronic_period) {
     warning("Not enough data points (after fetching) to calculate the full chronic period. Results may be unreliable.")
   }
-  
+
   acwr_data_intermediate <- daily_load_complete %>%
     dplyr::mutate(
       # Convert daily_load to numeric before rollmean
@@ -290,8 +296,9 @@ calculate_acwr <- function(activities_data,
     dplyr::mutate(
       # Explicitly handle potential NA in chronic_load within the condition
       acwr = ifelse(!is.na(.data$chronic_load) & .data$chronic_load > 0.01,
-                    .data$acute_load / .data$chronic_load,
-                    NA)
+        .data$acute_load / .data$chronic_load,
+        NA
+      )
     ) %>%
     # --- Ensure acwr is numeric before next rollmean ---
     dplyr::mutate(acwr = as.numeric(.data$acwr)) %>%
@@ -312,4 +319,4 @@ calculate_acwr <- function(activities_data,
 }
 
 # Helper needed if not globally available
-# `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x 
+# `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x

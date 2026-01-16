@@ -73,20 +73,19 @@ The function is sport-aware and adjusts thresholds accordingly. All thresholds
 are configurable to accommodate different athlete profiles and data quality.
 }
 \examples{
-\dontrun{
 # Create sample activity stream data
+set.seed(42)
 stream_data <- data.frame(
   time = seq(0, 3600, by = 1),
-  heartrate = rnorm(3601, mean = 150, sd = 10),
-  watts = rnorm(3601, mean = 200, sd = 20),
-  velocity_smooth = rnorm(3601, mean = 3.5, sd = 0.3)
+  heartrate = pmax(60, pmin(200, rnorm(3601, mean = 150, sd = 10))),
+  watts = pmax(0, rnorm(3601, mean = 200, sd = 20)),
+  velocity_smooth = pmax(0, rnorm(3601, mean = 3.5, sd = 0.3))
 )
 
 # Flag quality issues
 flagged_data <- flag_quality(stream_data, sport = "Run")
 
 # Check summary
-summary(flagged_data$quality_score)
-table(flagged_data$flag_any)
-}
+cat("Quality score range:", range(flagged_data$quality_score), "\n")
+cat("Flagged points:", sum(flagged_data$flag_any), "\n")
 }

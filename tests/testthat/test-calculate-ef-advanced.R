@@ -13,13 +13,14 @@ test_that("calculate_ef handles stream data with velocity calculation", {
     filename = "test_activity.fit",
     stringsAsFactors = FALSE
   )
-  
+
   # Test with export_dir parameter (triggers stream data analysis)
-  result <- calculate_ef(mock_activities, 
-                        activity_type = "Run", 
-                        ef_metric = "pace_hr",
-                        export_dir = ".",
-                        quality_control = "off")
+  result <- calculate_ef(mock_activities,
+    activity_type = "Run",
+    ef_metric = "pace_hr",
+    export_dir = ".",
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result))
 })
 
@@ -35,20 +36,22 @@ test_that("calculate_ef handles different steady state parameters", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
+
   # Test with different steady state parameters
-  result1 <- calculate_ef(mock_data, 
-                         min_steady_minutes = 20,
-                         steady_cv_threshold = 0.1,
-                         min_hr_coverage = 0.8,
-                         quality_control = "off")
+  result1 <- calculate_ef(mock_data,
+    min_steady_minutes = 20,
+    steady_cv_threshold = 0.1,
+    min_hr_coverage = 0.8,
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result1))
-  
-  result2 <- calculate_ef(mock_data, 
-                         min_steady_minutes = 30,
-                         steady_cv_threshold = 0.05,
-                         min_hr_coverage = 0.95,
-                         quality_control = "off")
+
+  result2 <- calculate_ef(mock_data,
+    min_steady_minutes = 30,
+    steady_cv_threshold = 0.05,
+    min_hr_coverage = 0.95,
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result2))
 })
 
@@ -65,13 +68,14 @@ test_that("calculate_ef handles power calculation edge cases", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
-  result1 <- calculate_ef(mock_equal, 
-                         activity_type = "Ride", 
-                         ef_metric = "power_hr",
-                         quality_control = "off")
+
+  result1 <- calculate_ef(mock_equal,
+    activity_type = "Ride",
+    ef_metric = "power_hr",
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result1))
-  
+
   # Test with zero weighted_average_watts
   mock_zero_weighted <- data.frame(
     date = Sys.Date(),
@@ -84,11 +88,12 @@ test_that("calculate_ef handles power calculation edge cases", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
-  result2 <- calculate_ef(mock_zero_weighted, 
-                         activity_type = "Ride", 
-                         ef_metric = "power_hr",
-                         quality_control = "off")
+
+  result2 <- calculate_ef(mock_zero_weighted,
+    activity_type = "Ride",
+    ef_metric = "power_hr",
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result2))
 })
 
@@ -99,21 +104,21 @@ test_that("calculate_ef handles quality control edge cases", {
     type = "Run",
     moving_time = 2400,
     distance = 8000,
-    average_heartrate = 50,  # Borderline low
+    average_heartrate = 50, # Borderline low
     average_watts = 0,
     weighted_average_watts = 0,
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
+
   # Test filter mode with borderline data
   result_filter <- calculate_ef(mock_borderline_hr, quality_control = "filter")
   expect_true(is.data.frame(result_filter))
-  
+
   # Test flag mode with borderline data
   result_flag <- calculate_ef(mock_borderline_hr, quality_control = "flag")
   expect_true(is.data.frame(result_flag))
-  
+
   # Test off mode with borderline data
   result_off <- calculate_ef(mock_borderline_hr, quality_control = "off")
   expect_true(is.data.frame(result_off))
@@ -131,15 +136,15 @@ test_that("calculate_ef handles multiple ef_metric combinations", {
     filename = c(NA, NA),
     stringsAsFactors = FALSE
   )
-  
+
   # Test with multiple ef_metric values
   result1 <- calculate_ef(mock_data, ef_metric = c("pace_hr", "power_hr"), quality_control = "off")
   expect_true(is.data.frame(result1))
-  
+
   # Test with single ef_metric
   result2 <- calculate_ef(mock_data, ef_metric = "pace_hr", quality_control = "off")
   expect_true(is.data.frame(result2))
-  
+
   # Test with different ef_metric
   result3 <- calculate_ef(mock_data, ef_metric = "power_hr", quality_control = "off")
   expect_true(is.data.frame(result3))
@@ -157,20 +162,24 @@ test_that("calculate_ef handles date range edge cases", {
     filename = rep(NA, 4),
     stringsAsFactors = FALSE
   )
-  
+
   # Test with specific date range
-  result <- calculate_ef(mock_data, 
-                        start_date = Sys.Date() - 150, 
-                        end_date = Sys.Date() - 50,
-                        quality_control = "off")
+  result <- calculate_ef(mock_data,
+    start_date = Sys.Date() - 150,
+    end_date = Sys.Date() - 50,
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result))
-  
+
   # Test with date range that includes no activities
-  expect_error(calculate_ef(mock_data, 
-                           start_date = Sys.Date() + 1, 
-                           end_date = Sys.Date() + 100,
-                           quality_control = "off"),
-               "No activities found")
+  expect_error(
+    calculate_ef(mock_data,
+      start_date = Sys.Date() + 1,
+      end_date = Sys.Date() + 100,
+      quality_control = "off"
+    ),
+    "No activities found"
+  )
 })
 
 test_that("calculate_ef handles activity type edge cases", {
@@ -185,18 +194,20 @@ test_that("calculate_ef handles activity type edge cases", {
     filename = rep(NA, 3),
     stringsAsFactors = FALSE
   )
-  
+
   # Test with single activity type
   result_run <- calculate_ef(mock_data, activity_type = "Run", quality_control = "off")
   expect_true(is.data.frame(result_run))
-  
+
   # Test with multiple activity types
   result_multi <- calculate_ef(mock_data, activity_type = c("Run", "Ride"), quality_control = "off")
   expect_true(is.data.frame(result_multi))
-  
+
   # Test with activity type not in data
-  expect_error(calculate_ef(mock_data, activity_type = "Hike", quality_control = "off"),
-               "No activities found")
+  expect_error(
+    calculate_ef(mock_data, activity_type = "Hike", quality_control = "off"),
+    "No activities found"
+  )
 })
 
 test_that("calculate_ef handles calculation edge cases", {
@@ -204,7 +215,7 @@ test_that("calculate_ef handles calculation edge cases", {
   mock_short <- data.frame(
     date = Sys.Date(),
     type = "Run",
-    moving_time = 300,  # 5 minutes
+    moving_time = 300, # 5 minutes
     distance = 1000,
     average_heartrate = 150,
     average_watts = 0,
@@ -212,19 +223,20 @@ test_that("calculate_ef handles calculation edge cases", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
-  result1 <- calculate_ef(mock_short, 
-                         activity_type = "Run", 
-                         ef_metric = "pace_hr",
-                         min_steady_minutes = 10,
-                         quality_control = "off")
+
+  result1 <- calculate_ef(mock_short,
+    activity_type = "Run",
+    ef_metric = "pace_hr",
+    min_steady_minutes = 10,
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result1))
-  
+
   # Test with very long activity
   mock_long <- data.frame(
     date = Sys.Date(),
     type = "Run",
-    moving_time = 7200,  # 2 hours
+    moving_time = 7200, # 2 hours
     distance = 20000,
     average_heartrate = 150,
     average_watts = 0,
@@ -232,11 +244,12 @@ test_that("calculate_ef handles calculation edge cases", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
-  result2 <- calculate_ef(mock_long, 
-                         activity_type = "Run", 
-                         ef_metric = "pace_hr",
-                         quality_control = "off")
+
+  result2 <- calculate_ef(mock_long,
+    activity_type = "Run",
+    ef_metric = "pace_hr",
+    quality_control = "off"
+  )
   expect_true(is.data.frame(result2))
 })
 
@@ -252,25 +265,33 @@ test_that("calculate_ef handles parameter validation", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
+
   # Test with invalid date inputs (should use defaults)
-  result1 <- tryCatch({
-    calculate_ef(mock_data, 
-                start_date = "invalid_date",
-                quality_control = "off")
-  }, error = function(e) {
-    data.frame(date = Sys.Date(), activity_type = "Run", ef_value = 0.02)
-  })
+  result1 <- tryCatch(
+    {
+      calculate_ef(mock_data,
+        start_date = "invalid_date",
+        quality_control = "off"
+      )
+    },
+    error = function(e) {
+      data.frame(date = Sys.Date(), activity_type = "Run", ef_value = 0.02)
+    }
+  )
   expect_true(is.data.frame(result1))
-  
+
   # Test with invalid end_date (should use defaults)
-  result2 <- tryCatch({
-    calculate_ef(mock_data, 
-                end_date = "invalid_date",
-                quality_control = "off")
-  }, error = function(e) {
-    data.frame(date = Sys.Date(), activity_type = "Run", ef_value = 0.02)
-  })
+  result2 <- tryCatch(
+    {
+      calculate_ef(mock_data,
+        end_date = "invalid_date",
+        quality_control = "off"
+      )
+    },
+    error = function(e) {
+      data.frame(date = Sys.Date(), activity_type = "Run", ef_value = 0.02)
+    }
+  )
   expect_true(is.data.frame(result2))
 })
 
@@ -287,10 +308,10 @@ test_that("calculate_ef handles empty and invalid data", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
+
   result <- calculate_ef(mock_invalid, quality_control = "off")
   expect_true(is.data.frame(result))
-  
+
   # Test with NA values (should handle gracefully)
   mock_na <- data.frame(
     date = Sys.Date(),
@@ -303,11 +324,14 @@ test_that("calculate_ef handles empty and invalid data", {
     filename = NA,
     stringsAsFactors = FALSE
   )
-  
-  result2 <- tryCatch({
-    calculate_ef(mock_na, quality_control = "off")
-  }, error = function(e) {
-    data.frame(date = Sys.Date(), activity_type = "Run", ef_value = NA_real_)
-  })
+
+  result2 <- tryCatch(
+    {
+      calculate_ef(mock_na, quality_control = "off")
+    },
+    error = function(e) {
+      data.frame(date = Sys.Date(), activity_type = "Run", ef_value = NA_real_)
+    }
+  )
   expect_true(is.data.frame(result2))
 })

@@ -14,9 +14,6 @@ Low-saturation, elegant palette suitable for formal publications and
 technical reports. Emphasizes clarity over visual impact.
 }
 \examples{
-\dontrun{
-ggplot2::ggplot(data, ggplot2::aes(x, y, color = group)) +
-  ggplot2::geom_line() +
-  ggplot2::scale_color_manual(values = athlytics_palette_academic())
-}
+# View the palette colors
+athlytics_palette_academic()
 }

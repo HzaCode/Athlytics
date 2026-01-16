@@ -17,12 +17,12 @@ test_that("parse_activity_file with unsupported format", {
   # Line 55-56: Unsupported file format
   temp_file <- tempfile(fileext = ".unknown")
   writeLines("test", temp_file)
-  
+
   expect_warning(
     result <- Athlytics:::parse_activity_file(temp_file),
     "Unsupported file format"
   )
-  
+
   unlink(temp_file)
 })
 
@@ -31,24 +31,28 @@ test_that("parse_activity_file with .gz compression", {
   # Create a simple text file and compress it
   temp_txt <- tempfile(fileext = ".txt")
   writeLines("test content", temp_txt)
-  
+
   temp_gz <- paste0(temp_txt, ".gz")
-  
+
   # Compress the file if R.utils is available
   if (requireNamespace("R.utils", quietly = TRUE)) {
     R.utils::gzip(temp_txt, destname = temp_gz, remove = FALSE)
-    
+
     # Try to parse (will fail but covers the decompression branch)
-    result <- tryCatch({
-      Athlytics:::parse_activity_file(temp_gz)
-    }, error = function(e) NULL, warning = function(w) NULL)
-    
+    result <- tryCatch(
+      {
+        Athlytics:::parse_activity_file(temp_gz)
+      },
+      error = function(e) NULL,
+      warning = function(w) NULL
+    )
+
     # Clean up
     unlink(temp_txt)
     unlink(temp_gz)
   }
-  
-  expect_true(TRUE)  # Test passed if we got here
+
+  expect_true(TRUE) # Test passed if we got here
 })
 
 test_that("parse_fit_file without FITfileR package", {
@@ -57,14 +61,14 @@ test_that("parse_fit_file without FITfileR package", {
   # This tests the package check branch
   temp_fit <- tempfile(fileext = ".fit")
   writeLines("fake fit data", temp_fit)
-  
+
   # Temporarily unload FITfileR if loaded
   if ("package:FITfileR" %in% search()) {
     detach("package:FITfileR", unload = TRUE)
   }
-  
+
   result <- Athlytics:::parse_fit_file(temp_fit)
-  
+
   unlink(temp_fit)
   expect_true(TRUE)
 })
@@ -74,14 +78,14 @@ test_that("parse_tcx_file without XML package", {
   # Line 109-112: XML not available warning
   temp_tcx <- tempfile(fileext = ".tcx")
   writeLines("<xml>test</xml>", temp_tcx)
-  
+
   # Temporarily unload XML if loaded
   if ("package:XML" %in% search()) {
     detach("package:XML", unload = TRUE)
   }
-  
+
   result <- Athlytics:::parse_tcx_file(temp_tcx)
-  
+
   unlink(temp_tcx)
   expect_true(TRUE)
 })
@@ -93,15 +97,15 @@ test_that("load_local_activities with empty ZIP", {
   temp_zip <- tempfile(fileext = ".zip")
   temp_txt <- tempfile(fileext = ".txt")
   writeLines("test", temp_txt)
-  
+
   # Create a ZIP without activities.csv
   utils::zip(temp_zip, temp_txt, flags = "-q")
-  
+
   expect_error(
     load_local_activities(temp_zip),
     "No activities.csv file found in ZIP"
   )
-  
+
   unlink(temp_zip)
   unlink(temp_txt)
 })
@@ -109,38 +113,41 @@ test_that("load_local_activities with empty ZIP", {
 test_that("load_local_activities with multiple activities.csv in ZIP", {
   # Line 117-120: Multiple activities.csv warning
   temp_zip <- tempfile(fileext = ".zip")
-  
+
   # Create two CSV files
   temp_csv1 <- tempfile(fileext = "activities.csv")
   temp_csv2 <- tempfile(fileext = "ACTIVITIES.CSV")
-  
+
   writeLines("Activity ID,Activity Date,Activity Type,Distance,Elapsed Time,Moving Time,Elevation Gain", temp_csv1)
   writeLines("Activity ID,Activity Date,Activity Type,Distance,Elapsed Time,Moving Time,Elevation Gain", temp_csv2)
-  
+
   # Create ZIP with both files
   old_wd <- getwd()
-  tryCatch({
-    temp_dir <- tempdir()
-    file.copy(temp_csv1, file.path(temp_dir, "activities.csv"))
-    file.copy(temp_csv2, file.path(temp_dir, "ACTIVITIES.CSV"))
-    
-    setwd(temp_dir)
-    utils::zip(temp_zip, c("activities.csv", "ACTIVITIES.CSV"), flags = "-q")
-    setwd(old_wd)
-    
-    # Should warn about multiple files
-    expect_warning(
-      result <- load_local_activities(temp_zip),
-      "Multiple activities.csv files found"
-    )
-    
-    # Clean up
-    unlink(file.path(temp_dir, "activities.csv"))
-    unlink(file.path(temp_dir, "ACTIVITIES.CSV"))
-  }, error = function(e) {
-    setwd(old_wd)
-  })
-  
+  tryCatch(
+    {
+      temp_dir <- tempdir()
+      file.copy(temp_csv1, file.path(temp_dir, "activities.csv"))
+      file.copy(temp_csv2, file.path(temp_dir, "ACTIVITIES.CSV"))
+
+      setwd(temp_dir)
+      utils::zip(temp_zip, c("activities.csv", "ACTIVITIES.CSV"), flags = "-q")
+      setwd(old_wd)
+
+      # Should warn about multiple files
+      expect_warning(
+        result <- load_local_activities(temp_zip),
+        "Multiple activities.csv files found"
+      )
+
+      # Clean up
+      unlink(file.path(temp_dir, "activities.csv"))
+      unlink(file.path(temp_dir, "ACTIVITIES.CSV"))
+    },
+    error = function(e) {
+      setwd(old_wd)
+    }
+  )
+
   unlink(temp_zip)
   unlink(temp_csv1)
   unlink(temp_csv2)
@@ -150,14 +157,14 @@ test_that("load_local_activities with empty CSV", {
   # Line 143-150: Empty CSV warning
   temp_csv <- tempfile(fileext = ".csv")
   writeLines("Activity ID,Activity Date,Activity Type,Distance,Elapsed Time,Moving Time,Elevation Gain", temp_csv)
-  
+
   expect_warning(
     result <- load_local_activities(temp_csv),
     "No activities found in CSV file"
   )
-  
+
   expect_equal(nrow(result), 0)
-  
+
   unlink(temp_csv)
 })
 
@@ -167,36 +174,39 @@ test_that("calculate_ef stream data branches", {
   base_dir <- "C:/Users/Ang/Documents/GitHub/Athlytics"
   csv_path <- file.path(base_dir, "export_data", "activities.csv")
   export_dir <- file.path(base_dir, "export_data")
-  
+
   if (!file.exists(csv_path) || !dir.exists(export_dir)) {
     skip("Real data not available")
   }
-  
+
   act <- load_local_activities(csv_path)
   act_files <- act[!is.na(act$filename) & nchar(act$filename) > 0, ]
-  
+
   if (nrow(act_files) < 15) {
     skip("Not enough activities with files")
   }
-  
+
   # Test with export_dir to trigger stream parsing branches
   # This should hit various internal branches in calculate_ef_from_stream
   for (i in 1:min(15, nrow(act_files))) {
-    ef <- tryCatch({
-      calculate_ef(
-        act_files[i, ],
-        activity_type = act_files$type[i],
-        ef_metric = "pace_hr",
-        export_dir = export_dir,
-        quality_control = "filter",
-        min_duration_mins = 5,
-        min_steady_minutes = 5,
-        steady_cv_threshold = 0.15,
-        min_hr_coverage = 0.7
-      )
-    }, error = function(e) data.frame())
+    ef <- tryCatch(
+      {
+        calculate_ef(
+          act_files[i, ],
+          activity_type = act_files$type[i],
+          ef_metric = "pace_hr",
+          export_dir = export_dir,
+          quality_control = "filter",
+          min_duration_mins = 5,
+          min_steady_minutes = 5,
+          steady_cv_threshold = 0.15,
+          min_hr_coverage = 0.7
+        )
+      },
+      error = function(e) data.frame()
+    )
   }
-  
+
   expect_true(TRUE)
 })
 
@@ -206,7 +216,7 @@ test_that("plot_ef with various data conditions", {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     skip("ggplot2 not available")
   }
-  
+
   # Test with very sparse data
   sparse_runs <- data.frame(
     id = 1:3,
@@ -219,11 +229,11 @@ test_that("plot_ef with various data conditions", {
     average_heartrate = c(150, 148, 152),
     average_speed = c(10, 10.2, 9.8)
   )
-  
+
   # Should handle sparse data
   p1 <- plot_ef(sparse_runs, activity_type = "Run", ef_metric = "pace_hr")
   expect_s3_class(p1, "gg")
-  
+
   # Test with all smoothing methods
   denser_runs <- data.frame(
     id = 1:30,
@@ -236,13 +246,18 @@ test_that("plot_ef with various data conditions", {
     average_heartrate = runif(30, 130, 160),
     average_speed = runif(30, 9, 13)
   )
-  
+
   for (method in c("loess", "lm", "gam", "glm")) {
-    p <- tryCatch({
-      plot_ef(denser_runs, activity_type = "Run", ef_metric = "pace_hr",
-             smoothing_method = method)
-    }, error = function(e) NULL)
-    
+    p <- tryCatch(
+      {
+        plot_ef(denser_runs,
+          activity_type = "Run", ef_metric = "pace_hr",
+          smoothing_method = method
+        )
+      },
+      error = function(e) NULL
+    )
+
     if (!is.null(p)) {
       expect_s3_class(p, "gg")
     }
@@ -253,7 +268,7 @@ test_that("plot_pbs with various data densities", {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     skip("ggplot2 not available")
   }
-  
+
   # Very sparse
   sparse_pbs <- data.frame(
     activity_id = 1:5,
@@ -265,19 +280,21 @@ test_that("plot_pbs with various data densities", {
     speed_km_per_h = runif(5, 12, 15),
     activity_type = "Run"
   )
-  
+
   p1 <- plot_pbs(pbs_df = sparse_pbs)
   expect_s3_class(p1, "gg")
-  
+
   p2 <- plot_pbs(pbs_df = sparse_pbs, add_trend_line = TRUE)
   expect_s3_class(p2, "gg")
-  
+
   p3 <- plot_pbs(pbs_df = sparse_pbs, add_trend_line = FALSE)
   expect_s3_class(p3, "gg")
-  
+
   # With date_range
-  p4 <- plot_pbs(pbs_df = sparse_pbs,
-                date_range = c(Sys.Date() - 180, Sys.Date() - 20))
+  p4 <- plot_pbs(
+    pbs_df = sparse_pbs,
+    date_range = c(Sys.Date() - 180, Sys.Date() - 20)
+  )
   expect_s3_class(p4, "gg")
 })
 
@@ -287,13 +304,13 @@ test_that("calculate functions with invalid data structures", {
   # Test various invalid inputs
   expect_error(calculate_acwr(data.frame(x = 1)))
   expect_error(calculate_ef(data.frame(x = 1), activity_type = "Run", ef_metric = "pace_hr"))
-  
+
   # Test with data frame missing required columns
   incomplete_df <- data.frame(
     id = 1:10,
     date = seq(Sys.Date() - 20, Sys.Date(), length.out = 10)
   )
-  
+
   expect_error(calculate_acwr(incomplete_df, activity_type = "Run"))
 })
 
@@ -306,16 +323,19 @@ test_that("cohort_reference with insufficient data", {
     date = seq(Sys.Date() - 30, Sys.Date() - 1, by = "day"),
     metric_value = runif(30, 0.8, 1.5)
   )
-  
+
   # Should either error or return empty result
-  result <- tryCatch({
-    cohort_reference(small_cohort, metric = "metric_value", min_athletes = 10)
-  }, error = function(e) {
-    expect_true(TRUE)  # Error is expected
-    data.frame()
-  })
-  
-  expect_true(TRUE)  # Test passed
+  result <- tryCatch(
+    {
+      calculate_cohort_reference(small_cohort, metric = "metric_value", min_athletes = 10)
+    },
+    error = function(e) {
+      expect_true(TRUE) # Error is expected
+      data.frame()
+    }
+  )
+
+  expect_true(TRUE) # Test passed
 })
 
 # ========== Quality control branches ==========
@@ -330,7 +350,7 @@ test_that("flag_quality with various data patterns", {
     cadence = rnorm(500, 85, 8),
     speed = runif(500, 2.5, 3.5)
   )
-  
+
   streams_bad <- data.frame(
     time = 1:500,
     distance = seq(0, 5000, length.out = 500),
@@ -339,24 +359,23 @@ test_that("flag_quality with various data patterns", {
     cadence = c(rnorm(400, 85, 8), rep(200, 100)),
     speed = c(runif(400, 2.5, 3.5), rep(20, 100))
   )
-  
+
   # Test with both Run and Ride
   flag_run_good <- flag_quality(streams_good, sport = "Run")
   flag_run_bad <- flag_quality(streams_bad, sport = "Run")
   flag_ride_good <- flag_quality(streams_good, sport = "Ride")
   flag_ride_bad <- flag_quality(streams_bad, sport = "Ride")
-  
+
   expect_s3_class(flag_run_good, "data.frame")
   expect_s3_class(flag_run_bad, "data.frame")
   expect_s3_class(flag_ride_good, "data.frame")
   expect_s3_class(flag_ride_bad, "data.frame")
-  
+
   # Test quality_summary
-  sum_good <- quality_summary(flag_run_good)
-  sum_bad <- quality_summary(flag_run_bad)
-  
+  sum_good <- summarize_quality(flag_run_good)
+  sum_bad <- summarize_quality(flag_run_bad)
+
   expect_type(sum_good, "list")
   expect_type(sum_bad, "list")
   expect_true(sum_bad$flagged_points > sum_good$flagged_points)
 })
-

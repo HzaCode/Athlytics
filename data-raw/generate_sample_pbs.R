@@ -1,5 +1,4 @@
-
-# Script to regenerate athlytics_sample_pbs data
+# Script to regenerate sample_pbs data
 library(dplyr)
 library(lubridate)
 library(Athlytics) # Assumes current version is loaded
@@ -56,7 +55,7 @@ all_data <- rbind(df_1k, df_5k, df_10k) %>%
   )
 
 # Calculate cumulative PBs and is_pb flag
-athlytics_sample_pbs <- all_data %>%
+sample_pbs <- all_data %>%
   group_by(distance) %>%
   arrange(activity_date) %>%
   mutate(
@@ -73,11 +72,11 @@ athlytics_sample_pbs <- all_data %>%
   )
 
 # Convert to tibble for consistency
-athlytics_sample_pbs <- as_tibble(athlytics_sample_pbs)
+sample_pbs <- as_tibble(sample_pbs)
 
 # Save to data directory
-save(athlytics_sample_pbs, file = "data/athlytics_sample_pbs.rda", compress = "xz")
+save(sample_pbs, file = "data/sample_pbs.rda", compress = "xz")
 
-message("athlytics_sample_pbs.rda regenerated with ", nrow(athlytics_sample_pbs), " rows.")
-print(table(athlytics_sample_pbs$distance_label))
-print(table(athlytics_sample_pbs$is_pb))
+message("sample_pbs.rda regenerated with ", nrow(sample_pbs), " rows.")
+print(table(sample_pbs$distance_label))
+print(table(sample_pbs$is_pb))

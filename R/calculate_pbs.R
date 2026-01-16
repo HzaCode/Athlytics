@@ -12,11 +12,11 @@
 #' @param activity_type Type of activities to analyze (typically "Run"). Default "Run".
 #' @param start_date Optional start date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).
 #' @param end_date Optional end date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).
-#' @param distances_m Target distances in meters to track. 
+#' @param distances_m Target distances in meters to track.
 #'   Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marathon.
 #'
-#' @return A data frame with columns: activity_id, activity_date, distance, 
-#'   elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb, 
+#' @return A data frame with columns: activity_id, activity_date, distance,
+#'   elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb,
 #'   distance_label, time_period
 #'
 #' @details
@@ -34,8 +34,8 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(athlytics_sample_pbs)
-#' print(head(athlytics_sample_pbs))
+#' data(sample_pbs)
+#' print(head(sample_pbs))
 #'
 #' \dontrun{
 #' # Load local activities
@@ -55,7 +55,6 @@ calculate_pbs <- function(activities_data,
                           start_date = NULL,
                           end_date = NULL,
                           distances_m = c(1000, 5000, 10000, 21097.5, 42195)) {
-
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
@@ -74,7 +73,7 @@ calculate_pbs <- function(activities_data,
   }
 
   `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
-  
+
   # --- Date Handling ---
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
   analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
@@ -121,9 +120,11 @@ calculate_pbs <- function(activities_data,
   # --- Calculate Best Efforts for Each Activity ---
   all_efforts <- purrr::map_dfr(1:nrow(filtered_activities), function(i) {
     activity <- filtered_activities[i, ]
-    
-    message(sprintf("Processing activity %d/%d: %s (%s)", 
-                    i, nrow(filtered_activities), activity$name, activity$date))
+
+    message(sprintf(
+      "Processing activity %d/%d: %s (%s)",
+      i, nrow(filtered_activities), activity$name, activity$date
+    ))
 
     # Parse activity file
     file_path <- file.path(export_dir, activity$filename)
@@ -143,11 +144,11 @@ calculate_pbs <- function(activities_data,
     # Calculate best efforts for each target distance
     efforts <- purrr::map_dfr(distances_m, function(target_distance) {
       best_effort <- find_best_effort(stream_data, target_distance)
-      
+
       if (is.null(best_effort)) {
         return(NULL)
       }
-      
+
       data.frame(
         activity_id = activity$id,
         activity_date = activity$start_date_local,
@@ -198,7 +199,7 @@ calculate_pbs <- function(activities_data,
     "21097.5" = "Half Marathon",
     "42195" = "Marathon"
   )
-  
+
   pb_results <- pb_results %>%
     dplyr::mutate(
       distance_label = dplyr::case_when(
@@ -209,8 +210,9 @@ calculate_pbs <- function(activities_data,
         .data$distance == 42195 ~ "Marathon",
         TRUE ~ paste0(round(.data$distance), "m")
       ),
-      distance_label = factor(.data$distance_label, 
-                             levels = c("1k", "5k", "10k", "Half Marathon", "Marathon")),
+      distance_label = factor(.data$distance_label,
+        levels = c("1k", "5k", "10k", "Half Marathon", "Marathon")
+      ),
       time_period = as.character(lubridate::seconds_to_period(.data$time_seconds))
     )
 
@@ -223,15 +225,19 @@ calculate_pbs <- function(activities_data,
 
   # Select final columns
   pb_results <- pb_results %>%
-    dplyr::select(.data$activity_id, .data$activity_date, .data$distance,
-                 .data$elapsed_time, .data$moving_time, .data$time_seconds,
-                 .data$cumulative_pb_seconds, .data$is_pb, 
-                 .data$distance_label, .data$time_period) %>%
+    dplyr::select(
+      .data$activity_id, .data$activity_date, .data$distance,
+      .data$elapsed_time, .data$moving_time, .data$time_seconds,
+      .data$cumulative_pb_seconds, .data$is_pb,
+      .data$distance_label, .data$time_period
+    ) %>%
     dplyr::arrange(.data$activity_date, .data$distance)
 
-  message(sprintf("PB analysis complete. Found %d efforts, %d are new PBs.", 
-                  nrow(pb_results), sum(pb_results$is_pb)))
-  
+  message(sprintf(
+    "PB analysis complete. Found %d efforts, %d are new PBs.",
+    nrow(pb_results), sum(pb_results$is_pb)
+  ))
+
   return(pb_results)
 }
 
@@ -240,46 +246,47 @@ calculate_pbs <- function(activities_data,
 find_best_effort <- function(stream_data, target_distance) {
   # Remove rows with missing distance or time
   valid_data <- stream_data[!is.na(stream_data$distance) & !is.na(stream_data$time), ]
-  
+
   if (nrow(valid_data) < 10) {
     return(NULL)
   }
-  
+
   # Check if activity is long enough
   max_distance <- max(valid_data$distance, na.rm = TRUE)
   if (max_distance < target_distance) {
     return(NULL)
   }
-  
+
   # Use sliding window to find fastest segment of target distance
   # Allow 2% tolerance for distance matching
   tolerance <- target_distance * 0.02
-  
+
   best_time <- Inf
   best_start_idx <- NA
   best_end_idx <- NA
-  
+
   # For each starting point, find the point where distance >= target
   for (i in 1:(nrow(valid_data) - 1)) {
     start_dist <- valid_data$distance[i]
     target_dist <- start_dist + target_distance
-    
+
     # Find first point that reaches or exceeds target distance
     candidates <- which(valid_data$distance >= target_dist)
-    
+
     if (length(candidates) == 0) {
-      break  # No more segments possible
+      break # No more segments possible
     }
-    
+
     end_idx <- candidates[1]
     actual_dist <- valid_data$distance[end_idx] - start_dist
-    
+
     # Check if distance is within tolerance
     if (abs(actual_dist - target_distance) <= tolerance) {
-      elapsed_time <- as.numeric(difftime(valid_data$time[end_idx], 
-                                          valid_data$time[i], 
-                                          units = "secs"))
-      
+      elapsed_time <- as.numeric(difftime(valid_data$time[end_idx],
+        valid_data$time[i],
+        units = "secs"
+      ))
+
       if (elapsed_time > 0 && elapsed_time < best_time) {
         best_time <- elapsed_time
         best_start_idx <- i
@@ -287,11 +294,11 @@ find_best_effort <- function(stream_data, target_distance) {
       }
     }
   }
-  
+
   if (is.infinite(best_time) || is.na(best_start_idx)) {
     return(NULL)
   }
-  
+
   return(list(
     time_seconds = best_time,
     start_distance = valid_data$distance[best_start_idx],

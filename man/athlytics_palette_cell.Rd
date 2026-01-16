@@ -16,6 +16,6 @@ Balances professional appearance with visual clarity.
 \examples{
 # Get Cell palette colors
 colors <- athlytics_palette_cell()
-colors[1]  # Blue
+colors[1] # Blue
 
 }

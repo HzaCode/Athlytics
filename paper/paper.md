@@ -52,7 +52,7 @@ Athlytics is unique in providing an API-free, end-to-end workflow that integrate
 -   **Inputs & Data Model:** Reads Strava ZIP archives or `activities.csv`. Activity streams (FIT/TCX/GPX) are loaded **on demand** from the archive, optionally using `FITfileR` for FIT files [@FITfileR]. The core function `load_local_activities()` produces a standardized tibble.
 -   **Core Metrics:** `calculate_acwr()`, `calculate_ef()`, and `calculate_decoupling()` compute key summaries with sensible, research-oriented defaults. The implementation of ACWR acknowledges its conceptual issues and is presented as a monitoring tool [@impellizzeri2020acwr].
 -   **Uncertainty Quantification:** Provides confidence intervals for EWMA-based ACWR using a moving-block bootstrap [@kunsch1989; @politis1994], a key feature for research applications.
--   **Cohort Benchmarking:** `cohort_reference()` computes percentile bands, which can be layered onto individual plots using `plot_with_reference()`.
+-   **Cohort Benchmarking:** `calculate_cohort_reference()` computes percentile bands, which can be layered onto individual plots using `plot_with_reference()`.
 -   **Plotting & Diagnostics:** Visualization functions follow a **data-first API**. Functions return **diagnostic fields** (e.g., `status`, `reason`) when inputs are insufficient, making the workflow transparent.
 
 # Example
@@ -75,7 +75,7 @@ cohort_acwr <- cohort_data %>%
   ungroup()
 
 # 3. Generate cohort-wide percentile reference bands
-reference_bands <- cohort_reference(cohort_acwr, metric = "acwr_smooth")
+reference_bands <- calculate_cohort_reference(cohort_acwr, metric = "acwr_smooth")
 
 # 4. Plot an individual's data against the cohort reference
 individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")

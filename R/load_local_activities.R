@@ -70,7 +70,7 @@
 #' # Use with Athlytics functions
 #' acwr_data <- calculate_acwr(activities, load_metric = "distance_km")
 #' plot_acwr(acwr_data, highlight_zones = TRUE)
-#' 
+#'
 #' # Multi-metric analysis
 #' ef_data <- calculate_ef(activities, ef_metric = "pace_hr")
 #' plot_ef(ef_data, add_trend_line = TRUE)
@@ -82,64 +82,72 @@
 #' @importFrom rlang .data
 #' @export
 load_local_activities <- function(path = "strava_export_data/activities.csv",
-                                 start_date = NULL,
-                                 end_date = NULL,
-                                 activity_types = NULL) {
-  
+                                  start_date = NULL,
+                                  end_date = NULL,
+                                  activity_types = NULL) {
   # --- Input Validation ---
   if (!file.exists(path)) {
-    stop("File not found at: ", path,
-         "\nPlease ensure you have downloaded your Strava data export.")
+    stop(
+      "File not found at: ", path,
+      "\nPlease ensure you have downloaded your Strava data export."
+    )
   }
-  
+
   # --- Handle ZIP files ---
   temp_extracted <- FALSE
   original_path <- path
-  
+
   # Check if input is a ZIP file
   if (tolower(tools::file_ext(path)) == "zip") {
     message("Detected ZIP archive. Extracting activities.csv...")
-    
+
     # Create a temporary directory for extraction
     temp_dir <- tempdir()
-    
+
     # List files in the ZIP
     zip_contents <- utils::unzip(path, list = TRUE)
-    
+
     # Find activities.csv (case-insensitive)
-    activities_file <- grep("activities\\.csv$", zip_contents$Name, 
-                           ignore.case = TRUE, value = TRUE)
-    
+    activities_file <- grep("activities\\.csv$", zip_contents$Name,
+      ignore.case = TRUE, value = TRUE
+    )
+
     if (length(activities_file) == 0) {
       stop("No activities.csv file found in ZIP archive: ", path)
     }
-    
+
     if (length(activities_file) > 1) {
       warning("Multiple activities.csv files found. Using: ", activities_file[1])
       activities_file <- activities_file[1]
     }
-    
+
     # Extract the activities.csv file
-    tryCatch({
-      utils::unzip(path, files = activities_file, exdir = temp_dir, overwrite = TRUE)
-      path <- file.path(temp_dir, activities_file)
-      temp_extracted <- TRUE
-      message("Successfully extracted to temporary location.")
-    }, error = function(e) {
-      stop("Failed to extract ZIP archive: ", e$message)
-    })
+    tryCatch(
+      {
+        utils::unzip(path, files = activities_file, exdir = temp_dir, overwrite = TRUE)
+        path <- file.path(temp_dir, activities_file)
+        temp_extracted <- TRUE
+        message("Successfully extracted to temporary location.")
+      },
+      error = function(e) {
+        stop("Failed to extract ZIP archive: ", e$message)
+      }
+    )
   }
-  
+
   # --- Read CSV ---
   message("Reading activities from: ", basename(original_path))
-  
+
   # Read CSV with appropriate column types
-  activities_raw <- tryCatch({
-    readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols())
-  }, error = function(e) {
-    stop("Failed to read CSV file: ", e$message)
-  })
-  
+  activities_raw <- tryCatch(
+    {
+      readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols())
+    },
+    error = function(e) {
+      stop("Failed to read CSV file: ", e$message)
+    }
+  )
+
   if (nrow(activities_raw) == 0) {
     warning("No activities found in CSV file.")
     return(dplyr::tibble(
@@ -156,73 +164,89 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
       elevation_gain = numeric(0)
     ))
   }
-  
+
   message("Found ", nrow(activities_raw), " activities in CSV file.")
-  
+
   # --- Transform Data ---
   # Store column names to avoid using `.` inside mutate
   col_names <- names(activities_raw)
-  
+
   activities_df <- activities_raw %>%
     dplyr::mutate(
       # ID
       id = as.numeric(.data$`Activity ID`),
-      
+
       # Name and Type
       name = as.character(.data$`Activity Name`),
       type = as.character(.data$`Activity Type`),
       sport_type = as.character(.data$`Activity Type`), # Strava export doesn't distinguish
-      
+
       # Parse Date - Strava format: "Feb 17, 2022, 12:18:26 PM"
       start_date_local = lubridate::parse_date_time(
         .data$`Activity Date`,
         orders = c("b d, Y, I:M:S p", "mdy HMS p", "ymd HMS"),
-        tz = "UTC"  # Will be converted to local if needed
+        tz = "UTC" # Will be converted to local if needed
       ),
       date = lubridate::as_date(.data$start_date_local),
-      
+
       # Distance - CSV has two "Distance" columns, use the second (more detailed)
       # R renames duplicate columns by appending .1, .2, etc.
-      distance = as.numeric(if("Distance.1" %in% col_names) .data$Distance.1 
-                           else if("Distance...18" %in% col_names) .data$`Distance...18`
-                           else .data$Distance),
-      
+      distance = as.numeric(if ("Distance.1" %in% col_names) {
+        .data$Distance.1
+      } else if ("Distance...18" %in% col_names) {
+        .data$`Distance...18`
+      } else {
+        .data$Distance
+      }),
+
       # Times - CSV shows seconds, has duplicate columns
       # Handle different possible column names based on how R reads the CSV
-      moving_time = as.integer(if("Moving.Time" %in% col_names) .data$Moving.Time else .data$`Moving Time`),
-      elapsed_time = as.integer(if("Elapsed.Time.1" %in% col_names) .data$Elapsed.Time.1
-                               else if("Elapsed Time...16" %in% col_names) .data$`Elapsed Time...16`
-                               else .data$`Elapsed Time`),
-      
+      moving_time = as.integer(if ("Moving.Time" %in% col_names) .data$Moving.Time else .data$`Moving Time`),
+      elapsed_time = as.integer(if ("Elapsed.Time.1" %in% col_names) {
+        .data$Elapsed.Time.1
+      } else if ("Elapsed Time...16" %in% col_names) {
+        .data$`Elapsed Time...16`
+      } else {
+        .data$`Elapsed Time`
+      }),
+
       # Heart Rate - handle duplicate columns
-      average_heartrate = as.numeric(if("Average.Heart.Rate" %in% col_names) .data$Average.Heart.Rate else .data$`Average Heart Rate`),
-      max_heartrate = as.numeric(if("Max.Heart.Rate.1" %in% col_names) .data$Max.Heart.Rate.1
-                                else if("Max Heart Rate...31" %in% col_names) .data$`Max Heart Rate...31`
-                                else .data$`Max Heart Rate`),
-      
+      average_heartrate = as.numeric(if ("Average.Heart.Rate" %in% col_names) .data$Average.Heart.Rate else .data$`Average Heart Rate`),
+      max_heartrate = as.numeric(if ("Max.Heart.Rate.1" %in% col_names) {
+        .data$Max.Heart.Rate.1
+      } else if ("Max Heart Rate...31" %in% col_names) {
+        .data$`Max Heart Rate...31`
+      } else {
+        .data$`Max Heart Rate`
+      }),
+
       # Power
-      average_watts = as.numeric(if("Average.Watts" %in% col_names) .data$Average.Watts else .data$`Average Watts`),
-      max_watts = as.numeric(if("Max.Watts" %in% col_names) .data$Max.Watts else .data$`Max Watts`),
-      weighted_average_watts = as.numeric(if("Weighted Average Power" %in% col_names) .data$`Weighted Average Power` else NA_real_),
-      
+      average_watts = as.numeric(if ("Average.Watts" %in% col_names) .data$Average.Watts else .data$`Average Watts`),
+      max_watts = as.numeric(if ("Max.Watts" %in% col_names) .data$Max.Watts else .data$`Max Watts`),
+      weighted_average_watts = as.numeric(if ("Weighted Average Power" %in% col_names) .data$`Weighted Average Power` else NA_real_),
+
       # Elevation
-      elevation_gain = as.numeric(if("Elevation.Gain" %in% col_names) .data$Elevation.Gain else .data$`Elevation Gain`),
-      elevation_loss = as.numeric(if("Elevation.Loss" %in% col_names) .data$Elevation.Loss else .data$`Elevation Loss`),
-      
+      elevation_gain = as.numeric(if ("Elevation.Gain" %in% col_names) .data$Elevation.Gain else .data$`Elevation Gain`),
+      elevation_loss = as.numeric(if ("Elevation.Loss" %in% col_names) .data$Elevation.Loss else .data$`Elevation Loss`),
+
       # Speed
-      average_speed = as.numeric(if("Average.Speed" %in% col_names) .data$Average.Speed else .data$`Average Speed`),
-      max_speed = as.numeric(if("Max.Speed" %in% col_names) .data$Max.Speed else .data$`Max Speed`),
-      
+      average_speed = as.numeric(if ("Average.Speed" %in% col_names) .data$Average.Speed else .data$`Average Speed`),
+      max_speed = as.numeric(if ("Max.Speed" %in% col_names) .data$Max.Speed else .data$`Max Speed`),
+
       # Other useful metrics
       calories = as.numeric(.data$Calories),
-      relative_effort = as.numeric(if("Relative.Effort.1" %in% col_names) .data$Relative.Effort.1
-                                  else if("Relative Effort...38" %in% col_names) .data$`Relative Effort...38`
-                                  else .data$`Relative Effort`),
-      
+      relative_effort = as.numeric(if ("Relative.Effort.1" %in% col_names) {
+        .data$Relative.Effort.1
+      } else if ("Relative Effort...38" %in% col_names) {
+        .data$`Relative Effort...38`
+      } else {
+        .data$`Relative Effort`
+      }),
+
       # File path for detailed activity data (for decoupling, pbs analysis)
       filename = as.character(.data$Filename)
     )
-  
+
   # --- Select Key Columns ---
   # Keep columns that are commonly used in Athlytics functions
   key_columns <- c(
@@ -236,65 +260,69 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
     "calories", "relative_effort",
     "filename"
   )
-  
+
   # Select only existing columns
   available_cols <- key_columns[key_columns %in% names(activities_df)]
   activities_df <- activities_df %>%
     dplyr::select(dplyr::all_of(available_cols))
-  
+
   # --- Apply Filters ---
-  
+
   # Filter by date range
   if (!is.null(start_date)) {
-    start_date_parsed <- tryCatch({
-      lubridate::as_datetime(start_date)
-    }, error = function(e) {
-      stop("Could not parse start_date. Please use YYYY-MM-DD format or a Date/POSIXct object.")
-    })
-    
+    start_date_parsed <- tryCatch(
+      {
+        lubridate::as_datetime(start_date)
+      },
+      error = function(e) {
+        stop("Could not parse start_date. Please use YYYY-MM-DD format or a Date/POSIXct object.")
+      }
+    )
+
     activities_df <- activities_df %>%
       dplyr::filter(.data$start_date_local >= start_date_parsed)
-    
+
     message("Filtered to activities after ", start_date_parsed)
   }
-  
+
   if (!is.null(end_date)) {
-    end_date_parsed <- tryCatch({
-      dt <- lubridate::as_datetime(end_date)
-      # If time is 00:00:00, extend to end of day
-      if (format(dt, "%H:%M:%S") == "00:00:00") {
-        dt <- dt + lubridate::hours(23) + lubridate::minutes(59) + lubridate::seconds(59)
+    end_date_parsed <- tryCatch(
+      {
+        dt <- lubridate::as_datetime(end_date)
+        # If time is 00:00:00, extend to end of day
+        if (format(dt, "%H:%M:%S") == "00:00:00") {
+          dt <- dt + lubridate::hours(23) + lubridate::minutes(59) + lubridate::seconds(59)
+        }
+        dt
+      },
+      error = function(e) {
+        stop("Could not parse end_date. Please use YYYY-MM-DD format or a Date/POSIXct object.")
       }
-      dt
-    }, error = function(e) {
-      stop("Could not parse end_date. Please use YYYY-MM-DD format or a Date/POSIXct object.")
-    })
-    
+    )
+
     activities_df <- activities_df %>%
       dplyr::filter(.data$start_date_local <= end_date_parsed)
-    
+
     message("Filtered to activities before ", end_date_parsed)
   }
-  
+
   # Filter by activity type
   if (!is.null(activity_types)) {
     if (!is.character(activity_types)) {
       stop("activity_types must be a character vector (e.g., c('Run', 'Ride'))")
     }
-    
+
     activities_df <- activities_df %>%
       dplyr::filter(.data$type %in% activity_types)
-    
+
     message("Filtered to activity types: ", paste(activity_types, collapse = ", "))
   }
-  
+
   # --- Final Sorting ---
   activities_df <- activities_df %>%
     dplyr::arrange(.data$start_date_local)
-  
+
   message("Data loading complete. ", nrow(activities_df), " activities after filtering.")
-  
+
   return(activities_df)
 }
-
-

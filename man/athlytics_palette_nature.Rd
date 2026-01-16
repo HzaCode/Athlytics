@@ -14,9 +14,9 @@ Professional, colorblind-friendly palette based on Nature journal's
 visualization guidelines. Suitable for multi-series plots.
 }
 \examples{
-\dontrun{
-ggplot2::ggplot(data, ggplot2::aes(x, y, color = group)) +
-  ggplot2::geom_line() +
-  ggplot2::scale_color_manual(values = athlytics_palette_nature())
-}
+# View the palette colors
+athlytics_palette_nature()
+
+# Display as color swatches
+barplot(rep(1, 9), col = athlytics_palette_nature(), border = NA)
 }
