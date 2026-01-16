@@ -129,8 +129,8 @@ For cohort analyses, add an \code{athlete_id} column before calculation and use
 }
 \examples{
 # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
-data(athlytics_sample_acwr)
-print(head(athlytics_sample_acwr))
+data(sample_acwr)
+print(head(sample_acwr))
 
 \dontrun{
 # Example using local Strava export data
@@ -145,16 +145,20 @@ activities <- load_local_activities("export_12345678.zip")
 activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Step 3: Calculate ACWR for Runs (using distance)
-run_acwr <- calculate_acwr(activities_data = activities, 
-                           activity_type = "Run",
-                           load_metric = "distance_km")
+run_acwr <- calculate_acwr(
+  activities_data = activities,
+  activity_type = "Run",
+  load_metric = "distance_km"
+)
 print(tail(run_acwr))
 
 # Calculate ACWR for Rides (using TSS, requires FTP)
-ride_acwr_tss <- calculate_acwr(activities_data = activities,
-                                activity_type = "Ride",
-                                load_metric = "tss", 
-                                user_ftp = 280)
+ride_acwr_tss <- calculate_acwr(
+  activities_data = activities,
+  activity_type = "Ride",
+  load_metric = "tss",
+  user_ftp = 280
+)
 print(tail(ride_acwr_tss))
 
 # Plot the results
@@ -175,9 +179,10 @@ cohort_data <- dplyr::bind_rows(athlete1, athlete2)
 # Calculate ACWR for each athlete using group_modify()
 cohort_acwr <- cohort_data \%>\%
   dplyr::group_by(athlete_id) \%>\%
-  dplyr::group_modify(~ calculate_acwr(.x, 
-                                 activity_type = "Run",
-                                 load_metric = "duration_mins")) \%>\%
+  dplyr::group_modify(~ calculate_acwr(.x,
+    activity_type = "Run",
+    load_metric = "duration_mins"
+  )) \%>\%
   dplyr::ungroup()
 
 # View results
@@ -196,5 +201,5 @@ high chronic workload may decrease injury risk in elite rugby league players.
 \code{\link{plot_acwr}} for visualization,
 \code{\link{calculate_acwr_ewma}} for EWMA-based ACWR,
 \code{\link{load_local_activities}} for data loading,
-\code{\link{cohort_reference}} for multi-athlete comparisons
+\code{\link{calculate_cohort_reference}} for multi-athlete comparisons
 }

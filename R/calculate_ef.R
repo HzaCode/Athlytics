@@ -29,16 +29,16 @@
 #' }
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
-#'   Must contain columns: `date`, `type`, `moving_time`, `distance`, 
+#'   Must contain columns: `date`, `type`, `moving_time`, `distance`,
 #'   `average_heartrate`, and `average_watts` (for power_hr metric).
 #' @param activity_type Character vector or single string specifying activity type(s)
 #'   to analyze. Common values: `"Run"`, `"Ride"`, or `c("Run", "Ride")`.
 #'   Default: `c("Run", "Ride")`.
 #' @param ef_metric Character string specifying the efficiency metric:
 #'   \itemize{
-#'     \item `"pace_hr"`: Pace-based efficiency (for running). 
+#'     \item `"pace_hr"`: Pace-based efficiency (for running).
 #'       Formula: speed (m/s) / avg_HR. Units: m/s/bpm (higher = better fitness)
-#'     \item `"power_hr"`: Power-based efficiency (for cycling). 
+#'     \item `"power_hr"`: Power-based efficiency (for cycling).
 #'       Formula: avg_watts / avg_HR. Units: W/bpm (higher = better fitness)
 #'   }
 #'   Default: `c("pace_hr", "power_hr")` (uses first matching metric for activity type).
@@ -55,7 +55,7 @@
 #'   Activities with higher variability are rejected as non-steady-state.
 #' @param min_hr_coverage Numeric. Minimum HR data coverage threshold (default: 0.9 = 90%).
 #'   Activities with lower HR coverage are rejected as insufficient data quality.
-#' @param quality_control Character. Quality control mode: "off" (no filtering), "flag" (mark issues), 
+#' @param quality_control Character. Quality control mode: "off" (no filtering), "flag" (mark issues),
 #'   or "filter" (exclude flagged data). Default "filter" for scientific rigor.
 #' @param export_dir Optional. Path to Strava export directory containing activity files.
 #'   When provided, enables stream data analysis for more accurate steady-state detection.
@@ -66,8 +66,8 @@
 #'   \item{activity_type}{Activity type (character: "Run" or "Ride")}
 #'   \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
 #'     Units: m/s/bpm for pace_hr, W/bpm for power_hr.}
-#'   \item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for 
-#'     activity-level calculation without stream data, "non_steady" if steady-state 
+#'   \item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for
+#'     activity-level calculation without stream data, "non_steady" if steady-state
 #'     criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
 #'     "insufficient_hr_data" if HR coverage below threshold.}
 #' }
@@ -125,23 +125,27 @@
 #'
 #' @examples
 #' # Example using simulated data
-#' data(athlytics_sample_ef)
-#' print(head(athlytics_sample_ef))
+#' data(sample_ef)
+#' print(head(sample_ef))
 #'
 #' \dontrun{
 #' # Example using local Strava export data
 #' activities <- load_local_activities("strava_export_data/activities.csv")
 #'
 #' # Calculate Pace/HR efficiency factor for Runs
-#' ef_data_run <- calculate_ef(activities_data = activities, 
-#'                              activity_type = "Run", 
-#'                              ef_metric = "pace_hr")
+#' ef_data_run <- calculate_ef(
+#'   activities_data = activities,
+#'   activity_type = "Run",
+#'   ef_metric = "pace_hr"
+#' )
 #' print(tail(ef_data_run))
 #'
 #' # Calculate Power/HR efficiency factor for Rides
-#' ef_data_ride <- calculate_ef(activities_data = activities,
-#'                               activity_type = "Ride",
-#'                               ef_metric = "power_hr")
+#' ef_data_ride <- calculate_ef(
+#'   activities_data = activities,
+#'   activity_type = "Ride",
+#'   ef_metric = "power_hr"
+#' )
 #' print(tail(ef_data_ride))
 #' }
 calculate_ef <- function(activities_data,
@@ -155,18 +159,17 @@ calculate_ef <- function(activities_data,
                          min_hr_coverage = 0.9,
                          quality_control = c("off", "flag", "filter"),
                          export_dir = NULL) {
-
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
   }
-  
+
   if (!is.data.frame(activities_data)) {
     stop("`activities_data` must be a data frame (e.g., from load_local_activities()).")
   }
-  
+
   ef_metric <- match.arg(ef_metric)
-  
+
   # Normalize to lowercase (support legacy capitalized names)
   ef_metric <- tolower(ef_metric)
   if (!is.numeric(min_duration_mins) || min_duration_mins < 0) {
@@ -181,7 +184,7 @@ calculate_ef <- function(activities_data,
   if (!is.numeric(min_hr_coverage) || min_hr_coverage <= 0 || min_hr_coverage > 1) {
     stop("`min_hr_coverage` must be between 0 and 1.")
   }
-  
+
   quality_control <- match.arg(quality_control)
 
   # --- Date Handling ---
@@ -190,27 +193,29 @@ calculate_ef <- function(activities_data,
   if (analysis_start_date >= analysis_end_date) stop("start_date must be before end_date.")
 
   message(sprintf("Calculating EF data from %s to %s.", analysis_start_date, analysis_end_date))
-  message(sprintf("Metric: %s, Activity types: %s", ef_metric, paste(activity_type, collapse=", ")))
+  message(sprintf("Metric: %s, Activity types: %s", ef_metric, paste(activity_type, collapse = ", ")))
 
   # --- Filter Activities ---
   message("Processing local activities data...")
   activities_df_filtered <- activities_data %>%
     dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date)
-  
+
   if (!is.null(activity_type)) {
     activities_df_filtered <- activities_df_filtered %>%
       dplyr::filter(.data$type %in% activity_type)
   }
-  
+
   activities_fetched_count <- nrow(activities_df_filtered)
   message(sprintf("Loaded %d activities from local data.", activities_fetched_count))
-  
+
   if (activities_fetched_count == 0) {
     stop("No activities found in local data for the date range.")
   }
 
   # --- Process Activities & Calculate EF ---
-  safe_as_numeric <- function(x) { as.numeric(rlang::`%||%`(x, 0)) }
+  safe_as_numeric <- function(x) {
+    as.numeric(rlang::`%||%`(x, 0))
+  }
 
   ef_data <- purrr::map_dfr(1:nrow(activities_df_filtered), function(i) {
     activity <- activities_df_filtered[i, ]
@@ -223,36 +228,49 @@ calculate_ef <- function(activities_data,
     weighted_power <- safe_as_numeric(activity$weighted_average_watts)
     power_used <- ifelse(weighted_power > 0, weighted_power, avg_power)
 
-    if (is.na(activity_date) || activity_date < analysis_start_date || activity_date > analysis_end_date) return(NULL)
-    if (!act_type %in% activity_type) return(NULL)
-    if (duration_sec < (min_duration_mins * 60)) return(NULL)
-    if (is.na(avg_hr) || avg_hr <= 0) return(NULL)
-    
+    if (is.na(activity_date) || activity_date < analysis_start_date || activity_date > analysis_end_date) {
+      return(NULL)
+    }
+    if (!act_type %in% activity_type) {
+      return(NULL)
+    }
+    if (duration_sec < (min_duration_mins * 60)) {
+      return(NULL)
+    }
+    if (is.na(avg_hr) || avg_hr <= 0) {
+      return(NULL)
+    }
+
     # Try to parse stream data for proper steady-state analysis
     stream_data <- NULL
     if (!is.null(export_dir) && !is.na(activity$filename) && nchar(activity$filename) > 0) {
-      tryCatch({
-        stream_data <- parse_activity_file(activity$filename, export_dir)
-      }, error = function(e) {
-        message(sprintf("  Could not parse stream data for activity %s: %s", activity_date, e$message))
-      })
+      tryCatch(
+        {
+          stream_data <- parse_activity_file(activity$filename, export_dir)
+        },
+        error = function(e) {
+          message(sprintf("  Could not parse stream data for activity %s: %s", activity_date, e$message))
+        }
+      )
     }
-    
+
     # If we have stream data, do proper steady-state analysis
     if (!is.null(stream_data) && nrow(stream_data) > 0) {
-      return(calculate_ef_from_stream(stream_data, activity_date, act_type, ef_metric, 
-                                   min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control))
+      return(calculate_ef_from_stream(
+        stream_data, activity_date, act_type, ef_metric,
+        min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control
+      ))
     }
-    
+
     # Fallback to activity-level averages (with warnings about limitations)
     message(sprintf("  No stream data available for %s, using activity-level averages (less reliable)", activity_date))
-    
+
     # Quality control integration
     if (quality_control != "off") {
       # For now, we use simplified quality checks since we don't have stream data
       # In a full implementation, we would parse stream files and call flag_quality()
       # This is a placeholder for the quality control framework
-      
+
       # Check for reasonable HR values (basic quality gate)
       if (avg_hr < 50 || avg_hr > 220) {
         if (quality_control == "filter") {
@@ -267,7 +285,7 @@ calculate_ef <- function(activities_data,
         # If "flag", we continue but mark the status
       }
     }
-    
+
     # Steady-state gating: check minimum duration
     if (duration_sec < (min_steady_minutes * 60)) {
       return(data.frame(
@@ -314,9 +332,11 @@ calculate_ef <- function(activities_data,
 
   if (is.null(ef_data) || nrow(ef_data) == 0) {
     warning("No activities met the EF calculation criteria. Returning empty data frame.")
-    return(data.frame(date = lubridate::as_date(character(0)), 
-                     activity_type = character(0), 
-                     ef_value = numeric(0)))
+    return(data.frame(
+      date = lubridate::as_date(character(0)),
+      activity_type = character(0),
+      ef_value = numeric(0)
+    ))
   }
 
   ef_data <- ef_data %>%
@@ -327,7 +347,7 @@ calculate_ef <- function(activities_data,
 }
 
 #' Calculate EF from Stream Data with Steady-State Analysis
-#' 
+#'
 #' Calculate efficiency factor (EF) from detailed stream data using steady-state analysis.
 #' This function analyzes heart rate and power/pace data to find periods of steady effort
 #' and calculates the efficiency factor for those periods.
@@ -360,9 +380,8 @@ calculate_ef <- function(activities_data,
 #' }
 #'
 #' @export
-calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_metric, 
-                                   min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control) {
-  
+calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_metric,
+                                     min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control) {
   # Validate stream data structure
   required_cols <- c("time", "heartrate")
   if (ef_metric == "pace_hr") {
@@ -375,7 +394,7 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
         stringsAsFactors = FALSE
       ))
     }
-  } else {  # power_hr
+  } else { # power_hr
     if (!"watts" %in% colnames(stream_data)) {
       return(data.frame(
         date = activity_date,
@@ -386,7 +405,7 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       ))
     }
   }
-  
+
   missing_cols <- setdiff(required_cols, colnames(stream_data))
   if (length(missing_cols) > 0) {
     return(data.frame(
@@ -397,11 +416,11 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stringsAsFactors = FALSE
     ))
   }
-  
+
   # Clean stream data
   stream_clean <- stream_data %>%
     dplyr::filter(!is.na(.data$time), !is.na(.data$heartrate))
-  
+
   if (nrow(stream_clean) < 100) {
     return(data.frame(
       date = activity_date,
@@ -411,12 +430,12 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stringsAsFactors = FALSE
     ))
   }
-  
+
   # Calculate HR coverage
   total_time <- max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)
   hr_data_time <- sum(!is.na(stream_clean$heartrate) & stream_clean$heartrate > 0)
   hr_coverage <- hr_data_time / nrow(stream_clean)
-  
+
   if (hr_coverage < min_hr_coverage) {
     return(data.frame(
       date = activity_date,
@@ -426,7 +445,7 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stringsAsFactors = FALSE
     ))
   }
-  
+
   # Calculate velocity if needed for pace_hr
   if (ef_metric == "pace_hr") {
     if ("velocity_smooth" %in% colnames(stream_clean)) {
@@ -442,14 +461,14 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
           velocity = ifelse(.data$time_diff > 0, .data$distance_diff / .data$time_diff, 0)
         )
     }
-    
+
     stream_clean <- stream_clean %>%
       dplyr::filter(!is.na(.data$velocity), .data$velocity > 0, .data$heartrate > 0)
   } else {
     stream_clean <- stream_clean %>%
       dplyr::filter(!is.na(.data$watts), .data$watts > 0, .data$heartrate > 0)
   }
-  
+
   if (nrow(stream_clean) < 100) {
     return(data.frame(
       date = activity_date,
@@ -459,21 +478,21 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stringsAsFactors = FALSE
     ))
   }
-  
+
   # Quality control
   if (quality_control != "off") {
     # Check for reasonable values
     if (ef_metric == "pace_hr") {
       stream_clean <- stream_clean %>%
-        dplyr::filter(.data$velocity > 0.5, .data$velocity < 15)  # 0.5-15 m/s reasonable range
+        dplyr::filter(.data$velocity > 0.5, .data$velocity < 15) # 0.5-15 m/s reasonable range
     } else {
       stream_clean <- stream_clean %>%
-        dplyr::filter(.data$watts > 0, .data$watts < 2000)  # 0-2000W reasonable range
+        dplyr::filter(.data$watts > 0, .data$watts < 2000) # 0-2000W reasonable range
     }
-    
+
     stream_clean <- stream_clean %>%
       dplyr::filter(.data$heartrate > 50, .data$heartrate < 220)
-    
+
     if (nrow(stream_clean) < 100) {
       return(data.frame(
         date = activity_date,
@@ -484,7 +503,7 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       ))
     }
   }
-  
+
   # Check minimum duration
   duration_minutes <- (max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)) / 60
   if (duration_minutes < min_steady_minutes) {
@@ -496,11 +515,11 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stringsAsFactors = FALSE
     ))
   }
-  
+
   # Find steady-state windows using rolling coefficient of variation
-  window_size <- min(300, nrow(stream_clean) %/% 4)  # 5-minute windows or 1/4 of data
-  if (window_size < 60) window_size <- 60  # Minimum 1-minute windows
-  
+  window_size <- min(300, nrow(stream_clean) %/% 4) # 5-minute windows or 1/4 of data
+  if (window_size < 60) window_size <- 60 # Minimum 1-minute windows
+
   if (ef_metric == "pace_hr") {
     # Calculate rolling CV for velocity
     stream_clean <- stream_clean %>%
@@ -510,11 +529,10 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
         velocity_rollsd = zoo::rollapply(.data$velocity, window_size, sd, fill = NA, align = "center"),
         velocity_cv = .data$velocity_rollsd / .data$velocity_rollmean
       )
-    
+
     # Find steady-state periods (CV < threshold)
     steady_periods <- stream_clean %>%
       dplyr::filter(!is.na(.data$velocity_cv), .data$velocity_cv < steady_cv_threshold)
-    
   } else {
     # Calculate rolling CV for power
     stream_clean <- stream_clean %>%
@@ -524,12 +542,12 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
         watts_rollsd = zoo::rollapply(.data$watts, window_size, sd, fill = NA, align = "center"),
         watts_cv = .data$watts_rollsd / .data$watts_rollmean
       )
-    
+
     # Find steady-state periods (CV < threshold)
     steady_periods <- stream_clean %>%
       dplyr::filter(!is.na(.data$watts_cv), .data$watts_cv < steady_cv_threshold)
   }
-  
+
   if (nrow(steady_periods) < 100) {
     return(data.frame(
       date = activity_date,
@@ -539,14 +557,14 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stringsAsFactors = FALSE
     ))
   }
-  
+
   # Calculate EF from steady-state periods
   if (ef_metric == "pace_hr") {
     ef_value <- median(steady_periods$velocity / steady_periods$heartrate, na.rm = TRUE)
   } else {
     ef_value <- median(steady_periods$watts / steady_periods$heartrate, na.rm = TRUE)
   }
-  
+
   if (!is.na(ef_value) && ef_value > 0) {
     data.frame(
       date = activity_date,

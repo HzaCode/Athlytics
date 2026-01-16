@@ -25,13 +25,13 @@ Creates a faceted plot comparing Rolling Average and EWMA ACWR calculations.
 }
 \examples{
 # Example using sample data
-data("athlytics_sample_acwr", package = "Athlytics")
-if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
+data("sample_acwr", package = "Athlytics")
+if (!is.null(sample_acwr) && nrow(sample_acwr) > 0) {
   # Create two versions for comparison (simulate RA vs EWMA)
-  acwr_ra <- athlytics_sample_acwr
-  acwr_ewma <- athlytics_sample_acwr
+  acwr_ra <- sample_acwr
+  acwr_ewma <- sample_acwr
   acwr_ewma$acwr_smooth <- acwr_ewma$acwr_smooth * runif(nrow(acwr_ewma), 0.95, 1.05)
-  
+
   p <- plot_acwr_comparison(acwr_ra, acwr_ewma)
   print(p)
 }

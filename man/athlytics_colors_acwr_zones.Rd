@@ -19,6 +19,6 @@ Standardized colors for ACWR risk zones following sports science conventions.
 \examples{
 # Get ACWR zone colors
 colors <- athlytics_colors_acwr_zones()
-colors$safe  # Returns green color code
+colors$safe # Returns green color code
 
 }

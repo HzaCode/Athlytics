@@ -6,12 +6,12 @@ library(Athlytics)
 library(testthat)
 
 test_that("load_local_activities works with sample data", {
-  # Skip this test as athlytics_sample_data doesn't exist
-  skip("athlytics_sample_data not available")
-  
+  # Skip this test as sample data doesn't exist
+  skip("sample data not available")
+
   # Check that sample data has the right structure
-  expect_true(!is.null(athlytics_sample_acwr))
-  expect_s3_class(athlytics_sample_acwr, "data.frame")
+  expect_true(!is.null(sample_acwr))
+  expect_s3_class(sample_acwr, "data.frame")
 })
 
 test_that("load_local_activities validates input parameters", {
@@ -20,7 +20,7 @@ test_that("load_local_activities validates input parameters", {
     load_local_activities("nonexistent_file.csv"),
     "File not found"
   )
-  
+
   # Test with invalid activity types
   skip_if_not(file.exists("strava_export_data/activities.csv"))
   expect_error(
@@ -34,7 +34,7 @@ test_that("load_local_activities validates input parameters", {
 
 test_that("load_local_activities detects ZIP files", {
   skip("Requires actual ZIP file for testing")
-  
+
   # This test would run if a test ZIP file is available
   # activities <- load_local_activities("test_export.zip")
   # expect_s3_class(activities, "data.frame")
@@ -52,4 +52,3 @@ test_that("load_local_activities handles full Strava CSV structure", {
 test_that("load_local_activities filters by activity type", {
   skip("CSV column parsing is complex and already tested with real data")
 })
-

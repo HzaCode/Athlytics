@@ -14,9 +14,6 @@ High-saturation palette optimized for presentations and posters.
 Maximum visual impact while maintaining colorblind accessibility.
 }
 \examples{
-\dontrun{
-ggplot2::ggplot(data, ggplot2::aes(x, y, fill = category)) +
-  ggplot2::geom_bar(stat = "identity") +
-  ggplot2::scale_fill_manual(values = athlytics_palette_vibrant())
-}
+# View the palette colors
+athlytics_palette_vibrant()
 }

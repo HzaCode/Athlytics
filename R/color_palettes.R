@@ -15,22 +15,22 @@ NULL
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' ggplot2::ggplot(data, ggplot2::aes(x, y, color = group)) +
-#'   ggplot2::geom_line() +
-#'   ggplot2::scale_color_manual(values = athlytics_palette_nature())
-#' }
+#' # View the palette colors
+#' athlytics_palette_nature()
+#'
+#' # Display as color swatches
+#' barplot(rep(1, 9), col = athlytics_palette_nature(), border = NA)
 athlytics_palette_nature <- function() {
   c(
-    "#E64B35",  # Red (primary data)
-    "#4DBBD5",  # Cyan (secondary data)
-    "#00A087",  # Teal (tertiary)
-    "#3C5488",  # Navy blue
-    "#F39B7F",  # Coral
-    "#8491B4",  # Slate blue
-    "#91D1C2",  # Mint green
-    "#DC0000",  # Dark red
-    "#7E6148"   # Brown
+    "#E64B35", # Red (primary data)
+    "#4DBBD5", # Cyan (secondary data)
+    "#00A087", # Teal (tertiary)
+    "#3C5488", # Navy blue
+    "#F39B7F", # Coral
+    "#8491B4", # Slate blue
+    "#91D1C2", # Mint green
+    "#DC0000", # Dark red
+    "#7E6148" # Brown
   )
 }
 
@@ -43,21 +43,18 @@ athlytics_palette_nature <- function() {
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' ggplot2::ggplot(data, ggplot2::aes(x, y, color = group)) +
-#'   ggplot2::geom_line() +
-#'   ggplot2::scale_color_manual(values = athlytics_palette_academic())
-#' }
+#' # View the palette colors
+#' athlytics_palette_academic()
 athlytics_palette_academic <- function() {
   c(
-    "#8C7A6B",  # Taupe
-    "#A8968E",  # Warm gray
-    "#C4B5A8",  # Light beige
-    "#7B9FA3",  # Steel blue
-    "#9DB4B8",  # Powder blue
-    "#B8A68E",  # Sand
-    "#8B9E9F",  # Sage
-    "#D4C4B0"   # Light stone (unique shade)
+    "#8C7A6B", # Taupe
+    "#A8968E", # Warm gray
+    "#C4B5A8", # Light beige
+    "#7B9FA3", # Steel blue
+    "#9DB4B8", # Powder blue
+    "#B8A68E", # Sand
+    "#8B9E9F", # Sage
+    "#D4C4B0" # Light stone (unique shade)
   )
 }
 
@@ -70,21 +67,18 @@ athlytics_palette_academic <- function() {
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' ggplot2::ggplot(data, ggplot2::aes(x, y, fill = category)) +
-#'   ggplot2::geom_bar(stat = "identity") +
-#'   ggplot2::scale_fill_manual(values = athlytics_palette_vibrant())
-#' }
+#' # View the palette colors
+#' athlytics_palette_vibrant()
 athlytics_palette_vibrant <- function() {
   c(
-    "#FF6B6B",  # Coral red
-    "#4ECDC4",  # Turquoise
-    "#45B7D1",  # Sky blue
-    "#FFA07A",  # Light salmon
-    "#98D8C8",  # Seafoam
-    "#FFE66D",  # Yellow
-    "#A8E6CF",  # Mint
-    "#FF8B94"   # Pink
+    "#FF6B6B", # Coral red
+    "#4ECDC4", # Turquoise
+    "#45B7D1", # Sky blue
+    "#FFA07A", # Light salmon
+    "#98D8C8", # Seafoam
+    "#FFE66D", # Yellow
+    "#A8E6CF", # Mint
+    "#FF8B94" # Pink
   )
 }
 
@@ -98,19 +92,19 @@ athlytics_palette_vibrant <- function() {
 #' @examples
 #' # Get Science palette colors
 #' colors <- athlytics_palette_science()
-#' colors[1]  # Dark blue
+#' colors[1] # Dark blue
 #'
 #' @export
 athlytics_palette_science <- function() {
   c(
-    "#003F5C",  # Dark blue
-    "#58508D",  # Purple
-    "#BC5090",  # Magenta
-    "#FF6361",  # Coral
-    "#FFA600",  # Orange
-    "#7A5195",  # Plum
-    "#EF5675",  # Rose
-    "#FFC300"   # Gold
+    "#003F5C", # Dark blue
+    "#58508D", # Purple
+    "#BC5090", # Magenta
+    "#FF6361", # Coral
+    "#FFA600", # Orange
+    "#7A5195", # Plum
+    "#EF5675", # Rose
+    "#FFC300" # Gold
   )
 }
 
@@ -124,19 +118,19 @@ athlytics_palette_science <- function() {
 #' @examples
 #' # Get Cell palette colors
 #' colors <- athlytics_palette_cell()
-#' colors[1]  # Blue
+#' colors[1] # Blue
 #'
 #' @export
 athlytics_palette_cell <- function() {
   c(
-    "#0173B2",  # Blue
-    "#DE8F05",  # Orange
-    "#029E73",  # Green
-    "#CC78BC",  # Purple
-    "#CA9161",  # Tan
-    "#949494",  # Gray
-    "#ECE133",  # Yellow
-    "#56B4E9"   # Light blue
+    "#0173B2", # Blue
+    "#DE8F05", # Orange
+    "#029E73", # Green
+    "#CC78BC", # Purple
+    "#CA9161", # Tan
+    "#949494", # Gray
+    "#ECE133", # Yellow
+    "#56B4E9" # Light blue
   )
 }
 
@@ -153,15 +147,15 @@ athlytics_palette_cell <- function() {
 #' @examples
 #' # Get ACWR zone colors
 #' colors <- athlytics_colors_acwr_zones()
-#' colors$safe  # Returns green color code
+#' colors$safe # Returns green color code
 #'
 #' @export
 athlytics_colors_acwr_zones <- function() {
   list(
-    undertraining = "#AED6F1",  # Light blue
-    safe = "#A9DFBF",           # Green
-    caution = "#FAD7A0",        # Orange
-    high_risk = "#F5B7B1"       # Red
+    undertraining = "#AED6F1", # Light blue
+    safe = "#A9DFBF", # Green
+    caution = "#FAD7A0", # Orange
+    high_risk = "#F5B7B1" # Red
   )
 }
 
@@ -177,14 +171,14 @@ athlytics_colors_acwr_zones <- function() {
 #' @examples
 #' # Get training load colors
 #' colors <- athlytics_colors_training_load()
-#' colors$acute  # Red for acute load
+#' colors$acute # Red for acute load
 #'
 #' @export
 athlytics_colors_training_load <- function() {
   list(
-    acute = "#E64B35",    # Red (short-term)
-    chronic = "#4DBBD5",  # Blue (long-term)
-    ratio = "#00A087"     # Teal (ACWR)
+    acute = "#E64B35", # Red (short-term)
+    chronic = "#4DBBD5", # Blue (long-term)
+    ratio = "#00A087" # Teal (ACWR)
   )
 }
 
@@ -201,15 +195,15 @@ athlytics_colors_training_load <- function() {
 #' @examples
 #' # Get EF colors by sport
 #' colors <- athlytics_colors_ef()
-#' colors$run  # Navy for running
+#' colors$run # Navy for running
 #'
 #' @export
 athlytics_colors_ef <- function() {
   list(
-    run = "#3C5488",      # Navy
-    ride = "#F39B7F",     # Coral
-    swim = "#4DBBD5",     # Cyan
-    other = "#8491B4"     # Slate
+    run = "#3C5488", # Navy
+    ride = "#F39B7F", # Coral
+    swim = "#4DBBD5", # Cyan
+    other = "#8491B4" # Slate
   )
 }
 
@@ -236,10 +230,10 @@ theme_athlytics <- function(base_size = 13, base_family = "") {
       # Plot background - clean white
       plot.background = ggplot2::element_rect(fill = "white", color = NA),
       panel.background = ggplot2::element_rect(fill = "white", color = NA),
-      
+
       # Plot titles - modern, bold, left-aligned
       plot.title = ggplot2::element_text(
-        face = "bold", 
+        face = "bold",
         size = base_size * 1.4,
         hjust = 0,
         color = "#2c3e50",
@@ -259,39 +253,39 @@ theme_athlytics <- function(base_size = 13, base_family = "") {
         margin = ggplot2::margin(t = base_size * 0.8)
       ),
       plot.margin = ggplot2::margin(t = 15, r = 15, b = 15, l = 15),
-      
+
       # Axes - clean and minimal
       axis.title.x = ggplot2::element_text(
-        size = base_size * 1.05, 
+        size = base_size * 1.05,
         face = "bold",
         color = "#34495e",
         margin = ggplot2::margin(t = base_size * 0.6)
       ),
       axis.title.y = ggplot2::element_text(
-        size = base_size * 1.05, 
+        size = base_size * 1.05,
         face = "bold",
         color = "#34495e",
         margin = ggplot2::margin(r = base_size * 0.6)
       ),
       axis.text.x = ggplot2::element_text(
-        size = base_size * 0.9, 
+        size = base_size * 0.9,
         color = "#7f8c8d",
         margin = ggplot2::margin(t = base_size * 0.3)
       ),
       axis.text.y = ggplot2::element_text(
-        size = base_size * 0.9, 
+        size = base_size * 0.9,
         color = "#7f8c8d",
         margin = ggplot2::margin(r = base_size * 0.3)
       ),
       axis.line = ggplot2::element_blank(),
       axis.ticks = ggplot2::element_line(color = "#bdc3c7", linewidth = 0.3),
       axis.ticks.length = ggplot2::unit(4, "pt"),
-      
+
       # Legend - modern and spacious
       legend.position = "bottom",
       legend.direction = "horizontal",
       legend.title = ggplot2::element_text(
-        size = base_size * 0.95, 
+        size = base_size * 0.95,
         face = "bold",
         color = "#34495e"
       ),
@@ -304,17 +298,17 @@ theme_athlytics <- function(base_size = 13, base_family = "") {
       legend.spacing.x = ggplot2::unit(0.5, "lines"),
       legend.box.spacing = ggplot2::unit(0.5, "lines"),
       legend.margin = ggplot2::margin(t = base_size),
-      
+
       # Panel grid - subtle and elegant
       panel.grid.major = ggplot2::element_line(
-        color = "#ecf0f1", 
+        color = "#ecf0f1",
         linewidth = 0.5,
         linetype = "solid"
       ),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_blank(),
       panel.spacing = ggplot2::unit(1.5, "lines"),
-      
+
       # Strip (for facets) - clean and modern
       strip.text = ggplot2::element_text(
         size = base_size * 1.05,
@@ -347,23 +341,20 @@ theme_athlytics <- function(base_size = 13, base_family = "") {
 #'
 #' @export
 scale_athlytics <- function(palette_name = "nature", type = "color") {
-  palette_func <- switch(
-    palette_name,
+  palette_func <- switch(palette_name,
     nature = athlytics_palette_nature,
     academic = athlytics_palette_academic,
     vibrant = athlytics_palette_vibrant,
     science = athlytics_palette_science,
     cell = athlytics_palette_cell,
-    athlytics_palette_nature  # default
+    athlytics_palette_nature # default
   )
-  
+
   colors <- palette_func()
-  
+
   if (type == "color") {
     ggplot2::scale_color_manual(values = colors)
   } else {
     ggplot2::scale_fill_manual(values = colors)
   }
 }
-
-

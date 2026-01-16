@@ -19,6 +19,6 @@ Colors for efficiency factor trends by activity type.
 \examples{
 # Get EF colors by sport
 colors <- athlytics_colors_ef()
-colors$run  # Navy for running
+colors$run # Navy for running
 
 }

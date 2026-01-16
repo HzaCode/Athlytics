@@ -27,7 +27,7 @@
 #' @details Plots the ACWR trend over time. **Best practice: Use `load_local_activities()` + `calculate_acwr()` + this function.**
 #'   ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
 #'
-#' 
+#'
 #' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
 #' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
 #' @importFrom zoo rollmean
@@ -37,26 +37,30 @@
 #'
 #' @examples
 #' # Example using pre-calculated sample data
-#' data("athlytics_sample_acwr", package = "Athlytics")
-#' p <- plot_acwr(athlytics_sample_acwr)
+#' data("sample_acwr", package = "Athlytics")
+#' p <- plot_acwr(sample_acwr)
 #' print(p)
 #'
 #' \dontrun{
 #' # Example using local Strava export data
 #' activities <- load_local_activities("strava_export_data/activities.csv")
-#' 
+#'
 #' # Plot ACWR trend for Runs (using duration as load metric)
-#' plot_acwr(data = activities,
-#'           activity_type = "Run",
-#'           load_metric = "duration_mins",
-#'           acute_period = 7,
-#'           chronic_period = 28)
+#' plot_acwr(
+#'   data = activities,
+#'   activity_type = "Run",
+#'   load_metric = "duration_mins",
+#'   acute_period = 7,
+#'   chronic_period = 28
+#' )
 #'
 #' # Plot ACWR trend for Rides (using TSS as load metric)
-#' plot_acwr(data = activities,
-#'           activity_type = "Ride",
-#'           load_metric = "tss",
-#'           user_ftp = 280)  # FTP value is required
+#' plot_acwr(
+#'   data = activities,
+#'   activity_type = "Ride",
+#'   load_metric = "tss",
+#'   user_ftp = 280
+#' ) # FTP value is required
 #' }
 plot_acwr <- function(data,
                       activity_type = NULL,
@@ -73,62 +77,67 @@ plot_acwr <- function(data,
                       acwr_df = NULL,
                       group_var = NULL,
                       group_colors = NULL) {
-  
   # --- Check if first argument is already ACWR data frame ---
   # This allows backward compatibility: plot_acwr(acwr_result)
   if (is.data.frame(data) && "acwr_smooth" %in% colnames(data)) {
     acwr_df <- data
   }
-  
-  # --- Get Data --- 
+
+  # --- Get Data ---
   # If acwr_df is not provided, calculate it
   if (is.null(acwr_df)) {
-      # Check if data provided when acwr_df is not
-      if (missing(data)) stop("Either provide ACWR data frame from calculate_acwr() as first argument, or provide activities_data.")
-      
-      # data should be activities_data in new usage
-      acwr_df <- calculate_acwr(
-          activities_data = data,
-          activity_type = activity_type,
-          load_metric = load_metric,
-          acute_period = acute_period,
-          chronic_period = chronic_period,
-          start_date = start_date,
-          end_date = end_date,
-          user_ftp = user_ftp,
-          user_max_hr = user_max_hr,
-          user_resting_hr = user_resting_hr,
-          smoothing_period = smoothing_period
-      )
-  } 
-  
+    # Check if data provided when acwr_df is not
+    if (missing(data)) stop("Either provide ACWR data frame from calculate_acwr() as first argument, or provide activities_data.")
+
+    # data should be activities_data in new usage
+    acwr_df <- calculate_acwr(
+      activities_data = data,
+      activity_type = activity_type,
+      load_metric = load_metric,
+      acute_period = acute_period,
+      chronic_period = chronic_period,
+      start_date = start_date,
+      end_date = end_date,
+      user_ftp = user_ftp,
+      user_max_hr = user_max_hr,
+      user_resting_hr = user_resting_hr,
+      smoothing_period = smoothing_period
+    )
+  }
+
   # Check if acwr_df is empty or invalid after potentially calculating it
   # Check if required 'acwr_smooth' column exists
   if (!is.data.frame(acwr_df) || nrow(acwr_df) == 0 || !"acwr_smooth" %in% colnames(acwr_df)) {
-      warning("No valid ACWR data available to plot (or missing 'acwr_smooth' column).")
-      return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No ACWR data available")) 
+    warning("No valid ACWR data available to plot (or missing 'acwr_smooth' column).")
+    return(ggplot2::ggplot() +
+      ggplot2::theme_void() +
+      ggplot2::ggtitle("No ACWR data available"))
   }
-  
+
   # Drop rows where smoothed ACWR is NA for plotting purposes
   plot_data <- acwr_df %>% tidyr::drop_na("acwr_smooth")
-  
+
   if (nrow(plot_data) == 0) {
     # It's possible all rows were NA after smoothing
     warning("No valid smoothed ACWR data available for plotting after removing NAs.")
-    return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No smoothed ACWR data available"))
+    return(ggplot2::ggplot() +
+      ggplot2::theme_void() +
+      ggplot2::ggtitle("No smoothed ACWR data available"))
   }
 
   # --- Check for group variable ---
   has_groups <- !is.null(group_var) && group_var %in% colnames(plot_data)
-  
+
   # --- Plotting ---
   message("Generating plot...")
-  
+
   if (has_groups) {
     # Multi-group plotting
-    p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$acwr_smooth, 
-                                                  color = .data[[group_var]], 
-                                                  group = .data[[group_var]]))
+    p <- ggplot2::ggplot(plot_data, ggplot2::aes(
+      x = .data$date, y = .data$acwr_smooth,
+      color = .data[[group_var]],
+      group = .data[[group_var]]
+    ))
   } else {
     # Single group plotting
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$acwr_smooth))
@@ -148,31 +157,30 @@ plot_acwr <- function(data,
       ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_max, ymax = high_risk_min), fill = "#F39B7F", alpha = 0.15) +
       # Sweet Spot (e.g., 0.8 - 1.3)
       ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_min, ymax = sweet_spot_max), fill = "#00A087", alpha = 0.15) +
-       # Low Load / Undertraining Zone (e.g., < 0.8)
+      # Low Load / Undertraining Zone (e.g., < 0.8)
       ggplot2::geom_ribbon(ggplot2::aes(ymin = -Inf, ymax = sweet_spot_min), fill = "#4DBBD5", alpha = 0.15)
-      
-      # Add annotations only if there's enough space/range
-      plot_date_range <- range(plot_data$date)
-      plot_y_range <- range(plot_data$acwr_smooth)
-      annotation_x_pos <- plot_date_range[1] + lubridate::days(round(as.numeric(diff(plot_date_range)) * 0.05))
-      
-      if(plot_y_range[2] > high_risk_min) {
-        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], high_risk_min + 0.2), label = "High Risk", hjust = 0, vjust = 1, size = 3, color = "#E64B35", alpha = 0.8, fontface = "bold")
-      }
-       if(plot_y_range[2] > sweet_spot_max) {
-        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], (sweet_spot_max + high_risk_min)/2), label = "Caution", hjust = 0, vjust = 0.5, size = 3, color = "#F39B7F", alpha = 0.8, fontface = "bold")
-       }
-       p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = (sweet_spot_min + sweet_spot_max) / 2, label = "Sweet Spot", hjust = 0, vjust = 0.5, size = 3, color = "#00A087", alpha = 0.8, fontface = "bold")
-       if(plot_y_range[1] < sweet_spot_min) {
-        p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = max(plot_y_range[1], sweet_spot_min - 0.1), label = "Low Load", hjust = 0, vjust = 0, size = 3, color = "#4DBBD5", alpha = 0.8, fontface = "bold")
-      }
 
+    # Add annotations only if there's enough space/range
+    plot_date_range <- range(plot_data$date)
+    plot_y_range <- range(plot_data$acwr_smooth)
+    annotation_x_pos <- plot_date_range[1] + lubridate::days(round(as.numeric(diff(plot_date_range)) * 0.05))
+
+    if (plot_y_range[2] > high_risk_min) {
+      p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], high_risk_min + 0.2), label = "High Risk", hjust = 0, vjust = 1, size = 3, color = "#E64B35", alpha = 0.8, fontface = "bold")
+    }
+    if (plot_y_range[2] > sweet_spot_max) {
+      p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = min(plot_y_range[2], (sweet_spot_max + high_risk_min) / 2), label = "Caution", hjust = 0, vjust = 0.5, size = 3, color = "#F39B7F", alpha = 0.8, fontface = "bold")
+    }
+    p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = (sweet_spot_min + sweet_spot_max) / 2, label = "Sweet Spot", hjust = 0, vjust = 0.5, size = 3, color = "#00A087", alpha = 0.8, fontface = "bold")
+    if (plot_y_range[1] < sweet_spot_min) {
+      p <- p + ggplot2::annotate("text", x = annotation_x_pos, y = max(plot_y_range[1], sweet_spot_min - 0.1), label = "Low Load", hjust = 0, vjust = 0, size = 3, color = "#4DBBD5", alpha = 0.8, fontface = "bold")
+    }
   }
 
   # Add ACWR line(s)
   if (has_groups) {
     p <- p + ggplot2::geom_line(linewidth = 1.2, alpha = 0.8)
-    
+
     # Apply custom colors if provided
     if (!is.null(group_colors)) {
       p <- p + ggplot2::scale_color_manual(values = group_colors, name = group_var)
@@ -192,21 +200,23 @@ plot_acwr <- function(data,
   y_breaks <- seq(0, ceiling(y_max_limit * 5) / 5, by = 0.2) # Breaks every 0.2
 
   # Add reference lines (optional)
-  if(highlight_zones) {
-    p <- p + 
-        ggplot2::geom_hline(yintercept = sweet_spot_min, linetype = "dotted", color = "grey40") +
-        ggplot2::geom_hline(yintercept = sweet_spot_max, linetype = "dotted", color = "grey40") +
-        ggplot2::geom_hline(yintercept = high_risk_min, linetype = "dotted", color = "grey40")
+  if (highlight_zones) {
+    p <- p +
+      ggplot2::geom_hline(yintercept = sweet_spot_min, linetype = "dotted", color = "grey40") +
+      ggplot2::geom_hline(yintercept = sweet_spot_max, linetype = "dotted", color = "grey40") +
+      ggplot2::geom_hline(yintercept = high_risk_min, linetype = "dotted", color = "grey40")
   }
 
   # Customize plot appearance
   p <- p +
     ggplot2::labs(
       title = "Acute:Chronic Workload Ratio (ACWR) Trend",
-      subtitle = paste0("Load Metric: ", load_metric,
-                       ", Activity: ", ifelse(is.null(activity_type), "All", paste(activity_type, collapse=", ")), 
-                       ", Periods: ", acute_period, "d (Acute) / ", chronic_period, "d (Chronic)",
-                       ", Smoothed: ", smoothing_period, "d"),
+      subtitle = paste0(
+        "Load Metric: ", load_metric,
+        ", Activity: ", ifelse(is.null(activity_type), "All", paste(activity_type, collapse = ", ")),
+        ", Periods: ", acute_period, "d (Acute) / ", chronic_period, "d (Chronic)",
+        ", Smoothed: ", smoothing_period, "d"
+      ),
       x = "Date",
       y = paste0("ACWR (", smoothing_period, "-day Smoothed)")
     ) +
@@ -214,8 +224,8 @@ plot_acwr <- function(data,
     ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
     theme_athlytics() +
     ggplot2::theme(
-      legend.position = if(has_groups) "bottom" else "none"
+      legend.position = if (has_groups) "bottom" else "none"
     )
-                   
+
   return(p)
 }

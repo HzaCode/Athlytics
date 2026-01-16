@@ -19,7 +19,7 @@ plot_acwr_enhanced(
 \arguments{
 \item{acwr_data}{A data frame from \code{calculate_acwr_ewma()} containing ACWR values.}
 
-\item{reference_data}{Optional. A data frame from \code{cohort_reference()} for
+\item{reference_data}{Optional. A data frame from \code{calculate_cohort_reference()} for
 adding cohort reference bands.}
 
 \item{show_ci}{Logical. Whether to show confidence bands (if available in data).
@@ -64,9 +64,9 @@ The layering order (bottom to top):
 }
 \examples{
 # Example using sample data
-data("athlytics_sample_acwr", package = "Athlytics")
-if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
-  p <- plot_acwr_enhanced(athlytics_sample_acwr, show_ci = FALSE)
+data("sample_acwr", package = "Athlytics")
+if (!is.null(sample_acwr) && nrow(sample_acwr) > 0) {
+  p <- plot_acwr_enhanced(sample_acwr, show_ci = FALSE)
   print(p)
 }
 
@@ -86,7 +86,7 @@ acwr <- calculate_acwr_ewma(
 plot_acwr_enhanced(acwr)
 
 # With cohort reference
-reference <- cohort_reference(cohort_data, metric = "acwr_smooth")
+reference <- calculate_cohort_reference(cohort_data, metric = "acwr_smooth")
 plot_acwr_enhanced(acwr, reference_data = reference)
 }
 }

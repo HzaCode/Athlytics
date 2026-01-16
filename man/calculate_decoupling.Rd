@@ -82,8 +82,8 @@ and the efficiency factor (output/HR) is compared between halves.
 }
 \examples{
 # Example using simulated data
-data(athlytics_sample_decoupling)
-print(head(athlytics_sample_decoupling))
+data(sample_decoupling)
+print(head(sample_decoupling))
 
 \dontrun{
 # Load local activities
@@ -91,11 +91,11 @@ activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Calculate Pace/HR decoupling for recent runs
 run_decoupling <- calculate_decoupling(
-    activities_data = activities,
-    export_dir = "strava_export_data",
-    activity_type = "Run",
-    decouple_metric = "pace_hr",
-    start_date = "2024-01-01"
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = "Run",
+  decouple_metric = "pace_hr",
+  start_date = "2024-01-01"
 )
 print(tail(run_decoupling))
 

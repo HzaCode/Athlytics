@@ -23,12 +23,13 @@ create_advanced_mock_activities <- function(n = 100) {
 
 test_that("calculate_acwr_ewma works with EWMA method", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result <- calculate_acwr_ewma(mock_activities, 
-                               activity_type = "Run",
-                               method = "ewma",
-                               load_metric = "duration_mins")
-  
+
+  result <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    load_metric = "duration_mins"
+  )
+
   expect_s3_class(result, "data.frame")
   expect_true("atl" %in% colnames(result))
   expect_true("ctl" %in% colnames(result))
@@ -37,33 +38,36 @@ test_that("calculate_acwr_ewma works with EWMA method", {
 
 test_that("calculate_acwr_ewma works with different half-lives", {
   mock_activities <- create_advanced_mock_activities(50)
-  
+
   # Test different half-life combinations
-  result1 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                method = "ewma",
-                                half_life_acute = 2,
-                                half_life_chronic = 10)
-  
-  result2 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                method = "ewma",
-                                half_life_acute = 5,
-                                half_life_chronic = 20)
-  
+  result1 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    half_life_acute = 2,
+    half_life_chronic = 10
+  )
+
+  result2 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    half_life_acute = 5,
+    half_life_chronic = 20
+  )
+
   expect_s3_class(result1, "data.frame")
   expect_s3_class(result2, "data.frame")
 })
 
 test_that("calculate_acwr_ewma works with confidence intervals", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result <- calculate_acwr_ewma(mock_activities, 
-                               activity_type = "Run",
-                               method = "ewma",
-                               ci = TRUE,
-                               B = 50)  # Reduced for faster testing
-  
+
+  result <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    ci = TRUE,
+    B = 50
+  ) # Reduced for faster testing
+
   expect_s3_class(result, "data.frame")
   expect_true("acwr_lower" %in% colnames(result))
   expect_true("acwr_upper" %in% colnames(result))
@@ -71,111 +75,119 @@ test_that("calculate_acwr_ewma works with confidence intervals", {
 
 test_that("calculate_acwr_ewma works with TSS load metric", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result <- calculate_acwr_ewma(mock_activities, 
-                               activity_type = "Ride",
-                               load_metric = "tss",
-                               user_ftp = 250)
-  
+
+  result <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Ride",
+    load_metric = "tss",
+    user_ftp = 250
+  )
+
   expect_s3_class(result, "data.frame")
 })
 
 test_that("calculate_acwr_ewma works with HRSS load metric", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result <- calculate_acwr_ewma(mock_activities, 
-                               activity_type = "Run",
-                               load_metric = "hrss",
-                               user_max_hr = 190,
-                               user_resting_hr = 50)
-  
+
+  result <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    load_metric = "hrss",
+    user_max_hr = 190,
+    user_resting_hr = 50
+  )
+
   expect_s3_class(result, "data.frame")
 })
 
 test_that("calculate_acwr_ewma works with elevation gain", {
   mock_activities <- create_advanced_mock_activities(50)
   mock_activities$elevation_gain <- runif(nrow(mock_activities), 0, 1000)
-  
-  result <- calculate_acwr_ewma(mock_activities, 
-                               activity_type = "Run",
-                               load_metric = "elevation_gain_m")
-  
+
+  result <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    load_metric = "elevation_gain_m"
+  )
+
   expect_s3_class(result, "data.frame")
 })
 
 test_that("calculate_acwr_ewma handles different smoothing periods", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result1 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                smoothing_period = 3)
-  
-  result2 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                smoothing_period = 14)
-  
+
+  result1 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    smoothing_period = 3
+  )
+
+  result2 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    smoothing_period = 14
+  )
+
   expect_s3_class(result1, "data.frame")
   expect_s3_class(result2, "data.frame")
 })
 
 test_that("calculate_acwr_ewma handles different confidence levels", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result1 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                method = "ewma",
-                                ci = TRUE,
-                                conf_level = 0.90)
-  
-  result2 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                method = "ewma",
-                                ci = TRUE,
-                                conf_level = 0.99)
-  
+
+  result1 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    ci = TRUE,
+    conf_level = 0.90
+  )
+
+  result2 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    ci = TRUE,
+    conf_level = 0.99
+  )
+
   expect_s3_class(result1, "data.frame")
   expect_s3_class(result2, "data.frame")
 })
 
 test_that("calculate_acwr_ewma handles different block lengths", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result1 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                method = "ewma",
-                                ci = TRUE,
-                                block_len = 3)
-  
-  result2 <- calculate_acwr_ewma(mock_activities, 
-                                activity_type = "Run",
-                                method = "ewma",
-                                ci = TRUE,
-                                block_len = 14)
-  
+
+  result1 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    ci = TRUE,
+    block_len = 3
+  )
+
+  result2 <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    method = "ewma",
+    ci = TRUE,
+    block_len = 14
+  )
+
   expect_s3_class(result1, "data.frame")
   expect_s3_class(result2, "data.frame")
 })
 
 test_that("calculate_acwr_ewma handles mixed activity types", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result <- calculate_acwr_ewma(mock_activities, 
-                               activity_type = c("Run", "Ride"),
-                               load_metric = "duration_mins")
-  
+
+  result <- calculate_acwr_ewma(mock_activities,
+    activity_type = c("Run", "Ride"),
+    load_metric = "duration_mins"
+  )
+
   expect_s3_class(result, "data.frame")
 })
 
 test_that("calculate_acwr_ewma handles date range filtering", {
   mock_activities <- create_advanced_mock_activities(50)
-  
-  result <- calculate_acwr_ewma(mock_activities, 
-                               activity_type = "Run",
-                               start_date = Sys.Date() - 30,
-                               end_date = Sys.Date())
-  
+
+  result <- calculate_acwr_ewma(mock_activities,
+    activity_type = "Run",
+    start_date = Sys.Date() - 30,
+    end_date = Sys.Date()
+  )
+
   expect_s3_class(result, "data.frame")
 })
-
-
-

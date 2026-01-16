@@ -22,11 +22,11 @@ test_that("english_month_year correctly formats dates", {
   # Test with a leap year date
   leap_date <- ymd("2024-02-29")
   expect_equal(Athlytics:::english_month_year(leap_date), "Feb 2024")
-  
+
   # Test with an empty vector of dates (should return empty character vector)
   empty_dates <- ymd(character(0))
   expect_equal(Athlytics:::english_month_year(empty_dates), character(0))
-  
+
   # Test with NA date
   # expect_equal(Athlytics:::english_month_year(ymd(NA)), NA_character_)
-}) 
+})

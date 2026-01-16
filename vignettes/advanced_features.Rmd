@@ -51,17 +51,17 @@ stream_data <- parse_activity_file("path/to/activity.fit")
 flagged_data <- flag_quality(
   stream_data,
   sport = "Run",
-  hr_range = c(30, 220),           # Valid HR range
-  pw_range = c(0, 1500),            # Valid power range
-  max_run_speed = 7.0,              # Max speed (m/s) ≈ 2:23/km pace
-  max_hr_jump = 10,                 # Max HR change per second
-  max_pw_jump = 300,                # Max power change per second
-  min_steady_minutes = 20,          # Min duration for steady-state
-  steady_cv_threshold = 8           # CV% threshold for steady-state
+  hr_range = c(30, 220), # Valid HR range
+  pw_range = c(0, 1500), # Valid power range
+  max_run_speed = 7.0, # Max speed (m/s) ≈ 2:23/km pace
+  max_hr_jump = 10, # Max HR change per second
+  max_pw_jump = 300, # Max power change per second
+  min_steady_minutes = 20, # Min duration for steady-state
+  steady_cv_threshold = 8 # CV% threshold for steady-state
 )
 
 # View quality summary
-summary_stats <- quality_summary(flagged_data)
+summary_stats <- summarize_quality(flagged_data)
 print(summary_stats)
 ```
 
@@ -112,21 +112,27 @@ acwr_ewma <- calculate_acwr_ewma(
   activities,
   activity_type = "Run",
   method = "ewma",
-  half_life_acute = 3.5,    # Acute load half-life (days)
-  half_life_chronic = 14,   # Chronic load half-life (days)
+  half_life_acute = 3.5, # Acute load half-life (days)
+  half_life_chronic = 14, # Chronic load half-life (days)
   load_metric = "duration_mins"
 )
 
 # Compare the two methods
 library(ggplot2)
 ggplot() +
-  geom_line(data = acwr_ra, aes(x = date, y = acwr_smooth), 
-            color = "blue", size = 1, linetype = "solid") +
-  geom_line(data = acwr_ewma, aes(x = date, y = acwr_smooth), 
-            color = "red", size = 1, linetype = "dashed") +
-  labs(title = "ACWR: Rolling Average vs EWMA",
-       subtitle = "Blue = RA (7:28d) | Red = EWMA (3.5:14d half-life)",
-       x = "Date", y = "ACWR") +
+  geom_line(
+    data = acwr_ra, aes(x = date, y = acwr_smooth),
+    color = "blue", size = 1, linetype = "solid"
+  ) +
+  geom_line(
+    data = acwr_ewma, aes(x = date, y = acwr_smooth),
+    color = "red", size = 1, linetype = "dashed"
+  ) +
+  labs(
+    title = "ACWR: Rolling Average vs EWMA",
+    subtitle = "Blue = RA (7:28d) | Red = EWMA (3.5:14d half-life)",
+    x = "Date", y = "ACWR"
+  ) +
   theme_minimal()
 ```
 
@@ -147,22 +153,25 @@ acwr_ewma_ci <- calculate_acwr_ewma(
   half_life_acute = 3.5,
   half_life_chronic = 14,
   load_metric = "duration_mins",
-  ci = TRUE,                # Enable confidence intervals
-  B = 200,                  # Bootstrap iterations
-  block_len = 7,            # Block length (days) for bootstrap
-  conf_level = 0.95         # 95% CI
+  ci = TRUE, # Enable confidence intervals
+  B = 200, # Bootstrap iterations
+  block_len = 7, # Block length (days) for bootstrap
+  conf_level = 0.95 # 95% CI
 )
 
 # Plot with confidence bands
 ggplot(acwr_ewma_ci, aes(x = date)) +
-  geom_ribbon(aes(ymin = acwr_lower, ymax = acwr_upper), 
-              fill = "gray70", alpha = 0.5) +
+  geom_ribbon(aes(ymin = acwr_lower, ymax = acwr_upper),
+    fill = "gray70", alpha = 0.5
+  ) +
   geom_line(aes(y = acwr_smooth), color = "black", size = 1) +
   geom_hline(yintercept = c(0.8, 1.3), linetype = "dotted", color = "green") +
   geom_hline(yintercept = 1.5, linetype = "dotted", color = "red") +
-  labs(title = "ACWR with 95% Confidence Bands",
-       subtitle = "Gray band = bootstrap confidence interval",
-       x = "Date", y = "ACWR") +
+  labs(
+    title = "ACWR with 95% Confidence Bands",
+    subtitle = "Gray band = bootstrap confidence interval",
+    x = "Date", y = "ACWR"
+  ) +
   theme_minimal()
 ```
 
@@ -217,12 +226,12 @@ cohort_acwr <- cohort_data %>%
 
 ```{r eval=FALSE}
 # Calculate cohort reference by sport and sex
-reference <- cohort_reference(
+reference <- calculate_cohort_reference(
   cohort_acwr,
   metric = "acwr_smooth",
-  by = c("sport", "sex"),           # Group by sport and sex
-  probs = c(0.05, 0.25, 0.5, 0.75, 0.95),  # Percentiles
-  min_athletes = 3                  # Minimum athletes per group
+  by = c("sport", "sex"), # Group by sport and sex
+  probs = c(0.05, 0.25, 0.5, 0.75, 0.95), # Percentiles
+  min_athletes = 3 # Minimum athletes per group
 )
 
 # View reference structure
@@ -245,13 +254,13 @@ head(reference)
 
 ```{r eval=FALSE}
 # Extract one athlete's data
-individual <- cohort_acwr %>% 
+individual <- cohort_acwr %>%
   filter(athlete_id == "athlete1")
 
 # Plot with cohort reference
 p <- plot_with_reference(
   individual = individual,
-  reference = reference %>% filter(sex == "M"),  # Match athlete's group
+  reference = reference %>% filter(sex == "M"), # Match athlete's group
   metric = "acwr_smooth",
   bands = c("p25_p75", "p05_p95", "p50")
 )
@@ -304,12 +313,12 @@ cohort_acwr <- cohort_data %>%
     half_life_chronic = 14,
     load_metric = "duration_mins",
     ci = TRUE,
-    B = 100  # Reduced for speed in example
+    B = 100 # Reduced for speed in example
   )) %>%
   ungroup()
 
 # --- Step 4: Calculate cohort reference ---
-reference <- cohort_reference(
+reference <- calculate_cohort_reference(
   cohort_acwr,
   metric = "acwr_smooth",
   by = c("sport"),
@@ -322,9 +331,11 @@ individual <- cohort_acwr %>% filter(athlete_id == "athlete1")
 
 p <- plot_with_reference(individual, reference, metric = "acwr_smooth") +
   # Add individual's confidence bands
-  geom_ribbon(data = individual, 
-              aes(x = date, ymin = acwr_lower, ymax = acwr_upper),
-              fill = "blue", alpha = 0.2)
+  geom_ribbon(
+    data = individual,
+    aes(x = date, ymin = acwr_lower, ymax = acwr_upper),
+    fill = "blue", alpha = 0.2
+  )
 
 print(p)
 

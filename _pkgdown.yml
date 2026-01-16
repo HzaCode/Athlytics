@@ -50,10 +50,10 @@ reference:
   - title: Advanced Analysis
     desc: Cohort analysis and quality control
     contents:
-    - cohort_reference
+    - calculate_cohort_reference
     - add_reference_bands
     - flag_quality
-    - quality_summary
+    - summarize_quality
     
   - title: Themes and Colors
     desc: Visualization customization
@@ -66,7 +66,11 @@ reference:
   - title: Sample Data
     desc: Example datasets for testing and learning
     contents:
-    - starts_with("athlytics_sample")
+    - sample_acwr
+    - sample_decoupling
+    - sample_ef
+    - sample_exposure
+    - sample_pbs
 
 articles:
   - title: Getting Started

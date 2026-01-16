@@ -38,21 +38,21 @@
 #'
 #' @examples
 #' # Example using pre-calculated sample data
-#' data("athlytics_sample_decoupling", package = "Athlytics")
-#' p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling)
+#' data("sample_decoupling", package = "Athlytics")
+#' p <- plot_decoupling(decoupling_df = sample_decoupling)
 #' print(p)
 #'
 #' \dontrun{
 #' # Example using local Strava export data
 #' activities <- load_local_activities("strava_export_data/activities.csv")
-#' 
+#'
 #' # Example 1: Plot Decoupling trend for Runs (last 6 months)
 #' decoupling_runs_6mo <- calculate_decoupling(
-#'     activities_data = activities,
-#'     export_dir = "strava_export_data",
-#'     activity_type = "Run",
-#'     decouple_metric = "pace_hr",
-#'     start_date = Sys.Date() - months(6)
+#'   activities_data = activities,
+#'   export_dir = "strava_export_data",
+#'   activity_type = "Run",
+#'   decouple_metric = "pace_hr",
+#'   start_date = Sys.Date() - months(6)
 #' )
 #' plot_decoupling(decoupling_runs_6mo)
 #'
@@ -83,37 +83,38 @@ plot_decoupling <- function(data,
                             add_trend_line = TRUE,
                             smoothing_method = "loess",
                             decoupling_df = NULL) {
-
   # Match arg for decouple_metric to ensure only one is used internally if multiple are provided
   decouple_metric_label <- match.arg(decouple_metric)
 
-  # --- Get Data --- 
+  # --- Get Data ---
   # If decoupling_df is not provided, calculate it
   if (is.null(decoupling_df)) {
-      # Ensure data is provided if decoupling_df is not
-      if (missing(data)) stop("Either 'data' or 'decoupling_df' must be provided.")
-      
-      message("No pre-calculated decoupling_df provided. Calculating data now... (This may take a while)")
-      # Call the calculation function
-      decoupling_df <- calculate_decoupling(
-          activities_data = data,
-          activity_type = activity_type, # Can be a vector
-          decouple_metric = decouple_metric_label, # Use the matched, single metric
-          start_date = start_date,
-          end_date = end_date,
-          min_duration_mins = min_duration_mins
-      )
+    # Ensure data is provided if decoupling_df is not
+    if (missing(data)) stop("Either 'data' or 'decoupling_df' must be provided.")
+
+    message("No pre-calculated decoupling_df provided. Calculating data now... (This may take a while)")
+    # Call the calculation function
+    decoupling_df <- calculate_decoupling(
+      activities_data = data,
+      activity_type = activity_type, # Can be a vector
+      decouple_metric = decouple_metric_label, # Use the matched, single metric
+      start_date = start_date,
+      end_date = end_date,
+      min_duration_mins = min_duration_mins
+    )
   }
 
   # Check if decoupling_df is empty or invalid
   if (!is.data.frame(decoupling_df) || nrow(decoupling_df) == 0 || !all(c("date", "decoupling") %in% names(decoupling_df))) {
-      warning("No valid decoupling data available to plot (or missing required columns).")
-      return(ggplot2::ggplot() + ggplot2::theme_void() + ggplot2::ggtitle("No decoupling data to plot"))
+    warning("No valid decoupling data available to plot (or missing required columns).")
+    return(ggplot2::ggplot() +
+      ggplot2::theme_void() +
+      ggplot2::ggtitle("No decoupling data to plot"))
   }
 
   # Rename for clarity
   plot_data <- decoupling_df
-  
+
   # --- Generate Dynamic Title ---
   # Determine title based on activity_type and data
   if ("activity_type" %in% colnames(plot_data)) {
@@ -130,10 +131,10 @@ plot_decoupling <- function(data,
       plot_title <- "Trend for Selected Activities"
     }
   }
-  
+
   # --- Plotting ---
   message("Generating plot...")
-  
+
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling)) +
     ggplot2::geom_point(alpha = 0.7, size = 2, color = "#E64B35") +
     ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
@@ -144,15 +145,15 @@ plot_decoupling <- function(data,
       y = "Decoupling (%)",
       caption = "Positive values indicate HR drift relative to output"
     )
-  
+
   # Add 5% threshold line
   p <- p + ggplot2::geom_hline(yintercept = 5, linetype = "dashed", color = "red", alpha = 0.7) +
     ggplot2::geom_hline(yintercept = 0, linetype = "solid", color = "black", alpha = 0.5)
-  
+
   if (add_trend_line && nrow(plot_data) >= 2) {
     p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
   }
-  
+
   p <- p +
     theme_athlytics()
 
