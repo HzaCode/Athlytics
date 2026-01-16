@@ -86,8 +86,8 @@ this function.**
 
 ``` r
 # Example using pre-calculated sample data
-data("athlytics_sample_decoupling", package = "Athlytics")
-p <- plot_decoupling(decoupling_df = athlytics_sample_decoupling)
+data("sample_decoupling", package = "Athlytics")
+p <- plot_decoupling(decoupling_df = sample_decoupling)
 #> Generating plot...
 print(p)
 #> `geom_smooth()` using formula = 'y ~ x'
@@ -99,11 +99,11 @@ activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Example 1: Plot Decoupling trend for Runs (last 6 months)
 decoupling_runs_6mo <- calculate_decoupling(
-    activities_data = activities,
-    export_dir = "strava_export_data",
-    activity_type = "Run",
-    decouple_metric = "pace_hr",
-    start_date = Sys.Date() - months(6)
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = "Run",
+  decouple_metric = "pace_hr",
+  start_date = Sys.Date() - months(6)
 )
 plot_decoupling(decoupling_runs_6mo)
 

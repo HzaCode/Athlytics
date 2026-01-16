@@ -33,6 +33,6 @@ A named list with four color codes by sport:
 ``` r
 # Get EF colors by sport
 colors <- athlytics_colors_ef()
-colors$run  # Navy for running
+colors$run # Navy for running
 #> [1] "#3C5488"
 ```

@@ -132,17 +132,17 @@ between halves.
 
 ``` r
 # Example using simulated data
-data(athlytics_sample_decoupling)
-print(head(athlytics_sample_decoupling))
+data(sample_decoupling)
+print(head(sample_decoupling))
 #> # A tibble: 6 × 2
 #>   date       decoupling
 #>   <date>          <dbl>
-#> 1 2023-01-01      -2.03
-#> 2 2023-01-02       3.87
-#> 3 2023-01-03       4.4 
-#> 4 2023-01-04      -2.17
-#> 5 2023-01-05      -0.14
-#> 6 2023-01-06       1.03
+#> 1 2023-01-01       13.4
+#> 2 2023-01-06       13.6
+#> 3 2023-01-14       12.9
+#> 4 2023-01-22       13.0
+#> 5 2023-01-27       10.6
+#> 6 2023-02-02       14.3
 
 if (FALSE) { # \dontrun{
 # Load local activities
@@ -150,11 +150,11 @@ activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Calculate Pace/HR decoupling for recent runs
 run_decoupling <- calculate_decoupling(
-    activities_data = activities,
-    export_dir = "strava_export_data",
-    activity_type = "Run",
-    decouple_metric = "pace_hr",
-    start_date = "2024-01-01"
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = "Run",
+  decouple_metric = "pace_hr",
+  start_date = "2024-01-01"
 )
 print(tail(run_decoupling))
 

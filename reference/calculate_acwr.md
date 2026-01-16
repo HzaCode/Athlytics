@@ -217,24 +217,24 @@ for visualization,
 for EWMA-based ACWR,
 [`load_local_activities`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
 for data loading,
-[`cohort_reference`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
+[`calculate_cohort_reference`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
 for multi-athlete comparisons
 
 ## Examples
 
 ``` r
 # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
-data(athlytics_sample_acwr)
-print(head(athlytics_sample_acwr))
-#> # A tibble: 6 × 6
-#>   athlete_id date         atl   ctl  acwr acwr_smooth
-#>   <chr>      <date>     <dbl> <dbl> <dbl>       <dbl>
-#> 1 Athlete_A  2023-01-01  45.6  44.6  1.02          NA
-#> 2 Athlete_A  2023-01-02  45.6  44.8  1.02          NA
-#> 3 Athlete_A  2023-01-03  46.4  44.5  1.04          NA
-#> 4 Athlete_A  2023-01-04  46.5  44.9  1.04          NA
-#> 5 Athlete_A  2023-01-05  46.6  44.8  1.04          NA
-#> 6 Athlete_A  2023-01-06  47.5  45.6  1.04          NA
+data(sample_acwr)
+print(head(sample_acwr))
+#> # A tibble: 6 × 5
+#>   date         atl   ctl  acwr acwr_smooth
+#>   <date>     <dbl> <dbl> <dbl>       <dbl>
+#> 1 2023-02-03  32.6  39.0 0.837       0.888
+#> 2 2023-02-04  30.6  38.6 0.793       0.881
+#> 3 2023-02-05  31.3  38.2 0.819       0.883
+#> 4 2023-02-06  31.6  37.8 0.835       0.867
+#> 5 2023-02-07  35.9  38.6 0.93        0.863
+#> 6 2023-02-08  37.9  38.1 0.994       0.866
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data
@@ -249,16 +249,20 @@ activities <- load_local_activities("export_12345678.zip")
 activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Step 3: Calculate ACWR for Runs (using distance)
-run_acwr <- calculate_acwr(activities_data = activities, 
-                           activity_type = "Run",
-                           load_metric = "distance_km")
+run_acwr <- calculate_acwr(
+  activities_data = activities,
+  activity_type = "Run",
+  load_metric = "distance_km"
+)
 print(tail(run_acwr))
 
 # Calculate ACWR for Rides (using TSS, requires FTP)
-ride_acwr_tss <- calculate_acwr(activities_data = activities,
-                                activity_type = "Ride",
-                                load_metric = "tss", 
-                                user_ftp = 280)
+ride_acwr_tss <- calculate_acwr(
+  activities_data = activities,
+  activity_type = "Ride",
+  load_metric = "tss",
+  user_ftp = 280
+)
 print(tail(ride_acwr_tss))
 
 # Plot the results
@@ -279,9 +283,10 @@ cohort_data <- dplyr::bind_rows(athlete1, athlete2)
 # Calculate ACWR for each athlete using group_modify()
 cohort_acwr <- cohort_data %>%
   dplyr::group_by(athlete_id) %>%
-  dplyr::group_modify(~ calculate_acwr(.x, 
-                                 activity_type = "Run",
-                                 load_metric = "duration_mins")) %>%
+  dplyr::group_modify(~ calculate_acwr(.x,
+    activity_type = "Run",
+    load_metric = "duration_mins"
+  )) %>%
   dplyr::ungroup()
 
 # View results

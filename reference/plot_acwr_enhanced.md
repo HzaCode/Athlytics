@@ -30,7 +30,7 @@ plot_acwr_enhanced(
 - reference_data:
 
   Optional. A data frame from
-  [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
+  [`calculate_cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
   for adding cohort reference bands.
 
 - show_ci:
@@ -94,14 +94,12 @@ The layering order (bottom to top):
 
 ``` r
 # Example using sample data
-data("athlytics_sample_acwr", package = "Athlytics")
-if (!is.null(athlytics_sample_acwr) && nrow(athlytics_sample_acwr) > 0) {
-  p <- plot_acwr_enhanced(athlytics_sample_acwr, show_ci = FALSE)
+data("sample_acwr", package = "Athlytics")
+if (!is.null(sample_acwr) && nrow(sample_acwr) > 0) {
+  p <- plot_acwr_enhanced(sample_acwr, show_ci = FALSE)
   print(p)
 }
 #> No reference data provided. Setting show_reference = FALSE.
-#> Warning: Removed 18 rows containing missing values or values outside the scale range
-#> (`geom_line()`).
 
 
 if (FALSE) { # \dontrun{
@@ -120,7 +118,7 @@ acwr <- calculate_acwr_ewma(
 plot_acwr_enhanced(acwr)
 
 # With cohort reference
-reference <- cohort_reference(cohort_data, metric = "acwr_smooth")
+reference <- calculate_cohort_reference(cohort_data, metric = "acwr_smooth")
 plot_acwr_enhanced(acwr, reference_data = reference)
 } # }
 ```

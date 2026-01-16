@@ -34,6 +34,6 @@ A named list with four color codes for ACWR zones:
 ``` r
 # Get ACWR zone colors
 colors <- athlytics_colors_acwr_zones()
-colors$safe  # Returns green color code
+colors$safe # Returns green color code
 #> [1] "#A9DFBF"
 ```

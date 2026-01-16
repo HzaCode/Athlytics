@@ -5,7 +5,7 @@
 [![CRAN
 Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![CRAN
-Listed](https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square)](https://cran.r-project.org/web/views/SportsAnalytics.html)
+Listed](https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square)](https://CRAN.R-project.org/view=SportsAnalytics)
 [![CRAN
 Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![R-CMD-check](https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
@@ -20,9 +20,16 @@ Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repost
 ## Overview
 
 **Athlytics** is a research-oriented R package for the longitudinal
-analysis of endurance training. It operates entirely on **local Strava
-exports** (or FIT/TCX/GPX files), avoiding API dependencies to ensure
-**privacy** and long-term **reproducibility**.
+analysis of endurance training. It operates entirely on **local
+[Strava](https://www.strava.com/) exports** (or FIT/TCX/GPX files),
+avoiding API dependencies to ensure **privacy** and long-term
+**reproducibility**.
+
+> **What is Strava?** [Strava](https://www.strava.com/) is a popular
+> fitness tracking platform used by millions of athletes worldwide to
+> record and analyze their running, cycling, and other endurance
+> activities. Users can export their complete activity history for
+> offline analysis.
 
 The package standardizes the workflow from data ingestion and quality
 control to model estimation and uncertainty quantification. Implemented
@@ -81,8 +88,8 @@ remotes::install_github("HzaCode/Athlytics")
 
 ### 📥 Step 1: Export Your Strava Data
 
-1.  Navigate to **[Strava Settings - My
-    Account](https://www.strava.com/settings/profile)**.
+1.  Navigate to **[Strava](https://www.strava.com/)** and open Settings
+    → My Account.
 2.  Under “Download or Delete Your Account,” click **“Get Started”** and
     then **“Request Your Archive”**.
 3.  You’ll receive an email with a download link - this may take some
@@ -112,7 +119,7 @@ cohort_acwr <- cohort_data %>%
   ungroup()
 
 # 3. Generate percentile bands to serve as a reference for the cohort
-reference_bands <- cohort_reference(cohort_acwr, metric = "acwr_smooth")
+reference_bands <- calculate_cohort_reference(cohort_acwr, metric = "acwr_smooth")
 
 # 4. Plot an individual's data against the cohort reference bands
 individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")

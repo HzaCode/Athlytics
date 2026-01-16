@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,12 +38,27 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.2" id="athlytics-102">Athlytics 1.0.2<a class="anchor" aria-label="anchor" href="#athlytics-102"></a></h2>
+<div class="section level3">
+<h3 id="documentation--review-fixes-1-0-2">Documentation &amp; Review Fixes<a class="anchor" aria-label="anchor" href="#documentation--review-fixes-1-0-2"></a></h3>
+<ul><li><p><strong>Runnable vignettes</strong>: Added executable demo chunks using built-in sample datasets so key plots render during <code>build_vignettes()</code>.</p></li>
+<li><p><strong>Sample data naming</strong>: Renamed built-in datasets from <code>athlytics_sample_*</code> to <code>sample_*</code> and updated docs/examples accordingly.</p></li>
+<li><p><strong>Styling</strong>: Ran <code>styler::style_pkg()</code> to improve formatting consistency.</p></li>
+</ul><hr></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="athlytics-101">Athlytics 1.0.1<a class="anchor" aria-label="anchor" href="#athlytics-101"></a></h2>
 <div class="section level3">
 <h3 id="code-quality-improvements-1-0-1">Code Quality Improvements<a class="anchor" aria-label="anchor" href="#code-quality-improvements-1-0-1"></a></h3>
 <ul><li><p><strong>Reduced Cyclomatic Complexity</strong>: Refactored <code><a href="../reference/calculate_acwr.html">calculate_acwr()</a></code> and <code><a href="../reference/calculate_exposure.html">calculate_exposure()</a></code> by extracting shared load calculation logic into internal helper functions (<code>calculate_daily_load_internal()</code>, <code>compute_single_load()</code>, <code>validate_load_metric_params()</code>). This improves code maintainability and testability without changing the public API.</p></li>
 <li><p><strong>Dependency Cleanup</strong>: Removed unused <code>viridis</code> package from Imports. The package was declared as a dependency but never actually called (ggplot2’s built-in <code><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_d()</a></code> was used instead).</p></li>
 <li><p><strong>Documentation Fixes</strong>: Fixed Rd line width issues in <code><a href="../reference/plot_with_reference.html">plot_with_reference()</a></code> examples.</p></li>
+<li>
+<p><strong>API Naming Consistency</strong>: Added verb-first primary APIs and kept previous names as deprecated wrappers for backward compatibility.</p>
+<ul><li>New: <code><a href="../reference/calculate_cohort_reference.html">calculate_cohort_reference()</a></code> (replaces <code><a href="../reference/calculate_cohort_reference.html">cohort_reference()</a></code>)</li>
+<li>New: <code><a href="../reference/summarize_quality.html">summarize_quality()</a></code> (replaces <code><a href="../reference/summarize_quality.html">quality_summary()</a></code>)</li>
+<li>Old names remain available but emit a deprecation warning to guide migration.</li>
+</ul></li>
 <li><p><strong>Build Configuration</strong>: Updated <code>.Rbuildignore</code> to properly exclude development files.</p></li>
 </ul><hr></div>
 </div>
@@ -68,7 +83,7 @@
 </ul></li>
 <li>
 <strong>Multi-Athlete Cohort Analysis</strong>: Improved support for research and team analytics
-<ul><li>Better documentation for <code><a href="../reference/cohort_reference.html">cohort_reference()</a></code> and multi-athlete workflows</li>
+<ul><li>Better documentation for <code><a href="../reference/calculate_cohort_reference.html">cohort_reference()</a></code> and multi-athlete workflows</li>
 <li>Examples updated to show intervention/control group comparisons</li>
 <li>Proper use of <code><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify()</a></code> for batch processing</li>
 </ul></li>
@@ -117,14 +132,14 @@
 <h2 class="pkg-version" data-toc-text="0.1.1" id="athlytics-011">Athlytics 0.1.1<a class="anchor" aria-label="anchor" href="#athlytics-011"></a></h2>
 <div class="section level3">
 <h3 id="core-improvement-enhanced-reliability--testing-with-simulated-data-0-1-1">Core Improvement: Enhanced Reliability &amp; Testing with Simulated Data<a class="anchor" aria-label="anchor" href="#core-improvement-enhanced-reliability--testing-with-simulated-data-0-1-1"></a></h3>
-<p>This significant update enhances package reliability and ease of use by integrating <code>athlytics_sample_data</code>. This enables all examples to run offline and ensures core functionalities have undergone more rigorous, reproducible testing.</p>
+<p>This significant update enhances package reliability and ease of use by integrating sample datasets. This enables all examples to run offline and ensures core functionalities have undergone more rigorous, reproducible testing.</p>
 </div>
 <div class="section level3">
 <h3 id="key-changes-0-1-1">Key Changes<a class="anchor" aria-label="anchor" href="#key-changes-0-1-1"></a></h3>
 <ul><li>
-<strong>Examples &amp; Vignettes</strong>: All Roxygen examples and key vignette examples now primarily use <code>athlytics_sample_data</code> for offline execution and clarity. Network-dependent examples are clearly separated in <code>\donttest{}</code> blocks.</li>
+<strong>Examples &amp; Vignettes</strong>: All Roxygen examples and key vignette examples now primarily use sample datasets for offline execution and clarity. Network-dependent examples are clearly separated in <code>\donttest{}</code> blocks.</li>
 <li>
-<strong>Test Suite</strong>: Fundamentally refactored the test suite to extensively use <code>athlytics_sample_data</code> and <code>mockery</code>, improving test robustness and parameter coverage.</li>
+<strong>Test Suite</strong>: Fundamentally refactored the test suite to extensively use sample datasets and <code>mockery</code>, improving test robustness and parameter coverage.</li>
 <li>
 <strong>Strengthened Package Quality &amp; Compliance</strong>: Undertook thorough package validation, leading to key enhancements for overall robustness and adherence to R packaging standards. This involved: ensuring all <strong>function examples</strong> are correct and reliably executable (notably addressing <code>strava_oauth(...)</code> scenarios for offline/testing contexts); providing accurate and <strong>refined documentation for data objects</strong> in <code>R/data.R</code>; fixing <strong>Roxygen import directives</strong> for precise namespace definition; improving <strong>help file readability</strong> through Rd line width adjustments; and optimizing package data loading by adding <code>LazyData: true</code> to <code>DESCRIPTION</code>.</li>
 <li>

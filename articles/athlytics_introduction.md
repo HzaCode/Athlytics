@@ -33,15 +33,14 @@ version:
 install.packages("Athlytics")
 
 # GitHub (latest features)
-remotes::install_github('HzaCode/Athlytics')
+remotes::install_github("HzaCode/Athlytics")
 ```
 
 ### Your Strava Data Export
 
 You’ll need a Strava data export ZIP file. If you haven’t exported your
-data yet, see the [Strava Export
-Guide](https://support.strava.com/hc/en-us/articles/216918437-Exporting-your-Data-and-Bulk-Export)
-or follow the steps in the [README Quick
+data yet, start from [Strava](https://www.strava.com/) and follow the
+steps in the [README Quick
 Start](https://github.com/HzaCode/Athlytics#quick-start).
 
 **Quick Summary:** 1. Go to Strava Settings → My Account → Download or
@@ -58,7 +57,7 @@ directly
 
 ``` r
 library(Athlytics)
-library(dplyr)  # For data manipulation
+library(dplyr) # For data manipulation
 
 # Load your activities
 activities <- load_local_activities("path/to/export_12345678.zip")
@@ -118,7 +117,7 @@ sum(!is.na(activities$avg_hr)) / nrow(activities) * 100
 # Shows % of activities with HR data
 
 # Activities without HR data
-activities %>% 
+activities %>%
   filter(is.na(avg_hr)) %>%
   count(sport)
 ```
@@ -132,21 +131,23 @@ For focused analysis, you’ll often want to filter by sport or date:
 
 ``` r
 # Only running activities
-runs <- activities %>% 
+runs <- activities %>%
   filter(sport == "Run")
 
 # Recent activities (last 6 months)
-recent <- activities %>% 
+recent <- activities %>%
   filter(date >= Sys.Date() - 180)
 
 # Runs with heart rate data from 2024
-runs_2024_hr <- activities %>% 
-  filter(sport == "Run",
-         !is.na(avg_hr),
-         lubridate::year(date) == 2024)
+runs_2024_hr <- activities %>%
+  filter(
+    sport == "Run",
+    !is.na(avg_hr),
+    lubridate::year(date) == 2024
+  )
 
 # Long runs only (> 15 km)
-long_runs <- activities %>% 
+long_runs <- activities %>%
   filter(sport == "Run", distance_km > 15)
 ```
 
@@ -180,10 +181,10 @@ typically 28 days). It’s used to identify injury risk periods.
 # Calculate ACWR for all running activities
 acwr_data <- calculate_acwr(
   activities_data = runs,
-  activity_type = "Run",        # Filter by sport
+  activity_type = "Run", # Filter by sport
   load_metric = "duration_mins", # Can also be "distance_km" or "hrss"
-  acute_period = 7,              # 7-day rolling average
-  chronic_period = 28            # 28-day rolling average
+  acute_period = 7, # 7-day rolling average
+  chronic_period = 28 # 28-day rolling average
 )
 
 # View results
@@ -207,6 +208,22 @@ plot_acwr(acwr_data)
 # With risk zones highlighted (recommended)
 plot_acwr(acwr_data, highlight_zones = TRUE)
 ```
+
+**Demo with Sample Data:**
+
+``` r
+# Load built-in sample data
+data("sample_acwr", package = "Athlytics")
+
+# Plot ACWR with risk zones
+plot_acwr(sample_acwr, highlight_zones = TRUE)
+#> Generating plot...
+```
+
+![ACWR visualization using sample
+data](athlytics_introduction_files/figure-html/acwr-demo-1.png)
+
+ACWR visualization using sample data
 
 #### Interpreting Your ACWR
 
@@ -249,7 +266,7 @@ Different load metrics for different goals:
 # Calculate using HRSS (heart rate stress score)
 acwr_hrss <- calculate_acwr(
   activities_data = runs,
-  load_metric = "hrss"  # Automatically calculated if avg_hr available
+  load_metric = "hrss" # Automatically calculated if avg_hr available
 )
 ```
 
@@ -284,7 +301,7 @@ improvements.
 ef_runs <- calculate_ef(
   activities_data = runs,
   activity_type = "Run",
-  ef_metric = "pace_hr"  # Pace divided by HR
+  ef_metric = "pace_hr" # Pace divided by HR
 )
 
 # For cycling (Power/HR)
@@ -292,7 +309,7 @@ rides <- activities %>% filter(sport == "Ride")
 ef_cycling <- calculate_ef(
   activities_data = rides,
   activity_type = "Ride",
-  ef_metric = "power_hr"  # Power divided by HR
+  ef_metric = "power_hr" # Power divided by HR
 )
 
 # View results
@@ -315,6 +332,23 @@ plot_ef(ef_runs)
 # With smoothing line to see trend (recommended)
 plot_ef(ef_runs, add_trend_line = TRUE)
 ```
+
+**Demo with Sample Data:**
+
+``` r
+# Load built-in sample data
+data("sample_ef", package = "Athlytics")
+
+# Plot EF with trend line
+plot_ef(sample_ef, add_trend_line = TRUE)
+#> Generating plot...
+#> `geom_smooth()` using formula = 'y ~ x'
+```
+
+![Efficiency Factor trend using sample
+data](athlytics_introduction_files/figure-html/ef-demo-1.png)
+
+Efficiency Factor trend using sample data
 
 #### Interpreting EF
 
@@ -343,13 +377,19 @@ ef_monthly <- ef_runs %>%
 print(ef_monthly)
 
 # Compare first vs last 3 months
-recent_ef <- ef_runs %>% filter(date >= Sys.Date() - 90) %>% pull(ef_value)
-baseline_ef <- ef_runs %>% filter(date < Sys.Date() - 90, date >= Sys.Date() - 180) %>% pull(ef_value)
+recent_ef <- ef_runs %>%
+  filter(date >= Sys.Date() - 90) %>%
+  pull(ef_value)
+baseline_ef <- ef_runs %>%
+  filter(date < Sys.Date() - 90, date >= Sys.Date() - 180) %>%
+  pull(ef_value)
 
-cat(sprintf("Recent EF: %.2f\nBaseline EF: %.2f\nChange: %.1f%%\n",
-            mean(recent_ef, na.rm = TRUE),
-            mean(baseline_ef, na.rm = TRUE),
-            (mean(recent_ef, na.rm = TRUE) / mean(baseline_ef, na.rm = TRUE) - 1) * 100))
+cat(sprintf(
+  "Recent EF: %.2f\nBaseline EF: %.2f\nChange: %.1f%%\n",
+  mean(recent_ef, na.rm = TRUE),
+  mean(baseline_ef, na.rm = TRUE),
+  (mean(recent_ef, na.rm = TRUE) / mean(baseline_ef, na.rm = TRUE) - 1) * 100
+))
 ```
 
 ------------------------------------------------------------------------
@@ -388,7 +428,7 @@ decoupling_runs <- calculate_decoupling(
   activities_data = runs,
   activity_type = "Run",
   decouple_metric = "pace_hr",
-  min_duration_mins = 60  # Only analyze runs ≥ 60 minutes
+  min_duration_mins = 60 # Only analyze runs ≥ 60 minutes
 )
 
 # For cycling
@@ -396,7 +436,7 @@ decoupling_rides <- calculate_decoupling(
   activities_data = rides,
   activity_type = "Ride",
   decouple_metric = "power_hr",
-  min_duration_mins = 90  # Longer threshold for cycling
+  min_duration_mins = 90 # Longer threshold for cycling
 )
 
 # View results
@@ -419,6 +459,23 @@ plot_decoupling(decoupling_runs)
 # With metric specification
 plot_decoupling(decoupling_runs, decouple_metric = "pace_hr")
 ```
+
+**Demo with Sample Data:**
+
+``` r
+# Load built-in sample data
+data("sample_decoupling", package = "Athlytics")
+
+# Plot decoupling trend (use decoupling_df parameter)
+plot_decoupling(decoupling_df = sample_decoupling)
+#> Generating plot...
+#> `geom_smooth()` using formula = 'y ~ x'
+```
+
+![Cardiovascular decoupling using sample
+data](athlytics_introduction_files/figure-html/decoupling-demo-1.png)
+
+Cardiovascular decoupling using sample data
 
 #### Practical Applications
 
@@ -451,9 +508,11 @@ decoupling_runs %>%
   geom_smooth(method = "loess", se = TRUE) +
   geom_hline(yintercept = 5, linetype = "dashed", color = "green") +
   geom_hline(yintercept = 10, linetype = "dashed", color = "orange") +
-  labs(title = "Decoupling Trend Over Time",
-       subtitle = "Lower values = better aerobic endurance",
-       x = "Date", y = "Decoupling (%)") +
+  labs(
+    title = "Decoupling Trend Over Time",
+    subtitle = "Lower values = better aerobic endurance",
+    x = "Date", y = "Decoupling (%)"
+  ) +
   theme_minimal()
 ```
 
@@ -497,6 +556,23 @@ pbs_5k <- pbs %>% filter(distance == "5k")
 print(pbs_5k)
 ```
 
+**Demo with Sample Data:**
+
+``` r
+# Load built-in sample data
+data("sample_pbs", package = "Athlytics")
+
+# Plot PB progression (use pbs_df parameter)
+plot_pbs(pbs_df = sample_pbs)
+#> Generating plot...
+#> `geom_smooth()` using formula = 'y ~ x'
+```
+
+![Personal bests progression using sample
+data](athlytics_introduction_files/figure-html/pbs-demo-1.png)
+
+Personal bests progression using sample data
+
 ------------------------------------------------------------------------
 
 ### 5. Load Exposure Analysis
@@ -516,6 +592,24 @@ exposure <- calculate_exposure(
 # Plot with risk zones
 plot_exposure(exposure, highlight_zones = TRUE)
 ```
+
+**Demo with Sample Data:**
+
+``` r
+# Load built-in sample data
+data("sample_exposure", package = "Athlytics")
+
+# Plot exposure (use exposure_df parameter)
+plot_exposure(exposure_df = sample_exposure, activity_type = "Run")
+#> Generating plot...
+#> Warning: Removed 27 rows containing missing values or values outside the scale range
+#> (`geom_point()`).
+```
+
+![Load exposure analysis using sample
+data](athlytics_introduction_files/figure-html/exposure-demo-1.png)
+
+Load exposure analysis using sample data
 
 **Interpretation:**
 
@@ -539,7 +633,7 @@ library(ggplot2)
 activities <- load_local_activities("my_strava_export.zip")
 
 # Focus on running activities with HR data
-runs <- activities %>% 
+runs <- activities %>%
   filter(sport == "Run", !is.na(avg_hr))
 
 cat(sprintf("Loaded %d running activities with HR data\n", nrow(runs)))
@@ -551,7 +645,7 @@ acwr_data <- calculate_acwr(
 )
 
 # Check current training status
-current_acwr <- acwr_data %>% 
+current_acwr <- acwr_data %>%
   filter(date >= Sys.Date() - 30) %>%
   tail(1) %>%
   pull(acwr_smooth)
@@ -587,10 +681,13 @@ decoupling_data <- calculate_decoupling(
 )
 
 avg_decouple <- mean(decoupling_data$decoupling_pct, na.rm = TRUE)
-cat(sprintf("Average decoupling: %.1f%% (%s aerobic base)\n",
-            avg_decouple,
-            ifelse(avg_decouple < 5, "excellent",
-                   ifelse(avg_decouple < 10, "good", "needs work"))))
+cat(sprintf(
+  "Average decoupling: %.1f%% (%s aerobic base)\n",
+  avg_decouple,
+  ifelse(avg_decouple < 5, "excellent",
+    ifelse(avg_decouple < 10, "good", "needs work")
+  )
+))
 
 p3 <- plot_decoupling(decoupling_data) +
   labs(title = "Cardiovascular Drift in Long Runs")
@@ -703,7 +800,7 @@ Ready to go deeper? Check out:
 If you’re using Athlytics for research:
 
 1.  **Cohort Studies**: See
-    [cohort_reference()](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
+    [calculate_cohort_reference()](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
     for multi-athlete percentile comparisons
 2.  **Data Quality**: Use
     [flag_quality()](https://hzacode.github.io/Athlytics/reference/flag_quality.md)
@@ -751,12 +848,23 @@ sessionInfo()
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
+#> other attached packages:
+#> [1] ggplot2_4.0.1   Athlytics_1.0.2
+#> 
 #> loaded via a namespace (and not attached):
-#>  [1] digest_0.6.39     desc_1.4.3        R6_2.6.1          fastmap_1.2.0    
-#>  [5] xfun_0.55         cachem_1.1.0      knitr_1.51        htmltools_0.5.9  
-#>  [9] rmarkdown_2.30    lifecycle_1.0.4   cli_3.6.5         sass_0.4.10      
-#> [13] pkgdown_2.2.0     textshaping_1.0.4 jquerylib_0.1.4   systemfonts_1.3.1
-#> [17] compiler_4.5.2    tools_4.5.2       ragg_1.5.0        bslib_0.9.0      
-#> [21] evaluate_1.0.5    yaml_2.3.12       otel_0.2.0        jsonlite_2.0.0   
-#> [25] rlang_1.1.6       fs_1.6.6          htmlwidgets_1.6.4
+#>  [1] sass_0.4.10        generics_0.1.4     tidyr_1.3.2        lattice_0.22-7    
+#>  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
+#>  [9] grid_4.5.2         timechange_0.3.0   RColorBrewer_1.1-3 fastmap_1.2.0     
+#> [13] jsonlite_2.0.0     Matrix_1.7-4       mgcv_1.9-3         purrr_1.2.1       
+#> [17] viridisLite_0.4.2  scales_1.4.0       textshaping_1.0.4  jquerylib_0.1.4   
+#> [21] cli_3.6.5          rlang_1.1.7        splines_4.5.2      withr_3.0.2       
+#> [25] cachem_1.1.0       yaml_2.3.12        otel_0.2.0         tools_4.5.2       
+#> [29] tzdb_0.5.0         dplyr_1.1.4        vctrs_0.6.5        R6_2.6.1          
+#> [33] zoo_1.8-15         lifecycle_1.0.5    lubridate_1.9.4    fs_1.6.6          
+#> [37] htmlwidgets_1.6.4  ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        
+#> [41] pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0        gtable_0.3.6      
+#> [45] glue_1.8.0         systemfonts_1.3.1  xfun_0.55          tibble_3.3.1      
+#> [49] tidyselect_1.2.1   knitr_1.51         farver_2.1.2       htmltools_0.5.9   
+#> [53] nlme_3.1-168       rmarkdown_2.30     labeling_0.4.3     readr_2.1.6       
+#> [57] compiler_4.5.2     S7_0.2.1
 ```

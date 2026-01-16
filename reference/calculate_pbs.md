@@ -68,8 +68,8 @@ Activities must be long enough to contain the target distance segments.
 
 ``` r
 # Example using simulated data
-data(athlytics_sample_pbs)
-print(head(athlytics_sample_pbs))
+data(sample_pbs)
+print(head(sample_pbs))
 #> # A tibble: 6 × 10
 #>   activity_id activity_date       distance elapsed_time moving_time time_seconds
 #>   <chr>       <dttm>                 <dbl>        <dbl>       <dbl>        <dbl>

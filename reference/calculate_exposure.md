@@ -83,17 +83,17 @@ accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 
 ``` r
 # Example using simulated data
-data(athlytics_sample_exposure)
-print(head(athlytics_sample_exposure))
+data(sample_exposure)
+print(head(sample_exposure))
 #> # A tibble: 6 × 5
-#>   date       daily_load   atl   ctl  acwr
+#>   date       daily_load   ctl   atl  acwr
 #>   <date>          <dbl> <dbl> <dbl> <dbl>
-#> 1 2023-07-01       41.4  45.9  40.7  1.13
-#> 2 2023-07-02       73.4  47.4  41.6  1.14
-#> 3 2023-07-03       24.2  50.6  42.7  1.18
-#> 4 2023-07-04       38.8  49.9  43.2  1.15
-#> 5 2023-07-05       50.2  48.0  43.7  1.10
-#> 6 2023-07-06       69.4  49.7  44.7  1.11
+#> 1 2023-01-01        8.8    NA    NA    NA
+#> 2 2023-01-02       23.7    NA    NA    NA
+#> 3 2023-01-03       20.2    NA    NA    NA
+#> 4 2023-01-04       35.1    NA    NA    NA
+#> 5 2023-01-05       14.6    NA    NA    NA
+#> 6 2023-01-06       31.9    NA    NA    NA
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data

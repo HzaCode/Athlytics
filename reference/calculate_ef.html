@@ -41,7 +41,7 @@ Increased mitochondrial density
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -230,30 +230,36 @@ Power Meter</em> (3rd ed.). VeloPress.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using simulated data</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">athlytics_sample_ef</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">athlytics_sample_ef</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   athlete_id       date activity_type   ef_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Athlete_A 2023-10-28          Ride 0.02386232</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Athlete_A 2023-09-25          Ride 0.03335810</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Athlete_A 2023-10-25          Ride 0.03262970</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Athlete_A 2023-06-03          Ride 0.02863834</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Athlete_A 2023-04-22           Run 0.03091827</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  Athlete_A 2023-06-14          Ride 0.02719636</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sample_ef</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sample_ef</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   date       activity_type ef_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2023-01-01 Run               1.16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2023-01-01 Ride              1.86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2023-01-04 Run               1.19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2023-01-06 Run               1.21</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-01-06 Ride              1.94</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-01-08 Run               1.31</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
 <span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate Pace/HR efficiency factor for Runs</span></span></span>
-<span class="r-in"><span><span class="va">ef_data_run</span> <span class="op">&lt;-</span> <span class="fu">calculate_ef</span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, </span></span>
-<span class="r-in"><span>                             activity_type <span class="op">=</span> <span class="st">"Run"</span>, </span></span>
-<span class="r-in"><span>                             ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ef_data_run</span> <span class="op">&lt;-</span> <span class="fu">calculate_ef</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>  ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">ef_data_run</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate Power/HR efficiency factor for Rides</span></span></span>
-<span class="r-in"><span><span class="va">ef_data_ride</span> <span class="op">&lt;-</span> <span class="fu">calculate_ef</span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
-<span class="r-in"><span>                              activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
-<span class="r-in"><span>                              ef_metric <span class="op">=</span> <span class="st">"power_hr"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ef_data_ride</span> <span class="op">&lt;-</span> <span class="fu">calculate_ef</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
+<span class="r-in"><span>  ef_metric <span class="op">=</span> <span class="st">"power_hr"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">ef_data_ride</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

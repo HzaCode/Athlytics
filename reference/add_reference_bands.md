@@ -24,7 +24,7 @@ add_reference_bands(
 - reference_data:
 
   A data frame from
-  [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md).
+  [`calculate_cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md).
 
 - bands:
 

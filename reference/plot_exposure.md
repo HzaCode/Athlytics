@@ -93,11 +93,13 @@ can be shaded. If `exposure_df` is not provided, it calls
 
 ``` r
 # Example using simulated data
-data(athlytics_sample_exposure)
+data(sample_exposure)
 # Ensure exposure_df is named and other necessary parameters like activity_type are provided
-p <- plot_exposure(exposure_df = athlytics_sample_exposure, activity_type = "Run")
+p <- plot_exposure(exposure_df = sample_exposure, activity_type = "Run")
 #> Generating plot...
 print(p)
+#> Warning: Removed 27 rows containing missing values or values outside the scale range
+#> (`geom_point()`).
 
 
 if (FALSE) { # \dontrun{
@@ -105,20 +107,26 @@ if (FALSE) { # \dontrun{
 activities <- load_local_activities("strava_export_data/activities.csv")
 
 # Plot Exposure trend for Runs (last 6 months)
-plot_exposure(data = activities,
-              activity_type = "Run",
-              end_date = Sys.Date(),
-              user_ftp = 280) # Example, if load_metric = "tss"
+plot_exposure(
+  data = activities,
+  activity_type = "Run",
+  end_date = Sys.Date(),
+  user_ftp = 280
+) # Example, if load_metric = "tss"
 
 # Plot Exposure trend for Rides
-plot_exposure(data = activities,
-              activity_type = "Ride",
-              user_ftp = 280) # Example, provide if load_metric = "tss"
+plot_exposure(
+  data = activities,
+  activity_type = "Ride",
+  user_ftp = 280
+) # Example, provide if load_metric = "tss"
 
 # Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)
-plot_exposure(data = activities,
-              activity_type = c("Run", "VirtualRun"),
-              risk_zones = FALSE,
-              user_ftp = 280) # Example, provide if load_metric = "tss"
+plot_exposure(
+  data = activities,
+  activity_type = c("Run", "VirtualRun"),
+  risk_zones = FALSE,
+  user_ftp = 280
+) # Example, provide if load_metric = "tss"
 } # }
 ```

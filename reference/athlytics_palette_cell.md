@@ -18,6 +18,6 @@ A character vector of 8 hex color codes
 ``` r
 # Get Cell palette colors
 colors <- athlytics_palette_cell()
-colors[1]  # Blue
+colors[1] # Blue
 #> [1] "#0173B2"
 ```

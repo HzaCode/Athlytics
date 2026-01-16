@@ -18,6 +18,6 @@ A character vector of 8 hex color codes
 ``` r
 # Get Science palette colors
 colors <- athlytics_palette_science()
-colors[1]  # Dark blue
+colors[1] # Dark blue
 #> [1] "#003F5C"
 ```

@@ -16,9 +16,8 @@ A character vector of 8 hex color codes
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-ggplot2::ggplot(data, ggplot2::aes(x, y, fill = category)) +
-  ggplot2::geom_bar(stat = "identity") +
-  ggplot2::scale_fill_manual(values = athlytics_palette_vibrant())
-} # }
+# View the palette colors
+athlytics_palette_vibrant()
+#> [1] "#FF6B6B" "#4ECDC4" "#45B7D1" "#FFA07A" "#98D8C8" "#FFE66D" "#A8E6CF"
+#> [8] "#FF8B94"
 ```

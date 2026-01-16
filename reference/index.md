@@ -53,13 +53,15 @@ Plot and visualize training metrics
 
 Cohort analysis and quality control
 
-- [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
+- [`calculate_cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
+  [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
   : Calculate Cohort Reference Percentiles
 - [`add_reference_bands()`](https://hzacode.github.io/Athlytics/reference/add_reference_bands.md)
   : Add Cohort Reference Bands to Existing Plot
 - [`flag_quality()`](https://hzacode.github.io/Athlytics/reference/flag_quality.md)
   : Flag Data Quality Issues in Activity Streams
-- [`quality_summary()`](https://hzacode.github.io/Athlytics/reference/quality_summary.md)
+- [`summarize_quality()`](https://hzacode.github.io/Athlytics/reference/summarize_quality.md)
+  [`quality_summary()`](https://hzacode.github.io/Athlytics/reference/summarize_quality.md)
   : Get Quality Summary Statistics
 
 ## Themes and Colors
@@ -91,13 +93,13 @@ Visualization customization
 
 Example datasets for testing and learning
 
-- [`athlytics_sample_acwr`](https://hzacode.github.io/Athlytics/reference/athlytics_sample_acwr.md)
+- [`sample_acwr`](https://hzacode.github.io/Athlytics/reference/sample_acwr.md)
   : Sample ACWR Data for Athlytics
-- [`athlytics_sample_decoupling`](https://hzacode.github.io/Athlytics/reference/athlytics_sample_decoupling.md)
+- [`sample_decoupling`](https://hzacode.github.io/Athlytics/reference/sample_decoupling.md)
   : Sample Aerobic Decoupling Data for Athlytics
-- [`athlytics_sample_ef`](https://hzacode.github.io/Athlytics/reference/athlytics_sample_ef.md)
+- [`sample_ef`](https://hzacode.github.io/Athlytics/reference/sample_ef.md)
   : Sample Efficiency Factor (EF) Data for Athlytics
-- [`athlytics_sample_exposure`](https://hzacode.github.io/Athlytics/reference/athlytics_sample_exposure.md)
+- [`sample_exposure`](https://hzacode.github.io/Athlytics/reference/sample_exposure.md)
   : Sample Training Load Exposure Data for Athlytics
-- [`athlytics_sample_pbs`](https://hzacode.github.io/Athlytics/reference/athlytics_sample_pbs.md)
+- [`sample_pbs`](https://hzacode.github.io/Athlytics/reference/sample_pbs.md)
   : Sample Personal Bests (PBs) Data for Athlytics

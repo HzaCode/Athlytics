@@ -1,5 +1,21 @@
 # Changelog
 
+## Athlytics 1.0.2
+
+### Documentation & Review Fixes
+
+- **Runnable vignettes**: Added executable demo chunks using built-in
+  sample datasets so key plots render during `build_vignettes()`.
+
+- **Sample data naming**: Renamed built-in datasets from
+  `athlytics_sample_*` to `sample_*` and updated docs/examples
+  accordingly.
+
+- **Styling**: Ran `styler::style_pkg()` to improve formatting
+  consistency.
+
+------------------------------------------------------------------------
+
 ## Athlytics 1.0.1
 
 ### Code Quality Improvements
@@ -22,6 +38,20 @@
 - **Documentation Fixes**: Fixed Rd line width issues in
   [`plot_with_reference()`](https://hzacode.github.io/Athlytics/reference/plot_with_reference.md)
   examples.
+
+- **API Naming Consistency**: Added verb-first primary APIs and kept
+  previous names as deprecated wrappers for backward compatibility.
+
+  - New:
+    [`calculate_cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
+    (replaces
+    [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md))
+  - New:
+    [`summarize_quality()`](https://hzacode.github.io/Athlytics/reference/summarize_quality.md)
+    (replaces
+    [`quality_summary()`](https://hzacode.github.io/Athlytics/reference/summarize_quality.md))
+  - Old names remain available but emit a deprecation warning to guide
+    migration.
 
 - **Build Configuration**: Updated `.Rbuildignore` to properly exclude
   development files.
@@ -59,7 +89,7 @@ eliminating API rate limits and authentication requirements.
 - **Multi-Athlete Cohort Analysis**: Improved support for research and
   team analytics
   - Better documentation for
-    [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/cohort_reference.md)
+    [`cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
     and multi-athlete workflows
   - Examples updated to show intervention/control group comparisons
   - Proper use of
@@ -127,19 +157,19 @@ CRAN release: 2025-05-16
 ### Core Improvement: Enhanced Reliability & Testing with Simulated Data
 
 This significant update enhances package reliability and ease of use by
-integrating `athlytics_sample_data`. This enables all examples to run
-offline and ensures core functionalities have undergone more rigorous,
+integrating sample datasets. This enables all examples to run offline
+and ensures core functionalities have undergone more rigorous,
 reproducible testing.
 
 ### Key Changes
 
 - **Examples & Vignettes**: All Roxygen examples and key vignette
-  examples now primarily use `athlytics_sample_data` for offline
-  execution and clarity. Network-dependent examples are clearly
-  separated in `\donttest{}` blocks.
+  examples now primarily use sample datasets for offline execution and
+  clarity. Network-dependent examples are clearly separated in
+  `\donttest{}` blocks.
 - **Test Suite**: Fundamentally refactored the test suite to extensively
-  use `athlytics_sample_data` and `mockery`, improving test robustness
-  and parameter coverage.
+  use sample datasets and `mockery`, improving test robustness and
+  parameter coverage.
 - **Strengthened Package Quality & Compliance**: Undertook thorough
   package validation, leading to key enhancements for overall robustness
   and adherence to R packaging standards. This involved: ensuring all

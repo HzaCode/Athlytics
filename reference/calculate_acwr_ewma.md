@@ -133,8 +133,21 @@ bands. This accounts for temporal correlation in training load patterns.
 ## Examples
 
 ``` r
+# Example using pre-calculated sample data
+data("sample_acwr", package = "Athlytics")
+head(sample_acwr)
+#> # A tibble: 6 × 5
+#>   date         atl   ctl  acwr acwr_smooth
+#>   <date>     <dbl> <dbl> <dbl>       <dbl>
+#> 1 2023-02-03  32.6  39.0 0.837       0.888
+#> 2 2023-02-04  30.6  38.6 0.793       0.881
+#> 3 2023-02-05  31.3  38.2 0.819       0.883
+#> 4 2023-02-06  31.6  37.8 0.835       0.867
+#> 5 2023-02-07  35.9  38.6 0.93        0.863
+#> 6 2023-02-08  37.9  38.1 0.994       0.866
+
 if (FALSE) { # \dontrun{
-# Load local activities
+# Full workflow with real data - Load local activities
 activities <- load_local_activities("export_12345678.zip")
 
 # Calculate ACWR using Rolling Average (RA)
