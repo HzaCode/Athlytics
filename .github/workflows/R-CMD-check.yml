@@ -41,6 +41,7 @@ jobs:
         with:
           extra-packages: any::rcmdcheck, any::covr, any::devtools, any::mockery, any::testthat, any::remotes
           needs: check
+          cache-version: 2
 
       - name: Install GitHub dependencies
         run: |
