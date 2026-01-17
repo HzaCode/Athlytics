@@ -859,7 +859,7 @@ sessionInfo()
 #> [17] viridisLite_0.4.2  scales_1.4.0       textshaping_1.0.4  jquerylib_0.1.4   
 #> [21] cli_3.6.5          rlang_1.1.7        splines_4.5.2      withr_3.0.2       
 #> [25] cachem_1.1.0       yaml_2.3.12        otel_0.2.0         tools_4.5.2       
-#> [29] tzdb_0.5.0         dplyr_1.1.4        vctrs_0.6.5        R6_2.6.1          
+#> [29] tzdb_0.5.0         dplyr_1.1.4        vctrs_0.7.0        R6_2.6.1          
 #> [33] zoo_1.8-15         lifecycle_1.0.5    lubridate_1.9.4    fs_1.6.6          
 #> [37] htmlwidgets_1.6.4  ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        
 #> [41] pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0        gtable_0.3.6      
