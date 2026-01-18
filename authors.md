@@ -9,14 +9,13 @@
 Source:
 [`inst/CITATION`](https://github.com/HzaCode/Athlytics/blob/main/inst/CITATION)
 
-Zhiang He (2025). Athlytics: A Computational Framework for Longitudinal
-Analysis of Exercise Physiology. R package version 1.0.0.
-https://github.com/HzaCode/Athlytics
+Zhiang He (2025). Athlytics: A Reproducible Framework for Endurance Data
+Analysis. R package version 1.0.2. https://github.com/HzaCode/Athlytics
 
     @Manual{,
-      title = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
+      title = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
       author = {Zhiang He},
       year = {2025},
-      note = {R package version 1.0.0},
+      note = {R package version 1.0.2},
       url = {https://github.com/HzaCode/Athlytics},
     }
