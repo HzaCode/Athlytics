@@ -151,7 +151,7 @@ If you use **Athlytics** in academic work, please cite the software as well as t
   title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
   author  = {Zhiang He},
   year    = {2025},
-  version = {1.0.0},
+  version = {1.0.2},
   url     = {https://github.com/HzaCode/Athlytics}
 }
 ```

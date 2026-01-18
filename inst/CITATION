@@ -1,10 +1,10 @@
 bibentry(
   bibtype = "Manual",
-  title = "Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology",
+  title = "Athlytics: A Reproducible Framework for Endurance Data Analysis",
   author = person("Zhiang", "He", email = "ang@hezhiang.com"),
   year = 2025,
-  note = "R package version 1.0.0",
+  note = "R package version 1.0.2",
   url = "https://github.com/HzaCode/Athlytics",
-  textVersion = paste("Zhiang He (2025). Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology. R package version 1.0.0. https://github.com/HzaCode/Athlytics")
+  textVersion = paste("Zhiang He (2025). Athlytics: A Reproducible Framework for Endurance Data Analysis. R package version 1.0.2. https://github.com/HzaCode/Athlytics")
 )
 
