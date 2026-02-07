@@ -60,8 +60,8 @@ jobs:
         run: |
           # Remove any existing tarballs to ensure we test the fresh build
           rm -f *.tar.gz || true
-          # Build the package from current source (skip vignettes to avoid pandoc issues)
-          R CMD build . --no-build-vignettes
+          # Build the package from current source
+          R CMD build . --no-manual
           # Verify the expected tarball was created
           EXPECTED_TARBALL="${{ steps.pkg_info.outputs.PKG }}_${{ steps.pkg_info.outputs.VERSION }}.tar.gz"
           if [ ! -f "$EXPECTED_TARBALL" ]; then
@@ -76,7 +76,7 @@ jobs:
 
       - name: Run R CMD check on tarball (CRAN-like check)
         run: |
-          R CMD check ${{ steps.build_package.outputs.TARBALL_NAME }} --no-manual --no-build-vignettes --no-examples
+          R CMD check ${{ steps.build_package.outputs.TARBALL_NAME }} --no-manual
         shell: bash
         env:
           _R_CHECK_CRAN_INCOMING_: false 

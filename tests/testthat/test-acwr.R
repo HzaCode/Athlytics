@@ -90,6 +90,7 @@ test_that("calculate_acwr validates period parameters", {
 })
 
 test_that("calculate_acwr works with different load metrics", {
+  set.seed(42)
   mock_activities <- create_mock_activities(60)
 
   # Test duration_mins
@@ -100,7 +101,8 @@ test_that("calculate_acwr works with different load metrics", {
   )
   expect_s3_class(acwr_duration, "data.frame")
   expect_gt(nrow(acwr_duration), 0)
-  expect_true(all(acwr_duration$atl >= 0, na.rm = TRUE))
+  # ATL values should be non-negative (allow tiny floating-point tolerance)
+  expect_true(all(acwr_duration$atl >= -1e-10, na.rm = TRUE))
 
   # Test distance_km
   acwr_distance <- calculate_acwr(
@@ -110,7 +112,7 @@ test_that("calculate_acwr works with different load metrics", {
   )
   expect_s3_class(acwr_distance, "data.frame")
   expect_gt(nrow(acwr_distance), 0)
-  expect_true(all(acwr_distance$atl >= 0, na.rm = TRUE))
+  expect_true(all(acwr_distance$atl >= -1e-10, na.rm = TRUE))
 
   # Test elevation
   acwr_elevation <- calculate_acwr(
