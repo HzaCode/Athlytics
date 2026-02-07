@@ -37,6 +37,9 @@ Suggests:
     testthat (>= 3.0.0),
     vdiffr,
     xml2
+Remotes:
+    grimbough/FITfileR
+Additional_repositories: https://grimbough.r-universe.dev
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
