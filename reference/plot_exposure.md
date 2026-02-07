@@ -7,16 +7,13 @@ Visualizes the relationship between Acute and Chronic Training Load.
 ``` r
 plot_exposure(
   data,
-  activity_type = c("Run", "Ride", "VirtualRide", "VirtualRun"),
-  load_metric = "duration_mins",
-  acute_period = 7,
-  chronic_period = 42,
-  user_ftp = NULL,
-  user_max_hr = NULL,
-  user_resting_hr = NULL,
-  end_date = NULL,
   risk_zones = TRUE,
-  exposure_df = NULL
+  show_date_color = TRUE,
+  caption = NULL,
+  axis_limit = NULL,
+  title = NULL,
+  subtitle = NULL,
+  ...
 )
 ```
 
@@ -25,54 +22,47 @@ plot_exposure(
 - data:
 
   A data frame from
-  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
-  Required unless `exposure_df` is provided.
-
-- activity_type:
-
-  Type(s) of activities to include (e.g., "Run", "Ride"). Default uses
-  common types.
-
-- load_metric:
-
-  Method for calculating daily load (e.g., "duration_mins", "tss",
-  "hrss"). Default "duration_mins". See `calculate_exposure` for details
-  on approximate TSS/HRSS calculations.
-
-- acute_period:
-
-  Days for acute load window (e.g., 7).
-
-- chronic_period:
-
-  Days for chronic load window (e.g., 42). Must be \> `acute_period`.
-
-- user_ftp:
-
-  Required if `load_metric = "tss"`. Your FTP.
-
-- user_max_hr:
-
-  Required if `load_metric = "hrss"`. Your max HR.
-
-- user_resting_hr:
-
-  Required if `load_metric = "hrss"`. Your resting HR.
-
-- end_date:
-
-  Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to
-  today.
+  [`calculate_exposure()`](https://hzacode.github.io/Athlytics/reference/calculate_exposure.md).
+  Must contain `date`, `atl`, and `ctl` columns.
 
 - risk_zones:
 
   Add background shading for typical ACWR risk zones? Default `TRUE`.
 
-- exposure_df:
+- show_date_color:
 
-  Optional. A pre-calculated data frame from `calculate_exposure`. If
-  provided, `data` and other calculation parameters are ignored. Must
-  contain `date`, `atl`, `ctl` (and `acwr` if `risk_zones = TRUE`).
+  Logical. Whether to color points by date (gradient). Default `TRUE`.
+  The date gradient helps visualize the training trajectory over time:
+  lighter colors represent earlier dates and darker colors represent
+  more recent dates, so you can trace how training state has evolved
+  across a season. Set to `FALSE` for a simpler single-color plot
+  (useful when the temporal ordering is less important than the overall
+  distribution).
+
+- caption:
+
+  Plot caption. Default NULL (no caption).
+
+- axis_limit:
+
+  Optional. Numeric value to set both x and y axis limits (0 to
+  axis_limit). Useful when plotting risk zones without data or with
+  sparse data. Default NULL (auto-scale).
+
+- title:
+
+  Optional. Custom title for the plot.
+
+- subtitle:
+
+  Optional. Custom subtitle for the plot.
+
+- ...:
+
+  Additional arguments. Arguments `activity_type`, `load_metric`,
+  `acute_period`, `chronic_period`, `user_ftp`, `user_max_hr`,
+  `user_resting_hr`, `end_date`, `exposure_df` are deprecated and
+  ignored.
 
 ## Value
 
@@ -80,14 +70,12 @@ A ggplot object showing ATL vs CTL.
 
 ## Details
 
-Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
-pre-calculated data or calls `calculate_exposure`.
-
 Visualizes training state by plotting ATL vs CTL (related to PMC
 charts). Points are colored by date, latest point is highlighted (red
 triangle). Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5)
-can be shaded. If `exposure_df` is not provided, it calls
-`calculate_exposure` first.
+can be shaded. **Best practice: Use
+[`calculate_exposure()`](https://hzacode.github.io/Athlytics/reference/calculate_exposure.md)
+first, then pass the result to this function.**
 
 ## Examples
 
@@ -95,38 +83,35 @@ can be shaded. If `exposure_df` is not provided, it calls
 # Example using simulated data
 data(sample_exposure)
 # Ensure exposure_df is named and other necessary parameters like activity_type are provided
-p <- plot_exposure(exposure_df = sample_exposure, activity_type = "Run")
-#> Generating plot...
+p <- plot_exposure(sample_exposure)
 print(p)
 #> Warning: Removed 27 rows containing missing values or values outside the scale range
 #> (`geom_point()`).
 
 
-if (FALSE) { # \dontrun{
-# Example using local Strava export data
-activities <- load_local_activities("strava_export_data/activities.csv")
+# Runnable example with dummy data:
+end <- Sys.Date()
+dates <- seq(end - 59, end, by = "day")
+dummy_activities <- data.frame(
+  date = dates,
+  type = "Run",
+  moving_time = rep(3600, length(dates)), # 1 hour
+  distance = rep(10000, length(dates)),   # 10 km
+  average_heartrate = rep(140, length(dates)),
+  suffer_score = rep(50, length(dates)),
+  tss = rep(50, length(dates)),
+  stringsAsFactors = FALSE
+)
 
-# Plot Exposure trend for Runs (last 6 months)
-plot_exposure(
-  data = activities,
+# Calculate Exposure (ATL/CTL)
+exposure_result <- calculate_exposure(
+  activities_data = dummy_activities,
   activity_type = "Run",
-  end_date = Sys.Date(),
-  user_ftp = 280
-) # Example, if load_metric = "tss"
+  load_metric = "distance_km",
+  acute_period = 7,
+  chronic_period = 28,
+  end_date = end
+)
+plot_exposure(exposure_result)
 
-# Plot Exposure trend for Rides
-plot_exposure(
-  data = activities,
-  activity_type = "Ride",
-  user_ftp = 280
-) # Example, provide if load_metric = "tss"
-
-# Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)
-plot_exposure(
-  data = activities,
-  activity_type = c("Run", "VirtualRun"),
-  risk_zones = FALSE,
-  user_ftp = 280
-) # Example, provide if load_metric = "tss"
-} # }
 ```

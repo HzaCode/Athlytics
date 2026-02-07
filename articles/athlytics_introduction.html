@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,14 +29,9 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="active nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul>
-</li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -61,7 +56,7 @@
                         <h4 data-toc-skip class="author">Athlytics
 Package</h4>
             
-            <h4 data-toc-skip class="date">2026-01-18</h4>
+            <h4 data-toc-skip class="date">2026-02-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HzaCode/Athlytics/blob/main/vignettes/athlytics_introduction.Rmd" class="external-link"><code>vignettes/athlytics_introduction.Rmd</code></a></small>
       <div class="d-none name"><code>athlytics_introduction.Rmd</code></div>
@@ -110,11 +105,14 @@ quick version:</p>
 your data yet, start from <a href="https://www.strava.com/" class="external-link">Strava</a>
 and follow the steps in the <a href="https://github.com/HzaCode/Athlytics#quick-start" class="external-link">README Quick
 Start</a>.</p>
-<p><strong>Quick Summary:</strong> 1. Go to Strava Settings → My Account
-→ Download or Delete Your Account 2. Request “Download” (NOT delete!) 3.
-Wait for email with download link 4. Download the ZIP file (e.g.,
-<code>export_12345678.zip</code>) 5. <strong>Don’t unzip it</strong> —
-Athlytics reads ZIP files directly</p>
+<p><strong>Quick Summary:</strong> 1. <strong>Set Strava language to
+English</strong> first: Strava Settings → Display Preferences → Language
+→ English. The CSV export uses localized column headers, so non-English
+exports will fail to parse correctly. 2. Go to Strava Settings → My
+Account → Download or Delete Your Account 3. Request “Download” (NOT
+delete!) 4. Wait for email with download link 5. Download the ZIP file
+(e.g., <code>export_12345678.zip</code>) 6. <strong>Don’t unzip
+it</strong> — Athlytics reads ZIP files directly</p>
 <hr>
 </div>
 </div>
@@ -158,31 +156,27 @@ Athlytics reads ZIP files directly</p>
 <p><strong>Important Columns:</strong></p>
 <ul>
 <li>
-<code>activity_id</code> — Unique identifier</li>
+<code>id</code> — Unique activity identifier</li>
 <li>
 <code>date</code> — Activity date</li>
 <li>
-<code>sport</code> — Activity type (Run, Ride, Swim, etc.)</li>
+<code>type</code> — Activity type (Run, Ride, Swim, etc.)</li>
 <li>
-<code>distance_km</code> — Distance in kilometers</li>
+<code>distance</code> — Distance in kilometers</li>
 <li>
-<code>duration_mins</code> — Duration in minutes</li>
+<code>moving_time</code> — Moving time in seconds</li>
 <li>
-<code>avg_hr</code> — Average heart rate (if recorded)</li>
+<code>average_heartrate</code> — Average heart rate (if
+recorded)</li>
 <li>
-<code>max_hr</code> — Maximum heart rate</li>
+<code>max_heartrate</code> — Maximum heart rate</li>
 <li>
-<code>avg_pace_min_km</code> — Average pace for running</li>
+<code>average_speed</code> — Average speed (m/s)</li>
 <li>
-<code>avg_speed_kmh</code> — Average speed</li>
-<li>
-<code>avg_power</code> — Average power for cycling (if
+<code>average_watts</code> — Average power for cycling (if
 available)</li>
 <li>
 <code>elevation_gain</code> — Total elevation gain (meters)</li>
-<li>
-<code>best_efforts</code> — Personal best times at various
-distances</li>
 </ul>
 </div>
 <div class="section level3">
@@ -191,45 +185,45 @@ distances</li>
 <p>Before analysis, it’s good practice to check your data:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Summary statistics</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">distance_km</span>, <span class="va">duration_mins</span>, <span class="va">avg_hr</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">activities</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">distance</span>, <span class="va">moving_time</span>, <span class="va">average_heartrate</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check for missing heart rate data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">avg_hr</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">activities</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">average_heartrate</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">activities</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span><span class="co"># Shows % of activities with HR data</span></span>
 <span></span>
 <span><span class="co"># Activities without HR data</span></span>
-<span><span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">avg_hr</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">sport</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">activities</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">average_heartrate</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">type</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Pro Tip:</strong> Many Athlytics functions require heart rate
-data. Filter for <code>!is.na(avg_hr)</code> when calculating EF or
-decoupling.</p>
+data. Filter for <code>!is.na(average_heartrate)</code> when calculating
+EF or decoupling.</p>
 </div>
 <div class="section level3">
 <h3 id="filtering-your-data">Filtering Your Data<a class="anchor" aria-label="anchor" href="#filtering-your-data"></a>
 </h3>
-<p>For focused analysis, you’ll often want to filter by sport or
+<p>For focused analysis, you’ll often want to filter by type or
 date:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Only running activities</span></span>
-<span><span class="va">runs</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sport</span> <span class="op">==</span> <span class="st">"Run"</span><span class="op">)</span></span>
+<span><span class="va">runs</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">type</span> <span class="op">==</span> <span class="st">"Run"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Recent activities (last 6 months)</span></span>
-<span><span class="va">recent</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">recent</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">180</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Runs with heart rate data from 2024</span></span>
-<span><span class="va">runs_2024_hr</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">runs_2024_hr</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">sport</span> <span class="op">==</span> <span class="st">"Run"</span>,</span>
-<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">avg_hr</span><span class="op">)</span>,</span>
+<span>    <span class="va">type</span> <span class="op">==</span> <span class="st">"Run"</span>,</span>
+<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">average_heartrate</span><span class="op">)</span>,</span>
 <span>    <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/year.html" class="external-link">year</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2024</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Long runs only (&gt; 15 km)</span></span>
-<span><span class="va">long_runs</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sport</span> <span class="op">==</span> <span class="st">"Run"</span>, <span class="va">distance_km</span> <span class="op">&gt;</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">long_runs</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">type</span> <span class="op">==</span> <span class="st">"Run"</span>, <span class="va">distance</span> <span class="op">&gt;</span> <span class="fl">15</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 </div>
@@ -245,21 +239,8 @@ provides different insights into your training and physiology.</p>
 <p><strong>What is ACWR?</strong></p>
 <p>The Acute:Chronic Workload Ratio (ACWR) compares your recent training
 (acute load, typically 7 days) to your long-term baseline (chronic load,
-typically 28 days). It’s used to identify injury risk periods.</p>
-<p><strong>Risk Zones:</strong></p>
-<ul>
-<li>
-<strong>&lt; 0.8</strong> — Undertraining (fitness may decline)</li>
-<li>
-<strong>0.8-1.3</strong> — “Sweet spot” (optimal adaptation
-zone)</li>
-<li>
-<strong>1.3-1.5</strong> — Moderate risk (load increasing
-rapidly)</li>
-<li>
-<strong>&gt; 1.5</strong> — High risk (excessive load spike, injury
-risk)</li>
-</ul>
+typically 28 days). It helps you monitor whether you are ramping up
+training too quickly.</p>
 <div class="section level4">
 <h4 id="basic-acwr-calculation">Basic ACWR Calculation<a class="anchor" aria-label="anchor" href="#basic-acwr-calculation"></a>
 </h4>
@@ -267,7 +248,7 @@ risk)</li>
 <code class="sourceCode R"><span><span class="co"># Calculate ACWR for all running activities</span></span>
 <span><span class="va">acwr_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
-<span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>, <span class="co"># Filter by sport</span></span>
+<span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>, <span class="co"># Filter by activity type</span></span>
 <span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>, <span class="co"># Can also be "distance_km" or "hrss"</span></span>
 <span>  acute_period <span class="op">=</span> <span class="fl">7</span>, <span class="co"># 7-day rolling average</span></span>
 <span>  chronic_period <span class="op">=</span> <span class="fl">28</span> <span class="co"># 28-day rolling average</span></span>
@@ -280,15 +261,15 @@ risk)</li>
 <li>
 <code>date</code> — Date</li>
 <li>
-<code>daily_load</code> — Training load for that day (sum of
-duration/distance)</li>
-<li>
 <code>atl</code> — Acute Training Load (7-day rolling average)</li>
 <li>
 <code>ctl</code> — Chronic Training Load (28-day rolling
 average)</li>
 <li>
-<code>acwr_smooth</code> — The ACWR ratio (ATL / CTL)</li>
+<code>acwr</code> — Raw ACWR ratio (ATL / CTL)</li>
+<li>
+<code>acwr_smooth</code> — Smoothed ACWR (rolling mean of
+<code>acwr</code>)</li>
 </ul>
 </div>
 <div class="section level4">
@@ -306,13 +287,29 @@ average)</li>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"sample_acwr"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot ACWR with risk zones</span></span>
-<span><span class="fu"><a href="../reference/plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">sample_acwr</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating plot...</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">sample_acwr</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
-<img src="athlytics_introduction_files/figure-html/acwr-demo-1.png" class="r-plt" alt="ACWR visualization using sample data" width="672"><p class="caption">
+<img src="athlytics_introduction_files/figure-html/acwr-demo-1.png" class="r-plt" alt="ACWR visualization using sample data" width="100%"><p class="caption">
 ACWR visualization using sample data
 </p>
 </div>
+</div>
+<div class="section level4">
+<h4 id="risk-zones">Risk Zones<a class="anchor" aria-label="anchor" href="#risk-zones"></a>
+</h4>
+<ul>
+<li>
+<strong>&lt; 0.8</strong> — Undertraining (fitness may decline)</li>
+<li>
+<strong>0.8-1.3</strong> — “Sweet spot” (optimal adaptation
+zone)</li>
+<li>
+<strong>1.3-1.5</strong> — Moderate risk (load increasing
+rapidly)</li>
+<li>
+<strong>&gt; 1.5</strong> — High risk (excessive load spike, injury
+risk)</li>
+</ul>
 </div>
 <div class="section level4">
 <h4 id="interpreting-your-acwr">Interpreting Your ACWR<a class="anchor" aria-label="anchor" href="#interpreting-your-acwr"></a>
@@ -334,15 +331,15 @@ stimulus</li>
 <p><strong>Practical Example:</strong></p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Identify high-risk periods</span></span>
-<span><span class="va">high_risk</span> <span class="op">&lt;-</span> <span class="va">acwr_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">acwr_smooth</span> <span class="op">&gt;</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">daily_load</span>, <span class="va">acwr_smooth</span><span class="op">)</span></span>
+<span><span class="va">high_risk</span> <span class="op">&lt;-</span> <span class="va">acwr_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">acwr_smooth</span> <span class="op">&gt;</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">date</span>, <span class="va">atl</span>, <span class="va">ctl</span>, <span class="va">acwr_smooth</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">high_risk</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check recent trend</span></span>
-<span><span class="va">recent_acwr</span> <span class="op">&lt;-</span> <span class="va">acwr_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">60</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">recent_acwr</span> <span class="op">&lt;-</span> <span class="va">acwr_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">60</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">date</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">recent_acwr</span>, <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
@@ -362,12 +359,73 @@ distance-focused training (marathon prep)</li>
 <strong><code>hrss</code></strong> — Most accurate for physiological
 load (requires HR data)</li>
 </ul>
+<blockquote>
+<p><strong>Note on terminology:</strong> When using
+<code>duration_mins</code> or <code>distance_km</code>, you are
+technically measuring training <em>volume</em> rather than true
+physiological <em>load</em>. True training load accounts for intensity
+(e.g., heart rate, power). For more accurate load estimation, use
+<code>hrss</code> which incorporates heart rate data. This distinction
+is important: two athletes could have the same duration-based ACWR but
+very different physiological stress if their intensities differ. For
+research applications, always prefer intensity-weighted metrics (e.g.,
+HRSS, TRIMP) over simple volume measures.</p>
+<p>See: Impellizzeri, F. M., et al. (2020). Training load and its role
+in injury prevention, part I: Back to the future. <em>Journal of
+Athletic Training</em>, 55(9), 885-892. <a href="https://doi.org/10.4085/1062-6050-500-19" class="external-link">DOI:
+10.4085/1062-6050-500-19</a>; Foster, C. (1998). Monitoring training in
+athletes with reference to overtraining syndrome. <em>Medicine &amp;
+Science in Sports &amp; Exercise</em>, 30(7), 1164-1168. <a href="https://doi.org/10.1097/00005768-199807000-00023" class="external-link">DOI:
+10.1097/00005768-199807000-00023</a></p>
+</blockquote>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate using HRSS (heart rate stress score)</span></span>
 <span><span class="va">acwr_hrss</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_acwr.html">calculate_acwr</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
-<span>  load_metric <span class="op">=</span> <span class="st">"hrss"</span> <span class="co"># Automatically calculated if avg_hr available</span></span>
+<span>  load_metric <span class="op">=</span> <span class="st">"hrss"</span> <span class="co"># Automatically calculated if average_heartrate available</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="important-caveats">Important Caveats<a class="anchor" aria-label="anchor" href="#important-caveats"></a>
+</h4>
+<p>ACWR is widely used in practice, but its interpretation — especially
+as an “injury risk” indicator — is debated in the sports science
+literature. The original framework was proposed by Hulin et al. (2014)
+and popularized by Gabbett (2016), but subsequent analyses have
+questioned its predictive validity (Impellizzeri et al., 2020; Lolli et
+al., 2019), and a further critique called for dismissing the ACWR
+framework entirely (Impellizzeri et al., 2021). <strong>Use risk zones
+as descriptive heuristics rather than validated injury
+predictors.</strong></p>
+<blockquote>
+<p><strong>Key references:</strong></p>
+<ul>
+<li>Gabbett, T. J. (2016). The training-injury prevention paradox.
+<em>British Journal of Sports Medicine</em>, 50(5), 273-280. <a href="https://doi.org/10.1136/bjsports-2015-095788" class="external-link">DOI:
+10.1136/bjsports-2015-095788</a>
+</li>
+<li>Hulin, B. T., et al. (2014). Spikes in acute workload are associated
+with increased injury risk in elite cricket fast bowlers. <em>British
+Journal of Sports Medicine</em>, 48(8), 708-712. <a href="https://doi.org/10.1136/bjsports-2013-092524" class="external-link">DOI:
+10.1136/bjsports-2013-092524</a>
+</li>
+<li>Lolli, L., et al. (2019). The acute-to-chronic workload ratio: An
+inaccurate scaling index for an unnecessary normalisation process?
+<em>British Journal of Sports Medicine</em>, 53(24), 1510-1512. <a href="https://doi.org/10.1136/bjsports-2017-098884" class="external-link">DOI:
+10.1136/bjsports-2017-098884</a>
+</li>
+<li>Impellizzeri, F. M., et al. (2020). Acute:chronic workload ratio:
+Conceptual issues and fundamental pitfalls. <em>International Journal of
+Sports Physiology and Performance</em>, 15(6), 907-913. <a href="https://doi.org/10.1123/ijspp.2019-0864" class="external-link">DOI:
+10.1123/ijspp.2019-0864</a>
+</li>
+<li>Impellizzeri, F. M., et al. (2021). What role do chronic workloads
+play in the acute to chronic workload ratio? Time to dismiss ACWR and
+its underlying theory. <em>Sports Medicine</em>, 51(3), 581-592. <a href="https://doi.org/10.1007/s40279-020-01378-6" class="external-link">DOI:
+10.1007/s40279-020-01378-6</a>
+</li>
+</ul>
+</blockquote>
 <hr>
 </div>
 </div>
@@ -381,12 +439,24 @@ improvements.</p>
 <p><strong>Metrics:</strong></p>
 <ul>
 <li>
-<strong>Pace/HR</strong> (running) — Speed per heartbeat: Higher =
-better aerobic fitness</li>
+<strong>speed_hr</strong> (running) — Speed (m/s) / HR: Higher
+values = faster at same HR = better aerobic fitness</li>
 <li>
-<strong>Power/HR</strong> (cycling) — Watts per heartbeat: Higher =
-better aerobic fitness</li>
+<strong>gap_hr</strong> (running on hilly terrain) — Grade Adjusted
+Speed (m/s) / HR: Accounts for elevation changes using Strava’s GAP
+data. Recommended for hilly routes where raw speed doesn’t reflect true
+effort.</li>
+<li>
+<strong>power_hr</strong> (cycling) — Power (W) / HR: Higher values
+= more power at same HR = better aerobic fitness</li>
 </ul>
+<blockquote>
+<p><strong>Handling Elevation:</strong> For hilly runs, use
+<code>ef_metric = "gap_hr"</code> to account for gradient. This uses
+Strava’s Grade Adjusted Pace (GAP) data, which represents the equivalent
+flat-ground speed (m/s) adjusted for terrain gradient, providing more
+accurate efficiency comparisons across varied terrain.</p>
+</blockquote>
 <p><strong>What Changes Mean:</strong></p>
 <ul>
 <li>
@@ -402,15 +472,15 @@ loss</li>
 <h4 id="calculate-ef">Calculate EF<a class="anchor" aria-label="anchor" href="#calculate-ef"></a>
 </h4>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># For running (Pace/HR)</span></span>
+<code class="sourceCode R"><span><span class="co"># For running (Speed/HR)</span></span>
 <span><span class="va">ef_runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span> <span class="co"># Pace divided by HR</span></span>
+<span>  ef_metric <span class="op">=</span> <span class="st">"speed_hr"</span> <span class="co"># Speed (m/s) / HR</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># For cycling (Power/HR)</span></span>
-<span><span class="va">rides</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sport</span> <span class="op">==</span> <span class="st">"Ride"</span><span class="op">)</span></span>
+<span><span class="va">rides</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">type</span> <span class="op">==</span> <span class="st">"Ride"</span><span class="op">)</span></span>
 <span><span class="va">ef_cycling</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">rides</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span>
@@ -424,12 +494,12 @@ loss</li>
 <li>
 <code>date</code> — Activity date</li>
 <li>
+<code>activity_type</code> — Activity type (Run, Ride, etc.)</li>
+<li>
 <code>ef_value</code> — Efficiency Factor value</li>
 <li>
-<code>avg_hr</code> — Average heart rate</li>
-<li>
-<code>avg_pace_min_km</code> (or <code>avg_power</code>) — Output
-metric</li>
+<code>status</code> — Calculation status (ok, no_streams,
+non_steady, etc.)</li>
 </ul>
 </div>
 <div class="section level4">
@@ -440,19 +510,33 @@ metric</li>
 <span><span class="fu"><a href="../reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_runs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># With smoothing line to see trend (recommended)</span></span>
-<span><span class="fu"><a href="../reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_runs</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_runs</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Smooth per activity type (separate trend lines for each discipline)</span></span>
+<span><span class="co"># Note: requires data with multiple activity types (e.g., Run + Ride)</span></span>
+<span><span class="va">ef_multi</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span>activities_data <span class="op">=</span> <span class="va">activities</span>, ef_metric <span class="op">=</span> <span class="st">"speed_hr"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_multi</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span>, smooth_per_activity_type <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Demo with Sample Data:</strong></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Load built-in sample data</span></span>
+<code class="sourceCode R"><span><span class="co"># Load built-in sample data (contains Run + Ride activities)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"sample_ef"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot EF with trend line</span></span>
 <span><span class="fu"><a href="../reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">sample_ef</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating plot...</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using formula = 'y ~ x'</span></span></code></pre></div>
 <div class="figure">
-<img src="athlytics_introduction_files/figure-html/ef-demo-1.png" class="r-plt" alt="Efficiency Factor trend using sample data" width="672"><p class="caption">
+<img src="athlytics_introduction_files/figure-html/ef-demo-1.png" class="r-plt" alt="Efficiency Factor trend using sample data" width="100%"><p class="caption">
 Efficiency Factor trend using sample data
+</p>
+</div>
+<p><strong>Demo: Separate trend lines per discipline:</strong></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Smooth per activity type to compare trends across disciplines</span></span>
+<span><span class="fu"><a href="../reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">sample_ef</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span>, smooth_per_activity_type <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; `geom_smooth()` using formula = 'y ~ x'</span></span></code></pre></div>
+<div class="figure">
+<img src="athlytics_introduction_files/figure-html/ef-smooth-demo-1.png" class="r-plt" alt="EF with per-discipline smoothing" width="100%"><p class="caption">
+EF with per-discipline smoothing
 </p>
 </div>
 </div>
@@ -466,33 +550,70 @@ Efficiency Factor trend using sample data
 fluctuations</li>
 <li>
 <strong>Use steady-state efforts only</strong> — Interval workouts
-will skew results</li>
+will skew results. The package uses coefficient of variation (CV)
+thresholds to identify steady-state segments, a common approach in
+exercise physiology (Coyle &amp; González-Alonso, 2001).</li>
 <li>
 <strong>Consider external factors</strong> — Heat, altitude, fatigue
 affect EF</li>
 </ol>
-<p><strong>Practical Analysis:</strong></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<blockquote>
+<p><strong>Scientific Background:</strong> Steady-state exercise is
+characterized by relatively constant oxygen consumption and heart rate
+(CV &lt; 8-10%). This package automatically filters non-steady
+activities to ensure EF calculations reflect true aerobic efficiency
+rather than pacing artifacts.</p>
+<p>See: Coyle, E. F., &amp; González-Alonso, J. (2001). Cardiovascular
+drift during prolonged exercise. <em>Exercise and Sport Sciences
+Reviews</em>, 29(2), 88-92. <a href="https://doi.org/10.1097/00003677-200104000-00009" class="external-link">DOI:
+10.1097/00003677-200104000-00009</a>; Allen, H., Coggan, A. R., &amp;
+McGregor, S. (2019). <em>Training and Racing with a Power Meter</em>
+(3rd ed.). VeloPress. ISBN: 978-1-937715-93-9</p>
+</blockquote>
+<details><summary><strong>Technical Detail: Steady-State Detection Algorithm</strong>
+</summary><ol style="list-style-type: decimal">
+<li>
+<strong>Rolling window</strong>: A centered rolling window of
+min(300, N/4) data points (minimum 60 points, ~1-5 minutes at 1 Hz
+sampling) is applied to the activity stream.</li>
+<li>
+<strong>Coefficient of Variation (CV)</strong>: For each window
+position, CV = rolling SD / rolling mean is calculated for the primary
+metric (velocity for running, power for cycling).</li>
+<li>
+<strong>Filtering</strong>: Data points where CV &lt;
+<code>steady_cv_threshold</code> (default 8%) are classified as
+steady-state segments.</li>
+<li>
+<strong>Minimum duration</strong>: For EF, at least 100 steady-state
+data points are required. For decoupling, the steady-state segment must
+span at least <code>min_steady_minutes</code> (default 40 minutes).</li>
+<li>
+<strong>Aggregation</strong>: EF and decoupling are computed from
+steady-state data only, using median-based aggregation to reduce
+sensitivity to outliers.</li>
+</ol></details><p><strong>Practical Analysis:</strong></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate monthly average EF</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org" class="external-link">lubridate</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ef_monthly</span> <span class="op">&lt;-</span> <span class="va">ef_runs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>month <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/round_date.html" class="external-link">floor_date</a></span><span class="op">(</span><span class="va">date</span>, <span class="st">"month"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">ef_monthly</span> <span class="op">&lt;-</span> <span class="va">ef_runs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>month <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/round_date.html" class="external-link">floor_date</a></span><span class="op">(</span><span class="va">date</span>, <span class="st">"month"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    mean_ef <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ef_value</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    n_activities <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html" class="external-link">desc</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ef_monthly</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compare first vs last 3 months</span></span>
-<span><span class="va">recent_ef</span> <span class="op">&lt;-</span> <span class="va">ef_runs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">90</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">recent_ef</span> <span class="op">&lt;-</span> <span class="va">ef_runs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">90</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">ef_value</span><span class="op">)</span></span>
-<span><span class="va">baseline_ef</span> <span class="op">&lt;-</span> <span class="va">ef_runs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">90</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">180</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">baseline_ef</span> <span class="op">&lt;-</span> <span class="va">ef_runs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">90</span>, <span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">180</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">ef_value</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
@@ -507,19 +628,23 @@ affect EF</li>
 <div class="section level3">
 <h3 id="cardiovascular-decoupling">3. Cardiovascular Decoupling<a class="anchor" aria-label="anchor" href="#cardiovascular-decoupling"></a>
 </h3>
+<p>While EF tracks aerobic efficiency <strong>across</strong> activities
+over time, decoupling looks <strong>within</strong> a single activity to
+measure how efficiency changes from start to finish.</p>
 <p><strong>What is Decoupling?</strong></p>
 <p>Decoupling quantifies cardiovascular drift—the phenomenon where heart
 rate gradually rises during prolonged efforts even if pace/power remains
 constant. Low decoupling indicates good aerobic endurance.</p>
 <p><strong>How It Works:</strong></p>
-<p>The function compares efficiency (pace/HR or power/HR) between the
+<p>The function compares efficiency (speed/HR or power/HR) between the
 first half and second half of an activity:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">Decoupling %</mtext><mo>=</mo><mfrac><mrow><msub><mtext mathvariant="normal">EF</mtext><mtext mathvariant="normal">first half</mtext></msub><mo>−</mo><msub><mtext mathvariant="normal">EF</mtext><mtext mathvariant="normal">second half</mtext></msub></mrow><msub><mtext mathvariant="normal">EF</mtext><mtext mathvariant="normal">first half</mtext></msub></mfrac><mo>×</mo><mn>100</mn></mrow><annotation encoding="application/x-tex">
 \text{Decoupling \%} = \frac{\text{EF}_{\text{first half}} - \text{EF}_{\text{second half}}}{\text{EF}_{\text{first half}}} \times 100
 </annotation></semantics></math></p>
 <p>Positive values = efficiency decline in second half (HR drift);
 &lt;5% commonly used as reference threshold, requires interpretation in
-context of steady-state and environmental conditions.</p>
+context of steady-state and environmental conditions (Coyle &amp;
+González-Alonso, 2001; Friel, 2009).</p>
 <p><strong>Interpretation:</strong></p>
 <ul>
 <li>
@@ -533,12 +658,12 @@ insufficient base fitness)</li>
 <div class="section level4">
 <h4 id="calculate-decoupling">Calculate Decoupling<a class="anchor" aria-label="anchor" href="#calculate-decoupling"></a>
 </h4>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># For running</span></span>
 <span><span class="va">decoupling_runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_decoupling.html">calculate_decoupling</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span>
-<span>  decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span>,</span>
+<span>  decouple_metric <span class="op">=</span> <span class="st">"speed_hr"</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">60</span> <span class="co"># Only analyze runs ≥ 60 minutes</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -557,33 +682,32 @@ insufficient base fitness)</li>
 <li>
 <code>date</code> — Activity date</li>
 <li>
-<code>first_half_ratio</code> — EF in first half</li>
+<code>decoupling</code> — Decoupling percentage (%). Positive = HR
+drift</li>
 <li>
-<code>second_half_ratio</code> — EF in second half</li>
-<li>
-<code>decoupling_pct</code> — Percentage drift</li>
+<code>status</code> — Calculation status (ok, non_steady,
+insufficient_data)</li>
 </ul>
 </div>
 <div class="section level4">
 <h4 id="visualizing-decoupling">Visualizing Decoupling<a class="anchor" aria-label="anchor" href="#visualizing-decoupling"></a>
 </h4>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Basic plot</span></span>
-<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_runs</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># With metric specification</span></span>
-<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_runs</span>, decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Demo with Sample Data:</strong></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Basic plot</span></span>
+<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">decoupling_runs</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># With trend line</span></span>
+<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">decoupling_runs</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Demo with Sample Data:</strong></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load built-in sample data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"sample_decoupling"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot decoupling trend (use decoupling_df parameter)</span></span>
-<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span>decoupling_df <span class="op">=</span> <span class="va">sample_decoupling</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating plot...</span></span>
+<span><span class="co"># Plot decoupling trend</span></span>
+<span><span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">sample_decoupling</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using formula = 'y ~ x'</span></span></code></pre></div>
 <div class="figure">
-<img src="athlytics_introduction_files/figure-html/decoupling-demo-1.png" class="r-plt" alt="Cardiovascular decoupling using sample data" width="672"><p class="caption">
+<img src="athlytics_introduction_files/figure-html/decoupling-demo-1.png" class="r-plt" alt="Cardiovascular decoupling using sample data" width="100%"><p class="caption">
 Cardiovascular decoupling using sample data
 </p>
 </div>
@@ -592,11 +716,11 @@ Cardiovascular decoupling using sample data
 <h4 id="practical-applications">Practical Applications<a class="anchor" aria-label="anchor" href="#practical-applications"></a>
 </h4>
 <p><strong>1. Assess Aerobic Base:</strong></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Recent decoupling average</span></span>
-<span><span class="va">recent_decouple</span> <span class="op">&lt;-</span> <span class="va">decoupling_runs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">60</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>avg_decouple <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">decoupling_pct</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">recent_decouple</span> <span class="op">&lt;-</span> <span class="va">decoupling_runs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">60</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>avg_decouple <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">decoupling</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="va">recent_decouple</span><span class="op">$</span><span class="va">avg_decouple</span> <span class="op">&lt;</span> <span class="fl">5</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Excellent aerobic base! Ready for higher intensity.\n"</span><span class="op">)</span></span>
@@ -606,12 +730,12 @@ Cardiovascular decoupling using sample data
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"High decoupling—focus on more easy, long runs.\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><strong>2. Monitor Training Block Progress:</strong></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compare decoupling over time</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">decoupling_runs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">decoupling_pct</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="va">decoupling_runs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">decoupling</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html" class="external-link">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"loess"</span>, se <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"green"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -624,18 +748,26 @@ Cardiovascular decoupling using sample data
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Important Note:</strong> Decoupling is highly affected by
 environmental conditions (heat, humidity) and cumulative fatigue. Always
-interpret in context.</p>
+interpret in context. See: Friel, J. (2009). <em>The Cyclist’s Training
+Bible</em> (4th ed.). VeloPress — for practical application of
+decoupling in endurance training.</p>
 <hr>
 </div>
 </div>
 <div class="section level3">
 <h3 id="personal-bests-pbs">4. Personal Bests (PBs)<a class="anchor" aria-label="anchor" href="#personal-bests-pbs"></a>
 </h3>
-<p>Track your best performances at standard distances over time.</p>
+<p>Track your best performances at standard distances over time.
+Systematic personal best tracking across multiple distances is a
+well-established method for monitoring endurance performance
+progression. Analyzing PBs at different distances helps distinguish
+between improvements in speed (shorter distances) and aerobic endurance
+(longer distances), aligning with periodization principles (Matveyev,
+1981).</p>
 <div class="section level4">
 <h4 id="calculate-pbs">Calculate PBs<a class="anchor" aria-label="anchor" href="#calculate-pbs"></a>
 </h4>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Extract personal bests</span></span>
 <span><span class="va">pbs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_pbs.html">calculate_pbs</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
@@ -654,24 +786,23 @@ interpret in context.</p>
 <div class="section level4">
 <h4 id="visualize-pb-progression">Visualize PB Progression<a class="anchor" aria-label="anchor" href="#visualize-pb-progression"></a>
 </h4>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot PR progression</span></span>
 <span><span class="fu"><a href="../reference/plot_pbs.html">plot_pbs</a></span><span class="op">(</span><span class="va">pbs</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Filter to specific distance</span></span>
-<span><span class="va">pbs_5k</span> <span class="op">&lt;-</span> <span class="va">pbs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">distance</span> <span class="op">==</span> <span class="st">"5k"</span><span class="op">)</span></span>
+<span><span class="va">pbs_5k</span> <span class="op">&lt;-</span> <span class="va">pbs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">distance</span> <span class="op">==</span> <span class="st">"5k"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">pbs_5k</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Demo with Sample Data:</strong></p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load built-in sample data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"sample_pbs"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot PB progression (use pbs_df parameter)</span></span>
-<span><span class="fu"><a href="../reference/plot_pbs.html">plot_pbs</a></span><span class="op">(</span>pbs_df <span class="op">=</span> <span class="va">sample_pbs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating plot...</span></span>
+<span><span class="co"># Plot PB progression</span></span>
+<span><span class="fu"><a href="../reference/plot_pbs.html">plot_pbs</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">sample_pbs</span><span class="op">)</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using formula = 'y ~ x'</span></span></code></pre></div>
 <div class="figure">
-<img src="athlytics_introduction_files/figure-html/pbs-demo-1.png" class="r-plt" alt="Personal bests progression using sample data" width="672"><p class="caption">
+<img src="athlytics_introduction_files/figure-html/pbs-demo-1.png" class="r-plt" alt="Personal bests progression using sample data" width="100%"><p class="caption">
 Personal bests progression using sample data
 </p>
 </div>
@@ -683,10 +814,30 @@ Personal bests progression using sample data
 </h3>
 <p>Visualize your training state in 2D space: acute load vs chronic
 load.</p>
+<blockquote>
+<p><strong>How does this differ from ACWR?</strong> Both use the same
+underlying data (ATL and CTL), but provide different perspectives:</p>
+<ul>
+<li>
+<strong>ACWR</strong> collapses acute and chronic load into a
+<strong>single ratio</strong> plotted over time — it tells you
+<em>when</em> load spikes occurred.</li>
+<li>
+<strong>Load Exposure</strong> preserves the <strong>two-dimensional
+relationship</strong> (ATL vs CTL scatter plot) — it tells you
+<em>where</em> you are in the fitness-fatigue state space, revealing
+whether a high ACWR comes from ramping up on a low base (risky) or from
+a natural fluctuation on a high base (less risky).</li>
+</ul>
+<p>In practice, <strong>use ACWR for day-to-day monitoring</strong> and
+<strong>Load Exposure for strategic planning</strong> across training
+phases. Using both together gives a more complete picture than either
+alone.</p>
+</blockquote>
 <div class="section level4">
 <h4 id="calculate-and-plot-exposure">Calculate and Plot Exposure<a class="anchor" aria-label="anchor" href="#calculate-and-plot-exposure"></a>
 </h4>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate exposure</span></span>
 <span><span class="va">exposure</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_exposure.html">calculate_exposure</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
@@ -695,19 +846,18 @@ load.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot with risk zones</span></span>
-<span><span class="fu"><a href="../reference/plot_exposure.html">plot_exposure</a></span><span class="op">(</span><span class="va">exposure</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_exposure.html">plot_exposure</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">exposure</span>, risk_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Demo with Sample Data:</strong></p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load built-in sample data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"sample_exposure"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Plot exposure (use exposure_df parameter)</span></span>
-<span><span class="fu"><a href="../reference/plot_exposure.html">plot_exposure</a></span><span class="op">(</span>exposure_df <span class="op">=</span> <span class="va">sample_exposure</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Generating plot...</span></span>
+<span><span class="co"># Plot exposure</span></span>
+<span><span class="fu"><a href="../reference/plot_exposure.html">plot_exposure</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">sample_exposure</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Removed 27 rows containing missing values or values outside the scale range</span></span>
 <span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <div class="figure">
-<img src="athlytics_introduction_files/figure-html/exposure-demo-1.png" class="r-plt" alt="Load exposure analysis using sample data" width="672"><p class="caption">
+<img src="athlytics_introduction_files/figure-html/exposure-demo-1.png" class="r-plt" alt="Load exposure analysis using sample data" width="100%"><p class="caption">
 Load exposure analysis using sample data
 </p>
 </div>
@@ -731,7 +881,7 @@ up training)</li>
 <h2 id="complete-workflow-example">Complete Workflow Example<a class="anchor" aria-label="anchor" href="#complete-workflow-example"></a>
 </h2>
 <p>Here’s a realistic, end-to-end analysis workflow:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hzacode.github.io/Athlytics/">Athlytics</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
@@ -740,8 +890,8 @@ up training)</li>
 <span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"my_strava_export.zip"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Focus on running activities with HR data</span></span>
-<span><span class="va">runs</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sport</span> <span class="op">==</span> <span class="st">"Run"</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">avg_hr</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">runs</span> <span class="op">&lt;-</span> <span class="va">activities</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">type</span> <span class="op">==</span> <span class="st">"Run"</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">average_heartrate</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Loaded %d running activities with HR data\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">runs</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -752,9 +902,9 @@ up training)</li>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check current training status</span></span>
-<span><span class="va">current_acwr</span> <span class="op">&lt;-</span> <span class="va">acwr_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">30</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">current_acwr</span> <span class="op">&lt;-</span> <span class="va">acwr_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">date</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="fl">30</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">acwr_smooth</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Current ACWR: %.2f\n"</span>, <span class="va">current_acwr</span><span class="op">)</span><span class="op">)</span></span>
@@ -767,13 +917,13 @@ up training)</li>
 <span><span class="co"># ---- 3. Aerobic Fitness Tracking ----</span></span>
 <span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span></span>
 <span>  activities_data <span class="op">=</span> <span class="va">runs</span>,</span>
-<span>  ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span></span>
+<span>  ef_metric <span class="op">=</span> <span class="st">"speed_hr"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Calculate fitness trend</span></span>
-<span><span class="va">ef_trend</span> <span class="op">&lt;-</span> <span class="va">ef_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>month <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/round_date.html" class="external-link">floor_date</a></span><span class="op">(</span><span class="va">date</span>, <span class="st">"month"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">ef_trend</span> <span class="op">&lt;-</span> <span class="va">ef_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>month <span class="op">=</span> <span class="fu">lubridate</span><span class="fu">::</span><span class="fu"><a href="https://lubridate.tidyverse.org/reference/round_date.html" class="external-link">floor_date</a></span><span class="op">(</span><span class="va">date</span>, <span class="st">"month"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">month</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>mean_ef <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ef_value</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_data</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
@@ -787,7 +937,7 @@ up training)</li>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">60</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">avg_decouple</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">decoupling_data</span><span class="op">$</span><span class="va">decoupling_pct</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">avg_decouple</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">decoupling_data</span><span class="op">$</span><span class="va">decoupling</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Average decoupling: %.1f%% (%s aerobic base)\n"</span>,</span>
 <span>  <span class="va">avg_decouple</span>,</span>
@@ -796,7 +946,7 @@ up training)</li>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span><span class="va">decoupling_data</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_decoupling.html">plot_decoupling</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">decoupling_data</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Cardiovascular Drift in Long Runs"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p3</span><span class="op">)</span></span>
 <span></span>
@@ -827,7 +977,7 @@ up training)</li>
 data - Required metrics (e.g., HR) are missing - Date range has no
 activities</p>
 <p><strong>Solutions:</strong></p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check activity types in your data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">type</span><span class="op">)</span></span>
 <span></span>
@@ -844,7 +994,7 @@ activities</p>
 <h4 id="not-enough-data-for-chronic-period">“Not enough data for chronic period”<a class="anchor" aria-label="anchor" href="#not-enough-data-for-chronic-period"></a>
 </h4>
 <p>ACWR requires at least 28 days of data. Check your date range:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># How much data do you have?</span></span>
 <span><span class="va">date_span</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">date</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">activities</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Your data spans %d days\n"</span>, <span class="va">date_span</span><span class="op">)</span><span class="op">)</span></span>
@@ -855,15 +1005,15 @@ activities</p>
 <h4 id="na-values-in-output">“NA values in output”<a class="anchor" aria-label="anchor" href="#na-values-in-output"></a>
 </h4>
 <p>Some activities may lack required metrics (HR, power, etc.):</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Filter before calculating</span></span>
-<span><span class="va">runs_with_hr</span> <span class="op">&lt;-</span> <span class="va">runs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">avg_hr</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">runs_with_hr</span>, ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">runs_with_hr</span> <span class="op">&lt;-</span> <span class="va">runs</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">average_heartrate</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">runs_with_hr</span>, ef_metric <span class="op">=</span> <span class="st">"speed_hr"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="plots-look-strange-or-empty">Plots look strange or empty<a class="anchor" aria-label="anchor" href="#plots-look-strange-or-empty"></a>
 </h4>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Check if data exists</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">acwr_data</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">acwr_data</span><span class="op">$</span><span class="va">acwr_smooth</span><span class="op">)</span></span>
@@ -929,20 +1079,20 @@ data frames ready for lme4, survival analysis, etc.</li>
 <h3 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h3>
 <p>If you use Athlytics in your research, please cite:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="co">@software{athlytics2025,</span></span>
-<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a><span class="co">  title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},</span></span>
-<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a><span class="co">  author  = {Zhiang He},</span></span>
-<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a><span class="co">  year    = {2025},</span></span>
-<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a><span class="co">  version = {1.0.0},</span></span>
-<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a><span class="co">  url     = {https://github.com/HzaCode/Athlytics}</span></span>
-<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="co">@software{athlytics2025,</span></span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="co">  title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},</span></span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a><span class="co">  author  = {Zhiang He},</span></span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a><span class="co">  year    = {2025},</span></span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a><span class="co">  version = {1.0.3},</span></span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a><span class="co">  url     = {https://github.com/HzaCode/Athlytics}</span></span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
 <hr>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.5.2 (2025-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu</span></span>
@@ -965,24 +1115,22 @@ data frames ready for lme4, survival analysis, etc.</li>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] ggplot2_4.0.1   Athlytics_1.0.2</span></span>
+<span><span class="co">#&gt; [1] ggplot2_4.0.2   Athlytics_1.0.3</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] sass_0.4.10        generics_0.1.4     tidyr_1.3.2        lattice_0.22-7    </span></span>
-<span><span class="co">#&gt;  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    </span></span>
-<span><span class="co">#&gt;  [9] grid_4.5.2         timechange_0.3.0   RColorBrewer_1.1-3 fastmap_1.2.0     </span></span>
-<span><span class="co">#&gt; [13] jsonlite_2.0.0     Matrix_1.7-4       mgcv_1.9-3         purrr_1.2.1       </span></span>
-<span><span class="co">#&gt; [17] viridisLite_0.4.2  scales_1.4.0       textshaping_1.0.4  jquerylib_0.1.4   </span></span>
-<span><span class="co">#&gt; [21] cli_3.6.5          rlang_1.1.7        splines_4.5.2      withr_3.0.2       </span></span>
-<span><span class="co">#&gt; [25] cachem_1.1.0       yaml_2.3.12        otel_0.2.0         tools_4.5.2       </span></span>
-<span><span class="co">#&gt; [29] tzdb_0.5.0         dplyr_1.1.4        vctrs_0.7.0        R6_2.6.1          </span></span>
-<span><span class="co">#&gt; [33] zoo_1.8-15         lifecycle_1.0.5    lubridate_1.9.4    fs_1.6.6          </span></span>
-<span><span class="co">#&gt; [37] htmlwidgets_1.6.4  ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        </span></span>
-<span><span class="co">#&gt; [41] pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0        gtable_0.3.6      </span></span>
-<span><span class="co">#&gt; [45] glue_1.8.0         systemfonts_1.3.1  xfun_0.55          tibble_3.3.1      </span></span>
-<span><span class="co">#&gt; [49] tidyselect_1.2.1   knitr_1.51         farver_2.1.2       htmltools_0.5.9   </span></span>
-<span><span class="co">#&gt; [53] nlme_3.1-168       rmarkdown_2.30     labeling_0.4.3     readr_2.1.6       </span></span>
-<span><span class="co">#&gt; [57] compiler_4.5.2     S7_0.2.1</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] Matrix_1.7-4       gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.0       </span></span>
+<span><span class="co">#&gt;  [5] compiler_4.5.2     tidyselect_1.2.1   jquerylib_0.1.4    splines_4.5.2     </span></span>
+<span><span class="co">#&gt;  [9] systemfonts_1.3.1  scales_1.4.0       textshaping_1.0.4  yaml_2.3.12       </span></span>
+<span><span class="co">#&gt; [13] fastmap_1.2.0      lattice_0.22-7     R6_2.6.1           labeling_0.4.3    </span></span>
+<span><span class="co">#&gt; [17] generics_0.1.4     knitr_1.51         htmlwidgets_1.6.4  tibble_3.3.1      </span></span>
+<span><span class="co">#&gt; [21] desc_1.4.3         lubridate_1.9.5    bslib_0.10.0       pillar_1.11.1     </span></span>
+<span><span class="co">#&gt; [25] RColorBrewer_1.1-3 rlang_1.1.7        cachem_1.1.0       xfun_0.56         </span></span>
+<span><span class="co">#&gt; [29] fs_1.6.6           sass_0.4.10        S7_0.2.1           otel_0.2.0        </span></span>
+<span><span class="co">#&gt; [33] timechange_0.4.0   cli_3.6.5          mgcv_1.9-3         pkgdown_2.2.0     </span></span>
+<span><span class="co">#&gt; [37] withr_3.0.2        magrittr_2.0.4     digest_0.6.39      grid_4.5.2        </span></span>
+<span><span class="co">#&gt; [41] nlme_3.1-168       lifecycle_1.0.5    vctrs_0.7.1        evaluate_1.0.5    </span></span>
+<span><span class="co">#&gt; [45] glue_1.8.0         farver_2.1.2       ragg_1.5.0         rmarkdown_2.30    </span></span>
+<span><span class="co">#&gt; [49] tools_4.5.2        pkgconfig_2.0.3    htmltools_0.5.9</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

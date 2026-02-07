@@ -15,7 +15,14 @@ plot_acwr_enhanced(
   highlight_zones = TRUE,
   title = NULL,
   subtitle = NULL,
-  method_label = NULL
+  method_label = NULL,
+  caption = if (highlight_zones) {
+    
+    "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
+ }
+    else {
+     NULL
+ }
 )
 ```
 
@@ -63,6 +70,11 @@ plot_acwr_enhanced(
 
   Optional label for the method used (e.g., "RA", "EWMA"). Default NULL.
 
+- caption:
+
+  Plot caption. Set to NULL to remove. Defaults to zone description when
+  `highlight_zones = TRUE`.
+
 ## Value
 
 A ggplot object.
@@ -90,6 +102,13 @@ The layering order (bottom to top):
 
 4.  ACWR line (individual trend)
 
+**Note:** The predictive value of ACWR for injury risk is debated in the
+literature (Impellizzeri et al., 2020). Risk zone labels should be
+interpreted as descriptive heuristics, not validated injury predictors.
+See
+[`calculate_acwr()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md)
+documentation for full references.
+
 ## Examples
 
 ``` r
@@ -99,7 +118,6 @@ if (!is.null(sample_acwr) && nrow(sample_acwr) > 0) {
   p <- plot_acwr_enhanced(sample_acwr, show_ci = FALSE)
   print(p)
 }
-#> No reference data provided. Setting show_reference = FALSE.
 
 
 if (FALSE) { # \dontrun{

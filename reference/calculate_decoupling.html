@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,12 +15,9 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -48,15 +45,16 @@
 <span>  activities_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  export_dir <span class="op">=</span> <span class="st">"strava_export_data"</span>,</span>
 <span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span><span class="op">)</span>,</span>
-<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pace_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
+<span>  decouple_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"speed_hr"</span>, <span class="st">"power_hr"</span><span class="op">)</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  end_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min_duration_mins <span class="op">=</span> <span class="fl">40</span>,</span>
 <span>  min_steady_minutes <span class="op">=</span> <span class="fl">40</span>,</span>
 <span>  steady_cv_threshold <span class="op">=</span> <span class="fl">0.08</span>,</span>
 <span>  min_hr_coverage <span class="op">=</span> <span class="fl">0.9</span>,</span>
 <span>  quality_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"off"</span>, <span class="st">"flag"</span>, <span class="st">"filter"</span><span class="op">)</span>,</span>
-<span>  stream_df <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  stream_df <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -78,8 +76,8 @@ Default is "strava_export_data".</p></dd>
 
 
 <dt id="arg-decouple-metric">decouple_metric<a class="anchor" aria-label="anchor" href="#arg-decouple-metric"></a></dt>
-<dd><p>Basis for calculation: "pace_hr" or "power_hr"
-(legacy "pace_hr"/"power_hr" also supported).</p></dd>
+<dd><p>Basis for calculation: "speed_hr" or "power_hr".
+Note: <code>"pace_hr"</code> is accepted as a deprecated alias for <code>"speed_hr"</code>.</p></dd>
 
 
 <dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
@@ -118,7 +116,11 @@ or "filter" (exclude flagged data). Default "filter" for scientific rigor.</p></
 <dd><p>Optional. A pre-fetched data frame for a <em>single</em> activity's stream.
 If provided, calculates decoupling for this data directly, ignoring other parameters.
 Must include columns: <code>time</code>, <code>heartrate</code>, and either <code>velocity_smooth</code>/<code>distance</code>
-(for pace_hr) or <code>watts</code> (for power_hr).</p></dd>
+(for speed_hr) or <code>watts</code> (for power_hr).</p></dd>
+
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Logical. If TRUE, prints progress messages. Default FALSE.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -147,6 +149,27 @@ HR drift (cardiovascular drift).</p>
 <p>The function parses FIT/TCX/GPX files from your Strava export to extract detailed
 stream data (time, heartrate, distance/power). Activities are split into two halves,
 and the efficiency factor (output/HR) is compared between halves.</p>
+<p><strong>Steady-State Detection Method:</strong></p>
+<p>Before computing decoupling, the function applies a rolling coefficient of
+variation (CV) filter to identify steady-state segments:</p><ol><li><p>A sliding window (default 300 s) computes the rolling mean and standard
+deviation of the output metric (velocity or power).</p></li>
+<li><p>The CV (= rolling SD / rolling mean) is calculated at each time point.</p></li>
+<li><p>Time points with CV &lt; <code>steady_cv_threshold</code> (default 8 %) are classified
+as steady-state.</p></li>
+<li><p>At least <code>min_steady_minutes</code> of steady-state data must be present;
+otherwise the activity is marked <code>"non_steady"</code>.</p></li>
+<li><p>Decoupling is then calculated by comparing the EF (output / HR) of the
+first half vs. the second half of the steady-state segment.</p></li>
+</ol><p>This ensures that measured decoupling reflects true cardiovascular drift
+rather than pacing variability or interval efforts (Coyle &amp; González-Alonso,
+2001). The rolling CV approach is a standard signal-processing technique for
+detecting stationarity in physiological time series.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Coyle, E. F., &amp; González-Alonso, J. (2001). Cardiovascular drift during
+prolonged exercise: New perspectives. <em>Exercise and Sport Sciences Reviews</em>,
+29(2), 88-92. <a href="https://doi.org/10.1097/00003677-200104000-00009" class="external-link">doi:10.1097/00003677-200104000-00009</a></p>
     </div>
 
     <div class="section level2">
@@ -164,23 +187,41 @@ and the efficiency factor (output/HR) is compared between halves.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-01-27       10.6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-02-02       14.3</span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Runnable example with dummy stream data (single activity analysis):</span></span></span>
+<span class="r-in"><span><span class="va">dummy_stream</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  time <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3600</span>, <span class="co"># 1 hour</span></span></span>
+<span class="r-in"><span>  heartrate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">140</span>, <span class="fl">3600</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  velocity_smooth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3600</span><span class="op">)</span>, <span class="co"># 3 m/s</span></span></span>
+<span class="r-in"><span>  watts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">3600</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  distance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html" class="external-link">cumsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3600</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Calculate decoupling for this specific activity stream</span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">calculate_decoupling</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  stream_df <span class="op">=</span> <span class="va">dummy_stream</span>,</span></span>
+<span class="r-in"><span>  decouple_metric <span class="op">=</span> <span class="st">"speed_hr"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Load local activities</span></span></span>
 <span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Calculate Pace/HR decoupling for recent runs</span></span></span>
+<span class="r-in"><span><span class="co"># Calculate Speed/HR decoupling for recent runs</span></span></span>
 <span class="r-in"><span><span class="va">run_decoupling</span> <span class="op">&lt;-</span> <span class="fu">calculate_decoupling</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  activities_data <span class="op">=</span> <span class="va">activities</span>,</span></span>
 <span class="r-in"><span>  export_dir <span class="op">=</span> <span class="st">"strava_export_data"</span>,</span></span>
 <span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
-<span class="r-in"><span>  decouple_metric <span class="op">=</span> <span class="st">"pace_hr"</span>,</span></span>
+<span class="r-in"><span>  decouple_metric <span class="op">=</span> <span class="st">"speed_hr"</span>,</span></span>
 <span class="r-in"><span>  start_date <span class="op">=</span> <span class="st">"2024-01-01"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">run_decoupling</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Calculate for a single activity stream</span></span></span>
 <span class="r-in"><span><span class="co"># stream_data &lt;- parse_activity_file("strava_export_data/activities/12345.fit")</span></span></span>
-<span class="r-in"><span><span class="co"># single_decoupling &lt;- calculate_decoupling(stream_df = stream_data, decouple_metric = "pace_hr")</span></span></span>
+<span class="r-in"><span><span class="co"># single_decoupling &lt;- calculate_decoupling(stream_df = stream_data, decouple_metric = "speed_hr")</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

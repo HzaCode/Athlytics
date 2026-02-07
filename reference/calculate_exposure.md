@@ -15,7 +15,8 @@ calculate_exposure(
   user_ftp = NULL,
   user_max_hr = NULL,
   user_resting_hr = NULL,
-  end_date = NULL
+  end_date = Sys.Date(),
+  verbose = FALSE
 )
 ```
 
@@ -65,6 +66,10 @@ calculate_exposure(
   today. The analysis period covers the `chronic_period` days ending on
   this date.
 
+- verbose:
+
+  Logical. If TRUE, prints progress messages. Default FALSE.
+
 ## Value
 
 A data frame with columns: `date`, `daily_load`, `atl` (Acute Load),
@@ -94,6 +99,38 @@ print(head(sample_exposure))
 #> 4 2023-01-04       35.1    NA    NA    NA
 #> 5 2023-01-05       14.6    NA    NA    NA
 #> 6 2023-01-06       31.9    NA    NA    NA
+
+# Runnable example with dummy data:
+end <- Sys.Date()
+dates <- seq(end - 59, end, by = "day")
+dummy_activities <- data.frame(
+  date = dates,
+  type = "Run",
+  moving_time = rep(3600, length(dates)), # 1 hour
+  distance = rep(10000, length(dates)),   # 10 km
+  average_heartrate = rep(140, length(dates)),
+  suffer_score = rep(50, length(dates)),
+  tss = rep(50, length(dates)),
+  stringsAsFactors = FALSE
+)
+
+# Calculate Exposure (ATL/CTL)
+exposure_result <- calculate_exposure(
+  activities_data = dummy_activities,
+  activity_type = "Run",
+  load_metric = "distance_km",
+  acute_period = 7,
+  chronic_period = 28,
+  end_date = end
+)
+print(head(exposure_result))
+#>         date daily_load atl ctl acwr
+#> 1 2026-01-11         10  10  10    1
+#> 2 2026-01-12         10  10  10    1
+#> 3 2026-01-13         10  10  10    1
+#> 4 2026-01-14         10  10  10    1
+#> 5 2026-01-15         10  10  10    1
+#> 6 2026-01-16         10  10  10    1
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data

@@ -70,22 +70,8 @@ Visualization customization
 
 - [`theme_athlytics()`](https://hzacode.github.io/Athlytics/reference/theme_athlytics.md)
   : Get Athlytics Theme
-- [`scale_athlytics()`](https://hzacode.github.io/Athlytics/reference/scale_athlytics.md)
-  : Apply Color Palette to ggplot
-- [`athlytics_colors_acwr_zones()`](https://hzacode.github.io/Athlytics/reference/athlytics_colors_acwr_zones.md)
-  : ACWR Zone Colors
-- [`athlytics_colors_ef()`](https://hzacode.github.io/Athlytics/reference/athlytics_colors_ef.md)
-  : Efficiency Factor Colors
-- [`athlytics_colors_training_load()`](https://hzacode.github.io/Athlytics/reference/athlytics_colors_training_load.md)
-  : Training Load Colors
-- [`athlytics_palette_academic()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_academic.md)
-  : Academic Muted Color Palette
-- [`athlytics_palette_cell()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_cell.md)
-  : Cell Journal Palette
 - [`athlytics_palette_nature()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_nature.md)
   : Nature-Inspired Color Palette
-- [`athlytics_palette_science()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_science.md)
-  : Science Magazine Palette
 - [`athlytics_palette_vibrant()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_vibrant.md)
   : Vibrant High-Contrast Palette
 

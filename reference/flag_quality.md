@@ -130,7 +130,6 @@ stream_data <- data.frame(
 
 # Flag quality issues
 flagged_data <- flag_quality(stream_data, sport = "Run")
-#> Quality check complete: 47.6% flagged, 0.0% steady-state
 
 # Check summary
 cat("Quality score range:", range(flagged_data$quality_score), "\n")

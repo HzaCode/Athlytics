@@ -27,7 +27,7 @@ Danger Zone: ACWR &amp;gt; 1.5 (increased injury risk)
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,12 +35,9 @@ Danger Zone: ACWR &amp;gt; 1.5 (increased injury risk)
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -78,11 +75,12 @@ helps identify periods of rapid training load increases that may elevate injury 
 <span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span>
 <span>  chronic_period <span class="op">=</span> <span class="fl">28</span>,</span>
 <span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  end_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  user_ftp <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  user_max_hr <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  user_resting_hr <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  smoothing_period <span class="op">=</span> <span class="fl">7</span></span>
+<span>  smoothing_period <span class="op">=</span> <span class="fl">7</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -152,6 +150,10 @@ when <code>load_metric = "tss"</code>. Used to normalize power-based training st
 <dd><p>Integer. Number of days for smoothing the ACWR using a
 rolling mean (default: 7). Reduces day-to-day noise for clearer trend visualization.</p></dd>
 
+
+<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
+<dd><p>Logical. If TRUE, prints progress messages. Default FALSE.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -201,19 +203,40 @@ For cohort analyses, add an <code>athlete_id</code> column before calculation an
 <code>group_by(athlete_id)</code> with <code><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify()</a></code>. See examples below and vignettes for details.</p>
     </div>
     <div class="section level2">
+    <h2 id="scientific-considerations">Scientific Considerations<a class="anchor" aria-label="anchor" href="#scientific-considerations"></a></h2>
+
+
+<p><strong>Important</strong>: The predictive value of ACWR for injury risk has been debated in
+recent literature. Some researchers argue that ACWR may have limited utility for
+predicting injuries (Impellizzeri et al., 2020), and a subsequent analysis has
+called for dismissing the ACWR framework entirely (Impellizzeri et al., 2021).
+Users should interpret ACWR risk zones with caution and consider them as
+descriptive heuristics rather than validated injury predictors.</p>
+<p>Impellizzeri, F. M., Tenan, M. S., Kempton, T., Novak, A., &amp; Coutts, A. J. (2020).
+Acute:chronic workload ratio: conceptual issues and fundamental pitfalls.
+<em>International Journal of Sports Physiology and Performance</em>, 15(6), 907-913.
+<a href="https://doi.org/10.1123/ijspp.2019-0864" class="external-link">doi:10.1123/ijspp.2019-0864</a></p>
+<p>Impellizzeri, F. M., Woodcock, S., Coutts, A. J., Fanchini, M., McCall, A.,
+&amp; Vigotsky, A. D. (2021). What role do chronic workloads play in the acute to
+chronic workload ratio? Time to dismiss ACWR and its underlying theory.
+<em>Sports Medicine</em>, 51(3), 581-592. <a href="https://doi.org/10.1007/s40279-020-01378-6" class="external-link">doi:10.1007/s40279-020-01378-6</a></p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Gabbett, T. J. (2016). The training-injury prevention paradox: should athletes
-be training smarter and harder? <em>British Journal of Sports Medicine</em>, 50(5), 273-280.</p>
-<p>Hulin, B. T., et al. (2016). The acute:chronic workload ratio predicts injury:
-high chronic workload may decrease injury risk in elite rugby league players.
-<em>British Journal of Sports Medicine</em>, 50(4), 231-236.</p>
+be training smarter and harder? <em>British Journal of Sports Medicine</em>, 50(5), 273-280.
+<a href="https://doi.org/10.1136/bjsports-2015-095788" class="external-link">doi:10.1136/bjsports-2015-095788</a></p>
+<p>Hulin, B. T., Gabbett, T. J., Lawson, D. W., Caputi, P., &amp; Sampson, J. A. (2016).
+The acute:chronic workload ratio predicts injury: high chronic workload may decrease
+injury risk in elite rugby league players. <em>British Journal of Sports Medicine</em>,
+50(4), 231-236. <a href="https://doi.org/10.1136/bjsports-2015-094817" class="external-link">doi:10.1136/bjsports-2015-094817</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="plot_acwr.html">plot_acwr</a></code> for visualization,
-<code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma</a></code> for EWMA-based ACWR,
-<code><a href="load_local_activities.html">load_local_activities</a></code> for data loading,
-<code><a href="calculate_cohort_reference.html">calculate_cohort_reference</a></code> for multi-athlete comparisons</p></div>
+    <div class="dont-index"><p><code><a href="plot_acwr.html">plot_acwr()</a></code> for visualization,
+<code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma()</a></code> for EWMA-based ACWR,
+<code><a href="load_local_activities.html">load_local_activities()</a></code> for data loading,
+<code><a href="calculate_cohort_reference.html">calculate_cohort_reference()</a></code> for multi-athlete comparisons</p></div>
     </div>
 
     <div class="section level2">
@@ -230,6 +253,40 @@ high chronic workload may decrease injury risk in elite rugby league players.
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2023-02-06  31.6  37.8 0.835       0.867</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-02-07  35.9  38.6 0.93        0.863</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-02-08  37.9  38.1 0.994       0.866</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Runnable example with dummy data:</span></span></span>
+<span class="r-in"><span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">end</span> <span class="op">-</span> <span class="fl">59</span>, <span class="va">end</span>, by <span class="op">=</span> <span class="st">"day"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dummy_activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  date <span class="op">=</span> <span class="va">dates</span>,</span></span>
+<span class="r-in"><span>  type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>  moving_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">3600</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>, <span class="co"># 1 hour</span></span></span>
+<span class="r-in"><span>  distance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,   <span class="co"># 10 km</span></span></span>
+<span class="r-in"><span>  average_heartrate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">140</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  suffer_score <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  tss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Calculate ACWR</span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">calculate_acwr</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  activities_data <span class="op">=</span> <span class="va">dummy_activities</span>,</span></span>
+<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>  load_metric <span class="op">=</span> <span class="st">"distance_km"</span>,</span></span>
+<span class="r-in"><span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span></span>
+<span class="r-in"><span>  chronic_period <span class="op">=</span> <span class="fl">28</span>,</span></span>
+<span class="r-in"><span>  end_date <span class="op">=</span> <span class="va">end</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   date         atl   ctl  acwr acwr_smooth</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2025-02-07     0     0    <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2025-02-08     0     0    <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2025-02-09     0     0    <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2025-02-10     0     0    <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2025-02-11     0     0    <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2025-02-12     0     0    <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>

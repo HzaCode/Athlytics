@@ -15,7 +15,7 @@ standardized functions to calculate and visualize key physiological indicators."
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,12 +23,9 @@ standardized functions to calculate and visualize key physiological indicators."
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -59,32 +56,32 @@ standardized functions to calculate and visualize key physiological indicators.<
     <h2 id="main-functions">Main Functions<a class="anchor" aria-label="anchor" href="#main-functions"></a></h2>
 
 
-<p><strong>Data Loading:</strong></p><ul><li><p><code><a href="load_local_activities.html">load_local_activities</a></code>: Load activities from Strava export ZIP or directory</p></li>
-<li><p><code><a href="parse_activity_file.html">parse_activity_file</a></code>: Parse individual FIT/TCX/GPX files</p></li>
-</ul><p><strong>Training Load Analysis:</strong></p><ul><li><p><code><a href="calculate_acwr.html">calculate_acwr</a></code>: Calculate Acute:Chronic Workload Ratio</p></li>
-<li><p><code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma</a></code>: ACWR using exponentially weighted moving averages</p></li>
-<li><p><code><a href="calculate_exposure.html">calculate_exposure</a></code>: Calculate training load exposure metrics</p></li>
-</ul><p><strong>Physiological Metrics:</strong></p><ul><li><p><code><a href="calculate_ef.html">calculate_ef</a></code>: Calculate Efficiency Factor (EF)</p></li>
-<li><p><code><a href="calculate_decoupling.html">calculate_decoupling</a></code>: Calculate cardiovascular decoupling</p></li>
-<li><p><code><a href="calculate_pbs.html">calculate_pbs</a></code>: Calculate personal bests</p></li>
-</ul><p><strong>Visualization:</strong></p><ul><li><p><code><a href="plot_acwr.html">plot_acwr</a></code>, <code><a href="plot_acwr_enhanced.html">plot_acwr_enhanced</a></code>: Plot ACWR trends</p></li>
-<li><p><code><a href="plot_ef.html">plot_ef</a></code>: Plot Efficiency Factor trends</p></li>
-<li><p><code><a href="plot_decoupling.html">plot_decoupling</a></code>: Plot decoupling analysis</p></li>
-<li><p><code><a href="plot_exposure.html">plot_exposure</a></code>: Plot training load exposure</p></li>
-<li><p><code><a href="plot_pbs.html">plot_pbs</a></code>: Plot personal bests progression</p></li>
-</ul><p><strong>Quality Control &amp; Cohort Analysis:</strong></p><ul><li><p><code><a href="flag_quality.html">flag_quality</a></code>: Flag activities based on quality criteria</p></li>
-<li><p><code><a href="summarize_quality.html">summarize_quality</a></code>: Summarize stream quality flags</p></li>
-<li><p><code><a href="calculate_cohort_reference.html">calculate_cohort_reference</a></code>: Generate cohort reference bands</p></li>
+<p><strong>Data Loading:</strong></p><ul><li><p><code><a href="load_local_activities.html">load_local_activities()</a></code>: Load activities from Strava export ZIP or directory</p></li>
+<li><p><code><a href="parse_activity_file.html">parse_activity_file()</a></code>: Parse individual FIT/TCX/GPX files</p></li>
+</ul><p><strong>Training Load Analysis:</strong></p><ul><li><p><code><a href="calculate_acwr.html">calculate_acwr()</a></code>: Calculate Acute:Chronic Workload Ratio</p></li>
+<li><p><code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma()</a></code>: ACWR using exponentially weighted moving averages</p></li>
+<li><p><code><a href="calculate_exposure.html">calculate_exposure()</a></code>: Calculate training load exposure metrics</p></li>
+</ul><p><strong>Physiological Metrics:</strong></p><ul><li><p><code><a href="calculate_ef.html">calculate_ef()</a></code>: Calculate Efficiency Factor (EF)</p></li>
+<li><p><code><a href="calculate_decoupling.html">calculate_decoupling()</a></code>: Calculate cardiovascular decoupling</p></li>
+<li><p><code><a href="calculate_pbs.html">calculate_pbs()</a></code>: Calculate personal bests</p></li>
+</ul><p><strong>Visualization:</strong></p><ul><li><p><code><a href="plot_acwr.html">plot_acwr()</a></code>, <code><a href="plot_acwr_enhanced.html">plot_acwr_enhanced()</a></code>: Plot ACWR trends</p></li>
+<li><p><code><a href="plot_ef.html">plot_ef()</a></code>: Plot Efficiency Factor trends</p></li>
+<li><p><code><a href="plot_decoupling.html">plot_decoupling()</a></code>: Plot decoupling analysis</p></li>
+<li><p><code><a href="plot_exposure.html">plot_exposure()</a></code>: Plot training load exposure</p></li>
+<li><p><code><a href="plot_pbs.html">plot_pbs()</a></code>: Plot personal bests progression</p></li>
+</ul><p><strong>Quality Control &amp; Cohort Analysis:</strong></p><ul><li><p><code><a href="flag_quality.html">flag_quality()</a></code>: Flag activities based on quality criteria</p></li>
+<li><p><code><a href="summarize_quality.html">summarize_quality()</a></code>: Summarize stream quality flags</p></li>
+<li><p><code><a href="calculate_cohort_reference.html">calculate_cohort_reference()</a></code>: Generate cohort reference bands</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="sample-datasets">Sample Datasets<a class="anchor" aria-label="anchor" href="#sample-datasets"></a></h2>
 
 
-<p>The package includes simulated datasets for examples and testing:</p><ul><li><p><code><a href="sample_acwr.html">sample_acwr</a></code>: Sample ACWR data</p></li>
-<li><p><code><a href="sample_ef.html">sample_ef</a></code>: Sample Efficiency Factor data</p></li>
-<li><p><code><a href="sample_decoupling.html">sample_decoupling</a></code>: Sample decoupling data</p></li>
-<li><p><code><a href="sample_exposure.html">sample_exposure</a></code>: Sample exposure data</p></li>
-<li><p><code><a href="sample_pbs.html">sample_pbs</a></code>: Sample personal bests data</p></li>
+<p>The package includes simulated datasets for examples and testing:</p><ul><li><p><a href="sample_acwr.html">sample_acwr</a>: Sample ACWR data</p></li>
+<li><p><a href="sample_ef.html">sample_ef</a>: Sample Efficiency Factor data</p></li>
+<li><p><a href="sample_decoupling.html">sample_decoupling</a>: Sample decoupling data</p></li>
+<li><p><a href="sample_exposure.html">sample_exposure</a>: Sample exposure data</p></li>
+<li><p><a href="sample_pbs.html">sample_pbs</a>: Sample personal bests data</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a></h2>

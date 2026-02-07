@@ -15,7 +15,7 @@ Designed to work with Strava's official bulk data export
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,12 +23,9 @@ Designed to work with Strava's official bulk data export
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -109,12 +106,15 @@ with Athlytics functions. Key columns include:</p><ul><li><p><code>id</code>: Ac
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This function reads the activities.csv file from a Strava data export
 and transforms the data to match the structure expected by Athlytics
-analysis functions. The transformation includes:</p><ul><li><p>Converting column names to match API format</p></li>
+analysis functions. The transformation includes:</p><ul><li><p>Standardizing column names for analysis functions</p></li>
 <li><p>Parsing dates into POSIXct format</p></li>
 <li><p>Converting distances to meters</p></li>
 <li><p>Converting times to seconds</p></li>
 <li><p>Filtering by date range and activity type if specified</p></li>
-</ul><p><strong>Privacy Note</strong>: This function processes local export data only and does not
+</ul><p><strong>Language Note</strong>: Strava export language must be set to <strong>English</strong> for proper
+CSV parsing. Change this in Strava Settings &gt; Display Preferences &gt; Language
+before requesting your data export.</p>
+<p><strong>Privacy Note</strong>: This function processes local export data only and does not
 connect to the internet. Ensure you have permission to analyze the data and
 follow applicable privacy regulations when using this data for research purposes.</p>
     </div>
@@ -141,7 +141,7 @@ follow applicable privacy regulations when using this data for research purposes
 <span class="r-in"><span><span class="fu"><a href="plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">acwr_data</span>, highlight_zones <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Multi-metric analysis</span></span></span>
-<span class="r-in"><span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">activities</span>, ef_metric <span class="op">=</span> <span class="st">"pace_hr"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ef_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_ef.html">calculate_ef</a></span><span class="op">(</span><span class="va">activities</span>, ef_metric <span class="op">=</span> <span class="st">"speed_hr"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="plot_ef.html">plot_ef</a></span><span class="op">(</span><span class="va">ef_data</span>, add_trend_line <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>

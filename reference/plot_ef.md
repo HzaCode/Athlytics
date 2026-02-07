@@ -7,16 +7,14 @@ Visualizes the trend of Efficiency Factor (EF) over time.
 ``` r
 plot_ef(
   data,
-  activity_type = c("Run", "Ride"),
-  ef_metric = c("pace_hr", "power_hr"),
-  start_date = NULL,
-  end_date = NULL,
-  min_duration_mins = 20,
   add_trend_line = TRUE,
   smoothing_method = "loess",
-  ef_df = NULL,
+  smooth_per_activity_type = FALSE,
   group_var = NULL,
-  group_colors = NULL
+  group_colors = NULL,
+  title = NULL,
+  subtitle = NULL,
+  ...
 )
 ```
 
@@ -24,33 +22,9 @@ plot_ef(
 
 - data:
 
-  **Recommended: Pass pre-calculated data via `ef_df` (local export
-  preferred).** A data frame from
-  [`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md)
-  or activities data from
-  [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md).
-
-- activity_type:
-
-  Type(s) of activities to analyze (e.g., "Run", "Ride").
-
-- ef_metric:
-
-  Metric to calculate: "pace_hr" (Speed/HR) or "power_hr" (Power/HR).
-
-- start_date:
-
-  Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to
-  ~1 year ago.
-
-- end_date:
-
-  Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to
-  today.
-
-- min_duration_mins:
-
-  Minimum activity duration (minutes) to include. Default 20.
+  A data frame from
+  [`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md).
+  Must contain `date`, `ef_value`, and `activity_type` columns.
 
 - add_trend_line:
 
@@ -61,11 +35,13 @@ plot_ef(
   Smoothing method for trend line (e.g., "loess", "lm"). Default
   "loess".
 
-- ef_df:
+- smooth_per_activity_type:
 
-  **Recommended.** A pre-calculated data frame from
-  [`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md).
-  When provided, analysis uses local data only (no API calls).
+  Logical. If `TRUE` and `add_trend_line = TRUE`, draws separate trend
+  lines for each activity type. Default `FALSE` (single trend line for
+  all data). Note: this parameter only applies when `group_var = NULL`.
+  When `group_var` is set, smoothing is always done per group and this
+  parameter is ignored with a warning.
 
 - group_var:
 
@@ -75,21 +51,29 @@ plot_ef(
 
   Optional. Named vector of colors for groups.
 
+- title:
+
+  Optional. Custom title for the plot.
+
+- subtitle:
+
+  Optional. Custom subtitle for the plot.
+
+- ...:
+
+  Additional arguments. Arguments `activity_type`, `ef_metric`,
+  `start_date`, `end_date`, `min_duration_mins`, `ef_df` are deprecated
+  and ignored.
+
 ## Value
 
 A ggplot object showing the EF trend.
 
 ## Details
 
-Plots the Efficiency Factor (EF) trend over time. **Recommended
-workflow: Use local data via `ef_df`.**
-
-Plots EF (output/HR based on activity averages). An upward trend often
-indicates improved aerobic fitness. Points colored by activity type.
-**Best practice: Use
-[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md) +
-[`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md) +
-this function.**
+Plots EF (output/HR based on activity averages). **Best practice: Use
+[`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md)
+first, then pass the result to this function.**
 
 ## Examples
 
@@ -97,36 +81,7 @@ this function.**
 # Example using pre-calculated sample data
 data("sample_ef", package = "Athlytics")
 p <- plot_ef(sample_ef)
-#> Generating plot...
 print(p)
 #> `geom_smooth()` using formula = 'y ~ x'
 
-
-if (FALSE) { # \dontrun{
-# Example using local Strava export data
-activities <- load_local_activities("strava_export_data/activities.csv")
-
-# Plot Pace/HR EF trend for Runs (last 6 months)
-plot_ef(
-  data = activities,
-  activity_type = "Run",
-  ef_metric = "pace_hr",
-  start_date = Sys.Date() - months(6)
-)
-
-# Plot Power/HR EF trend for Rides
-plot_ef(
-  data = activities,
-  activity_type = "Ride",
-  ef_metric = "power_hr"
-)
-
-# Plot Pace/HR EF trend for multiple Run types (no trend line)
-plot_ef(
-  data = activities,
-  activity_type = c("Run", "VirtualRun"),
-  ef_metric = "pace_hr",
-  add_trend_line = FALSE
-)
-} # }
 ```

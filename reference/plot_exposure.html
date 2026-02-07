@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,12 +15,9 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -46,16 +43,13 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_exposure</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"Ride"</span>, <span class="st">"VirtualRide"</span>, <span class="st">"VirtualRun"</span><span class="op">)</span>,</span>
-<span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span>
-<span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span>
-<span>  chronic_period <span class="op">=</span> <span class="fl">42</span>,</span>
-<span>  user_ftp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  user_max_hr <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  user_resting_hr <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  risk_zones <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  exposure_df <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  show_date_color <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  caption <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  axis_limit <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -64,50 +58,44 @@
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A data frame from <code><a href="load_local_activities.html">load_local_activities()</a></code>. Required unless <code>exposure_df</code> is provided.</p></dd>
-
-
-<dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
-<dd><p>Type(s) of activities to include (e.g., "Run", "Ride"). Default uses common types.</p></dd>
-
-
-<dt id="arg-load-metric">load_metric<a class="anchor" aria-label="anchor" href="#arg-load-metric"></a></dt>
-<dd><p>Method for calculating daily load (e.g., "duration_mins", "tss", "hrss"). Default "duration_mins".
-See <code>calculate_exposure</code> for details on approximate TSS/HRSS calculations.</p></dd>
-
-
-<dt id="arg-acute-period">acute_period<a class="anchor" aria-label="anchor" href="#arg-acute-period"></a></dt>
-<dd><p>Days for acute load window (e.g., 7).</p></dd>
-
-
-<dt id="arg-chronic-period">chronic_period<a class="anchor" aria-label="anchor" href="#arg-chronic-period"></a></dt>
-<dd><p>Days for chronic load window (e.g., 42). Must be &gt; <code>acute_period</code>.</p></dd>
-
-
-<dt id="arg-user-ftp">user_ftp<a class="anchor" aria-label="anchor" href="#arg-user-ftp"></a></dt>
-<dd><p>Required if <code>load_metric = "tss"</code>. Your FTP.</p></dd>
-
-
-<dt id="arg-user-max-hr">user_max_hr<a class="anchor" aria-label="anchor" href="#arg-user-max-hr"></a></dt>
-<dd><p>Required if <code>load_metric = "hrss"</code>. Your max HR.</p></dd>
-
-
-<dt id="arg-user-resting-hr">user_resting_hr<a class="anchor" aria-label="anchor" href="#arg-user-resting-hr"></a></dt>
-<dd><p>Required if <code>load_metric = "hrss"</code>. Your resting HR.</p></dd>
-
-
-<dt id="arg-end-date">end_date<a class="anchor" aria-label="anchor" href="#arg-end-date"></a></dt>
-<dd><p>Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.</p></dd>
+<dd><p>A data frame from <code><a href="calculate_exposure.html">calculate_exposure()</a></code>.
+Must contain <code>date</code>, <code>atl</code>, and <code>ctl</code> columns.</p></dd>
 
 
 <dt id="arg-risk-zones">risk_zones<a class="anchor" aria-label="anchor" href="#arg-risk-zones"></a></dt>
 <dd><p>Add background shading for typical ACWR risk zones? Default <code>TRUE</code>.</p></dd>
 
 
-<dt id="arg-exposure-df">exposure_df<a class="anchor" aria-label="anchor" href="#arg-exposure-df"></a></dt>
-<dd><p>Optional. A pre-calculated data frame from <code>calculate_exposure</code>.
-If provided, <code>data</code> and other calculation parameters are ignored. Must contain
-<code>date</code>, <code>atl</code>, <code>ctl</code> (and <code>acwr</code> if <code>risk_zones = TRUE</code>).</p></dd>
+<dt id="arg-show-date-color">show_date_color<a class="anchor" aria-label="anchor" href="#arg-show-date-color"></a></dt>
+<dd><p>Logical. Whether to color points by date (gradient). Default <code>TRUE</code>.
+The date gradient helps visualize the training trajectory over time: lighter colors
+represent earlier dates and darker colors represent more recent dates, so you can
+trace how training state has evolved across a season.
+Set to <code>FALSE</code> for a simpler single-color plot (useful when the temporal ordering
+is less important than the overall distribution).</p></dd>
+
+
+<dt id="arg-caption">caption<a class="anchor" aria-label="anchor" href="#arg-caption"></a></dt>
+<dd><p>Plot caption. Default NULL (no caption).</p></dd>
+
+
+<dt id="arg-axis-limit">axis_limit<a class="anchor" aria-label="anchor" href="#arg-axis-limit"></a></dt>
+<dd><p>Optional. Numeric value to set both x and y axis limits (0 to axis_limit).
+Useful when plotting risk zones without data or with sparse data. Default NULL (auto-scale).</p></dd>
+
+
+<dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
+<dd><p>Optional. Custom title for the plot.</p></dd>
+
+
+<dt id="arg-subtitle">subtitle<a class="anchor" aria-label="anchor" href="#arg-subtitle"></a></dt>
+<dd><p>Optional. Custom subtitle for the plot.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments.
+Arguments <code>activity_type</code>, <code>load_metric</code>, <code>acute_period</code>, <code>chronic_period</code>,
+<code>user_ftp</code>, <code>user_max_hr</code>, <code>user_resting_hr</code>, <code>end_date</code>, <code>exposure_df</code> are deprecated and ignored.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -116,12 +104,10 @@ If provided, <code>data</code> and other calculation parameters are ignored. Mus
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
-pre-calculated data or calls <code>calculate_exposure</code>.</p>
-<p>Visualizes training state by plotting ATL vs CTL (related to PMC charts).
+    <p>Visualizes training state by plotting ATL vs CTL (related to PMC charts).
 Points are colored by date, latest point is highlighted (red triangle).
 Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
-If <code>exposure_df</code> is not provided, it calls <code>calculate_exposure</code> first.</p>
+<strong>Best practice: Use <code><a href="calculate_exposure.html">calculate_exposure()</a></code> first, then pass the result to this function.</strong></p>
     </div>
 
     <div class="section level2">
@@ -129,40 +115,38 @@ If <code>exposure_df</code> is not provided, it calls <code>calculate_exposure</
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using simulated data</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sample_exposure</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># Ensure exposure_df is named and other necessary parameters like activity_type are provided</span></span></span>
-<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_exposure</span><span class="op">(</span>exposure_df <span class="op">=</span> <span class="va">sample_exposure</span>, activity_type <span class="op">=</span> <span class="st">"Run"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating plot...</span>
+<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_exposure</span><span class="op">(</span><span class="va">sample_exposure</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Removed 27 rows containing missing values or values outside the scale range</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> (`geom_point()`).</span>
-<span class="r-plt img"><img src="plot_exposure-1.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot_exposure-1.png" alt="" width="1500" height="1050"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
-<span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Runnable example with dummy data:</span></span></span>
+<span class="r-in"><span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="va">end</span> <span class="op">-</span> <span class="fl">59</span>, <span class="va">end</span>, by <span class="op">=</span> <span class="st">"day"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dummy_activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  date <span class="op">=</span> <span class="va">dates</span>,</span></span>
+<span class="r-in"><span>  type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
+<span class="r-in"><span>  moving_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">3600</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>, <span class="co"># 1 hour</span></span></span>
+<span class="r-in"><span>  distance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">10000</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,   <span class="co"># 10 km</span></span></span>
+<span class="r-in"><span>  average_heartrate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">140</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  suffer_score <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  tss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dates</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot Exposure trend for Runs (last 6 months)</span></span></span>
-<span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">activities</span>,</span></span>
+<span class="r-in"><span><span class="co"># Calculate Exposure (ATL/CTL)</span></span></span>
+<span class="r-in"><span><span class="va">exposure_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_exposure.html">calculate_exposure</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  activities_data <span class="op">=</span> <span class="va">dummy_activities</span>,</span></span>
 <span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
-<span class="r-in"><span>  end_date <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  user_ftp <span class="op">=</span> <span class="fl">280</span></span></span>
-<span class="r-in"><span><span class="op">)</span> <span class="co"># Example, if load_metric = "tss"</span></span></span>
+<span class="r-in"><span>  load_metric <span class="op">=</span> <span class="st">"distance_km"</span>,</span></span>
+<span class="r-in"><span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span></span>
+<span class="r-in"><span>  chronic_period <span class="op">=</span> <span class="fl">28</span>,</span></span>
+<span class="r-in"><span>  end_date <span class="op">=</span> <span class="va">end</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span><span class="va">exposure_result</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_exposure-2.png" alt="" width="1500" height="1050"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot Exposure trend for Rides</span></span></span>
-<span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">activities</span>,</span></span>
-<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
-<span class="r-in"><span>  user_ftp <span class="op">=</span> <span class="fl">280</span></span></span>
-<span class="r-in"><span><span class="op">)</span> <span class="co"># Example, provide if load_metric = "tss"</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)</span></span></span>
-<span class="r-in"><span><span class="fu">plot_exposure</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">activities</span>,</span></span>
-<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Run"</span>, <span class="st">"VirtualRun"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  risk_zones <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
-<span class="r-in"><span>  user_ftp <span class="op">=</span> <span class="fl">280</span></span></span>
-<span class="r-in"><span><span class="op">)</span> <span class="co"># Example, provide if load_metric = "tss"</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

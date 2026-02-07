@@ -29,11 +29,12 @@ calculate_acwr(
   acute_period = 7,
   chronic_period = 28,
   start_date = NULL,
-  end_date = NULL,
+  end_date = Sys.Date(),
   user_ftp = NULL,
   user_max_hr = NULL,
   user_resting_hr = NULL,
-  smoothing_period = 7
+  smoothing_period = 7,
+  verbose = FALSE
 )
 ```
 
@@ -113,6 +114,10 @@ calculate_acwr(
   Integer. Number of days for smoothing the ACWR using a rolling mean
   (default: 7). Reduces day-to-day noise for clearer trend
   visualization.
+
+- verbose:
+
+  Logical. If TRUE, prints progress messages. Default FALSE.
 
 ## Value
 
@@ -199,25 +204,50 @@ column before calculation and use `group_by(athlete_id)` with
 [`group_modify()`](https://dplyr.tidyverse.org/reference/group_map.html).
 See examples below and vignettes for details.
 
+## Scientific Considerations
+
+**Important**: The predictive value of ACWR for injury risk has been
+debated in recent literature. Some researchers argue that ACWR may have
+limited utility for predicting injuries (Impellizzeri et al., 2020), and
+a subsequent analysis has called for dismissing the ACWR framework
+entirely (Impellizzeri et al., 2021). Users should interpret ACWR risk
+zones with caution and consider them as descriptive heuristics rather
+than validated injury predictors.
+
+Impellizzeri, F. M., Tenan, M. S., Kempton, T., Novak, A., & Coutts, A.
+J. (2020). Acute:chronic workload ratio: conceptual issues and
+fundamental pitfalls. *International Journal of Sports Physiology and
+Performance*, 15(6), 907-913.
+[doi:10.1123/ijspp.2019-0864](https://doi.org/10.1123/ijspp.2019-0864)
+
+Impellizzeri, F. M., Woodcock, S., Coutts, A. J., Fanchini, M., McCall,
+A., & Vigotsky, A. D. (2021). What role do chronic workloads play in the
+acute to chronic workload ratio? Time to dismiss ACWR and its underlying
+theory. *Sports Medicine*, 51(3), 581-592.
+[doi:10.1007/s40279-020-01378-6](https://doi.org/10.1007/s40279-020-01378-6)
+
 ## References
 
 Gabbett, T. J. (2016). The training-injury prevention paradox: should
 athletes be training smarter and harder? *British Journal of Sports
 Medicine*, 50(5), 273-280.
+[doi:10.1136/bjsports-2015-095788](https://doi.org/10.1136/bjsports-2015-095788)
 
-Hulin, B. T., et al. (2016). The acute:chronic workload ratio predicts
-injury: high chronic workload may decrease injury risk in elite rugby
-league players. *British Journal of Sports Medicine*, 50(4), 231-236.
+Hulin, B. T., Gabbett, T. J., Lawson, D. W., Caputi, P., & Sampson, J.
+A. (2016). The acute:chronic workload ratio predicts injury: high
+chronic workload may decrease injury risk in elite rugby league players.
+*British Journal of Sports Medicine*, 50(4), 231-236.
+[doi:10.1136/bjsports-2015-094817](https://doi.org/10.1136/bjsports-2015-094817)
 
 ## See also
 
-[`plot_acwr`](https://hzacode.github.io/Athlytics/reference/plot_acwr.md)
+[`plot_acwr()`](https://hzacode.github.io/Athlytics/reference/plot_acwr.md)
 for visualization,
-[`calculate_acwr_ewma`](https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.md)
+[`calculate_acwr_ewma()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.md)
 for EWMA-based ACWR,
-[`load_local_activities`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
+[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
 for data loading,
-[`calculate_cohort_reference`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
+[`calculate_cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md)
 for multi-athlete comparisons
 
 ## Examples
@@ -235,6 +265,40 @@ print(head(sample_acwr))
 #> 4 2023-02-06  31.6  37.8 0.835       0.867
 #> 5 2023-02-07  35.9  38.6 0.93        0.863
 #> 6 2023-02-08  37.9  38.1 0.994       0.866
+
+# Runnable example with dummy data:
+end <- Sys.Date()
+dates <- seq(end - 59, end, by = "day")
+dummy_activities <- data.frame(
+  date = dates,
+  type = "Run",
+  moving_time = rep(3600, length(dates)), # 1 hour
+  distance = rep(10000, length(dates)),   # 10 km
+  average_heartrate = rep(140, length(dates)),
+  suffer_score = rep(50, length(dates)),
+  tss = rep(50, length(dates)),
+  stringsAsFactors = FALSE
+)
+
+# Calculate ACWR
+result <- calculate_acwr(
+  activities_data = dummy_activities,
+  activity_type = "Run",
+  load_metric = "distance_km",
+  acute_period = 7,
+  chronic_period = 28,
+  end_date = end
+)
+print(head(result))
+#> # A tibble: 6 × 5
+#>   date         atl   ctl  acwr acwr_smooth
+#>   <date>     <dbl> <dbl> <dbl>       <dbl>
+#> 1 2025-02-07     0     0    NA          NA
+#> 2 2025-02-08     0     0    NA          NA
+#> 3 2025-02-09     0     0    NA          NA
+#> 4 2025-02-10     0     0    NA          NA
+#> 5 2025-02-11     0     0    NA          NA
+#> 6 2025-02-12     0     0    NA          NA
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data

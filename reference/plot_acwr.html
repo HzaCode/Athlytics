@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,12 +15,9 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -46,20 +43,15 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_acwr</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  activity_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span>
-<span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span>
-<span>  chronic_period <span class="op">=</span> <span class="fl">28</span>,</span>
-<span>  start_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  end_date <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  user_ftp <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  user_max_hr <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  user_resting_hr <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  smoothing_period <span class="op">=</span> <span class="fl">7</span>,</span>
 <span>  highlight_zones <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  acwr_df <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sweet_spot_min <span class="op">=</span> <span class="fl">0.8</span>,</span>
+<span>  sweet_spot_max <span class="op">=</span> <span class="fl">1.3</span>,</span>
+<span>  high_risk_min <span class="op">=</span> <span class="fl">1.5</span>,</span>
 <span>  group_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  group_colors <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  group_colors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -68,57 +60,24 @@
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p><strong>Recommended: Pass pre-calculated data via <code>acwr_df</code> (local export preferred).</strong>
-A data frame from <code><a href="calculate_acwr.html">calculate_acwr()</a></code> or activities data from <code><a href="load_local_activities.html">load_local_activities()</a></code>.</p></dd>
-
-
-<dt id="arg-activity-type">activity_type<a class="anchor" aria-label="anchor" href="#arg-activity-type"></a></dt>
-<dd><p>Type(s) of activities to analyze (e.g., "Run", "Ride").</p></dd>
-
-
-<dt id="arg-load-metric">load_metric<a class="anchor" aria-label="anchor" href="#arg-load-metric"></a></dt>
-<dd><p>Method for calculating daily load (e.g., "duration_mins", "distance_km", "tss", "hrss").</p></dd>
-
-
-<dt id="arg-acute-period">acute_period<a class="anchor" aria-label="anchor" href="#arg-acute-period"></a></dt>
-<dd><p>Days for the acute load window (e.g., 7).</p></dd>
-
-
-<dt id="arg-chronic-period">chronic_period<a class="anchor" aria-label="anchor" href="#arg-chronic-period"></a></dt>
-<dd><p>Days for the chronic load window (e.g., 28). Must be greater than <code>acute_period</code>.</p></dd>
-
-
-<dt id="arg-start-date">start_date<a class="anchor" aria-label="anchor" href="#arg-start-date"></a></dt>
-<dd><p>Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.</p></dd>
-
-
-<dt id="arg-end-date">end_date<a class="anchor" aria-label="anchor" href="#arg-end-date"></a></dt>
-<dd><p>Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.</p></dd>
-
-
-<dt id="arg-user-ftp">user_ftp<a class="anchor" aria-label="anchor" href="#arg-user-ftp"></a></dt>
-<dd><p>Required if <code>load_metric = "tss"</code> and <code>acwr_df</code> is not provided. Your Functional Threshold Power.</p></dd>
-
-
-<dt id="arg-user-max-hr">user_max_hr<a class="anchor" aria-label="anchor" href="#arg-user-max-hr"></a></dt>
-<dd><p>Required if <code>load_metric = "hrss"</code> and <code>acwr_df</code> is not provided. Your maximum heart rate.</p></dd>
-
-
-<dt id="arg-user-resting-hr">user_resting_hr<a class="anchor" aria-label="anchor" href="#arg-user-resting-hr"></a></dt>
-<dd><p>Required if <code>load_metric = "hrss"</code> and <code>acwr_df</code> is not provided. Your resting heart rate.</p></dd>
-
-
-<dt id="arg-smoothing-period">smoothing_period<a class="anchor" aria-label="anchor" href="#arg-smoothing-period"></a></dt>
-<dd><p>Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.</p></dd>
+<dd><p>A data frame from <code><a href="calculate_acwr.html">calculate_acwr()</a></code> or <code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma()</a></code>.
+Must contain <code>date</code> and <code>acwr_smooth</code> columns.</p></dd>
 
 
 <dt id="arg-highlight-zones">highlight_zones<a class="anchor" aria-label="anchor" href="#arg-highlight-zones"></a></dt>
 <dd><p>Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default <code>TRUE</code>.</p></dd>
 
 
-<dt id="arg-acwr-df">acwr_df<a class="anchor" aria-label="anchor" href="#arg-acwr-df"></a></dt>
-<dd><p><strong>Recommended.</strong> A pre-calculated data frame from <code><a href="calculate_acwr.html">calculate_acwr()</a></code> or <code><a href="calculate_acwr_ewma.html">calculate_acwr_ewma()</a></code>.
-When provided, analysis uses local data only (no API calls).</p></dd>
+<dt id="arg-sweet-spot-min">sweet_spot_min<a class="anchor" aria-label="anchor" href="#arg-sweet-spot-min"></a></dt>
+<dd><p>Lower bound for the "sweet spot" ACWR zone. Default 0.8.</p></dd>
+
+
+<dt id="arg-sweet-spot-max">sweet_spot_max<a class="anchor" aria-label="anchor" href="#arg-sweet-spot-max"></a></dt>
+<dd><p>Upper bound for the "sweet spot" ACWR zone. Default 1.3.</p></dd>
+
+
+<dt id="arg-high-risk-min">high_risk_min<a class="anchor" aria-label="anchor" href="#arg-high-risk-min"></a></dt>
+<dd><p>Lower bound for the "high risk" ACWR zone. Default 1.5.</p></dd>
 
 
 <dt id="arg-group-var">group_var<a class="anchor" aria-label="anchor" href="#arg-group-var"></a></dt>
@@ -128,6 +87,21 @@ When provided, analysis uses local data only (no API calls).</p></dd>
 <dt id="arg-group-colors">group_colors<a class="anchor" aria-label="anchor" href="#arg-group-colors"></a></dt>
 <dd><p>Optional. Named vector of colors for groups.</p></dd>
 
+
+<dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
+<dd><p>Optional. Custom title for the plot.</p></dd>
+
+
+<dt id="arg-subtitle">subtitle<a class="anchor" aria-label="anchor" href="#arg-subtitle"></a></dt>
+<dd><p>Optional. Custom subtitle for the plot.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments.
+Arguments <code>activity_type</code>, <code>load_metric</code>, <code>acute_period</code>, <code>chronic_period</code>,
+<code>start_date</code>, <code>end_date</code>, <code>user_ftp</code>, <code>user_max_hr</code>, <code>user_resting_hr</code>,
+<code>smoothing_period</code>, <code>acwr_df</code> are deprecated and ignored.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -135,8 +109,18 @@ When provided, analysis uses local data only (no API calls).</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Plots the ACWR trend over time. <strong>Best practice: Use <code><a href="load_local_activities.html">load_local_activities()</a></code> + <code><a href="calculate_acwr.html">calculate_acwr()</a></code> + this function.</strong>
+    <p>Plots the ACWR trend over time.
+<strong>Best practice: Use <code><a href="calculate_acwr.html">calculate_acwr()</a></code> first, then pass the result to this function.</strong>
 ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".</p>
+<p>When <code>highlight_zones = TRUE</code>, all risk zone labels (High Risk, Caution, Sweet Spot,
+Low Load) are <strong>always displayed</strong> regardless of whether data falls within each zone.
+The y-axis is automatically extended to ensure all zone annotations remain visible.
+Zone boundaries can be customised via <code>sweet_spot_min</code>, <code>sweet_spot_max</code>, and
+<code>high_risk_min</code>.</p>
+<p><strong>Note:</strong> The predictive value of ACWR for injury risk is debated in the
+literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
+as descriptive heuristics, not validated injury predictors. See
+<code><a href="calculate_acwr.html">calculate_acwr()</a></code> documentation for full references.</p>
     </div>
 
     <div class="section level2">
@@ -144,31 +128,9 @@ ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often con
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example using pre-calculated sample data</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"sample_acwr"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_acwr</span><span class="op">(</span><span class="va">sample_acwr</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating plot...</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot_acwr-1.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot_acwr-1.png" alt="" width="1500" height="1050"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Example using local Strava export data</span></span></span>
-<span class="r-in"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"strava_export_data/activities.csv"</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot ACWR trend for Runs (using duration as load metric)</span></span></span>
-<span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">activities</span>,</span></span>
-<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Run"</span>,</span></span>
-<span class="r-in"><span>  load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span></span>
-<span class="r-in"><span>  acute_period <span class="op">=</span> <span class="fl">7</span>,</span></span>
-<span class="r-in"><span>  chronic_period <span class="op">=</span> <span class="fl">28</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot ACWR trend for Rides (using TSS as load metric)</span></span></span>
-<span class="r-in"><span><span class="fu">plot_acwr</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">activities</span>,</span></span>
-<span class="r-in"><span>  activity_type <span class="op">=</span> <span class="st">"Ride"</span>,</span></span>
-<span class="r-in"><span>  load_metric <span class="op">=</span> <span class="st">"tss"</span>,</span></span>
-<span class="r-in"><span>  user_ftp <span class="op">=</span> <span class="fl">280</span></span></span>
-<span class="r-in"><span><span class="op">)</span> <span class="co"># FTP value is required</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

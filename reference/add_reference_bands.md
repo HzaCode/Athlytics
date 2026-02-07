@@ -11,7 +11,7 @@ add_reference_bands(
   reference_data,
   bands = c("p25_p75", "p05_p95", "p50"),
   alpha = 0.15,
-  colors = list(p25_p75 = "#440154FF", p05_p95 = "#3B528BFF", p50 = "#21908CFF")
+  colors = list(p25_p75 = "#4DBBD5", p05_p95 = "#E64B35", p50 = "#3C5488")
 )
 ```
 

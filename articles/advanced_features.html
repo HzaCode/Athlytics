@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,14 +29,9 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul>
-</li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -61,7 +56,7 @@
                         <h4 data-toc-skip class="author">Athlytics
 Package</h4>
             
-            <h4 data-toc-skip class="date">2026-01-18</h4>
+            <h4 data-toc-skip class="date">2026-02-07</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/HzaCode/Athlytics/blob/main/vignettes/advanced_features.Rmd" class="external-link"><code>vignettes/advanced_features.Rmd</code></a></small>
       <div class="d-none name"><code>advanced_features.Rmd</code></div>
@@ -102,11 +97,7 @@ in activity stream data.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://hzacode.github.io/Athlytics/">Athlytics</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Load a single activity with stream data</span></span>
-<span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"export_12345678.zip"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Parse stream data from a FIT/TCX file</span></span>
-<span><span class="co"># (Assuming you have stream data - this is a conceptual example)</span></span>
+<span><span class="co"># Parse stream data from a FIT/TCX/GPX file</span></span>
 <span><span class="va">stream_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/parse_activity_file.html">parse_activity_file</a></span><span class="op">(</span><span class="st">"path/to/activity.fit"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Flag quality issues</span></span>
@@ -146,11 +137,17 @@ calculations - Researchers can report data quality in publications</p>
 <div class="section level2">
 <h2 id="acwr-with-ewma-method">2. ACWR with EWMA Method<a class="anchor" aria-label="anchor" href="#acwr-with-ewma-method"></a>
 </h2>
-<p>Traditional ACWR uses rolling averages (RA). The EWMA method offers:
-- <strong>Greater sensitivity</strong> to recent training changes -
-<strong>Customizable decay rates</strong> via half-life parameters -
-<strong>Confidence bands</strong> via bootstrap to quantify
-uncertainty</p>
+<p>Traditional ACWR uses rolling averages (RA). The EWMA method,
+introduced by Williams et al. (2017), offers: - <strong>Greater
+sensitivity</strong> to recent training changes - <strong>Customizable
+decay rates</strong> via half-life parameters - <strong>Confidence
+bands</strong> via bootstrap to quantify uncertainty</p>
+<blockquote>
+<p><strong>Reference:</strong> Williams, S., et al. (2017). Better way
+to determine the acute:chronic workload ratio? <em>British Journal of
+Sports Medicine</em>, 51(3), 209-210. <a href="https://doi.org/10.1136/bjsports-2016-096589" class="external-link">DOI:
+10.1136/bjsports-2016-096589</a></p>
+</blockquote>
 <div class="section level3">
 <h3 id="comparing-ra-vs-ewma">Comparing RA vs EWMA<a class="anchor" aria-label="anchor" href="#comparing-ra-vs-ewma"></a>
 </h3>
@@ -183,11 +180,11 @@ uncertainty</p>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span></span>
 <span>    data <span class="op">=</span> <span class="va">acwr_ra</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">acwr_smooth</span><span class="op">)</span>,</span>
-<span>    color <span class="op">=</span> <span class="st">"blue"</span>, size <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"solid"</span></span>
+<span>    color <span class="op">=</span> <span class="st">"blue"</span>, linewidth <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"solid"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span></span>
 <span>    data <span class="op">=</span> <span class="va">acwr_ewma</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">date</span>, y <span class="op">=</span> <span class="va">acwr_smooth</span><span class="op">)</span>,</span>
-<span>    color <span class="op">=</span> <span class="st">"red"</span>, size <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span></span>
+<span>    color <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    title <span class="op">=</span> <span class="st">"ACWR: Rolling Average vs EWMA"</span>,</span>
@@ -225,7 +222,7 @@ for research reporting.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">acwr_lower</span>, ymax <span class="op">=</span> <span class="va">acwr_upper</span><span class="op">)</span>,</span>
 <span>    fill <span class="op">=</span> <span class="st">"gray70"</span>, alpha <span class="op">=</span> <span class="fl">0.5</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">acwr_smooth</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"black"</span>, size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">acwr_smooth</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"black"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">1.3</span><span class="op">)</span>, linetype <span class="op">=</span> <span class="st">"dotted"</span>, color <span class="op">=</span> <span class="st">"green"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">1.5</span>, linetype <span class="op">=</span> <span class="st">"dotted"</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
@@ -262,25 +259,25 @@ valuable to compare individuals to group norms.</p>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load data for multiple athletes</span></span>
-<span><span class="va">athlete1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete1_export.zip"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">athlete1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete1_export.zip"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>athlete_id <span class="op">=</span> <span class="st">"athlete1"</span>, sex <span class="op">=</span> <span class="st">"M"</span>, age_band <span class="op">=</span> <span class="st">"25-35"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">athlete2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete2_export.zip"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">athlete2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete2_export.zip"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>athlete_id <span class="op">=</span> <span class="st">"athlete2"</span>, sex <span class="op">=</span> <span class="st">"F"</span>, age_band <span class="op">=</span> <span class="st">"25-35"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">athlete3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete3_export.zip"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">athlete3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="st">"athlete3_export.zip"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>athlete_id <span class="op">=</span> <span class="st">"athlete3"</span>, sex <span class="op">=</span> <span class="st">"M"</span>, age_band <span class="op">=</span> <span class="st">"35-45"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Combine</span></span>
 <span><span class="va">cohort_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">athlete1</span>, <span class="va">athlete2</span>, <span class="va">athlete3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Calculate ACWR for each athlete</span></span>
-<span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="../reference/calculate_acwr_ewma.html">calculate_acwr_ewma</a></span><span class="op">(</span><span class="va">.x</span>, method <span class="op">=</span> <span class="st">"ewma"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="../reference/calculate_acwr_ewma.html">calculate_acwr_ewma</a></span><span class="op">(</span><span class="va">.x</span>, method <span class="op">=</span> <span class="st">"ewma"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span></span>
-<span>    <span class="va">cohort_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">athlete_id</span>, <span class="va">sex</span>, <span class="va">age_band</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    <span class="va">cohort_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">athlete_id</span>, <span class="va">sex</span>, <span class="va">age_band</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    by <span class="op">=</span> <span class="st">"athlete_id"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 </div>
@@ -288,11 +285,11 @@ valuable to compare individuals to group norms.</p>
 <h3 id="calculate-reference-percentiles">Calculate Reference Percentiles<a class="anchor" aria-label="anchor" href="#calculate-reference-percentiles"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Calculate cohort reference by sport and sex</span></span>
+<code class="sourceCode R"><span><span class="co"># Calculate cohort reference by activity type and sex</span></span>
 <span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_cohort_reference.html">calculate_cohort_reference</a></span><span class="op">(</span></span>
 <span>  <span class="va">cohort_acwr</span>,</span>
 <span>  metric <span class="op">=</span> <span class="st">"acwr_smooth"</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sport"</span>, <span class="st">"sex"</span><span class="op">)</span>, <span class="co"># Group by sport and sex</span></span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"type"</span>, <span class="st">"sex"</span><span class="op">)</span>, <span class="co"># Group by activity type and sex</span></span>
 <span>  probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.95</span><span class="op">)</span>, <span class="co"># Percentiles</span></span>
 <span>  min_athletes <span class="op">=</span> <span class="fl">3</span> <span class="co"># Minimum athletes per group</span></span>
 <span><span class="op">)</span></span>
@@ -301,7 +298,7 @@ valuable to compare individuals to group norms.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">reference</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Output:</strong></p>
 <pre><code># A tibble: 6 × 5
-  date       sport sex   percentile value n_athletes
+  date       type  sex   percentile value n_athletes
   &lt;date&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;      &lt;int&gt;
 1 2024-01-01 Run   M     p05        0.65          5
 2 2024-01-01 Run   M     p25        0.82          5
@@ -314,13 +311,13 @@ valuable to compare individuals to group norms.</p>
 </h3>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Extract one athlete's data</span></span>
-<span><span class="va">individual</span> <span class="op">&lt;-</span> <span class="va">cohort_acwr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">individual</span> <span class="op">&lt;-</span> <span class="va">cohort_acwr</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">athlete_id</span> <span class="op">==</span> <span class="st">"athlete1"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot with cohort reference</span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_with_reference.html">plot_with_reference</a></span><span class="op">(</span></span>
 <span>  individual <span class="op">=</span> <span class="va">individual</span>,</span>
-<span>  reference <span class="op">=</span> <span class="va">reference</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sex</span> <span class="op">==</span> <span class="st">"M"</span><span class="op">)</span>, <span class="co"># Match athlete's group</span></span>
+<span>  reference <span class="op">=</span> <span class="va">reference</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sex</span> <span class="op">==</span> <span class="st">"M"</span><span class="op">)</span>, <span class="co"># Match athlete's group</span></span>
 <span>  metric <span class="op">=</span> <span class="st">"acwr_smooth"</span>,</span>
 <span>  bands <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"p25_p75"</span>, <span class="st">"p05_p95"</span>, <span class="st">"p50"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -351,19 +348,19 @@ to team norms</p>
 <span><span class="co"># --- Step 1: Load multi-athlete cohort ---</span></span>
 <span><span class="va">cohort_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"athlete1_export.zip"</span>, <span class="st">"athlete2_export.zip"</span>, <span class="st">"athlete3_export.zip"</span><span class="op">)</span></span>
 <span><span class="va">cohort_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">cohort_files</span>, <span class="kw">function</span><span class="op">(</span><span class="va">file</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="../reference/load_local_activities.html">load_local_activities</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>athlete_id <span class="op">=</span> <span class="fu">tools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/tools/fileutils.html" class="external-link">file_path_sans_ext</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">file</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># --- Step 2: Quality control (conceptual - for stream data) ---</span></span>
 <span><span class="co"># If you have stream data, flag quality before calculating metrics</span></span>
-<span><span class="co"># cohort_data &lt;- cohort_data %&gt;%</span></span>
-<span><span class="co">#   group_by(athlete_id) %&gt;%</span></span>
-<span><span class="co">#   mutate(quality_score = calculate_quality_score(streams))</span></span>
+<span><span class="co"># stream &lt;- parse_activity_file("path/to/activity.fit")</span></span>
+<span><span class="co"># flagged &lt;- flag_quality(stream, sport = "Run")</span></span>
+<span><span class="co"># summary &lt;- summarize_quality(flagged)</span></span>
 <span></span>
 <span><span class="co"># --- Step 3: Calculate ACWR with EWMA + CI ---</span></span>
-<span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">cohort_acwr</span> <span class="op">&lt;-</span> <span class="va">cohort_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">athlete_id</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_map.html" class="external-link">group_modify</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="../reference/calculate_acwr_ewma.html">calculate_acwr_ewma</a></span><span class="op">(</span></span>
 <span>    <span class="va">.x</span>,</span>
 <span>    method <span class="op">=</span> <span class="st">"ewma"</span>,</span>
@@ -372,20 +369,20 @@ to team norms</p>
 <span>    load_metric <span class="op">=</span> <span class="st">"duration_mins"</span>,</span>
 <span>    ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    B <span class="op">=</span> <span class="fl">100</span> <span class="co"># Reduced for speed in example</span></span>
-<span>  <span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># --- Step 4: Calculate cohort reference ---</span></span>
 <span><span class="va">reference</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calculate_cohort_reference.html">calculate_cohort_reference</a></span><span class="op">(</span></span>
 <span>  <span class="va">cohort_acwr</span>,</span>
 <span>  metric <span class="op">=</span> <span class="st">"acwr_smooth"</span>,</span>
-<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sport"</span><span class="op">)</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"type"</span><span class="op">)</span>,</span>
 <span>  probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span>, <span class="fl">0.95</span><span class="op">)</span>,</span>
 <span>  min_athletes <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># --- Step 5: Visualize individual with confidence + cohort ---</span></span>
-<span><span class="va">individual</span> <span class="op">&lt;-</span> <span class="va">cohort_acwr</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">athlete_id</span> <span class="op">==</span> <span class="st">"athlete1"</span><span class="op">)</span></span>
+<span><span class="va">individual</span> <span class="op">&lt;-</span> <span class="va">cohort_acwr</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">athlete_id</span> <span class="op">==</span> <span class="st">"athlete1"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_with_reference.html">plot_with_reference</a></span><span class="op">(</span><span class="va">individual</span>, <span class="va">reference</span>, metric <span class="op">=</span> <span class="st">"acwr_smooth"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="co"># Add individual's confidence bands</span></span>
@@ -403,7 +400,7 @@ to team norms</p>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="methodological-notes-for-jossresearch">5. Methodological Notes for JOSS/Research<a class="anchor" aria-label="anchor" href="#methodological-notes-for-jossresearch"></a>
+<h2 id="methodological-notes-for-research">5. Methodological Notes for Research<a class="anchor" aria-label="anchor" href="#methodological-notes-for-research"></a>
 </h2>
 <div class="section level3">
 <h3 id="acwr-method-selection">ACWR Method Selection<a class="anchor" aria-label="anchor" href="#acwr-method-selection"></a>
@@ -489,8 +486,15 @@ Percentiles with n &lt; 5 are unstable.</p>
 prediction?</strong><br>
 A: <strong>No</strong>. These are <strong>descriptive monitoring
 tools</strong>. Injury prediction requires proper case-control studies,
-controlling for confounders, and validation. See Carey et al. (2018) for
-discussion of ACWR limitations.</p>
+controlling for confounders, and validation. See: Carey, D. L., et
+al. (2018). Predictive modelling of training loads and injury in
+Australian football. <em>International Journal of Computer Science in
+Sport</em>, 17(1), 49-66. <a href="https://doi.org/10.2478/ijcss-2018-0002" class="external-link">DOI:
+10.2478/ijcss-2018-0002</a>; Impellizzeri, F. M., et al. (2021). What
+role do chronic workloads play in the acute to chronic workload ratio?
+Time to dismiss ACWR and its underlying theory. <em>Sports
+Medicine</em>, 51(3), 581-592. <a href="https://doi.org/10.1007/s40279-020-01378-6" class="external-link">DOI:
+10.1007/s40279-020-01378-6</a></p>
 <p><strong>Q: How do I cite Athlytics?</strong><br>
 A: Use the standard software citation format with version number and
 repository URL. See the main tutorial for the complete citation.</p>
@@ -523,10 +527,10 @@ repository URL. See the main tutorial for the complete citation.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;  [1] digest_0.6.39     desc_1.4.3        R6_2.6.1          fastmap_1.2.0    </span></span>
-<span><span class="co">#&gt;  [5] xfun_0.55         cachem_1.1.0      knitr_1.51        htmltools_0.5.9  </span></span>
+<span><span class="co">#&gt;  [5] xfun_0.56         cachem_1.1.0      knitr_1.51        htmltools_0.5.9  </span></span>
 <span><span class="co">#&gt;  [9] rmarkdown_2.30    lifecycle_1.0.5   cli_3.6.5         sass_0.4.10      </span></span>
 <span><span class="co">#&gt; [13] pkgdown_2.2.0     textshaping_1.0.4 jquerylib_0.1.4   systemfonts_1.3.1</span></span>
-<span><span class="co">#&gt; [17] compiler_4.5.2    tools_4.5.2       ragg_1.5.0        bslib_0.9.0      </span></span>
+<span><span class="co">#&gt; [17] compiler_4.5.2    tools_4.5.2       ragg_1.5.0        bslib_0.10.0     </span></span>
 <span><span class="co">#&gt; [21] evaluate_1.0.5    yaml_2.3.12       otel_0.2.0        jsonlite_2.0.0   </span></span>
 <span><span class="co">#&gt; [25] rlang_1.1.7       fs_1.6.6          htmlwidgets_1.6.4</span></span></code></pre></div>
 </div>

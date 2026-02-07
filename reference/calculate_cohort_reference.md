@@ -119,18 +119,16 @@ reference <- calculate_cohort_reference(cohort_mock,
   metric = "acwr_smooth",
   by = "sport", min_athletes = 2
 )
-#> Calculating percentiles for metric 'acwr_smooth' grouped by: sport
-#> Reference calculated for 332 date-group combinations.
 head(reference)
 #> # A tibble: 6 × 5
 #>   date       sport n_athletes percentile value
 #>   <date>     <chr>      <int> <chr>      <dbl>
-#> 1 2023-02-03 Run            3 p05        0.859
-#> 2 2023-02-03 Run            3 p25        0.872
+#> 1 2023-02-03 Run            3 p05        0.814
+#> 2 2023-02-03 Run            3 p25        0.847
 #> 3 2023-02-03 Run            3 p50        0.888
-#> 4 2023-02-03 Run            3 p75        0.931
-#> 5 2023-02-03 Run            3 p95        0.965
-#> 6 2023-02-04 Run            3 p05        0.775
+#> 4 2023-02-03 Run            3 p75        0.941
+#> 5 2023-02-03 Run            3 p95        0.983
+#> 6 2023-02-04 Run            3 p05        0.853
 
 if (FALSE) { # \dontrun{
 # Full workflow with real data - Load activities for multiple athletes

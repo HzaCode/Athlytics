@@ -8,11 +8,13 @@ training effectiveness.
 
 **EF Metrics:**
 
-- **pace_hr** (for running): Speed (m/s) / Average HR - Higher values =
-  faster pace at same HR = better fitness
+- **speed_hr** (for running): Speed (m/s) / Average HR
 
-- **power_hr** (for cycling): Average Power (watts) / Average HR -
-  Higher values = more power at same HR = better fitness
+  - Higher values = faster speed at same HR = better fitness
+
+- **power_hr** (for cycling): Average Power (watts) / Average HR
+
+  - Higher values = more power at same HR = better fitness
 
 **What Improves EF?**
 
@@ -30,9 +32,9 @@ training effectiveness.
 calculate_ef(
   activities_data,
   activity_type = c("Run", "Ride"),
-  ef_metric = c("pace_hr", "power_hr"),
+  ef_metric = c("speed_hr", "gap_hr", "power_hr"),
   start_date = NULL,
-  end_date = NULL,
+  end_date = Sys.Date(),
   min_duration_mins = 20,
   min_steady_minutes = 20,
   steady_cv_threshold = 0.08,
@@ -61,14 +63,18 @@ calculate_ef(
 
   Character string specifying the efficiency metric:
 
-  - `"pace_hr"`: Pace-based efficiency (for running). Formula: speed
+  - `"speed_hr"`: Speed-based efficiency (for running). Formula: speed
     (m/s) / avg_HR. Units: m/s/bpm (higher = better fitness)
 
-  - `"power_hr"`: Power-based efficiency (for cycling). Formula:
-    avg_watts / avg_HR. Units: W/bpm (higher = better fitness)
+  - `"gap_hr"`: Grade Adjusted Speed efficiency (for running on hilly
+    terrain). Formula: GAP speed (m/s) / avg_HR. Accounts for elevation
+    changes. Units: m/s/bpm
 
-  Default: `c("pace_hr", "power_hr")` (uses first matching metric for
-  activity type).
+  - `"power_hr"`: Power-based efficiency (for cycling). Formula:
+    avg_watts / avg_HR. Units: W/bpm (higher = better fitness) Default:
+    `c("speed_hr", "power_hr")` (uses first matching metric for activity
+    type). Note: `"pace_hr"` is accepted as a deprecated alias for
+    `"speed_hr"` for backward compatibility.
 
 - start_date:
 
@@ -131,7 +137,7 @@ A tibble with the following columns:
 - ef_value:
 
   Efficiency Factor value (numeric). Higher = better fitness. Units:
-  m/s/bpm for pace_hr, W/bpm for power_hr.
+  m/s/bpm for speed_hr, W/bpm for power_hr.
 
 - status:
 
@@ -144,7 +150,7 @@ A tibble with the following columns:
 ## Details
 
 Computes Efficiency Factor (EF) for endurance activities, quantifying
-the relationship between performance output (pace or power) and heart
+the relationship between performance output (speed or power) and heart
 rate. EF is a key indicator of aerobic fitness and training adaptation
 (Allen et al., 2019).
 
@@ -154,11 +160,41 @@ rate. EF is a key indicator of aerobic fitness and training adaptation
 
 2.  For each activity, calculate:
 
-    - pace_hr: (distance / moving_time) / average_heartrate
+    - speed_hr: (distance / moving_time) / average_heartrate
 
     - power_hr: average_watts / average_heartrate
 
 3.  Return one EF value per activity
+
+**Steady-State Detection Method:**
+
+When stream data is available (via `export_dir`), the function applies a
+rolling coefficient of variation (CV) approach to identify steady-state
+periods:
+
+1.  **Rolling window**: A sliding window (default 300 seconds, or 1/4 of
+    data, min 60 s) computes the rolling mean and standard deviation of
+    the output metric (velocity or power).
+
+2.  **CV calculation**: CV = rolling SD / rolling mean at each time
+    point.
+
+3.  **Threshold filtering**: Time points where CV \<
+    `steady_cv_threshold` (default 8%) are classified as steady-state.
+
+4.  **Minimum duration**: At least `min_steady_minutes` of steady-state
+    data must be present; otherwise the activity is marked as
+    `"non_steady"`.
+
+5.  **EF computation**: The median EF across all steady-state data
+    points is reported.
+
+This approach follows the principle that valid EF comparisons require
+quasi-constant output intensity, as outlined by Coyle & González-Alonso
+(2001), who demonstrated that cardiovascular drift is meaningful only
+under steady-state exercise conditions. The rolling CV method is a
+common signal-processing technique for detecting stationarity in
+physiological time series.
 
 **Data Quality Considerations:**
 
@@ -183,7 +219,7 @@ rate. EF is a key indicator of aerobic fitness and training adaptation
 
 - **Sudden drop**: Check for illness, equipment change, or data quality
 
-**Typical EF Ranges (pace_hr for running):**
+**Typical EF Ranges (speed_hr for running):**
 
 - Beginner: 0.01 - 0.015 (m/s per bpm)
 
@@ -201,13 +237,18 @@ trends rather than absolute comparisons with other athletes.
 Allen, H., Coggan, A. R., & McGregor, S. (2019). *Training and Racing
 with a Power Meter* (3rd ed.). VeloPress.
 
+Coyle, E. F., & González-Alonso, J. (2001). Cardiovascular drift during
+prolonged exercise: New perspectives. *Exercise and Sport Sciences
+Reviews*, 29(2), 88-92.
+[doi:10.1097/00003677-200104000-00009](https://doi.org/10.1097/00003677-200104000-00009)
+
 ## See also
 
-[`plot_ef`](https://hzacode.github.io/Athlytics/reference/plot_ef.md)
+[`plot_ef()`](https://hzacode.github.io/Athlytics/reference/plot_ef.md)
 for visualization with trend lines,
-[`calculate_decoupling`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md)
+[`calculate_decoupling()`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md)
 for within-activity efficiency analysis,
-[`load_local_activities`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
+[`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
 for data loading
 
 ## Examples
@@ -226,15 +267,46 @@ print(head(sample_ef))
 #> 5 2023-01-06 Ride              1.94
 #> 6 2023-01-08 Run               1.31
 
+# Runnable example with dummy data:
+end <- Sys.Date()
+dates <- seq(end - 29, end, by = "day")
+dummy_activities <- data.frame(
+  date = dates,
+  type = "Run",
+  moving_time = rep(3600, length(dates)), # 1 hour
+  distance = rep(10000, length(dates)),   # 10 km
+  average_heartrate = rep(140, length(dates)),
+  average_watts = rep(200, length(dates)),
+  weighted_average_watts = rep(210, length(dates)),
+  filename = "",
+  stringsAsFactors = FALSE
+)
+
+# Calculate EF (Speed/HR)
+ef_result <- calculate_ef(
+  activities_data = dummy_activities,
+  activity_type = "Run",
+  ef_metric = "speed_hr",
+  end_date = end
+)
+print(head(ef_result))
+#>         date activity_type   ef_value     status
+#> 1 2026-01-09           Run 0.01984127 no_streams
+#> 2 2026-01-10           Run 0.01984127 no_streams
+#> 3 2026-01-11           Run 0.01984127 no_streams
+#> 4 2026-01-12           Run 0.01984127 no_streams
+#> 5 2026-01-13           Run 0.01984127 no_streams
+#> 6 2026-01-14           Run 0.01984127 no_streams
+
 if (FALSE) { # \dontrun{
 # Example using local Strava export data
 activities <- load_local_activities("strava_export_data/activities.csv")
 
-# Calculate Pace/HR efficiency factor for Runs
+# Calculate Speed/HR efficiency factor for Runs
 ef_data_run <- calculate_ef(
   activities_data = activities,
   activity_type = "Run",
-  ef_metric = "pace_hr"
+  ef_metric = "speed_hr"
 )
 print(tail(ef_data_run))
 

@@ -12,13 +12,7 @@
 <url><loc>https://hzacode.github.io/Athlytics/news/index.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/Athlytics-package.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/add_reference_bands.html</loc></url>
-<url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_colors_acwr_zones.html</loc></url>
-<url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_colors_ef.html</loc></url>
-<url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_colors_training_load.html</loc></url>
-<url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_palette_academic.html</loc></url>
-<url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_palette_cell.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_palette_nature.html</loc></url>
-<url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_palette_science.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/athlytics_palette_vibrant.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/calculate_acwr.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.html</loc></url>
@@ -49,7 +43,6 @@
 <url><loc>https://hzacode.github.io/Athlytics/reference/sample_ef.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/sample_exposure.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/sample_pbs.html</loc></url>
-<url><loc>https://hzacode.github.io/Athlytics/reference/scale_athlytics.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/summarize_quality.html</loc></url>
 <url><loc>https://hzacode.github.io/Athlytics/reference/theme_athlytics.html</loc></url>
 </urlset>

@@ -43,11 +43,13 @@ data yet, start from [Strava](https://www.strava.com/) and follow the
 steps in the [README Quick
 Start](https://github.com/HzaCode/Athlytics#quick-start).
 
-**Quick Summary:** 1. Go to Strava Settings → My Account → Download or
-Delete Your Account 2. Request “Download” (NOT delete!) 3. Wait for
-email with download link 4. Download the ZIP file (e.g.,
-`export_12345678.zip`) 5. **Don’t unzip it** — Athlytics reads ZIP files
-directly
+**Quick Summary:** 1. **Set Strava language to English** first: Strava
+Settings → Display Preferences → Language → English. The CSV export uses
+localized column headers, so non-English exports will fail to parse
+correctly. 2. Go to Strava Settings → My Account → Download or Delete
+Your Account 3. Request “Download” (NOT delete!) 4. Wait for email with
+download link 5. Download the ZIP file (e.g., `export_12345678.zip`) 6.
+**Don’t unzip it** — Athlytics reads ZIP files directly
 
 ------------------------------------------------------------------------
 
@@ -91,18 +93,16 @@ names(activities)
 
 **Important Columns:**
 
-- `activity_id` — Unique identifier
+- `id` — Unique activity identifier
 - `date` — Activity date
-- `sport` — Activity type (Run, Ride, Swim, etc.)
-- `distance_km` — Distance in kilometers
-- `duration_mins` — Duration in minutes
-- `avg_hr` — Average heart rate (if recorded)
-- `max_hr` — Maximum heart rate
-- `avg_pace_min_km` — Average pace for running
-- `avg_speed_kmh` — Average speed
-- `avg_power` — Average power for cycling (if available)
+- `type` — Activity type (Run, Ride, Swim, etc.)
+- `distance` — Distance in kilometers
+- `moving_time` — Moving time in seconds
+- `average_heartrate` — Average heart rate (if recorded)
+- `max_heartrate` — Maximum heart rate
+- `average_speed` — Average speed (m/s)
+- `average_watts` — Average power for cycling (if available)
 - `elevation_gain` — Total elevation gain (meters)
-- `best_efforts` — Personal best times at various distances
 
 ### Data Quality Checks
 
@@ -110,45 +110,45 @@ Before analysis, it’s good practice to check your data:
 
 ``` r
 # Summary statistics
-summary(activities %>% select(distance_km, duration_mins, avg_hr))
+summary(activities |> select(distance, moving_time, average_heartrate))
 
 # Check for missing heart rate data
-sum(!is.na(activities$avg_hr)) / nrow(activities) * 100
+sum(!is.na(activities$average_heartrate)) / nrow(activities) * 100
 # Shows % of activities with HR data
 
 # Activities without HR data
-activities %>%
-  filter(is.na(avg_hr)) %>%
-  count(sport)
+activities |>
+  filter(is.na(average_heartrate)) |>
+  count(type)
 ```
 
 **Pro Tip:** Many Athlytics functions require heart rate data. Filter
-for `!is.na(avg_hr)` when calculating EF or decoupling.
+for `!is.na(average_heartrate)` when calculating EF or decoupling.
 
 ### Filtering Your Data
 
-For focused analysis, you’ll often want to filter by sport or date:
+For focused analysis, you’ll often want to filter by type or date:
 
 ``` r
 # Only running activities
-runs <- activities %>%
-  filter(sport == "Run")
+runs <- activities |>
+  filter(type == "Run")
 
 # Recent activities (last 6 months)
-recent <- activities %>%
+recent <- activities |>
   filter(date >= Sys.Date() - 180)
 
 # Runs with heart rate data from 2024
-runs_2024_hr <- activities %>%
+runs_2024_hr <- activities |>
   filter(
-    sport == "Run",
-    !is.na(avg_hr),
+    type == "Run",
+    !is.na(average_heartrate),
     lubridate::year(date) == 2024
   )
 
 # Long runs only (> 15 km)
-long_runs <- activities %>%
-  filter(sport == "Run", distance_km > 15)
+long_runs <- activities |>
+  filter(type == "Run", distance > 15)
 ```
 
 ------------------------------------------------------------------------
@@ -166,14 +166,8 @@ different insights into your training and physiology.
 
 The Acute:Chronic Workload Ratio (ACWR) compares your recent training
 (acute load, typically 7 days) to your long-term baseline (chronic load,
-typically 28 days). It’s used to identify injury risk periods.
-
-**Risk Zones:**
-
-- **\< 0.8** — Undertraining (fitness may decline)
-- **0.8-1.3** — “Sweet spot” (optimal adaptation zone)
-- **1.3-1.5** — Moderate risk (load increasing rapidly)
-- **\> 1.5** — High risk (excessive load spike, injury risk)
+typically 28 days). It helps you monitor whether you are ramping up
+training too quickly.
 
 #### Basic ACWR Calculation
 
@@ -181,7 +175,7 @@ typically 28 days). It’s used to identify injury risk periods.
 # Calculate ACWR for all running activities
 acwr_data <- calculate_acwr(
   activities_data = runs,
-  activity_type = "Run", # Filter by sport
+  activity_type = "Run", # Filter by activity type
   load_metric = "duration_mins", # Can also be "distance_km" or "hrss"
   acute_period = 7, # 7-day rolling average
   chronic_period = 28 # 28-day rolling average
@@ -194,10 +188,10 @@ head(acwr_data)
 **Output Columns:**
 
 - `date` — Date
-- `daily_load` — Training load for that day (sum of duration/distance)
 - `atl` — Acute Training Load (7-day rolling average)
 - `ctl` — Chronic Training Load (28-day rolling average)
-- `acwr_smooth` — The ACWR ratio (ATL / CTL)
+- `acwr` — Raw ACWR ratio (ATL / CTL)
+- `acwr_smooth` — Smoothed ACWR (rolling mean of `acwr`)
 
 #### Visualizing ACWR
 
@@ -217,13 +211,19 @@ data("sample_acwr", package = "Athlytics")
 
 # Plot ACWR with risk zones
 plot_acwr(sample_acwr, highlight_zones = TRUE)
-#> Generating plot...
 ```
 
 ![ACWR visualization using sample
 data](athlytics_introduction_files/figure-html/acwr-demo-1.png)
 
 ACWR visualization using sample data
+
+#### Risk Zones
+
+- **\< 0.8** — Undertraining (fitness may decline)
+- **0.8-1.3** — “Sweet spot” (optimal adaptation zone)
+- **1.3-1.5** — Moderate risk (load increasing rapidly)
+- **\> 1.5** — High risk (excessive load spike, injury risk)
 
 #### Interpreting Your ACWR
 
@@ -238,15 +238,15 @@ ACWR visualization using sample data
 
 ``` r
 # Identify high-risk periods
-high_risk <- acwr_data %>%
-  filter(acwr_smooth > 1.5) %>%
-  select(date, daily_load, acwr_smooth)
+high_risk <- acwr_data |>
+  filter(acwr_smooth > 1.5) |>
+  select(date, atl, ctl, acwr_smooth)
 
 print(high_risk)
 
 # Check recent trend
-recent_acwr <- acwr_data %>%
-  filter(date >= Sys.Date() - 60) %>%
+recent_acwr <- acwr_data |>
+  filter(date >= Sys.Date() - 60) |>
   arrange(desc(date))
 
 head(recent_acwr, 10)
@@ -262,13 +262,65 @@ Different load metrics for different goals:
   prep)
 - **`hrss`** — Most accurate for physiological load (requires HR data)
 
+> **Note on terminology:** When using `duration_mins` or `distance_km`,
+> you are technically measuring training *volume* rather than true
+> physiological *load*. True training load accounts for intensity (e.g.,
+> heart rate, power). For more accurate load estimation, use `hrss`
+> which incorporates heart rate data. This distinction is important: two
+> athletes could have the same duration-based ACWR but very different
+> physiological stress if their intensities differ. For research
+> applications, always prefer intensity-weighted metrics (e.g., HRSS,
+> TRIMP) over simple volume measures.
+>
+> See: Impellizzeri, F. M., et al. (2020). Training load and its role in
+> injury prevention, part I: Back to the future. *Journal of Athletic
+> Training*, 55(9), 885-892. [DOI:
+> 10.4085/1062-6050-500-19](https://doi.org/10.4085/1062-6050-500-19);
+> Foster, C. (1998). Monitoring training in athletes with reference to
+> overtraining syndrome. *Medicine & Science in Sports & Exercise*,
+> 30(7), 1164-1168. [DOI:
+> 10.1097/00005768-199807000-00023](https://doi.org/10.1097/00005768-199807000-00023)
+
 ``` r
 # Calculate using HRSS (heart rate stress score)
 acwr_hrss <- calculate_acwr(
   activities_data = runs,
-  load_metric = "hrss" # Automatically calculated if avg_hr available
+  load_metric = "hrss" # Automatically calculated if average_heartrate available
 )
 ```
+
+#### Important Caveats
+
+ACWR is widely used in practice, but its interpretation — especially as
+an “injury risk” indicator — is debated in the sports science
+literature. The original framework was proposed by Hulin et al. (2014)
+and popularized by Gabbett (2016), but subsequent analyses have
+questioned its predictive validity (Impellizzeri et al., 2020; Lolli et
+al., 2019), and a further critique called for dismissing the ACWR
+framework entirely (Impellizzeri et al., 2021). **Use risk zones as
+descriptive heuristics rather than validated injury predictors.**
+
+> **Key references:**
+>
+> - Gabbett, T. J. (2016). The training-injury prevention paradox.
+>   *British Journal of Sports Medicine*, 50(5), 273-280. [DOI:
+>   10.1136/bjsports-2015-095788](https://doi.org/10.1136/bjsports-2015-095788)
+> - Hulin, B. T., et al. (2014). Spikes in acute workload are associated
+>   with increased injury risk in elite cricket fast bowlers. *British
+>   Journal of Sports Medicine*, 48(8), 708-712. [DOI:
+>   10.1136/bjsports-2013-092524](https://doi.org/10.1136/bjsports-2013-092524)
+> - Lolli, L., et al. (2019). The acute-to-chronic workload ratio: An
+>   inaccurate scaling index for an unnecessary normalisation process?
+>   *British Journal of Sports Medicine*, 53(24), 1510-1512. [DOI:
+>   10.1136/bjsports-2017-098884](https://doi.org/10.1136/bjsports-2017-098884)
+> - Impellizzeri, F. M., et al. (2020). Acute:chronic workload ratio:
+>   Conceptual issues and fundamental pitfalls. *International Journal
+>   of Sports Physiology and Performance*, 15(6), 907-913. [DOI:
+>   10.1123/ijspp.2019-0864](https://doi.org/10.1123/ijspp.2019-0864)
+> - Impellizzeri, F. M., et al. (2021). What role do chronic workloads
+>   play in the acute to chronic workload ratio? Time to dismiss ACWR
+>   and its underlying theory. *Sports Medicine*, 51(3), 581-592. [DOI:
+>   10.1007/s40279-020-01378-6](https://doi.org/10.1007/s40279-020-01378-6)
 
 ------------------------------------------------------------------------
 
@@ -282,10 +334,20 @@ improvements.
 
 **Metrics:**
 
-- **Pace/HR** (running) — Speed per heartbeat: Higher = better aerobic
-  fitness
-- **Power/HR** (cycling) — Watts per heartbeat: Higher = better aerobic
-  fitness
+- **speed_hr** (running) — Speed (m/s) / HR: Higher values = faster at
+  same HR = better aerobic fitness
+- **gap_hr** (running on hilly terrain) — Grade Adjusted Speed (m/s) /
+  HR: Accounts for elevation changes using Strava’s GAP data.
+  Recommended for hilly routes where raw speed doesn’t reflect true
+  effort.
+- **power_hr** (cycling) — Power (W) / HR: Higher values = more power at
+  same HR = better aerobic fitness
+
+> **Handling Elevation:** For hilly runs, use `ef_metric = "gap_hr"` to
+> account for gradient. This uses Strava’s Grade Adjusted Pace (GAP)
+> data, which represents the equivalent flat-ground speed (m/s) adjusted
+> for terrain gradient, providing more accurate efficiency comparisons
+> across varied terrain.
 
 **What Changes Mean:**
 
@@ -297,15 +359,15 @@ improvements.
 #### Calculate EF
 
 ``` r
-# For running (Pace/HR)
+# For running (Speed/HR)
 ef_runs <- calculate_ef(
   activities_data = runs,
   activity_type = "Run",
-  ef_metric = "pace_hr" # Pace divided by HR
+  ef_metric = "speed_hr" # Speed (m/s) / HR
 )
 
 # For cycling (Power/HR)
-rides <- activities %>% filter(sport == "Ride")
+rides <- activities |> filter(type == "Ride")
 ef_cycling <- calculate_ef(
   activities_data = rides,
   activity_type = "Ride",
@@ -319,9 +381,9 @@ head(ef_runs)
 **Output Columns:**
 
 - `date` — Activity date
+- `activity_type` — Activity type (Run, Ride, etc.)
 - `ef_value` — Efficiency Factor value
-- `avg_hr` — Average heart rate
-- `avg_pace_min_km` (or `avg_power`) — Output metric
+- `status` — Calculation status (ok, no_streams, non_steady, etc.)
 
 #### Visualizing EF Trends
 
@@ -331,17 +393,21 @@ plot_ef(ef_runs)
 
 # With smoothing line to see trend (recommended)
 plot_ef(ef_runs, add_trend_line = TRUE)
+
+# Smooth per activity type (separate trend lines for each discipline)
+# Note: requires data with multiple activity types (e.g., Run + Ride)
+ef_multi <- calculate_ef(activities_data = activities, ef_metric = "speed_hr")
+plot_ef(ef_multi, add_trend_line = TRUE, smooth_per_activity_type = TRUE)
 ```
 
 **Demo with Sample Data:**
 
 ``` r
-# Load built-in sample data
+# Load built-in sample data (contains Run + Ride activities)
 data("sample_ef", package = "Athlytics")
 
 # Plot EF with trend line
 plot_ef(sample_ef, add_trend_line = TRUE)
-#> Generating plot...
 #> `geom_smooth()` using formula = 'y ~ x'
 ```
 
@@ -350,14 +416,59 @@ data](athlytics_introduction_files/figure-html/ef-demo-1.png)
 
 Efficiency Factor trend using sample data
 
+**Demo: Separate trend lines per discipline:**
+
+``` r
+# Smooth per activity type to compare trends across disciplines
+plot_ef(sample_ef, add_trend_line = TRUE, smooth_per_activity_type = TRUE)
+#> `geom_smooth()` using formula = 'y ~ x'
+```
+
+![EF with per-discipline
+smoothing](athlytics_introduction_files/figure-html/ef-smooth-demo-1.png)
+
+EF with per-discipline smoothing
+
 #### Interpreting EF
 
 **Best Practices:**
 
 1.  **Track trends over weeks/months**, not day-to-day fluctuations
 2.  **Use steady-state efforts only** — Interval workouts will skew
-    results
+    results. The package uses coefficient of variation (CV) thresholds
+    to identify steady-state segments, a common approach in exercise
+    physiology (Coyle & González-Alonso, 2001).
 3.  **Consider external factors** — Heat, altitude, fatigue affect EF
+
+> **Scientific Background:** Steady-state exercise is characterized by
+> relatively constant oxygen consumption and heart rate (CV \< 8-10%).
+> This package automatically filters non-steady activities to ensure EF
+> calculations reflect true aerobic efficiency rather than pacing
+> artifacts.
+>
+> See: Coyle, E. F., & González-Alonso, J. (2001). Cardiovascular drift
+> during prolonged exercise. *Exercise and Sport Sciences Reviews*,
+> 29(2), 88-92. [DOI:
+> 10.1097/00003677-200104000-00009](https://doi.org/10.1097/00003677-200104000-00009);
+> Allen, H., Coggan, A. R., & McGregor, S. (2019). *Training and Racing
+> with a Power Meter* (3rd ed.). VeloPress. ISBN: 978-1-937715-93-9
+
+**Technical Detail: Steady-State Detection Algorithm**
+
+1.  **Rolling window**: A centered rolling window of min(300, N/4) data
+    points (minimum 60 points, ~1-5 minutes at 1 Hz sampling) is applied
+    to the activity stream.
+2.  **Coefficient of Variation (CV)**: For each window position, CV =
+    rolling SD / rolling mean is calculated for the primary metric
+    (velocity for running, power for cycling).
+3.  **Filtering**: Data points where CV \< `steady_cv_threshold`
+    (default 8%) are classified as steady-state segments.
+4.  **Minimum duration**: For EF, at least 100 steady-state data points
+    are required. For decoupling, the steady-state segment must span at
+    least `min_steady_minutes` (default 40 minutes).
+5.  **Aggregation**: EF and decoupling are computed from steady-state
+    data only, using median-based aggregation to reduce sensitivity to
+    outliers.
 
 **Practical Analysis:**
 
@@ -365,23 +476,23 @@ Efficiency Factor trend using sample data
 # Calculate monthly average EF
 library(lubridate)
 
-ef_monthly <- ef_runs %>%
-  mutate(month = floor_date(date, "month")) %>%
-  group_by(month) %>%
+ef_monthly <- ef_runs |>
+  mutate(month = floor_date(date, "month")) |>
+  group_by(month) |>
   summarise(
     mean_ef = mean(ef_value, na.rm = TRUE),
     n_activities = n()
-  ) %>%
+  ) |>
   arrange(desc(month))
 
 print(ef_monthly)
 
 # Compare first vs last 3 months
-recent_ef <- ef_runs %>%
-  filter(date >= Sys.Date() - 90) %>%
+recent_ef <- ef_runs |>
+  filter(date >= Sys.Date() - 90) |>
   pull(ef_value)
-baseline_ef <- ef_runs %>%
-  filter(date < Sys.Date() - 90, date >= Sys.Date() - 180) %>%
+baseline_ef <- ef_runs |>
+  filter(date < Sys.Date() - 90, date >= Sys.Date() - 180) |>
   pull(ef_value)
 
 cat(sprintf(
@@ -396,6 +507,10 @@ cat(sprintf(
 
 ### 3. Cardiovascular Decoupling
 
+While EF tracks aerobic efficiency **across** activities over time,
+decoupling looks **within** a single activity to measure how efficiency
+changes from start to finish.
+
 **What is Decoupling?**
 
 Decoupling quantifies cardiovascular drift—the phenomenon where heart
@@ -404,14 +519,15 @@ constant. Low decoupling indicates good aerobic endurance.
 
 **How It Works:**
 
-The function compares efficiency (pace/HR or power/HR) between the first
-half and second half of an activity:
+The function compares efficiency (speed/HR or power/HR) between the
+first half and second half of an activity:
 
 $$\text{Decoupling \%} = \frac{\text{EF}_{\text{first half}} - \text{EF}_{\text{second half}}}{\text{EF}_{\text{first half}}} \times 100$$
 
 Positive values = efficiency decline in second half (HR drift); \<5%
 commonly used as reference threshold, requires interpretation in context
-of steady-state and environmental conditions.
+of steady-state and environmental conditions (Coyle & González-Alonso,
+2001; Friel, 2009).
 
 **Interpretation:**
 
@@ -427,7 +543,7 @@ of steady-state and environmental conditions.
 decoupling_runs <- calculate_decoupling(
   activities_data = runs,
   activity_type = "Run",
-  decouple_metric = "pace_hr",
+  decouple_metric = "speed_hr",
   min_duration_mins = 60 # Only analyze runs ≥ 60 minutes
 )
 
@@ -446,18 +562,17 @@ head(decoupling_runs)
 **Output Columns:**
 
 - `date` — Activity date
-- `first_half_ratio` — EF in first half
-- `second_half_ratio` — EF in second half
-- `decoupling_pct` — Percentage drift
+- `decoupling` — Decoupling percentage (%). Positive = HR drift
+- `status` — Calculation status (ok, non_steady, insufficient_data)
 
 #### Visualizing Decoupling
 
 ``` r
 # Basic plot
-plot_decoupling(decoupling_runs)
+plot_decoupling(data = decoupling_runs)
 
-# With metric specification
-plot_decoupling(decoupling_runs, decouple_metric = "pace_hr")
+# With trend line
+plot_decoupling(data = decoupling_runs, add_trend_line = TRUE)
 ```
 
 **Demo with Sample Data:**
@@ -466,9 +581,8 @@ plot_decoupling(decoupling_runs, decouple_metric = "pace_hr")
 # Load built-in sample data
 data("sample_decoupling", package = "Athlytics")
 
-# Plot decoupling trend (use decoupling_df parameter)
-plot_decoupling(decoupling_df = sample_decoupling)
-#> Generating plot...
+# Plot decoupling trend
+plot_decoupling(data = sample_decoupling)
 #> `geom_smooth()` using formula = 'y ~ x'
 ```
 
@@ -483,9 +597,9 @@ Cardiovascular decoupling using sample data
 
 ``` r
 # Recent decoupling average
-recent_decouple <- decoupling_runs %>%
-  filter(date >= Sys.Date() - 60) %>%
-  summarise(avg_decouple = mean(decoupling_pct, na.rm = TRUE))
+recent_decouple <- decoupling_runs |>
+  filter(date >= Sys.Date() - 60) |>
+  summarise(avg_decouple = mean(decoupling, na.rm = TRUE))
 
 if (recent_decouple$avg_decouple < 5) {
   cat("Excellent aerobic base! Ready for higher intensity.\n")
@@ -502,8 +616,8 @@ if (recent_decouple$avg_decouple < 5) {
 # Compare decoupling over time
 library(ggplot2)
 
-decoupling_runs %>%
-  ggplot(aes(x = date, y = decoupling_pct)) +
+decoupling_runs |>
+  ggplot(aes(x = date, y = decoupling)) +
   geom_point(alpha = 0.6) +
   geom_smooth(method = "loess", se = TRUE) +
   geom_hline(yintercept = 5, linetype = "dashed", color = "green") +
@@ -518,13 +632,20 @@ decoupling_runs %>%
 
 **Important Note:** Decoupling is highly affected by environmental
 conditions (heat, humidity) and cumulative fatigue. Always interpret in
-context.
+context. See: Friel, J. (2009). *The Cyclist’s Training Bible* (4th
+ed.). VeloPress — for practical application of decoupling in endurance
+training.
 
 ------------------------------------------------------------------------
 
 ### 4. Personal Bests (PBs)
 
-Track your best performances at standard distances over time.
+Track your best performances at standard distances over time. Systematic
+personal best tracking across multiple distances is a well-established
+method for monitoring endurance performance progression. Analyzing PBs
+at different distances helps distinguish between improvements in speed
+(shorter distances) and aerobic endurance (longer distances), aligning
+with periodization principles (Matveyev, 1981).
 
 #### Calculate PBs
 
@@ -552,7 +673,7 @@ print(pbs)
 plot_pbs(pbs)
 
 # Filter to specific distance
-pbs_5k <- pbs %>% filter(distance == "5k")
+pbs_5k <- pbs |> filter(distance == "5k")
 print(pbs_5k)
 ```
 
@@ -562,9 +683,8 @@ print(pbs_5k)
 # Load built-in sample data
 data("sample_pbs", package = "Athlytics")
 
-# Plot PB progression (use pbs_df parameter)
-plot_pbs(pbs_df = sample_pbs)
-#> Generating plot...
+# Plot PB progression
+plot_pbs(data = sample_pbs)
 #> `geom_smooth()` using formula = 'y ~ x'
 ```
 
@@ -579,6 +699,21 @@ Personal bests progression using sample data
 
 Visualize your training state in 2D space: acute load vs chronic load.
 
+> **How does this differ from ACWR?** Both use the same underlying data
+> (ATL and CTL), but provide different perspectives:
+>
+> - **ACWR** collapses acute and chronic load into a **single ratio**
+>   plotted over time — it tells you *when* load spikes occurred.
+> - **Load Exposure** preserves the **two-dimensional relationship**
+>   (ATL vs CTL scatter plot) — it tells you *where* you are in the
+>   fitness-fatigue state space, revealing whether a high ACWR comes
+>   from ramping up on a low base (risky) or from a natural fluctuation
+>   on a high base (less risky).
+>
+> In practice, **use ACWR for day-to-day monitoring** and **Load
+> Exposure for strategic planning** across training phases. Using both
+> together gives a more complete picture than either alone.
+
 #### Calculate and Plot Exposure
 
 ``` r
@@ -590,7 +725,7 @@ exposure <- calculate_exposure(
 )
 
 # Plot with risk zones
-plot_exposure(exposure, highlight_zones = TRUE)
+plot_exposure(data = exposure, risk_zones = TRUE)
 ```
 
 **Demo with Sample Data:**
@@ -599,9 +734,8 @@ plot_exposure(exposure, highlight_zones = TRUE)
 # Load built-in sample data
 data("sample_exposure", package = "Athlytics")
 
-# Plot exposure (use exposure_df parameter)
-plot_exposure(exposure_df = sample_exposure, activity_type = "Run")
-#> Generating plot...
+# Plot exposure
+plot_exposure(data = sample_exposure)
 #> Warning: Removed 27 rows containing missing values or values outside the scale range
 #> (`geom_point()`).
 ```
@@ -633,8 +767,8 @@ library(ggplot2)
 activities <- load_local_activities("my_strava_export.zip")
 
 # Focus on running activities with HR data
-runs <- activities %>%
-  filter(sport == "Run", !is.na(avg_hr))
+runs <- activities |>
+  filter(type == "Run", !is.na(average_heartrate))
 
 cat(sprintf("Loaded %d running activities with HR data\n", nrow(runs)))
 
@@ -645,9 +779,9 @@ acwr_data <- calculate_acwr(
 )
 
 # Check current training status
-current_acwr <- acwr_data %>%
-  filter(date >= Sys.Date() - 30) %>%
-  tail(1) %>%
+current_acwr <- acwr_data |>
+  filter(date >= Sys.Date() - 30) |>
+  tail(1) |>
   pull(acwr_smooth)
 
 cat(sprintf("Current ACWR: %.2f\n", current_acwr))
@@ -660,13 +794,13 @@ print(p1)
 # ---- 3. Aerobic Fitness Tracking ----
 ef_data <- calculate_ef(
   activities_data = runs,
-  ef_metric = "pace_hr"
+  ef_metric = "speed_hr"
 )
 
 # Calculate fitness trend
-ef_trend <- ef_data %>%
-  mutate(month = lubridate::floor_date(date, "month")) %>%
-  group_by(month) %>%
+ef_trend <- ef_data |>
+  mutate(month = lubridate::floor_date(date, "month")) |>
+  group_by(month) |>
   summarise(mean_ef = mean(ef_value, na.rm = TRUE))
 
 p2 <- plot_ef(ef_data, add_trend_line = TRUE) +
@@ -680,7 +814,7 @@ decoupling_data <- calculate_decoupling(
   min_duration_mins = 60
 )
 
-avg_decouple <- mean(decoupling_data$decoupling_pct, na.rm = TRUE)
+avg_decouple <- mean(decoupling_data$decoupling, na.rm = TRUE)
 cat(sprintf(
   "Average decoupling: %.1f%% (%s aerobic base)\n",
   avg_decouple,
@@ -689,7 +823,7 @@ cat(sprintf(
   )
 ))
 
-p3 <- plot_decoupling(decoupling_data) +
+p3 <- plot_decoupling(data = decoupling_data) +
   labs(title = "Cardiovascular Drift in Long Runs")
 print(p3)
 
@@ -752,8 +886,8 @@ Some activities may lack required metrics (HR, power, etc.):
 
 ``` r
 # Filter before calculating
-runs_with_hr <- runs %>% filter(!is.na(avg_hr))
-ef_data <- calculate_ef(runs_with_hr, ef_metric = "pace_hr")
+runs_with_hr <- runs |> filter(!is.na(average_heartrate))
+ef_data <- calculate_ef(runs_with_hr, ef_metric = "speed_hr")
 ```
 
 #### Plots look strange or empty
@@ -817,7 +951,7 @@ If you use Athlytics in your research, please cite:
   title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
   author  = {Zhiang He},
   year    = {2025},
-  version = {1.0.0},
+  version = {1.0.3},
   url     = {https://github.com/HzaCode/Athlytics}
 }
 ```
@@ -849,22 +983,20 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] ggplot2_4.0.1   Athlytics_1.0.2
+#> [1] ggplot2_4.0.2   Athlytics_1.0.3
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] sass_0.4.10        generics_0.1.4     tidyr_1.3.2        lattice_0.22-7    
-#>  [5] hms_1.1.4          digest_0.6.39      magrittr_2.0.4     evaluate_1.0.5    
-#>  [9] grid_4.5.2         timechange_0.3.0   RColorBrewer_1.1-3 fastmap_1.2.0     
-#> [13] jsonlite_2.0.0     Matrix_1.7-4       mgcv_1.9-3         purrr_1.2.1       
-#> [17] viridisLite_0.4.2  scales_1.4.0       textshaping_1.0.4  jquerylib_0.1.4   
-#> [21] cli_3.6.5          rlang_1.1.7        splines_4.5.2      withr_3.0.2       
-#> [25] cachem_1.1.0       yaml_2.3.12        otel_0.2.0         tools_4.5.2       
-#> [29] tzdb_0.5.0         dplyr_1.1.4        vctrs_0.7.0        R6_2.6.1          
-#> [33] zoo_1.8-15         lifecycle_1.0.5    lubridate_1.9.4    fs_1.6.6          
-#> [37] htmlwidgets_1.6.4  ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        
-#> [41] pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0        gtable_0.3.6      
-#> [45] glue_1.8.0         systemfonts_1.3.1  xfun_0.55          tibble_3.3.1      
-#> [49] tidyselect_1.2.1   knitr_1.51         farver_2.1.2       htmltools_0.5.9   
-#> [53] nlme_3.1-168       rmarkdown_2.30     labeling_0.4.3     readr_2.1.6       
-#> [57] compiler_4.5.2     S7_0.2.1
+#>  [1] Matrix_1.7-4       gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.0       
+#>  [5] compiler_4.5.2     tidyselect_1.2.1   jquerylib_0.1.4    splines_4.5.2     
+#>  [9] systemfonts_1.3.1  scales_1.4.0       textshaping_1.0.4  yaml_2.3.12       
+#> [13] fastmap_1.2.0      lattice_0.22-7     R6_2.6.1           labeling_0.4.3    
+#> [17] generics_0.1.4     knitr_1.51         htmlwidgets_1.6.4  tibble_3.3.1      
+#> [21] desc_1.4.3         lubridate_1.9.5    bslib_0.10.0       pillar_1.11.1     
+#> [25] RColorBrewer_1.1-3 rlang_1.1.7        cachem_1.1.0       xfun_0.56         
+#> [29] fs_1.6.6           sass_0.4.10        S7_0.2.1           otel_0.2.0        
+#> [33] timechange_0.4.0   cli_3.6.5          mgcv_1.9-3         pkgdown_2.2.0     
+#> [37] withr_3.0.2        magrittr_2.0.4     digest_0.6.39      grid_4.5.2        
+#> [41] nlme_3.1-168       lifecycle_1.0.5    vctrs_0.7.1        evaluate_1.0.5    
+#> [45] glue_1.8.0         farver_2.1.2       ragg_1.5.0         rmarkdown_2.30    
+#> [49] tools_4.5.2        pkgconfig_2.0.3    htmltools_0.5.9
 ```

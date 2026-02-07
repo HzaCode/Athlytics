@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,12 +15,9 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/athlytics_introduction.html">Getting Started</a></li>
-    <li><a class="dropdown-item" href="../articles/advanced_features.html">Advanced Features</a></li>
-  </ul></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/athlytics_introduction.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/advanced_features.html">Advanced Features</a></li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -37,6 +34,46 @@
       <small>Source: <a href="https://github.com/HzaCode/Athlytics/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.3" id="athlytics-103">Athlytics 1.0.3<a class="anchor" aria-label="anchor" href="#athlytics-103"></a></h2>
+<ul><li><p><strong>Test suite rewrite</strong>: Reduced from ~1500 to ~200 focused tests with meaningful value assertions; added vdiffr snapshot testing for all plot functions (15 visual regression tests).</p></li>
+<li>
+<p><strong>Bug fixes</strong>:</p>
+<ul><li>Fixed FIT import when <code><a href="https://rdrr.io/pkg/FITfileR/man/FitFile-accessors.html" class="external-link">FITfileR::records()</a></code> returns a list</li>
+<li>Fixed <code><a href="../reference/calculate_ef_from_stream.html">calculate_ef_from_stream()</a></code> column name mismatch (<code>power</code> vs <code>watts</code>)</li>
+<li>Fixed <code><a href="../reference/calculate_decoupling.html">calculate_decoupling()</a></code> column name mismatch (<code>heart_rate</code> vs <code>heartrate</code>)</li>
+<li>Empty data now returns an error instead of a warning with an empty plot</li>
+</ul></li>
+<li><p><strong>Analysis–plotting separation</strong>: All plot functions now require pre-computed data; passing analysis arguments emits a deprecation warning.</p></li>
+<li><p><strong>Custom S3 classes</strong>: All calculation functions return dedicated classes (<code>athlytics_acwr</code>, <code>athlytics_ef</code>, <code>athlytics_decoupling</code>, <code>athlytics_pbs</code>, <code>athlytics_exposure</code>).</p></li>
+<li><p><strong>Scientific references</strong>: Added references with DOIs throughout vignettes and roxygen documentation (Gabbett, Hulin, Impellizzeri, Coyle, Allen, Williams, etc.).</p></li>
+<li><p><strong>ACWR caveats</strong>: Added “Important Caveats” section discussing scientific debate on ACWR predictive validity.</p></li>
+<li>
+<p><strong>New features</strong>:</p>
+<ul><li>Grade Adjusted Pace (<code>gap_hr</code>) support for EF calculation</li>
+<li>
+<code>smooth_per_activity_type</code> option in <code><a href="../reference/plot_ef.html">plot_ef()</a></code>
+</li>
+<li>Configurable risk zone thresholds in <code><a href="../reference/plot_acwr.html">plot_acwr()</a></code>
+</li>
+<li>
+<code><a href="../reference/plot_exposure.html">plot_exposure()</a></code> risk zones no longer require an ACWR column</li>
+<li>Custom distances in <code><a href="../reference/calculate_pbs.html">calculate_pbs()</a></code>
+</li>
+</ul></li>
+<li>
+<p><strong>Documentation improvements</strong>:</p>
+<ul><li>Strava language setting requirement documented</li>
+<li>Volume vs load terminology clarified</li>
+<li>Pace vs speed distinction corrected (<code>pace_hr</code> deprecated in favor of <code>speed_hr</code>)</li>
+<li>Native pipe <code>|&gt;</code> used in vignettes</li>
+<li>Roxygen markdown formatting enabled</li>
+</ul></li>
+<li><p><strong>Code cleanup</strong>: Removed <code>zzz.R</code>, unused color palette functions, <code>rStrava</code>/<code>mockery</code> from Suggests, Strava API references; cleaned NAMESPACE imports.</p></li>
+<li><p><strong>CI</strong>: R CMD check now runs on 3 R versions (devel, release, oldrel-1) across 3 OS.</p></li>
+<li><p><strong>Shipped example files</strong>: <code>inst/extdata/</code> contains <code>example.fit</code>, <code>.gpx</code>, <code>.tcx</code>.</p></li>
+<li><p><strong>Code style</strong>: Applied <code>styler::style_pkg()</code> formatting.</p></li>
+</ul><hr></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.2" id="athlytics-102">Athlytics 1.0.2<a class="anchor" aria-label="anchor" href="#athlytics-102"></a></h2>
 <div class="section level3">

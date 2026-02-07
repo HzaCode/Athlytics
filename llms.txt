@@ -1,6 +1,6 @@
 # Athlytics
 
-![Athlytics logo](reference/figures/image.png)
+![Athlytics Logo](reference/figures/image.png)
 
 [![CRAN
 Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
@@ -84,18 +84,39 @@ install.packages('Athlytics')
 remotes::install_github("HzaCode/Athlytics")
 ```
 
-### 🚀 Quick Start
+### Optional: FIT file support
+
+Athlytics can parse activity stream files in TCX/GPX formats out of the
+box. **FIT support is optional** and uses **FITfileR**, which is
+installed from GitHub (not CRAN).
+
+If your Strava export includes `.fit` files (and you want Athlytics to
+parse them), install FITfileR:
+
+``` r
+if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+remotes::install_github("grimbough/FITfileR")
+```
+
+## 🚀 Quick Start
 
 ### 📥 Step 1: Export Your Strava Data
 
+0.  **Important**: Before requesting your export, set Strava language to
+    **English** (Settings → Display Preferences → Language). This helps
+    ensure the exported CSV column names match what Athlytics expects.
 1.  Navigate to **[Strava](https://www.strava.com/)** and open Settings
     → My Account.
 2.  Under “Download or Delete Your Account,” click **“Get Started”** and
     then **“Request Your Archive”**.
 3.  You’ll receive an email with a download link - this may take some
     time.
-4.  Download the ZIP file (e.g., `export_12345678.zip`). **There is no
-    need to unzip it.**
+4.  Download the ZIP file (e.g., `export_12345678.zip`). You can pass
+    the `.zip` directly to
+    [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md)
+    for CSV-based analyses (e.g., ACWR). For stream-based analyses
+    (EF/decoupling/PBs), **unzip the archive** and set `export_dir` to
+    the extracted folder.
 
 ### 💻 Step 2: Load and Analyze (Cohort Example)
 
@@ -108,21 +129,21 @@ library(Athlytics)
 library(dplyr)
 
 # 1. Load data for a cohort of athletes, adding unique IDs
-athlete1 <- load_local_activities("path/to/athlete1_export.zip") %>% mutate(athlete_id = "A1")
-athlete2 <- load_local_activities("path/to/athlete2_export.zip") %>% mutate(athlete_id = "A2")
+athlete1 <- load_local_activities("path/to/athlete1_export.zip") |> mutate(athlete_id = "A1")
+athlete2 <- load_local_activities("path/to/athlete2_export.zip") |> mutate(athlete_id = "A2")
 cohort_data <- bind_rows(athlete1, athlete2)
 
 # 2. Calculate ACWR for each athlete in the cohort
-cohort_acwr <- cohort_data %>%
-  group_by(athlete_id) %>%
-  group_modify(~ calculate_acwr(.x, activity_type = "Run", load_metric = "duration_mins")) %>%
+cohort_acwr <- cohort_data |>
+  group_by(athlete_id) |>
+  group_modify(~ calculate_acwr(.x, activity_type = "Run", load_metric = "duration_mins")) |>
   ungroup()
 
 # 3. Generate percentile bands to serve as a reference for the cohort
 reference_bands <- calculate_cohort_reference(cohort_acwr, metric = "acwr_smooth")
 
 # 4. Plot an individual's data against the cohort reference bands
-individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")
+individual_acwr <- cohort_acwr |> filter(athlete_id == "A1")
 plot_with_reference(individual = individual_acwr, reference = reference_bands)
 ```
 
@@ -134,9 +155,9 @@ perform your own custom analysis or visualizations.
 ### Training Load Monitoring (ACWR)
 
 Track how your training load is progressing to avoid ramping up too
-quickly, which can help in managing injury risk.
+quickly — a key metric for monitoring training progression.
 
-![ACWR Analysis](analysis_output/01b_acwr_multi_group.png)
+![ACWR Analysis](reference/figures/01b_acwr_multi_group.png)
 
 ACWR Analysis
 
@@ -149,7 +170,7 @@ See how your aerobic fitness is changing over time by comparing your
 output (pace or power) to your effort (heart rate). A rising trend is a
 great sign of improving fitness.
 
-![Efficiency Factor](analysis_output/02b_ef_multi_group.png)
+![Efficiency Factor](reference/figures/02b_ef_multi_group.png)
 
 Efficiency Factor
 
@@ -162,7 +183,7 @@ Measure your endurance by analyzing how much your heart rate “drifts”
 upward during a steady-state workout. A low decoupling rate (\<5%) is a
 marker of excellent aerobic conditioning.
 
-![Decoupling Analysis](analysis_output/05b_decoupling_multi_group.png)
+![Decoupling Analysis](reference/figures/05b_decoupling_multi_group.png)
 
 Decoupling Analysis
 
@@ -177,6 +198,11 @@ analytics: - **ACWR**: rolling acute (e.g., 7-day) vs chronic (e.g.,
 (EF)**: output (pace/power) relative to effort (heart rate) over time. -
 **Cardiovascular Decoupling (pa:hr)**: drift between pace/power and
 heart rate during steady efforts.
+
+**Important**: ACWR is a descriptive monitoring tool and should be
+interpreted with caution. It is not a validated injury-prediction model;
+see discussion in the sports science literature (e.g., DOI:
+10.1007/s40279-020-01378-6).
 
 We provide input validation, outlier handling, and activity-level QC
 filters (e.g., minimal duration, HR plausibility ranges). For cohort
@@ -193,7 +219,7 @@ well as the original methodological sources for specific metrics.
   title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
   author  = {Zhiang He},
   year    = {2025},
-  version = {1.0.2},
+  version = {1.0.3},
   url     = {https://github.com/HzaCode/Athlytics}
 }
 ```
@@ -297,22 +323,8 @@ Visualization customization
 
 - [`theme_athlytics()`](https://hzacode.github.io/Athlytics/reference/theme_athlytics.md)
   : Get Athlytics Theme
-- [`scale_athlytics()`](https://hzacode.github.io/Athlytics/reference/scale_athlytics.md)
-  : Apply Color Palette to ggplot
-- [`athlytics_colors_acwr_zones()`](https://hzacode.github.io/Athlytics/reference/athlytics_colors_acwr_zones.md)
-  : ACWR Zone Colors
-- [`athlytics_colors_ef()`](https://hzacode.github.io/Athlytics/reference/athlytics_colors_ef.md)
-  : Efficiency Factor Colors
-- [`athlytics_colors_training_load()`](https://hzacode.github.io/Athlytics/reference/athlytics_colors_training_load.md)
-  : Training Load Colors
-- [`athlytics_palette_academic()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_academic.md)
-  : Academic Muted Color Palette
-- [`athlytics_palette_cell()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_cell.md)
-  : Cell Journal Palette
 - [`athlytics_palette_nature()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_nature.md)
   : Nature-Inspired Color Palette
-- [`athlytics_palette_science()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_science.md)
-  : Science Magazine Palette
 - [`athlytics_palette_vibrant()`](https://hzacode.github.io/Athlytics/reference/athlytics_palette_vibrant.md)
   : Vibrant High-Contrast Palette
 

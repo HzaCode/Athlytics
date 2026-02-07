@@ -76,7 +76,7 @@ This function reads the activities.csv file from a Strava data export
 and transforms the data to match the structure expected by Athlytics
 analysis functions. The transformation includes:
 
-- Converting column names to match API format
+- Standardizing column names for analysis functions
 
 - Parsing dates into POSIXct format
 
@@ -85,6 +85,10 @@ analysis functions. The transformation includes:
 - Converting times to seconds
 
 - Filtering by date range and activity type if specified
+
+**Language Note**: Strava export language must be set to **English** for
+proper CSV parsing. Change this in Strava Settings \> Display
+Preferences \> Language before requesting your data export.
 
 **Privacy Note**: This function processes local export data only and
 does not connect to the internet. Ensure you have permission to analyze
@@ -114,7 +118,7 @@ acwr_data <- calculate_acwr(activities, load_metric = "distance_km")
 plot_acwr(acwr_data, highlight_zones = TRUE)
 
 # Multi-metric analysis
-ef_data <- calculate_ef(activities, ef_metric = "pace_hr")
+ef_data <- calculate_ef(activities, ef_metric = "speed_hr")
 plot_ef(ef_data, add_trend_line = TRUE)
 } # }
 ```

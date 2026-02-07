@@ -17,80 +17,80 @@ physiological indicators.
 
 **Data Loading:**
 
-- [`load_local_activities`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md):
+- [`load_local_activities()`](https://hzacode.github.io/Athlytics/reference/load_local_activities.md):
   Load activities from Strava export ZIP or directory
 
-- [`parse_activity_file`](https://hzacode.github.io/Athlytics/reference/parse_activity_file.md):
+- [`parse_activity_file()`](https://hzacode.github.io/Athlytics/reference/parse_activity_file.md):
   Parse individual FIT/TCX/GPX files
 
 **Training Load Analysis:**
 
-- [`calculate_acwr`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md):
+- [`calculate_acwr()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr.md):
   Calculate Acute:Chronic Workload Ratio
 
-- [`calculate_acwr_ewma`](https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.md):
+- [`calculate_acwr_ewma()`](https://hzacode.github.io/Athlytics/reference/calculate_acwr_ewma.md):
   ACWR using exponentially weighted moving averages
 
-- [`calculate_exposure`](https://hzacode.github.io/Athlytics/reference/calculate_exposure.md):
+- [`calculate_exposure()`](https://hzacode.github.io/Athlytics/reference/calculate_exposure.md):
   Calculate training load exposure metrics
 
 **Physiological Metrics:**
 
-- [`calculate_ef`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md):
+- [`calculate_ef()`](https://hzacode.github.io/Athlytics/reference/calculate_ef.md):
   Calculate Efficiency Factor (EF)
 
-- [`calculate_decoupling`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md):
+- [`calculate_decoupling()`](https://hzacode.github.io/Athlytics/reference/calculate_decoupling.md):
   Calculate cardiovascular decoupling
 
-- [`calculate_pbs`](https://hzacode.github.io/Athlytics/reference/calculate_pbs.md):
+- [`calculate_pbs()`](https://hzacode.github.io/Athlytics/reference/calculate_pbs.md):
   Calculate personal bests
 
 **Visualization:**
 
-- [`plot_acwr`](https://hzacode.github.io/Athlytics/reference/plot_acwr.md),
-  [`plot_acwr_enhanced`](https://hzacode.github.io/Athlytics/reference/plot_acwr_enhanced.md):
+- [`plot_acwr()`](https://hzacode.github.io/Athlytics/reference/plot_acwr.md),
+  [`plot_acwr_enhanced()`](https://hzacode.github.io/Athlytics/reference/plot_acwr_enhanced.md):
   Plot ACWR trends
 
-- [`plot_ef`](https://hzacode.github.io/Athlytics/reference/plot_ef.md):
+- [`plot_ef()`](https://hzacode.github.io/Athlytics/reference/plot_ef.md):
   Plot Efficiency Factor trends
 
-- [`plot_decoupling`](https://hzacode.github.io/Athlytics/reference/plot_decoupling.md):
+- [`plot_decoupling()`](https://hzacode.github.io/Athlytics/reference/plot_decoupling.md):
   Plot decoupling analysis
 
-- [`plot_exposure`](https://hzacode.github.io/Athlytics/reference/plot_exposure.md):
+- [`plot_exposure()`](https://hzacode.github.io/Athlytics/reference/plot_exposure.md):
   Plot training load exposure
 
-- [`plot_pbs`](https://hzacode.github.io/Athlytics/reference/plot_pbs.md):
+- [`plot_pbs()`](https://hzacode.github.io/Athlytics/reference/plot_pbs.md):
   Plot personal bests progression
 
 **Quality Control & Cohort Analysis:**
 
-- [`flag_quality`](https://hzacode.github.io/Athlytics/reference/flag_quality.md):
+- [`flag_quality()`](https://hzacode.github.io/Athlytics/reference/flag_quality.md):
   Flag activities based on quality criteria
 
-- [`summarize_quality`](https://hzacode.github.io/Athlytics/reference/summarize_quality.md):
+- [`summarize_quality()`](https://hzacode.github.io/Athlytics/reference/summarize_quality.md):
   Summarize stream quality flags
 
-- [`calculate_cohort_reference`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md):
+- [`calculate_cohort_reference()`](https://hzacode.github.io/Athlytics/reference/calculate_cohort_reference.md):
   Generate cohort reference bands
 
 ## Sample Datasets
 
 The package includes simulated datasets for examples and testing:
 
-- [`sample_acwr`](https://hzacode.github.io/Athlytics/reference/sample_acwr.md):
+- [sample_acwr](https://hzacode.github.io/Athlytics/reference/sample_acwr.md):
   Sample ACWR data
 
-- [`sample_ef`](https://hzacode.github.io/Athlytics/reference/sample_ef.md):
+- [sample_ef](https://hzacode.github.io/Athlytics/reference/sample_ef.md):
   Sample Efficiency Factor data
 
-- [`sample_decoupling`](https://hzacode.github.io/Athlytics/reference/sample_decoupling.md):
+- [sample_decoupling](https://hzacode.github.io/Athlytics/reference/sample_decoupling.md):
   Sample decoupling data
 
-- [`sample_exposure`](https://hzacode.github.io/Athlytics/reference/sample_exposure.md):
+- [sample_exposure](https://hzacode.github.io/Athlytics/reference/sample_exposure.md):
   Sample exposure data
 
-- [`sample_pbs`](https://hzacode.github.io/Athlytics/reference/sample_pbs.md):
+- [sample_pbs](https://hzacode.github.io/Athlytics/reference/sample_pbs.md):
   Sample personal bests data
 
 ## Getting Started
