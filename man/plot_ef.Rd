@@ -6,42 +6,40 @@
 \usage{
 plot_ef(
   data,
-  activity_type = c("Run", "Ride"),
-  ef_metric = c("pace_hr", "power_hr"),
-  start_date = NULL,
-  end_date = NULL,
-  min_duration_mins = 20,
   add_trend_line = TRUE,
   smoothing_method = "loess",
-  ef_df = NULL,
+  smooth_per_activity_type = FALSE,
   group_var = NULL,
-  group_colors = NULL
+  group_colors = NULL,
+  title = NULL,
+  subtitle = NULL,
+  ...
 )
 }
 \arguments{
-\item{data}{\strong{Recommended: Pass pre-calculated data via \code{ef_df} (local export preferred).}
-A data frame from \code{calculate_ef()} or activities data from \code{load_local_activities()}.}
-
-\item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
-
-\item{ef_metric}{Metric to calculate: "pace_hr" (Speed/HR) or "power_hr" (Power/HR).}
-
-\item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.}
-
-\item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
-
-\item{min_duration_mins}{Minimum activity duration (minutes) to include. Default 20.}
+\item{data}{A data frame from \code{calculate_ef()}.
+Must contain \code{date}, \code{ef_value}, and \code{activity_type} columns.}
 
 \item{add_trend_line}{Add a smoothed trend line (\code{geom_smooth})? Default \code{TRUE}.}
 
 \item{smoothing_method}{Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".}
 
-\item{ef_df}{\strong{Recommended.} A pre-calculated data frame from \code{calculate_ef()}.
-When provided, analysis uses local data only (no API calls).}
+\item{smooth_per_activity_type}{Logical. If \code{TRUE} and \code{add_trend_line = TRUE}, draws separate
+trend lines for each activity type. Default \code{FALSE} (single trend line for all data).
+Note: this parameter only applies when \code{group_var = NULL}. When \code{group_var} is set,
+smoothing is always done per group and this parameter is ignored with a warning.}
 
 \item{group_var}{Optional. Column name for grouping/faceting (e.g., "athlete_id").}
 
 \item{group_colors}{Optional. Named vector of colors for groups.}
+
+\item{title}{Optional. Custom title for the plot.}
+
+\item{subtitle}{Optional. Custom subtitle for the plot.}
+
+\item{...}{Additional arguments.
+Arguments \code{activity_type}, \code{ef_metric}, \code{start_date}, \code{end_date},
+\code{min_duration_mins}, \code{ef_df} are deprecated and ignored.}
 }
 \value{
 A ggplot object showing the EF trend.
@@ -50,11 +48,8 @@ A ggplot object showing the EF trend.
 Visualizes the trend of Efficiency Factor (EF) over time.
 }
 \details{
-Plots the Efficiency Factor (EF) trend over time. \strong{Recommended workflow: Use local data via \code{ef_df}.}
-
-Plots EF (output/HR based on activity averages). An upward trend
-often indicates improved aerobic fitness. Points colored by activity type.
-\strong{Best practice: Use \code{load_local_activities()} + \code{calculate_ef()} + this function.}
+Plots EF (output/HR based on activity averages).
+\strong{Best practice: Use \code{calculate_ef()} first, then pass the result to this function.}
 }
 \examples{
 # Example using pre-calculated sample data
@@ -62,31 +57,4 @@ data("sample_ef", package = "Athlytics")
 p <- plot_ef(sample_ef)
 print(p)
 
-\dontrun{
-# Example using local Strava export data
-activities <- load_local_activities("strava_export_data/activities.csv")
-
-# Plot Pace/HR EF trend for Runs (last 6 months)
-plot_ef(
-  data = activities,
-  activity_type = "Run",
-  ef_metric = "pace_hr",
-  start_date = Sys.Date() - months(6)
-)
-
-# Plot Power/HR EF trend for Rides
-plot_ef(
-  data = activities,
-  activity_type = "Ride",
-  ef_metric = "power_hr"
-)
-
-# Plot Pace/HR EF trend for multiple Run types (no trend line)
-plot_ef(
-  data = activities,
-  activity_type = c("Run", "VirtualRun"),
-  ef_metric = "pace_hr",
-  add_trend_line = FALSE
-)
-}
 }

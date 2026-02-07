@@ -2,34 +2,12 @@
 
 library(testthat)
 library(Athlytics)
-library(ggplot2) # Explicitly load for s3_class checks if not automatically available
+suppressWarnings(library(ggplot2)) # Explicitly load for s3_class checks if not automatically available
 library(lubridate) # For seconds_to_period if used in manual_df
 
-# Load data: sample data from package & mock API returns from helper
+# Load data: sample data from package & helper mock data
 data(sample_pbs)
 source(test_path("helper-mockdata.R"), local = TRUE)
-
-# NOTE: calculate_pbs tests are currently skipped because they require
-# either mocking rStrava API calls or significant refactoring of the function
-# to accept mock data directly.
-
-# test_that("calculate_pbs output structure is correct (basic check)", {
-#   skip("Skipping calculate_pbs tests until mocking/refactoring is done.")
-#   # Example with mocking (using mockery or testthat::with_mock)
-#   # mock_activity_list_data <- ...
-#   # mock_detailed_activity_data <- ...
-#   # with_mock(`rStrava::get_activity_list` = function(...) mock_activity_list_data,
-#   #           `rStrava::get_activity` = function(...) mock_detailed_activity_data,
-#   #           {
-#   #             pbs_result <- calculate_pbs(stoken = "fake_token", activity_type = "Run", distance_meters = c(5000, 10000))
-#   #             expect_s3_class(pbs_result, "tbl_df")
-#   #             expect_true(all(c("activity_id", "activity_date", "distance", "time_seconds", "is_pb") %in% names(pbs_result)))
-#   #           })
-# })
-#
-# test_that("calculate_pbs handles different distances", {
-#   skip("Skipping calculate_pbs tests until mocking/refactoring is done.")
-# })
 
 # --- Test plot_pbs using manually created, well-structured pbs_df ---
 
@@ -60,7 +38,8 @@ test_that("plot_pbs returns a ggplot object with valid pbs_df input", {
   test_distance_meters <- unique(manual_pbs_df$distance)
 
   # 2. Call plot_pbs with this manually created data
-  p <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = test_distance_meters)
+  # suppressWarnings: distance_meters is analysis arg, ignored with pre-calculated data
+  p <- suppressWarnings(plot_pbs(data = manual_pbs_df, distance_meters = test_distance_meters))
 
   # 3. Perform assertions on the plot object 'p'
   expect_s3_class(p, "ggplot")
@@ -95,12 +74,11 @@ test_that("plot_pbs handles empty data frame input", {
   # However, if pbs_df is empty, the internal calculate_pbs won't be called.
   # The warning comes from `pbs_df[pbs_df$distance %in% distance_meters,]` if it results in empty or
   # directly from the `nrow(pbs_df) == 0` check.
-  expect_warning(
-    p_empty <- plot_pbs(pbs_df = empty_df, distance_meters = c(1000, 5000)),
-    regexp = "No PB data available|pbs_df does not contain data for the specified distance_meters"
+  # suppressWarnings: distance_meters is analysis arg, ignored with pre-calculated data
+  expect_error(
+    suppressWarnings(plot_pbs(data = empty_df, distance_meters = c(1000, 5000))),
+    regexp = "No PB data available to plot|pbs_df does not contain data for the specified distance_meters"
   )
-  expect_s3_class(p_empty, "ggplot")
-  expect_true(grepl("No PB data available|No PB data for specified distances", p_empty$labels$title, ignore.case = TRUE))
 })
 
 # Test for add_trend_line argument
@@ -116,8 +94,9 @@ test_that("plot_pbs handles add_trend_line argument", {
   manual_pbs_df$time_period <- lubridate::seconds_to_period(manual_pbs_df$time_seconds)
   test_dist_meters <- unique(manual_pbs_df$distance)
 
-  p_trend <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = test_dist_meters, add_trend_line = TRUE)
-  p_no_trend <- plot_pbs(pbs_df = manual_pbs_df, distance_meters = test_dist_meters, add_trend_line = FALSE)
+  # suppressWarnings: distance_meters is analysis arg, ignored with pre-calculated data
+  p_trend <- suppressWarnings(plot_pbs(data = manual_pbs_df, distance_meters = test_dist_meters, add_trend_line = TRUE))
+  p_no_trend <- suppressWarnings(plot_pbs(data = manual_pbs_df, distance_meters = test_dist_meters, add_trend_line = FALSE))
 
   get_smooth_layers <- function(p) sum(sapply(p$layers, function(l) inherits(l$geom, "GeomSmooth")))
   expect_equal(get_smooth_layers(p_trend), 1)
@@ -137,14 +116,78 @@ test_that("plot_pbs facets for multiple distances", {
   manual_pbs_df_multi_dist$time_period <- lubridate::seconds_to_period(manual_pbs_df_multi_dist$time_seconds)
   test_dist_meters_multi <- unique(manual_pbs_df_multi_dist$distance)
 
-  p_multi <- plot_pbs(pbs_df = manual_pbs_df_multi_dist, distance_meters = test_dist_meters_multi)
+  # suppressWarnings: distance_meters is analysis arg, ignored with pre-calculated data
+  p_multi <- suppressWarnings(plot_pbs(data = manual_pbs_df_multi_dist, distance_meters = test_dist_meters_multi))
 
   # Check if faceting is applied (presence of FacetWrap class in plot object)
   is_faceted <- inherits(p_multi$facet, "FacetWrap")
   expect_true(is_faceted)
 })
 
-# test_that("plot_pbs works with multiple distances", { # Covered by the first test
-#    # Use mock_pbs_df which already has multiple distances
-#    expect_s3_class(plot_pbs(pbs_df = mock_pbs_df), "ggplot")
-# })
+# ============================================================
+# Numerical Value Validation
+# ============================================================
+
+test_that("sample_pbs has realistic pace ordering", {
+  data("sample_pbs", package = "Athlytics")
+
+  # Calculate average pace per km for each distance
+  pace_by_dist <- sample_pbs %>%
+    dplyr::group_by(distance) %>%
+    dplyr::summarise(avg_pace_per_km = mean(time_seconds / (distance / 1000)), .groups = "drop") %>%
+    dplyr::arrange(distance)
+
+  # Longer distances must have slower per-km pace
+  for (i in 2:nrow(pace_by_dist)) {
+    expect_true(
+      pace_by_dist$avg_pace_per_km[i] > pace_by_dist$avg_pace_per_km[i - 1],
+      info = sprintf(
+        "Pace for %gm (%.1f s/km) should be slower than %gm (%.1f s/km)",
+        pace_by_dist$distance[i], pace_by_dist$avg_pace_per_km[i],
+        pace_by_dist$distance[i - 1], pace_by_dist$avg_pace_per_km[i - 1]
+      )
+    )
+  }
+})
+
+test_that("sample_pbs individual data points satisfy pace ordering", {
+  data("sample_pbs", package = "Athlytics")
+
+  # On any date with multiple distances, longer distance must have slower per-km pace
+  multi_dist_dates <- sample_pbs %>%
+    dplyr::group_by(activity_date) %>%
+    dplyr::filter(dplyr::n_distinct(distance) > 1) %>%
+    dplyr::ungroup()
+
+  if (nrow(multi_dist_dates) > 0) {
+    per_point <- multi_dist_dates %>%
+      dplyr::mutate(pace_per_km = time_seconds / (distance / 1000)) %>%
+      dplyr::group_by(activity_date) %>%
+      dplyr::arrange(distance) %>%
+      dplyr::mutate(pace_ok = pace_per_km == cummax(pace_per_km)) %>%
+      dplyr::ungroup()
+
+    expect_true(
+      all(per_point$pace_ok),
+      info = "Every individual data point must satisfy pace ordering (longer distance = slower per-km pace)"
+    )
+  }
+})
+
+test_that("sample_pbs PB flags are consistent with cumulative minima", {
+  data("sample_pbs", package = "Athlytics")
+
+  # For each distance, is_pb should be TRUE only when time_seconds equals the cumulative minimum
+  pbs_check <- sample_pbs %>%
+    dplyr::group_by(distance) %>%
+    dplyr::arrange(activity_date) %>%
+    dplyr::mutate(
+      expected_cummin = cummin(time_seconds),
+      expected_is_pb = time_seconds == expected_cummin
+    ) %>%
+    dplyr::ungroup()
+
+  expect_equal(pbs_check$is_pb, pbs_check$expected_is_pb,
+    info = "is_pb flags should match cumulative minimum of time_seconds"
+  )
+})

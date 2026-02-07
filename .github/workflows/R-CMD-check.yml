@@ -16,8 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release'}
+          # rOpenSci requires testing on multiple R versions
+          - {os: ubuntu-latest, r: 'devel'}
           - {os: ubuntu-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'oldrel-1'}
+          - {os: windows-latest, r: 'release'}
           - {os: macOS-latest, r: 'release'}
 
     env:
@@ -39,7 +42,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::covr, any::devtools, any::mockery, any::testthat, any::remotes
+          extra-packages: any::rcmdcheck, any::covr, any::devtools, any::testthat, any::remotes
           needs: check
 
       - name: Install GitHub dependencies
@@ -105,7 +108,6 @@ jobs:
           if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
           if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")
           if (!requireNamespace("testthat", quietly = TRUE)) install.packages("testthat")
-          if (!requireNamespace("mockery", quietly = TRUE)) install.packages("mockery")
           
           message(sprintf("Installing package from tarball for coverage testing: %s", tarball))
           devtools::install_local(tarball, force = TRUE, quiet = TRUE, dependencies = TRUE)

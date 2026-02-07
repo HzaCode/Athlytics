@@ -11,8 +11,8 @@
 #' @param export_dir Base directory of Strava export containing the activities folder.
 #'   Default is "strava_export_data".
 #' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
-#' @param decouple_metric Basis for calculation: "pace_hr" or "power_hr"
-#'   (legacy "pace_hr"/"power_hr" also supported).
+#' @param decouple_metric Basis for calculation: "speed_hr" or "power_hr".
+#'   Note: `"pace_hr"` is accepted as a deprecated alias for `"speed_hr"`.
 #' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #' @param min_duration_mins Minimum activity duration (minutes) to include. Default 40.
@@ -27,7 +27,8 @@
 #' @param stream_df Optional. A pre-fetched data frame for a *single* activity's stream.
 #'   If provided, calculates decoupling for this data directly, ignoring other parameters.
 #'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance`
-#'   (for pace_hr) or `watts` (for power_hr).
+#'   (for speed_hr) or `watts` (for power_hr).
+#' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
 #' @return Returns a data frame with columns:
 #'   \describe{
@@ -48,11 +49,32 @@
 #'   stream data (time, heartrate, distance/power). Activities are split into two halves,
 #'   and the efficiency factor (output/HR) is compared between halves.
 #'
-#' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when group_by summarise pull first last tibble slice_head lead lag
-#' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
-#' @importFrom stats median na.omit
-#' @importFrom rlang .data %||%
-#' @importFrom purrr map_dfr possibly
+#'   **Steady-State Detection Method:**
+#'
+#'   Before computing decoupling, the function applies a rolling coefficient of
+#'   variation (CV) filter to identify steady-state segments:
+#'
+#'   1. A sliding window (default 300 s) computes the rolling mean and standard
+#'      deviation of the output metric (velocity or power).
+#'   2. The CV (= rolling SD / rolling mean) is calculated at each time point.
+#'   3. Time points with CV < `steady_cv_threshold` (default 8 %) are classified
+#'      as steady-state.
+#'   4. At least `min_steady_minutes` of steady-state data must be present;
+#'      otherwise the activity is marked `"non_steady"`.
+#'   5. Decoupling is then calculated by comparing the EF (output / HR) of the
+#'      first half vs. the second half of the steady-state segment.
+#'
+#'   This ensures that measured decoupling reflects true cardiovascular drift
+#'   rather than pacing variability or interval efforts (Coyle & González-Alonso,
+#'   2001). The rolling CV approach is a standard signal-processing technique for
+#'   detecting stationarity in physiological time series.
+#'
+#' @references
+#' Coyle, E. F., & González-Alonso, J. (2001). Cardiovascular drift during
+#' prolonged exercise: New perspectives. *Exercise and Sport Sciences Reviews*,
+#' 29(2), 88-92. \doi{10.1097/00003677-200104000-00009}
+#'
+#' @importFrom dplyr first
 #' @export
 #'
 #' @examples
@@ -60,38 +82,63 @@
 #' data(sample_decoupling)
 #' print(head(sample_decoupling))
 #'
+#' # Runnable example with dummy stream data (single activity analysis):
+#' dummy_stream <- data.frame(
+#'   time = 1:3600, # 1 hour
+#'   heartrate = rep(140, 3600),
+#'   velocity_smooth = rep(3, 3600), # 3 m/s
+#'   watts = rep(200, 3600),
+#'   distance = cumsum(rep(3, 3600)),
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' # Calculate decoupling for this specific activity stream
+#' result <- calculate_decoupling(
+#'   stream_df = dummy_stream,
+#'   decouple_metric = "speed_hr"
+#' )
+#' print(result)
+#'
 #' \dontrun{
 #' # Load local activities
 #' activities <- load_local_activities("strava_export_data/activities.csv")
 #'
-#' # Calculate Pace/HR decoupling for recent runs
+#' # Calculate Speed/HR decoupling for recent runs
 #' run_decoupling <- calculate_decoupling(
 #'   activities_data = activities,
 #'   export_dir = "strava_export_data",
 #'   activity_type = "Run",
-#'   decouple_metric = "pace_hr",
+#'   decouple_metric = "speed_hr",
 #'   start_date = "2024-01-01"
 #' )
 #' print(tail(run_decoupling))
 #'
 #' # Calculate for a single activity stream
 #' # stream_data <- parse_activity_file("strava_export_data/activities/12345.fit")
-#' # single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "pace_hr")
+#' # single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "speed_hr")
 #' }
 calculate_decoupling <- function(activities_data = NULL,
                                  export_dir = "strava_export_data",
                                  activity_type = c("Run", "Ride"),
-                                 decouple_metric = c("pace_hr", "power_hr"),
+                                 decouple_metric = c("speed_hr", "power_hr"),
                                  start_date = NULL,
-                                 end_date = NULL,
+                                 end_date = Sys.Date(),
                                  min_duration_mins = 40,
                                  min_steady_minutes = 40,
                                  steady_cv_threshold = 0.08,
                                  min_hr_coverage = 0.9,
                                  quality_control = c("off", "flag", "filter"),
-                                 stream_df = NULL) {
+                                 stream_df = NULL,
+                                 verbose = FALSE) {
   # --- Input Validation ---
-  decouple_metric <- match.arg(decouple_metric)
+  # Handle deprecated "pace_hr" alias
+  decouple_metric_raw <- decouple_metric[1]
+  if (identical(decouple_metric_raw, "pace_hr")) {
+    warning('decouple_metric = "pace_hr" is deprecated. Use "speed_hr" instead (Speed / HR, not Pace / HR).', call. = FALSE)
+    decouple_metric <- "speed_hr"
+  } else {
+    decouple_metric <- match.arg(decouple_metric)
+  }
 
   # Normalize to lowercase (support legacy capitalized names)
   decouple_metric <- tolower(decouple_metric)
@@ -135,10 +182,12 @@ calculate_decoupling <- function(activities_data = NULL,
     stop("start_date must be before end_date.")
   }
 
-  message(sprintf(
+  verbose_on <- isTRUE(verbose) || athlytics_is_verbose()
+
+  athlytics_message(sprintf(
     "Calculating decoupling (%s) from %s to %s.",
     decouple_metric, analysis_start_date, analysis_end_date
-  ))
+  ), .verbose = verbose_on)
 
   # --- Filter Activities ---
   filtered_activities <- activities_data %>%
@@ -154,17 +203,17 @@ calculate_decoupling <- function(activities_data = NULL,
     stop("No activities found matching the specified criteria.")
   }
 
-  message(sprintf("Found %d activities meeting criteria. Processing...", nrow(filtered_activities)))
+  athlytics_message(sprintf("Found %d activities meeting criteria. Processing...", nrow(filtered_activities)), .verbose = verbose_on)
 
   # --- Process Each Activity ---
-  decoupling_results <- purrr::map_dfr(1:nrow(filtered_activities), function(i) {
+  decoupling_results <- lapply(1:nrow(filtered_activities), function(i) {
     activity <- filtered_activities[i, ]
 
     if (is.na(activity$filename) || activity$filename == "") {
-      message(sprintf(
+      athlytics_message(sprintf(
         "[%d/%d] Skipping activity %s (no filename)",
         i, nrow(filtered_activities), activity$date
-      ))
+      ), .verbose = verbose_on)
       return(NULL)
     }
 
@@ -172,17 +221,17 @@ calculate_decoupling <- function(activities_data = NULL,
     file_path <- file.path(export_dir, activity$filename)
 
     if (!file.exists(file_path)) {
-      message(sprintf(
+      athlytics_message(sprintf(
         "[%d/%d] Skipping activity %s (file not found: %s)",
         i, nrow(filtered_activities), activity$date, basename(file_path)
-      ))
+      ), .verbose = verbose_on)
       return(NULL)
     }
 
-    message(sprintf(
+    athlytics_message(sprintf(
       "[%d/%d] Processing %s (%s)",
       i, nrow(filtered_activities), activity$date, basename(file_path)
-    ))
+    ), .verbose = verbose_on)
 
     # Parse activity file
     stream_data <- tryCatch(
@@ -190,13 +239,13 @@ calculate_decoupling <- function(activities_data = NULL,
         parse_activity_file(file_path)
       },
       error = function(e) {
-        message(sprintf("  Error parsing file: %s", e$message))
+        athlytics_message(sprintf("  Error parsing file: %s", e$message), .verbose = verbose_on)
         return(NULL)
       }
     )
 
     if (is.null(stream_data) || nrow(stream_data) == 0) {
-      message("  No stream data extracted")
+      athlytics_message("  No stream data extracted", .verbose = verbose_on)
       return(NULL)
     }
 
@@ -206,7 +255,7 @@ calculate_decoupling <- function(activities_data = NULL,
         calculate_single_decoupling(stream_data, decouple_metric, quality_control, min_steady_minutes, steady_cv_threshold, min_hr_coverage)
       },
       error = function(e) {
-        message(sprintf("  Error calculating decoupling: %s", e$message))
+        athlytics_message(sprintf("  Error calculating decoupling: %s", e$message), .verbose = verbose_on)
         return(list(value = NA_real_, status = "calculation_error"))
       }
     )
@@ -227,15 +276,26 @@ calculate_decoupling <- function(activities_data = NULL,
       status = status,
       stringsAsFactors = FALSE
     )
-  })
+  }) |> dplyr::bind_rows()
 
   if (is.null(decoupling_results) || nrow(decoupling_results) == 0) {
     stop("No decoupling values could be calculated. Check that activity files contain stream data.")
   }
 
-  message(sprintf("Successfully calculated decoupling for %d activities.", nrow(decoupling_results)))
+  athlytics_message(sprintf("Successfully calculated decoupling for %d activities.", nrow(decoupling_results)), .verbose = verbose_on)
 
-  return(decoupling_results %>% dplyr::arrange(.data$date))
+  result <- decoupling_results %>% dplyr::arrange(.data$date)
+
+  # Add parameters as attributes
+  attr(result, "params") <- list(
+    activity_type = activity_type,
+    decouple_metric = decouple_metric,
+    min_duration_mins = min_duration_mins
+  )
+
+  # Add S3 class for type identification
+  class(result) <- c("athlytics_decoupling", class(result))
+  return(result)
 }
 
 
@@ -243,11 +303,19 @@ calculate_decoupling <- function(activities_data = NULL,
 #' @keywords internal
 #' @noRd
 calculate_single_decoupling <- function(stream_df, decouple_metric, quality_control = "filter", min_steady_minutes = 40, steady_cv_threshold = 0.08, min_hr_coverage = 0.9) {
+  # Standardize column names (some formats use heart_rate/power, others use heartrate/watts)
+  if ("heart_rate" %in% colnames(stream_df) && !"heartrate" %in% colnames(stream_df)) {
+    stream_df <- stream_df %>% dplyr::rename(heartrate = "heart_rate")
+  }
+  if ("power" %in% colnames(stream_df) && !"watts" %in% colnames(stream_df)) {
+    stream_df <- stream_df %>% dplyr::rename(watts = "power")
+  }
+
   # Validate stream_df structure
   required_cols <- c("time", "heartrate")
-  if (decouple_metric == "pace_hr") {
+  if (decouple_metric == "speed_hr") {
     if (!"distance" %in% colnames(stream_df) && !"velocity_smooth" %in% colnames(stream_df)) {
-      stop("For pace_hr decoupling, stream_df must contain 'distance' or 'velocity_smooth' column.")
+      stop("For speed_hr decoupling, stream_df must contain 'distance' or 'velocity_smooth' column.")
     }
   } else { # power_hr
     if (!"watts" %in% colnames(stream_df)) {
@@ -269,7 +337,7 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   }
 
   # Calculate velocity if needed
-  if (decouple_metric == "pace_hr") {
+  if (decouple_metric == "speed_hr") {
     if ("velocity_smooth" %in% colnames(stream_clean)) {
       stream_clean <- stream_clean %>%
         dplyr::mutate(velocity = .data$velocity_smooth)
@@ -298,7 +366,7 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   # Apply quality control and steady-state gating
   if (quality_control != "off") {
     # Basic quality gates
-    if (decouple_metric == "pace_hr") {
+    if (decouple_metric == "speed_hr") {
       # Check for reasonable velocity values
       stream_clean <- stream_clean %>%
         dplyr::filter(.data$velocity > 0.5, .data$velocity < 15) # 0.5-15 m/s reasonable range
@@ -327,7 +395,7 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   window_size <- min(300, nrow(stream_clean) %/% 4) # 5-minute windows or 1/4 of data
   if (window_size < 60) window_size <- 60 # Minimum 1-minute windows
 
-  if (decouple_metric == "pace_hr") {
+  if (decouple_metric == "speed_hr") {
     # Calculate rolling CV for velocity
     stream_clean <- stream_clean %>%
       dplyr::arrange(.data$time) %>%
@@ -373,7 +441,7 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   second_half <- steady_periods[(midpoint + 1):nrow(steady_periods), ]
 
   # Calculate efficiency factor for each half from steady-state data only
-  if (decouple_metric == "pace_hr") {
+  if (decouple_metric == "speed_hr") {
     ef_first <- median(first_half$velocity / first_half$heartrate, na.rm = TRUE)
     ef_second <- median(second_half$velocity / second_half$heartrate, na.rm = TRUE)
   } else {

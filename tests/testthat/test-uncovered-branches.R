@@ -171,7 +171,7 @@ test_that("load_local_activities with empty CSV", {
 # ========== calculate_ef.R uncovered branches ==========
 
 test_that("calculate_ef stream data branches", {
-  base_dir <- "C:/Users/Ang/Documents/GitHub/Athlytics"
+  base_dir <- testthat::test_path("..", "..")
   csv_path <- file.path(base_dir, "export_data", "activities.csv")
   export_dir <- file.path(base_dir, "export_data")
 
@@ -194,7 +194,7 @@ test_that("calculate_ef stream data branches", {
         calculate_ef(
           act_files[i, ],
           activity_type = act_files$type[i],
-          ef_metric = "pace_hr",
+          ef_metric = "speed_hr",
           export_dir = export_dir,
           quality_control = "filter",
           min_duration_mins = 5,
@@ -230,11 +230,12 @@ test_that("plot_ef with various data conditions", {
     average_speed = c(10, 10.2, 9.8)
   )
 
-  # Should handle sparse data
-  p1 <- plot_ef(sparse_runs, activity_type = "Run", ef_metric = "pace_hr")
+  # Calculate EF first, then plot
+  ef_sparse <- calculate_ef(sparse_runs, activity_type = "Run", ef_metric = "speed_hr")
+  p1 <- plot_ef(data = ef_sparse)
   expect_s3_class(p1, "gg")
 
-  # Test with all smoothing methods
+  # Test with all smoothing methods using denser data
   denser_runs <- data.frame(
     id = 1:30,
     date = seq(Sys.Date() - 60, Sys.Date(), length.out = 30),
@@ -247,13 +248,12 @@ test_that("plot_ef with various data conditions", {
     average_speed = runif(30, 9, 13)
   )
 
+  ef_dense <- calculate_ef(denser_runs, activity_type = "Run", ef_metric = "speed_hr")
+
   for (method in c("loess", "lm", "gam", "glm")) {
     p <- tryCatch(
       {
-        plot_ef(denser_runs,
-          activity_type = "Run", ef_metric = "pace_hr",
-          smoothing_method = method
-        )
+        plot_ef(data = ef_dense, smoothing_method = method)
       },
       error = function(e) NULL
     )
@@ -281,20 +281,16 @@ test_that("plot_pbs with various data densities", {
     activity_type = "Run"
   )
 
-  p1 <- plot_pbs(pbs_df = sparse_pbs)
+  p1 <- plot_pbs(data = sparse_pbs)
   expect_s3_class(p1, "gg")
 
-  p2 <- plot_pbs(pbs_df = sparse_pbs, add_trend_line = TRUE)
+  p2 <- plot_pbs(data = sparse_pbs, add_trend_line = TRUE)
   expect_s3_class(p2, "gg")
 
-  p3 <- plot_pbs(pbs_df = sparse_pbs, add_trend_line = FALSE)
+  p3 <- plot_pbs(data = sparse_pbs, add_trend_line = FALSE)
   expect_s3_class(p3, "gg")
 
-  # With date_range
-  p4 <- plot_pbs(
-    pbs_df = sparse_pbs,
-    date_range = c(Sys.Date() - 180, Sys.Date() - 20)
-  )
+  p4 <- plot_pbs(data = sparse_pbs)
   expect_s3_class(p4, "gg")
 })
 
@@ -303,7 +299,7 @@ test_that("plot_pbs with various data densities", {
 test_that("calculate functions with invalid data structures", {
   # Test various invalid inputs
   expect_error(calculate_acwr(data.frame(x = 1)))
-  expect_error(calculate_ef(data.frame(x = 1), activity_type = "Run", ef_metric = "pace_hr"))
+  expect_error(calculate_ef(data.frame(x = 1), activity_type = "Run", ef_metric = "speed_hr"))
 
   # Test with data frame missing required columns
   incomplete_df <- data.frame(

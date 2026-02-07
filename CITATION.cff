@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: "Athlytics: A Reproducible Framework for Endurance Data Analysis"
-version: 1.0.2
+version: 1.0.3
 date-released: 2025-01-18
 url: "https://github.com/HzaCode/Athlytics"
 repository-code: "https://github.com/HzaCode/Athlytics"

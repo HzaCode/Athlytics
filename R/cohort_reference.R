@@ -29,19 +29,13 @@
 #' @details
 #' This function creates cohort-level reference bands for comparing individual
 #' athlete metrics to their peers. Common use cases:
-#' \itemize{
-#'   \item Compare an athlete's ACWR trend to team averages
-#'   \item Identify outliers (athletes outside P5-P95 range)
-#'   \item Track team-wide trends over time
-#' }
+#' - Compare an athlete's ACWR trend to team averages
+#' - Identify outliers (athletes outside P5-P95 range)
+#' - Track team-wide trends over time
 #'
 #' **Important**: Percentile bands represent **population variability**, not
 #' statistical confidence intervals for individual values.
 #'
-#' @importFrom dplyr group_by summarise filter mutate %>% ungroup
-#' @importFrom tidyr pivot_longer
-#' @importFrom stats quantile setNames
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -139,7 +133,7 @@ calculate_cohort_reference <- function(data,
   }
 
   # --- Calculate Percentiles ---
-  message(sprintf(
+  athlytics_message(sprintf(
     "Calculating percentiles for metric '%s' grouped by: %s",
     metric, paste(by, collapse = ", ")
   ))
@@ -185,7 +179,7 @@ calculate_cohort_reference <- function(data,
       values_to = "value"
     )
 
-  message(sprintf(
+  athlytics_message(sprintf(
     "Reference calculated for %d date-group combinations.",
     nrow(reference_data)
   ))
@@ -228,9 +222,6 @@ cohort_reference <- function(data,
 #'
 #' @return A ggplot object with added reference bands.
 #'
-#' @importFrom ggplot2 geom_ribbon geom_line aes
-#' @importFrom dplyr filter %>%
-#' @importFrom tidyr pivot_wider
 #' @export
 #'
 #' @examples
@@ -247,9 +238,9 @@ add_reference_bands <- function(p,
                                 bands = c("p25_p75", "p05_p95", "p50"),
                                 alpha = 0.15,
                                 colors = list(
-                                  p25_p75 = "#440154FF", # viridis dark purple
-                                  p05_p95 = "#3B528BFF", # viridis blue
-                                  p50 = "#21908CFF" # viridis teal
+                                  p25_p75 = "#4DBBD5",
+                                  p05_p95 = "#E64B35",
+                                  p50 = "#3C5488"
                                 )) {
   if (!inherits(p, "ggplot")) {
     stop("`p` must be a ggplot object.")
@@ -261,8 +252,8 @@ add_reference_bands <- function(p,
 
   # Pivot reference data to wide format for plotting
   ref_wide <- reference_data %>%
-    dplyr::select(.data$date, .data$percentile, .data$value) %>%
-    tidyr::pivot_wider(names_from = .data$percentile, values_from = .data$value)
+    dplyr::select("date", "percentile", "value") %>%
+    tidyr::pivot_wider(names_from = "percentile", values_from = "value")
 
   # Add bands in order (outermost to innermost)
   if ("p05_p95" %in% bands && all(c("p05", "p95") %in% colnames(ref_wide))) {
@@ -308,31 +299,30 @@ add_reference_bands <- function(p,
 #' @param date_col Name of the date column. Default "date".
 #' @param title Plot title. Default NULL (auto-generated).
 #' @param bands Which reference bands to show. Default c("p25_p75", "p05_p95", "p50").
+#' @param caption Plot caption. Default NULL (no caption).
 #'
 #' @return A ggplot object.
 #'
-#' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal scale_x_date
-#' @importFrom dplyr %>%
-#' @importFrom rlang %||% .data
-#' @importFrom tidyr pivot_wider
-#' @importFrom tools toTitleCase
 #' @export
 #'
 #' @examples
-#' # Simple example with fixed data
+#' # Example with weekly data for smooth curves
+#' set.seed(123)
+#' n_weeks <- 40
+#' dates <- seq(as.Date("2023-01-01"), by = "week", length.out = n_weeks)
+#'
+#' # Individual athlete data with realistic ACWR fluctuation
 #' individual_data <- data.frame(
-#'   date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
-#'   acwr_smooth = c(1.0, 1.2, 0.9, 1.1)
+#'   date = dates,
+#'   acwr_smooth = 1.0 + cumsum(rnorm(n_weeks, 0, 0.03))
 #' )
+#'
+#' # Cohort reference percentiles with gradual variation
+#' base_trend <- 1.0 + cumsum(rnorm(n_weeks, 0, 0.015))
 #' reference_data <- data.frame(
-#'   date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
-#'   percentile = rep(c("p05", "p25", "p50", "p75", "p95"), 4),
-#'   value = c(
-#'     0.7, 0.9, 1.1, 1.3, 1.5,
-#'     0.7, 0.9, 1.1, 1.3, 1.5,
-#'     0.7, 0.9, 1.1, 1.3, 1.5,
-#'     0.7, 0.9, 1.1, 1.3, 1.5
-#'   )
+#'   date = rep(dates, each = 5),
+#'   percentile = rep(c("p05", "p25", "p50", "p75", "p95"), n_weeks),
+#'   value = as.vector(t(outer(base_trend, c(-0.35, -0.15, 0, 0.15, 0.35), "+")))
 #' )
 #'
 #' p <- plot_with_reference(
@@ -354,7 +344,8 @@ plot_with_reference <- function(individual,
                                 metric = "acwr_smooth",
                                 date_col = "date",
                                 title = NULL,
-                                bands = c("p25_p75", "p05_p95", "p50")) {
+                                bands = c("p25_p75", "p05_p95", "p50"),
+                                caption = NULL) {
   if (!is.data.frame(individual) || !is.data.frame(reference)) {
     stop("Both `individual` and `reference` must be data frames.")
   }
@@ -365,8 +356,8 @@ plot_with_reference <- function(individual,
 
   # Pivot reference to wide
   ref_wide <- reference %>%
-    dplyr::select(.data$date, .data$percentile, .data$value) %>%
-    tidyr::pivot_wider(names_from = .data$percentile, values_from = .data$value)
+    dplyr::select("date", "percentile", "value") %>%
+    tidyr::pivot_wider(names_from = "percentile", values_from = "value")
 
   # Create base plot with reference bands
   p <- ggplot2::ggplot()
@@ -376,7 +367,7 @@ plot_with_reference <- function(individual,
     p <- p + ggplot2::geom_ribbon(
       data = ref_wide,
       ggplot2::aes(x = .data$date, ymin = .data$p05, ymax = .data$p95),
-      fill = "#FFB6C1", alpha = 0.3
+      fill = "#E64B35", alpha = 0.15
     )
   }
 
@@ -384,7 +375,7 @@ plot_with_reference <- function(individual,
     p <- p + ggplot2::geom_ribbon(
       data = ref_wide,
       ggplot2::aes(x = .data$date, ymin = .data$p25, ymax = .data$p75),
-      fill = "#87CEEB", alpha = 0.4
+      fill = "#4DBBD5", alpha = 0.25
     )
   }
 
@@ -392,7 +383,7 @@ plot_with_reference <- function(individual,
     p <- p + ggplot2::geom_line(
       data = ref_wide,
       ggplot2::aes(x = .data$date, y = .data$p50),
-      color = "#4682B4", linetype = "dashed", linewidth = 1.5
+      color = "#3C5488", linetype = "dashed", linewidth = 1.0
     )
   }
 
@@ -400,7 +391,7 @@ plot_with_reference <- function(individual,
   p <- p + ggplot2::geom_line(
     data = individual,
     ggplot2::aes(x = .data[[date_col]], y = .data[[metric]]),
-    color = "#DC143C", linewidth = 2.5, alpha = 1.0
+    color = "#E64B35", linewidth = 1.5, alpha = 0.9
   )
 
   # Formatting
@@ -412,22 +403,12 @@ plot_with_reference <- function(individual,
       subtitle = "Individual athlete metrics compared to cohort reference bands",
       x = "Date",
       y = tools::toTitleCase(metric),
-      caption = "Red line: Individual athlete | Shaded bands: Cohort percentile ranges"
+      caption = caption
     ) +
-    ggplot2::scale_x_date(
-      date_breaks = "3 months",
-      labels = function(x) {
-        months <- c(
-          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        )
-        paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
-      }
-    ) +
+    ggplot2::scale_x_date(labels = english_month_year) +
     theme_athlytics() +
     ggplot2::theme(
-      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
-      plot.margin = ggplot2::margin(20, 20, 20, 20)
+      legend.position = "bottom"
     )
 
   return(p)

@@ -1,143 +1,97 @@
+# R/plot_pbs.R
+
 #' Plot Personal Best (PB) Trends
 #'
 #' Visualizes the trend of personal best times for specific running distances.
 #'
-#' Plots the trend of best efforts for specified distances, highlighting new PBs.
-#' **Recommended workflow: Use local data via `pbs_df`.**
-#'
-#' @param data **Recommended: Pass pre-calculated data via `pbs_df` (local export preferred).**
-#'   A data frame from `calculate_pbs()` or activities data from `load_local_activities()`.
-#' @param activity_type Type(s) of activities to search (e.g., "Run"). Default "Run".
-#' @param distance_meters Numeric vector of distances (meters) to plot PBs for (e.g., `c(1000, 5000)`).
-#'   Relies on Strava's `best_efforts` data.
-#' @param max_activities Max number of recent activities to check. Default 500. Reduce for speed.
-#' @param date_range Optional. Filter activities by date `c("YYYY-MM-DD", "YYYY-MM-DD")`.
+#' @param data A data frame from `calculate_pbs()`.
+#'   Must contain `activity_date`, `distance`, `time_seconds`.
 #' @param add_trend_line Logical. Whether to add a trend line to the plot. Default TRUE.
-#' @param pbs_df **Recommended.** A pre-calculated data frame from `calculate_pbs()`.
-#'   When provided, analysis uses local data only (no API calls).
+#' @param caption Plot caption. Default NULL (no caption).
+#' @param facet_ncol Integer. Number of columns for faceted plots when multiple distances
+#'   are shown. Default 2 for better aspect ratio. Set to 1 for vertical stacking.
+#' @param title Optional. Custom title for the plot.
+#' @param subtitle Optional. Custom subtitle for the plot.
+#' @param ... Additional arguments.
+#'   Arguments `activity_type`, `distance_meters`, `max_activities`, `date_range`,
+#'   `pbs_df` are deprecated and ignored.
 #'
 #' @return A ggplot object showing PB trends, faceted by distance if multiple are plotted.
 #'
 #' @details Visualizes data from `calculate_pbs`. Points show best efforts;
 #'   solid points mark new PBs. Y-axis is MM:SS.
-#'   **Best practice: Use `load_local_activities()` + `calculate_pbs()` + this function.**
-#'   Legacy API mode is maintained for backward compatibility only.
+#'   **Best practice: Use `calculate_pbs()` first, then pass the result to this function.**
 #'
-#' @importFrom dplyr filter select mutate arrange group_by slice bind_rows summarise distinct rename %>% left_join
-#' @importFrom purrr map_dfr map_chr possibly quietly
-#' @importFrom tidyr unnest pivot_longer
-#' @importFrom lubridate as_datetime ymd_hms seconds_to_period parse_date_time
-#' @importFrom scales pretty_breaks
 #' @import ggplot2
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
 #' # Example using the built-in sample data
-#' # This data now contains a simulated history of performance improvements
 #' data("sample_pbs", package = "Athlytics")
 #'
 #' if (!is.null(sample_pbs) && nrow(sample_pbs) > 0) {
 #'   # Plot PBs using the package sample data directly
-#'   p <- plot_pbs(pbs_df = sample_pbs, activity_type = "Run")
+#'   p <- plot_pbs(sample_pbs)
 #'   print(p)
 #' }
 #'
-#' if (FALSE) {
-#'   # Example using local Strava export data
-#'   activities <- load_local_activities("strava_export_data/activities.csv")
+#' \dontrun{
+#' # Example using local Strava export data
+#' activities <- load_local_activities("strava_export_data/activities.csv")
 #'
-#'   # Plot PBS trend for Runs (last 6 months)
-#'   pb_data_run <- calculate_pbs(
-#'     activities_data = activities,
-#'     activity_type = "Run",
-#'     distance_meters = c(1000, 5000, 10000),
-#'     date_range = c(
-#'       format(Sys.Date() - months(6)),
-#'       format(Sys.Date())
-#'     )
-#'   )
-#'   if (nrow(pb_data_run) > 0) {
-#'     plot_pbs(pbs_df = pb_data_run, distance_meters = c(1000, 5000, 10000))
-#'   }
+#' # Calculate PBs first
+#' pb_data_run <- calculate_pbs(
+#'   activities_data = activities,
+#'   activity_type = "Run",
+#'   distances_m = c(1000, 5000, 10000)
+#' )
 #'
-#'   # Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)
-#'   pb_data_ride <- calculate_pbs(
-#'     activities_data = activities,
-#'     activity_type = "Ride",
-#'     distance_meters = c(10000, 20000)
-#'   )
-#'   if (nrow(pb_data_ride) > 0) {
-#'     plot_pbs(pbs_df = pb_data_ride, distance_meters = c(10000, 20000))
-#'   }
-#'
-#'   # Plot PBS trend for multiple Run types (no trend line)
-#'   pb_data_multi <- calculate_pbs(
-#'     activities_data = activities,
-#'     activity_type = c("Run", "VirtualRun"),
-#'     distance_meters = c(1000, 5000)
-#'   )
-#'   if (nrow(pb_data_multi) > 0) {
-#'     plot_pbs(
-#'       pbs_df = pb_data_multi, distance_meters = c(1000, 5000),
-#'       add_trend_line = FALSE
-#'     )
-#'   }
+#' if (nrow(pb_data_run) > 0) {
+#'   plot_pbs(pb_data_run)
+#' }
 #' }
 #'
-#' @importFrom dplyr filter select mutate arrange group_by slice bind_rows summarise distinct rename %>% left_join
-#' @importFrom purrr map_dfr map_chr possibly quietly
-#' @importFrom tidyr unnest pivot_longer
-#' @importFrom lubridate as_datetime ymd_hms seconds_to_period parse_date_time
-#' @importFrom scales pretty_breaks
-#' @import ggplot2
-#' @importFrom rlang .data
-#' @export
-#'
 plot_pbs <- function(data,
-                     activity_type = "Run",
-                     distance_meters,
-                     max_activities = 500,
-                     date_range = NULL,
                      add_trend_line = TRUE,
-                     pbs_df = NULL) {
-  # --- Get Data ---
-  if (is.null(pbs_df)) {
-    if (missing(data)) stop("Either 'data' or 'pbs_df' must be provided.")
-    if (missing(distance_meters)) stop("`distance_meters` must be provided when `pbs_df` is not.")
-
-    pbs_df <- calculate_pbs(
-      activities_data = data,
-      activity_type = activity_type,
-      start_date = if (!is.null(date_range)) date_range[1] else NULL,
-      end_date = if (!is.null(date_range)) date_range[2] else NULL,
-      distances_m = distance_meters
-    )
-  }
-
-  if (!is.data.frame(pbs_df) || nrow(pbs_df) == 0) {
-    warning("No PB data available to plot.")
-    return(ggplot2::ggplot() +
-      ggplot2::theme_void() +
-      ggplot2::ggtitle("No PB data available"))
-  }
-
-  # Ensure distance_meters used for filtering/plotting are derived from pbs_df if it was passed directly
-  # Or ensure they are consistent if pbs_df was calculated
-  if (!missing(distance_meters) && !is.null(pbs_df)) {
-    pbs_df <- pbs_df[pbs_df$distance %in% distance_meters, ]
-    if (nrow(pbs_df) == 0) {
-      warning("pbs_df does not contain data for the specified distance_meters after filtering.")
-      return(ggplot2::ggplot() +
-        ggplot2::theme_void() +
-        ggplot2::ggtitle("No PB data for specified distances"))
+                     caption = NULL,
+                     facet_ncol = 2,
+                     title = NULL,
+                     subtitle = NULL,
+                     ...) {
+  # Check for deprecated args
+  deprecated_args <- list(...)
+  if (length(deprecated_args) > 0) {
+    analysis_args <- c("activity_type", "distance_meters", "max_activities", "date_range", "pbs_df")
+    if (any(names(deprecated_args) %in% analysis_args)) {
+      warning(
+        "Analysis arguments (e.g. activity_type) are deprecated in plot_pbs(). ",
+        "Please use calculate_pbs() first, then pass the result to plot_pbs()."
+      )
     }
-  } else if (is.null(pbs_df) && missing(distance_meters)) {
-    stop("If pbs_df is not provided, distance_meters must be specified for calculate_pbs call.")
   }
+
+  # Validate input
+  pbs_df <- data
+  if (!is.data.frame(pbs_df)) {
+    stop("Input 'data' must be a data frame from calculate_pbs().")
+  }
+
+  if (!inherits(pbs_df, "athlytics_pbs") && !all(c("activity_date", "distance", "time_seconds") %in% names(pbs_df))) {
+    stop("Input 'data' must be the output of calculate_pbs() or contain 'activity_date', 'distance', 'time_seconds' columns.")
+  }
+
+  if (nrow(pbs_df) == 0) {
+    stop("No PB data available to plot.")
+  }
+
+  if (!all(c("activity_date", "distance", "time_seconds") %in% names(pbs_df))) {
+    stop("Input data must contain 'activity_date', 'distance', 'time_seconds'.")
+  }
+
+  # Retrieve params for labeling
+  params <- attr(pbs_df, "params")
 
   # --- Plotting ---
-  message("Generating plot...")
 
   # Ensure activity_date is Date type
   pbs_df$activity_date <- as.Date(pbs_df$activity_date)
@@ -148,13 +102,22 @@ plot_pbs <- function(data,
       pbs_df$distance == 1000 ~ "1k",
       pbs_df$distance == 5000 ~ "5k",
       pbs_df$distance == 10000 ~ "10k",
-      pbs_df$distance == 21097.5 ~ "Half Marathon",
+      pbs_df$distance == 21097.5 ~ "21.1k",
       pbs_df$distance == 42195 ~ "Marathon",
       TRUE ~ paste0(round(pbs_df$distance), "m")
     )
-    pbs_df$distance_label <- factor(pbs_df$distance_label,
-      levels = c("1k", "5k", "10k", "Half Marathon", "Marathon")
-    )
+    # Build levels dynamically: standard distances in canonical order,
+    # then any non-standard distances sorted by numeric value
+    standard_levels <- c("1k", "5k", "10k", "21.1k", "Marathon")
+    present_standard <- standard_levels[standard_levels %in% unique(pbs_df$distance_label)]
+    non_standard <- setdiff(unique(pbs_df$distance_label), standard_levels)
+    # Sort non-standard labels by their numeric distance value
+    if (length(non_standard) > 0) {
+      ns_distances <- pbs_df$distance[match(non_standard, pbs_df$distance_label)]
+      non_standard <- non_standard[order(ns_distances)]
+    }
+    all_levels <- c(present_standard, non_standard)
+    pbs_df$distance_label <- factor(pbs_df$distance_label, levels = all_levels)
   }
 
   # Ensure required columns exist
@@ -178,6 +141,10 @@ plot_pbs <- function(data,
   pbs_df <- pbs_df[order(pbs_df$distance_label, pbs_df$activity_date), ]
 
   # Create the base plot with Athlytics theme
+
+  if (is.null(title)) title <- "Personal Best Running Times Trend"
+  if (is.null(subtitle)) subtitle <- "Showing best efforts for specified distances over time"
+
   p <- ggplot2::ggplot(pbs_df, ggplot2::aes(
     x = .data$activity_date, y = .data$time_seconds,
     color = .data$distance_label, group = .data$distance_label
@@ -188,33 +155,24 @@ plot_pbs <- function(data,
       values = c("TRUE" = 19, "FALSE" = 21),
       name = "Personal Best", labels = c("TRUE" = "Yes", "FALSE" = "No")
     ) +
-    ggplot2::scale_x_date(
-      date_breaks = "2 months",
-      labels = function(x) {
-        months <- c(
-          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        )
-        paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
-      }
-    ) +
+    ggplot2::scale_x_date(labels = english_month_year) +
     ggplot2::scale_y_continuous(
-      labels = function(x) sprintf("%02d:%02d", floor(x / 60), x %% 60),
-      breaks = scales::pretty_breaks(n = 2)
+      labels = function(x) sprintf("%02d:%02d", as.integer(floor(x / 60)), as.integer(round(x %% 60))),
+      breaks = function(x) pretty(x, n = 6),
+      minor_breaks = NULL
     ) +
     ggplot2::scale_color_manual(values = athlytics_palette_vibrant(), name = "Distance") +
     ggplot2::labs(
-      title = "Personal Best Running Times Trend",
-      subtitle = "Showing best efforts for specified distances over time",
+      title = title,
+      subtitle = subtitle,
       x = "Activity Date",
       y = "Best Time (MM:SS)",
-      caption = "Data from local Strava export"
+      caption = caption
     ) +
     theme_athlytics() +
     ggplot2::theme(
       legend.position = "bottom",
-      plot.title = ggplot2::element_text(hjust = 0.5),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5)
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, size = 8)
     ) +
     ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 4)))
 
@@ -229,13 +187,13 @@ plot_pbs <- function(data,
   }
 
   if (length(unique(pbs_df$distance_label)) > 1) {
-    p <- p + ggplot2::facet_wrap(~ .data$distance_label, scales = "free_y", ncol = 1) +
+    p <- p + ggplot2::facet_wrap(~ .data$distance_label, scales = "free", ncol = facet_ncol) +
       ggplot2::theme(
-        panel.spacing = ggplot2::unit(2, "lines")
+        panel.spacing = ggplot2::unit(1.5, "lines"),
+        aspect.ratio = 0.75, # Wider facets (height/width = 0.75) for balanced layout
+        strip.text = ggplot2::element_text(size = 10, face = "bold", color = "#2c3e50")
       )
   }
 
   return(p)
 }
-
-# Helper for null default (from purrr example) - avoids direct dependency if only used here

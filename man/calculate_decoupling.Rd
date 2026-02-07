@@ -8,15 +8,16 @@ calculate_decoupling(
   activities_data = NULL,
   export_dir = "strava_export_data",
   activity_type = c("Run", "Ride"),
-  decouple_metric = c("pace_hr", "power_hr"),
+  decouple_metric = c("speed_hr", "power_hr"),
   start_date = NULL,
-  end_date = NULL,
+  end_date = Sys.Date(),
   min_duration_mins = 40,
   min_steady_minutes = 40,
   steady_cv_threshold = 0.08,
   min_hr_coverage = 0.9,
   quality_control = c("off", "flag", "filter"),
-  stream_df = NULL
+  stream_df = NULL,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -27,8 +28,8 @@ Default is "strava_export_data".}
 
 \item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
 
-\item{decouple_metric}{Basis for calculation: "pace_hr" or "power_hr"
-(legacy "pace_hr"/"power_hr" also supported).}
+\item{decouple_metric}{Basis for calculation: "speed_hr" or "power_hr".
+Note: \code{"pace_hr"} is accepted as a deprecated alias for \code{"speed_hr"}.}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to one year ago.}
 
@@ -51,7 +52,9 @@ or "filter" (exclude flagged data). Default "filter" for scientific rigor.}
 \item{stream_df}{Optional. A pre-fetched data frame for a \emph{single} activity's stream.
 If provided, calculates decoupling for this data directly, ignoring other parameters.
 Must include columns: \code{time}, \code{heartrate}, and either \code{velocity_smooth}/\code{distance}
-(for pace_hr) or \code{watts} (for power_hr).}
+(for speed_hr) or \code{watts} (for power_hr).}
+
+\item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }
 \value{
 Returns a data frame with columns:
@@ -79,28 +82,71 @@ HR drift (cardiovascular drift).
 The function parses FIT/TCX/GPX files from your Strava export to extract detailed
 stream data (time, heartrate, distance/power). Activities are split into two halves,
 and the efficiency factor (output/HR) is compared between halves.
+
+\strong{Steady-State Detection Method:}
+
+Before computing decoupling, the function applies a rolling coefficient of
+variation (CV) filter to identify steady-state segments:
+\enumerate{
+\item A sliding window (default 300 s) computes the rolling mean and standard
+deviation of the output metric (velocity or power).
+\item The CV (= rolling SD / rolling mean) is calculated at each time point.
+\item Time points with CV < \code{steady_cv_threshold} (default 8 \%) are classified
+as steady-state.
+\item At least \code{min_steady_minutes} of steady-state data must be present;
+otherwise the activity is marked \code{"non_steady"}.
+\item Decoupling is then calculated by comparing the EF (output / HR) of the
+first half vs. the second half of the steady-state segment.
+}
+
+This ensures that measured decoupling reflects true cardiovascular drift
+rather than pacing variability or interval efforts (Coyle & González-Alonso,
+2001). The rolling CV approach is a standard signal-processing technique for
+detecting stationarity in physiological time series.
 }
 \examples{
 # Example using simulated data
 data(sample_decoupling)
 print(head(sample_decoupling))
 
+# Runnable example with dummy stream data (single activity analysis):
+dummy_stream <- data.frame(
+  time = 1:3600, # 1 hour
+  heartrate = rep(140, 3600),
+  velocity_smooth = rep(3, 3600), # 3 m/s
+  watts = rep(200, 3600),
+  distance = cumsum(rep(3, 3600)),
+  stringsAsFactors = FALSE
+)
+
+# Calculate decoupling for this specific activity stream
+result <- calculate_decoupling(
+  stream_df = dummy_stream,
+  decouple_metric = "speed_hr"
+)
+print(result)
+
 \dontrun{
 # Load local activities
 activities <- load_local_activities("strava_export_data/activities.csv")
 
-# Calculate Pace/HR decoupling for recent runs
+# Calculate Speed/HR decoupling for recent runs
 run_decoupling <- calculate_decoupling(
   activities_data = activities,
   export_dir = "strava_export_data",
   activity_type = "Run",
-  decouple_metric = "pace_hr",
+  decouple_metric = "speed_hr",
   start_date = "2024-01-01"
 )
 print(tail(run_decoupling))
 
 # Calculate for a single activity stream
 # stream_data <- parse_activity_file("strava_export_data/activities/12345.fit")
-# single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "pace_hr")
+# single_decoupling <- calculate_decoupling(stream_df = stream_data, decouple_metric = "speed_hr")
 }
+}
+\references{
+Coyle, E. F., & González-Alonso, J. (2001). Cardiovascular drift during
+prolonged exercise: New perspectives. \emph{Exercise and Sport Sciences Reviews},
+29(2), 88-92. \doi{10.1097/00003677-200104000-00009}
 }

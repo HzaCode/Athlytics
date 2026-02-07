@@ -1,7 +1,6 @@
 .Rproj.user
 .RData
 .aspell/defaults.R
-.Rbuildignore
 Athlytics.Rcheck/00check.log
 cran-comments.md
 CRAN-SUBMISSION

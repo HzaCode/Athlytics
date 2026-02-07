@@ -6,37 +6,31 @@
 \usage{
 plot_decoupling(
   data,
-  activity_type = c("Run", "Ride"),
-  decouple_metric = c("pace_hr", "power_hr"),
-  start_date = NULL,
-  end_date = NULL,
-  min_duration_mins = 45,
   add_trend_line = TRUE,
   smoothing_method = "loess",
-  decoupling_df = NULL
+  caption = NULL,
+  title = NULL,
+  subtitle = NULL,
+  ...
 )
 }
 \arguments{
-\item{data}{\strong{Recommended: Pass pre-calculated data via \code{decoupling_df} (local export preferred).}
-A data frame from \code{calculate_decoupling()} or activities data from \code{load_local_activities()}.}
-
-\item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
-
-\item{decouple_metric}{Metric basis: "pace_hr" or "power_hr".}
-
-\item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.}
-
-\item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
-
-\item{min_duration_mins}{Minimum activity duration (minutes) to include. Default 45.}
+\item{data}{A data frame from \code{calculate_decoupling()}.
+Must contain 'date' and 'decoupling' columns.}
 
 \item{add_trend_line}{Add a smoothed trend line (\code{geom_smooth})? Default \code{TRUE}.}
 
 \item{smoothing_method}{Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".}
 
-\item{decoupling_df}{\strong{Recommended.} A pre-calculated data frame from \code{calculate_decoupling()}.
-When provided, analysis uses local data only (no API calls).
-Must contain 'date' and 'decoupling' columns.}
+\item{caption}{Plot caption. Default NULL (no caption).}
+
+\item{title}{Optional. Custom title for the plot.}
+
+\item{subtitle}{Optional. Custom subtitle for the plot.}
+
+\item{...}{Additional arguments.
+Arguments \code{activity_type}, \code{decouple_metric}, \code{start_date}, \code{end_date},
+\code{min_duration_mins}, \code{decoupling_df} are deprecated and ignored.}
 }
 \value{
 A ggplot object showing the decoupling trend.
@@ -45,48 +39,21 @@ A ggplot object showing the decoupling trend.
 Visualizes the trend of aerobic decoupling over time.
 }
 \details{
-Plots the aerobic decoupling trend over time. \strong{Recommended workflow: Use local data via \code{decoupling_df}.}
-
 Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
 Positive values mean HR drifted relative to output. A 5\\\% threshold line is often
-used as reference. \strong{Best practice: Use \code{load_local_activities()} + \code{calculate_decoupling()} + this function.}
+used as reference. \strong{Best practice: Use \code{calculate_decoupling()} first, then pass the result to this function.}
 }
 \examples{
 # Example using pre-calculated sample data
 data("sample_decoupling", package = "Athlytics")
-p <- plot_decoupling(decoupling_df = sample_decoupling)
+p <- plot_decoupling(sample_decoupling)
 print(p)
 
-\dontrun{
-# Example using local Strava export data
-activities <- load_local_activities("strava_export_data/activities.csv")
-
-# Example 1: Plot Decoupling trend for Runs (last 6 months)
-decoupling_runs_6mo <- calculate_decoupling(
-  activities_data = activities,
-  export_dir = "strava_export_data",
-  activity_type = "Run",
-  decouple_metric = "pace_hr",
-  start_date = Sys.Date() - months(6)
+# Runnable example with a manually created decoupling data frame:
+decoupling_df <- data.frame(
+  date = seq(Sys.Date() - 29, Sys.Date(), by = "day"),
+  decoupling = rnorm(30, mean = 5, sd = 2)
 )
-plot_decoupling(decoupling_runs_6mo)
+plot_decoupling(data = decoupling_df)
 
-# Example 2: Plot Decoupling trend for Rides
-decoupling_rides <- calculate_decoupling(
-  activities_data = activities,
-  export_dir = "strava_export_data",
-  activity_type = "Ride",
-  decouple_metric = "power_hr"
-)
-plot_decoupling(decoupling_rides)
-
-# Example 3: Plot Decoupling trend for multiple Run types (no trend line)
-decoupling_multi_run <- calculate_decoupling(
-  activities_data = activities,
-  export_dir = "strava_export_data",
-  activity_type = c("Run", "VirtualRun"),
-  decouple_metric = "pace_hr"
-)
-plot_decoupling(decoupling_multi_run, add_trend_line = FALSE)
-}
 }

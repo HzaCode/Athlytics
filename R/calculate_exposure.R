@@ -20,6 +20,7 @@
 #' @param user_resting_hr Required if `load_metric = "hrss"`. Your resting heart rate.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #'   The analysis period covers the `chronic_period` days ending on this date.
+#' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
 #' @return A data frame with columns: `date`, `daily_load`, `atl` (Acute Load),
 #'   `ctl` (Chronic Load), and `acwr` (Acute:Chronic Ratio) for the analysis period.
@@ -27,16 +28,37 @@
 #' @details Provides data for `plot_exposure`. Requires extra prior data for
 #'   accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 #'
-#' @importFrom dplyr filter select mutate arrange group_by summarise %>% left_join coalesce ungroup
-#' @importFrom lubridate as_date date days ymd_hms as_datetime time_length
-#' @importFrom zoo rollmean
-#' @importFrom rlang .data %||%
 #' @export
 #'
 #' @examples
 #' # Example using simulated data
 #' data(sample_exposure)
 #' print(head(sample_exposure))
+#'
+#' # Runnable example with dummy data:
+#' end <- Sys.Date()
+#' dates <- seq(end - 59, end, by = "day")
+#' dummy_activities <- data.frame(
+#'   date = dates,
+#'   type = "Run",
+#'   moving_time = rep(3600, length(dates)), # 1 hour
+#'   distance = rep(10000, length(dates)), # 10 km
+#'   average_heartrate = rep(140, length(dates)),
+#'   suffer_score = rep(50, length(dates)),
+#'   tss = rep(50, length(dates)),
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' # Calculate Exposure (ATL/CTL)
+#' exposure_result <- calculate_exposure(
+#'   activities_data = dummy_activities,
+#'   activity_type = "Run",
+#'   load_metric = "distance_km",
+#'   acute_period = 7,
+#'   chronic_period = 28,
+#'   end_date = end
+#' )
+#' print(head(exposure_result))
 #'
 #' \dontrun{
 #' # Example using local Strava export data
@@ -71,7 +93,8 @@ calculate_exposure <- function(activities_data,
                                user_ftp = NULL,
                                user_max_hr = NULL,
                                user_resting_hr = NULL,
-                               end_date = NULL) {
+                               end_date = Sys.Date(),
+                               verbose = FALSE) {
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
@@ -91,14 +114,16 @@ calculate_exposure <- function(activities_data,
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
   analysis_start_date <- analysis_end_date - lubridate::days(chronic_period) + lubridate::days(1)
 
-  message(sprintf("Calculating load exposure data from %s to %s.", analysis_start_date, analysis_end_date))
-  message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type, collapse = ", ")))
-  message(sprintf("Acute period: %d days, Chronic period: %d days", acute_period, chronic_period))
+  verbose_on <- isTRUE(verbose) || athlytics_is_verbose()
+
+  athlytics_message(sprintf("Calculating load exposure data from %s to %s.", analysis_start_date, analysis_end_date), .verbose = verbose_on)
+  athlytics_message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type, collapse = ", ")), .verbose = verbose_on)
+  athlytics_message(sprintf("Acute period: %d days, Chronic period: %d days", acute_period, chronic_period), .verbose = verbose_on)
 
   # --- Get Activity Data (Local Only) ---
   fetch_start_date <- analysis_start_date - lubridate::days(chronic_period)
 
-  message("Processing local activities data...")
+  athlytics_message("Processing local activities data...", .verbose = verbose_on)
   activities_df_filtered <- activities_data %>%
     dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
 
@@ -108,7 +133,7 @@ calculate_exposure <- function(activities_data,
   }
 
   activities_fetched_count <- nrow(activities_df_filtered)
-  message(sprintf("Loaded %d activities from local data.", activities_fetched_count))
+  athlytics_message(sprintf("Loaded %d activities from local data.", activities_fetched_count), .verbose = verbose_on)
 
   if (activities_fetched_count == 0) {
     stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date, ").")
@@ -159,8 +184,19 @@ calculate_exposure <- function(activities_data,
   # --- Filter to Analysis Window ---
   exposure_data <- load_df %>%
     dplyr::filter(.data$date >= analysis_start_date & .data$date <= analysis_end_date) %>%
-    dplyr::select(.data$date, .data$daily_load, .data$atl, .data$ctl, .data$acwr)
+    dplyr::select("date", "daily_load", "atl", "ctl", "acwr")
 
-  message("Exposure calculation complete.")
+  athlytics_message("Exposure calculation complete.", .verbose = verbose_on)
+
+  # Add parameters as attributes
+  attr(exposure_data, "params") <- list(
+    activity_type = activity_type,
+    load_metric = load_metric,
+    acute_period = acute_period,
+    chronic_period = chronic_period
+  )
+
+  # Add S3 class for type identification
+  class(exposure_data) <- c("athlytics_exposure", class(exposure_data))
   return(exposure_data)
 }

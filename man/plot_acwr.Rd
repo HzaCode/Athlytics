@@ -6,54 +6,41 @@
 \usage{
 plot_acwr(
   data,
-  activity_type = NULL,
-  load_metric = "duration_mins",
-  acute_period = 7,
-  chronic_period = 28,
-  start_date = NULL,
-  end_date = NULL,
-  user_ftp = NULL,
-  user_max_hr = NULL,
-  user_resting_hr = NULL,
-  smoothing_period = 7,
   highlight_zones = TRUE,
-  acwr_df = NULL,
+  sweet_spot_min = 0.8,
+  sweet_spot_max = 1.3,
+  high_risk_min = 1.5,
   group_var = NULL,
-  group_colors = NULL
+  group_colors = NULL,
+  title = NULL,
+  subtitle = NULL,
+  ...
 )
 }
 \arguments{
-\item{data}{\strong{Recommended: Pass pre-calculated data via \code{acwr_df} (local export preferred).}
-A data frame from \code{calculate_acwr()} or activities data from \code{load_local_activities()}.}
-
-\item{activity_type}{Type(s) of activities to analyze (e.g., "Run", "Ride").}
-
-\item{load_metric}{Method for calculating daily load (e.g., "duration_mins", "distance_km", "tss", "hrss").}
-
-\item{acute_period}{Days for the acute load window (e.g., 7).}
-
-\item{chronic_period}{Days for the chronic load window (e.g., 28). Must be greater than \code{acute_period}.}
-
-\item{start_date}{Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.}
-
-\item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.}
-
-\item{user_ftp}{Required if \code{load_metric = "tss"} and \code{acwr_df} is not provided. Your Functional Threshold Power.}
-
-\item{user_max_hr}{Required if \code{load_metric = "hrss"} and \code{acwr_df} is not provided. Your maximum heart rate.}
-
-\item{user_resting_hr}{Required if \code{load_metric = "hrss"} and \code{acwr_df} is not provided. Your resting heart rate.}
-
-\item{smoothing_period}{Days for smoothing the ACWR using a rolling mean (e.g., 7). Default 7.}
+\item{data}{A data frame from \code{calculate_acwr()} or \code{calculate_acwr_ewma()}.
+Must contain \code{date} and \code{acwr_smooth} columns.}
 
 \item{highlight_zones}{Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default \code{TRUE}.}
 
-\item{acwr_df}{\strong{Recommended.} A pre-calculated data frame from \code{calculate_acwr()} or \code{calculate_acwr_ewma()}.
-When provided, analysis uses local data only (no API calls).}
+\item{sweet_spot_min}{Lower bound for the "sweet spot" ACWR zone. Default 0.8.}
+
+\item{sweet_spot_max}{Upper bound for the "sweet spot" ACWR zone. Default 1.3.}
+
+\item{high_risk_min}{Lower bound for the "high risk" ACWR zone. Default 1.5.}
 
 \item{group_var}{Optional. Column name for grouping/faceting (e.g., "athlete_id").}
 
 \item{group_colors}{Optional. Named vector of colors for groups.}
+
+\item{title}{Optional. Custom title for the plot.}
+
+\item{subtitle}{Optional. Custom subtitle for the plot.}
+
+\item{...}{Additional arguments.
+Arguments \code{activity_type}, \code{load_metric}, \code{acute_period}, \code{chronic_period},
+\code{start_date}, \code{end_date}, \code{user_ftp}, \code{user_max_hr}, \code{user_resting_hr},
+\code{smoothing_period}, \code{acwr_df} are deprecated and ignored.}
 }
 \value{
 A ggplot object showing the ACWR trend.
@@ -62,8 +49,20 @@ A ggplot object showing the ACWR trend.
 Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 }
 \details{
-Plots the ACWR trend over time. \strong{Best practice: Use \code{load_local_activities()} + \code{calculate_acwr()} + this function.}
+Plots the ACWR trend over time.
+\strong{Best practice: Use \code{calculate_acwr()} first, then pass the result to this function.}
 ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
+
+When \code{highlight_zones = TRUE}, all risk zone labels (High Risk, Caution, Sweet Spot,
+Low Load) are \strong{always displayed} regardless of whether data falls within each zone.
+The y-axis is automatically extended to ensure all zone annotations remain visible.
+Zone boundaries can be customised via \code{sweet_spot_min}, \code{sweet_spot_max}, and
+\code{high_risk_min}.
+
+\strong{Note:} The predictive value of ACWR for injury risk is debated in the
+literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
+as descriptive heuristics, not validated injury predictors. See
+\code{calculate_acwr()} documentation for full references.
 }
 \examples{
 # Example using pre-calculated sample data
@@ -71,25 +70,4 @@ data("sample_acwr", package = "Athlytics")
 p <- plot_acwr(sample_acwr)
 print(p)
 
-\dontrun{
-# Example using local Strava export data
-activities <- load_local_activities("strava_export_data/activities.csv")
-
-# Plot ACWR trend for Runs (using duration as load metric)
-plot_acwr(
-  data = activities,
-  activity_type = "Run",
-  load_metric = "duration_mins",
-  acute_period = 7,
-  chronic_period = 28
-)
-
-# Plot ACWR trend for Rides (using TSS as load metric)
-plot_acwr(
-  data = activities,
-  activity_type = "Ride",
-  load_metric = "tss",
-  user_ftp = 280
-) # FTP value is required
-}
 }

@@ -4,18 +4,24 @@ template:
   bootstrap: 5
   bootswatch: litera
 
+figures:
+  dev: ragg::agg_png
+  dpi: 150
+  fig.width: 10
+  fig.height: 7
+  fig.ext: png
+
 navbar:
   structure:
-    left: [intro, reference, articles, news]
+    left: [getting-started, advanced-features, reference, news]
     right: [search, github]
   components:
-    articles:
-      text: Articles
-      menu:
-      - text: Getting Started
-        href: articles/athlytics_introduction.html
-      - text: Advanced Features
-        href: articles/advanced_features.html
+    getting-started:
+      text: Getting Started
+      href: articles/athlytics_introduction.html
+    advanced-features:
+      text: Advanced Features
+      href: articles/advanced_features.html
 
 reference:
   - title: Data Loading
@@ -59,8 +65,6 @@ reference:
     desc: Visualization customization
     contents:
     - theme_athlytics
-    - scale_athlytics
-    - starts_with("athlytics_colors")
     - starts_with("athlytics_palette")
     
   - title: Sample Data

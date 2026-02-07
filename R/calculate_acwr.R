@@ -12,13 +12,11 @@
 #' helps identify periods of rapid training load increases that may elevate injury risk.
 #'
 #' **Key Concepts:**
-#' \itemize{
-#'   \item **Acute Load (ATL)**: Rolling average of recent training (default: 7 days)
-#'   \item **Chronic Load (CTL)**: Rolling average of longer-term training (default: 28 days)
-#'   \item **ACWR**: Ratio of ATL to CTL (ATL / CTL)
-#'   \item **Safe Zone**: ACWR between 0.8-1.3 (optimal training stimulus)
-#'   \item **Danger Zone**: ACWR > 1.5 (increased injury risk)
-#' }
+#' - **Acute Load (ATL)**: Rolling average of recent training (default: 7 days)
+#' - **Chronic Load (CTL)**: Rolling average of longer-term training (default: 28 days)
+#' - **ACWR**: Ratio of ATL to CTL (ATL / CTL)
+#' - **Safe Zone**: ACWR between 0.8-1.3 (optimal training stimulus)
+#' - **Danger Zone**: ACWR > 1.5 (increased injury risk)
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
 #'   Must contain columns: `date`, `distance`, `moving_time`, `elapsed_time`,
@@ -26,14 +24,12 @@
 #' @param activity_type **Required** character vector. Filter activities by type
 #'   (e.g., `"Run"`, `"Ride"`). **Must specify** to avoid mixing incompatible load metrics.
 #' @param load_metric Character string specifying the load calculation method:
-#'   \itemize{
-#'     \item `"duration_mins"`: Training duration in minutes (default)
-#'     \item `"distance_km"`: Distance in kilometers
-#'     \item `"elapsed_time_mins"`: Total elapsed time including stops
-#'     \item `"tss"`: Training Stress Score approximation using NP/FTP ratio (requires `user_ftp`)
-#'     \item `"hrss"`: Heart Rate Stress Score approximation using simplified TRIMP (requires `user_max_hr` and `user_resting_hr`)
-#'     \item `"elevation_gain_m"`: Elevation gain in meters
-#'   }
+#'   - `"duration_mins"`: Training duration in minutes (default)
+#'   - `"distance_km"`: Distance in kilometers
+#'   - `"elapsed_time_mins"`: Total elapsed time including stops
+#'   - `"tss"`: Training Stress Score approximation using NP/FTP ratio (requires `user_ftp`)
+#'   - `"hrss"`: Heart Rate Stress Score approximation using simplified TRIMP (requires `user_max_hr` and `user_resting_hr`)
+#'   - `"elevation_gain_m"`: Elevation gain in meters
 #' @param acute_period Integer. Number of days for the acute load window (default: 7).
 #'   Represents recent training stimulus. Common values: 3-7 days.
 #' @param chronic_period Integer. Number of days for the chronic load window (default: 28).
@@ -52,6 +48,7 @@
 #'   `load_metric = "hrss"`. Used for heart rate reserve calculations.
 #' @param smoothing_period Integer. Number of days for smoothing the ACWR using a
 #'   rolling mean (default: 7). Reduces day-to-day noise for clearer trend visualization.
+#' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
 #' @return A tibble with the following columns:
 #' \describe{
@@ -84,12 +81,10 @@
 #'   Formula: `duration_sec * (HR - resting_HR) / (max_HR - resting_HR)`.
 #'
 #' **Interpretation Guidelines:**
-#' \itemize{
-#'   \item ACWR < 0.8: May indicate detraining or insufficient load
-#'   \item ACWR 0.8-1.3: "Sweet spot" - optimal training stimulus with lower injury risk
-#'   \item ACWR 1.3-1.5: Caution zone - monitor for fatigue
-#'   \item ACWR > 1.5: High risk zone - consider load management
-#' }
+#' - ACWR < 0.8: May indicate detraining or insufficient load
+#' - ACWR 0.8-1.3: "Sweet spot" - optimal training stimulus with lower injury risk
+#' - ACWR 1.3-1.5: Caution zone - monitor for fatigue
+#' - ACWR > 1.5: High risk zone - consider load management
 #'
 #' **Multi-Athlete Studies:**
 #' For cohort analyses, add an `athlete_id` column before calculation and use
@@ -98,28 +93,68 @@
 #' @references
 #' Gabbett, T. J. (2016). The training-injury prevention paradox: should athletes
 #' be training smarter and harder? *British Journal of Sports Medicine*, 50(5), 273-280.
+#' \doi{10.1136/bjsports-2015-095788}
 #'
-#' Hulin, B. T., et al. (2016). The acute:chronic workload ratio predicts injury:
-#' high chronic workload may decrease injury risk in elite rugby league players.
-#' *British Journal of Sports Medicine*, 50(4), 231-236.
+#' Hulin, B. T., Gabbett, T. J., Lawson, D. W., Caputi, P., & Sampson, J. A. (2016).
+#' The acute:chronic workload ratio predicts injury: high chronic workload may decrease
+#' injury risk in elite rugby league players. *British Journal of Sports Medicine*,
+#' 50(4), 231-236. \doi{10.1136/bjsports-2015-094817}
+#'
+#' @section Scientific Considerations:
+#' **Important**: The predictive value of ACWR for injury risk has been debated in
+#' recent literature. Some researchers argue that ACWR may have limited utility for
+#' predicting injuries (Impellizzeri et al., 2020), and a subsequent analysis has
+#' called for dismissing the ACWR framework entirely (Impellizzeri et al., 2021).
+#' Users should interpret ACWR risk zones with caution and consider them as
+#' descriptive heuristics rather than validated injury predictors.
+#'
+#' Impellizzeri, F. M., Tenan, M. S., Kempton, T., Novak, A., & Coutts, A. J. (2020).
+#' Acute:chronic workload ratio: conceptual issues and fundamental pitfalls.
+#' *International Journal of Sports Physiology and Performance*, 15(6), 907-913.
+#' \doi{10.1123/ijspp.2019-0864}
+#'
+#' Impellizzeri, F. M., Woodcock, S., Coutts, A. J., Fanchini, M., McCall, A.,
+#' & Vigotsky, A. D. (2021). What role do chronic workloads play in the acute to
+#' chronic workload ratio? Time to dismiss ACWR and its underlying theory.
+#' *Sports Medicine*, 51(3), 581-592. \doi{10.1007/s40279-020-01378-6}
 #'
 #' @seealso
-#' \code{\link{plot_acwr}} for visualization,
-#' \code{\link{calculate_acwr_ewma}} for EWMA-based ACWR,
-#' \code{\link{load_local_activities}} for data loading,
-#' \code{\link{calculate_cohort_reference}} for multi-athlete comparisons
+#' [plot_acwr()] for visualization,
+#' [calculate_acwr_ewma()] for EWMA-based ACWR,
+#' [load_local_activities()] for data loading,
+#' [calculate_cohort_reference()] for multi-athlete comparisons
 #'
-#' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce case_when ungroup
-#' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
-#' @importFrom zoo rollmean
-#' @importFrom tidyr drop_na
-#' @importFrom rlang .data %||%
 #' @export
 #'
 #' @examples
 #' # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
 #' data(sample_acwr)
 #' print(head(sample_acwr))
+#'
+#' # Runnable example with dummy data:
+#' end <- Sys.Date()
+#' dates <- seq(end - 59, end, by = "day")
+#' dummy_activities <- data.frame(
+#'   date = dates,
+#'   type = "Run",
+#'   moving_time = rep(3600, length(dates)), # 1 hour
+#'   distance = rep(10000, length(dates)), # 10 km
+#'   average_heartrate = rep(140, length(dates)),
+#'   suffer_score = rep(50, length(dates)),
+#'   tss = rep(50, length(dates)),
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' # Calculate ACWR
+#' result <- calculate_acwr(
+#'   activities_data = dummy_activities,
+#'   activity_type = "Run",
+#'   load_metric = "distance_km",
+#'   acute_period = 7,
+#'   chronic_period = 28,
+#'   end_date = end
+#' )
+#' print(head(result))
 #'
 #' \dontrun{
 #' # Example using local Strava export data
@@ -183,11 +218,12 @@ calculate_acwr <- function(activities_data,
                            acute_period = 7,
                            chronic_period = 28,
                            start_date = NULL,
-                           end_date = NULL,
+                           end_date = Sys.Date(),
                            user_ftp = NULL,
                            user_max_hr = NULL,
                            user_resting_hr = NULL,
-                           smoothing_period = 7) {
+                           smoothing_period = 7,
+                           verbose = FALSE) {
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
@@ -217,16 +253,18 @@ calculate_acwr <- function(activities_data,
   analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
   if (analysis_start_date >= analysis_end_date) stop("start_date must be before end_date.")
 
-  message(sprintf("Calculating ACWR data from %s to %s.", analysis_start_date, analysis_end_date))
-  message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type %||% "All", collapse = ", ")))
-  message(sprintf("Acute period: %d days, Chronic period: %d days", acute_period, chronic_period))
+  verbose_on <- isTRUE(verbose) || athlytics_is_verbose()
+
+  athlytics_message(sprintf("Calculating ACWR data from %s to %s.", analysis_start_date, analysis_end_date), .verbose = verbose_on)
+  athlytics_message(sprintf("Using metric: %s, Activity types: %s", load_metric, paste(activity_type %||% "All", collapse = ", ")), .verbose = verbose_on)
+  athlytics_message(sprintf("Acute period: %d days, Chronic period: %d days", acute_period, chronic_period), .verbose = verbose_on)
 
   # --- Get Activities Data (Local Only) ---
   fetch_start_buffer_days <- chronic_period
   fetch_start_date <- analysis_start_date - lubridate::days(fetch_start_buffer_days)
 
   # Use local activities data
-  message("Processing local activities data...")
+  athlytics_message("Processing local activities data...", .verbose = verbose_on)
   activities_df_filtered <- activities_data %>%
     dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
 
@@ -236,7 +274,7 @@ calculate_acwr <- function(activities_data,
   }
 
   activities_fetched_count <- nrow(activities_df_filtered)
-  message(sprintf("Loaded %d activities from local data.", activities_fetched_count))
+  athlytics_message(sprintf("Loaded %d activities from local data.", activities_fetched_count), .verbose = verbose_on)
 
   if (activities_fetched_count == 0) {
     stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date, ").")
@@ -251,7 +289,7 @@ calculate_acwr <- function(activities_data,
     user_resting_hr = user_resting_hr
   )
 
-  message("Finished processing activity list.")
+  athlytics_message("Finished processing activity list.", .verbose = verbose_on)
 
   if (is.null(daily_load_df) || nrow(daily_load_df) == 0) {
     stop("No activities found with valid load data for the specified criteria.")
@@ -271,13 +309,6 @@ calculate_acwr <- function(activities_data,
 
   # --- Force evaluation to potentially resolve lazy-eval issues ---
   force(daily_load_complete)
-  # --- End force eval ---
-
-  # --- DEBUG REMOVED: Check daily_load_complete before pipeline ---
-  # message("--- Checking daily_load_complete structure and summary ---")
-  # print(utils::str(daily_load_complete))
-  # print(summary(daily_load_complete))
-  # --- End DEBUG ---
 
   if (nrow(daily_load_complete) < chronic_period) {
     warning("Not enough data points (after fetching) to calculate the full chronic period. Results may be unreliable.")
@@ -307,16 +338,26 @@ calculate_acwr <- function(activities_data,
     )
 
   acwr_data <- acwr_data_intermediate %>%
-    dplyr::select(.data$date, atl = .data$acute_load, ctl = .data$chronic_load, .data$acwr, .data$acwr_smooth)
+    dplyr::select("date", atl = "acute_load", ctl = "chronic_load", "acwr", "acwr_smooth")
 
 
   if (nrow(acwr_data) == 0) {
     stop("Could not calculate ACWR after processing. Check data availability and periods.")
   }
 
-  message("Calculation complete.")
+  athlytics_message("Calculation complete.", .verbose = verbose_on)
+
+  # Add parameters as attributes for plotting
+  attr(acwr_data, "params") <- list(
+    activity_type = activity_type,
+    load_metric = load_metric,
+    acute_period = acute_period,
+    chronic_period = chronic_period,
+    smoothing_period = smoothing_period
+  )
+
+  # Add S3 class for type identification
+
+  class(acwr_data) <- c("athlytics_acwr", class(acwr_data))
   return(acwr_data)
 }
-
-# Helper needed if not globally available
-# `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x

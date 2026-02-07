@@ -28,7 +28,7 @@ calculate_daily_load_internal <- function(activities_df,
     as.numeric(rlang::`%||%`(x, 0))
   }
 
-  purrr::map_dfr(seq_len(nrow(activities_df)), function(i) {
+  lapply(seq_len(nrow(activities_df)), function(i) {
     activity <- activities_df[i, ]
     activity_date <- activity$date
 
@@ -64,7 +64,7 @@ calculate_daily_load_internal <- function(activities_df,
     } else {
       NULL
     }
-  })
+  }) |> dplyr::bind_rows()
 }
 
 

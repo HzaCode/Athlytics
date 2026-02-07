@@ -16,13 +16,13 @@ test_that("calculate_pbs works with mock TCX files", {
   # Load activities
   activities <- load_local_activities(file.path(mock_export, "activities.csv"))
 
-  # Calculate PBs
-  pbs_result <- calculate_pbs(
+  # Calculate PBs (suppress expected XML namespace warnings from TCX parsing)
+  pbs_result <- suppressWarnings(calculate_pbs(
     activities_data = activities,
     export_dir = mock_export,
     activity_type = "Run",
     distances_m = c(1000, 5000, 10000)
-  )
+  ))
 
   expect_s3_class(pbs_result, "data.frame")
   expect_true(all(c("activity_id", "activity_date", "distance", "time_seconds", "is_pb") %in% names(pbs_result)))
@@ -45,14 +45,14 @@ test_that("calculate_decoupling works with mock activity files", {
   # Make sure activities have sufficient duration
   activities$moving_time <- pmax(activities$moving_time, 2400) # At least 40 minutes
 
-  # Calculate decoupling
-  decoupling_result <- calculate_decoupling(
+  # Calculate decoupling (suppress expected XML namespace warnings)
+  decoupling_result <- suppressWarnings(calculate_decoupling(
     activities_data = activities,
     export_dir = mock_export,
     activity_type = "Run",
-    decouple_metric = "pace_hr",
+    decouple_metric = "speed_hr",
     min_duration_mins = 30
-  )
+  ))
 
   expect_s3_class(decoupling_result, "data.frame")
   expect_true(all(c("date", "decoupling", "status") %in% names(decoupling_result)))
@@ -74,13 +74,12 @@ test_that("calculate_ef works with activity stream data", {
   # Load activities
   activities <- load_local_activities(file.path(mock_export, "activities.csv"))
 
-  # For stream-based EF calculation, we need to ensure parse_activity_file works
-  # This is a simplified test since real parsing is complex
-  ef_result <- calculate_ef(
+  # For stream-based EF calculation (suppress expected warnings)
+  ef_result <- suppressWarnings(calculate_ef(
     activities_data = activities,
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     activity_type = "Run"
-  )
+  ))
 
   expect_s3_class(ef_result, "data.frame")
   expect_true(all(c("date", "ef_value", "activity_type") %in% names(ef_result)))
@@ -123,23 +122,23 @@ test_that("parse_activity_file handles different mock file types", {
   create_mock_fit_file(fit_file, Sys.Date(), 3600, 10000)
   create_mock_gpx_file(gpx_file, Sys.Date(), 3600, 10000)
 
-  # Test TCX parsing
-  tcx_data <- tryCatch(
+  # Test TCX parsing (suppress expected XML namespace warnings)
+  tcx_data <- suppressWarnings(tryCatch(
     parse_activity_file(tcx_file),
     error = function(e) NULL
-  )
+  ))
 
   # Test FIT parsing (as CSV)
-  fit_data <- tryCatch(
+  fit_data <- suppressWarnings(tryCatch(
     parse_activity_file(fit_file),
     error = function(e) NULL
-  )
+  ))
 
   # Test GPX parsing
-  gpx_data <- tryCatch(
+  gpx_data <- suppressWarnings(tryCatch(
     parse_activity_file(gpx_file),
     error = function(e) NULL
-  )
+  ))
 
   # At least one should parse successfully
   # Check that we can at least create the files

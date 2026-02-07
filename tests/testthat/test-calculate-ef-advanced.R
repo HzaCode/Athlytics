@@ -15,12 +15,13 @@ test_that("calculate_ef handles stream data with velocity calculation", {
   )
 
   # Test with export_dir parameter (triggers stream data analysis)
-  result <- calculate_ef(mock_activities,
+  # Suppress expected "Activity file not found" warnings
+  result <- suppressWarnings(calculate_ef(mock_activities,
     activity_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     export_dir = ".",
     quality_control = "off"
-  )
+  ))
   expect_true(is.data.frame(result))
 })
 
@@ -38,20 +39,20 @@ test_that("calculate_ef handles different steady state parameters", {
   )
 
   # Test with different steady state parameters
-  result1 <- calculate_ef(mock_data,
+  result1 <- suppressWarnings(calculate_ef(mock_data,
     min_steady_minutes = 20,
     steady_cv_threshold = 0.1,
     min_hr_coverage = 0.8,
     quality_control = "off"
-  )
+  ))
   expect_true(is.data.frame(result1))
 
-  result2 <- calculate_ef(mock_data,
+  result2 <- suppressWarnings(calculate_ef(mock_data,
     min_steady_minutes = 30,
     steady_cv_threshold = 0.05,
     min_hr_coverage = 0.95,
     quality_control = "off"
-  )
+  ))
   expect_true(is.data.frame(result2))
 })
 
@@ -137,12 +138,12 @@ test_that("calculate_ef handles multiple ef_metric combinations", {
     stringsAsFactors = FALSE
   )
 
-  # Test with multiple ef_metric values
-  result1 <- calculate_ef(mock_data, ef_metric = c("pace_hr", "power_hr"), quality_control = "off")
+  # Test with default ef_metric (uses first match)
+  result1 <- calculate_ef(mock_data, ef_metric = "speed_hr", quality_control = "off")
   expect_true(is.data.frame(result1))
 
   # Test with single ef_metric
-  result2 <- calculate_ef(mock_data, ef_metric = "pace_hr", quality_control = "off")
+  result2 <- calculate_ef(mock_data, ef_metric = "speed_hr", quality_control = "off")
   expect_true(is.data.frame(result2))
 
   # Test with different ef_metric
@@ -224,12 +225,12 @@ test_that("calculate_ef handles calculation edge cases", {
     stringsAsFactors = FALSE
   )
 
-  result1 <- calculate_ef(mock_short,
+  result1 <- suppressWarnings(calculate_ef(mock_short,
     activity_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_steady_minutes = 10,
     quality_control = "off"
-  )
+  ))
   expect_true(is.data.frame(result1))
 
   # Test with very long activity
@@ -247,7 +248,7 @@ test_that("calculate_ef handles calculation edge cases", {
 
   result2 <- calculate_ef(mock_long,
     activity_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     quality_control = "off"
   )
   expect_true(is.data.frame(result2))
@@ -266,8 +267,8 @@ test_that("calculate_ef handles parameter validation", {
     stringsAsFactors = FALSE
   )
 
-  # Test with invalid date inputs (should use defaults)
-  result1 <- tryCatch(
+  # Test with invalid date inputs (should use defaults, suppress expected parsing warnings)
+  result1 <- suppressWarnings(tryCatch(
     {
       calculate_ef(mock_data,
         start_date = "invalid_date",
@@ -277,11 +278,11 @@ test_that("calculate_ef handles parameter validation", {
     error = function(e) {
       data.frame(date = Sys.Date(), activity_type = "Run", ef_value = 0.02)
     }
-  )
+  ))
   expect_true(is.data.frame(result1))
 
-  # Test with invalid end_date (should use defaults)
-  result2 <- tryCatch(
+  # Test with invalid end_date (should use defaults, suppress expected parsing warnings)
+  result2 <- suppressWarnings(tryCatch(
     {
       calculate_ef(mock_data,
         end_date = "invalid_date",
@@ -291,7 +292,7 @@ test_that("calculate_ef handles parameter validation", {
     error = function(e) {
       data.frame(date = Sys.Date(), activity_type = "Run", ef_value = 0.02)
     }
-  )
+  ))
   expect_true(is.data.frame(result2))
 })
 
@@ -309,7 +310,7 @@ test_that("calculate_ef handles empty and invalid data", {
     stringsAsFactors = FALSE
   )
 
-  result <- calculate_ef(mock_invalid, quality_control = "off")
+  result <- suppressWarnings(calculate_ef(mock_invalid, quality_control = "off"))
   expect_true(is.data.frame(result))
 
   # Test with NA values (should handle gracefully)

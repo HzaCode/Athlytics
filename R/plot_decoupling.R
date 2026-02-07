@@ -4,146 +4,109 @@
 #'
 #' Visualizes the trend of aerobic decoupling over time.
 #'
-#' Plots the aerobic decoupling trend over time. **Recommended workflow: Use local data via `decoupling_df`.**
-#'
-#' @param data **Recommended: Pass pre-calculated data via `decoupling_df` (local export preferred).**
-#'   A data frame from `calculate_decoupling()` or activities data from `load_local_activities()`.
-#' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
-#' @param decouple_metric Metric basis: "pace_hr" or "power_hr".
-#' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.
-#' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
-#' @param min_duration_mins Minimum activity duration (minutes) to include. Default 45.
+#' @param data A data frame from `calculate_decoupling()`.
+#'   Must contain 'date' and 'decoupling' columns.
 #' @param add_trend_line Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.
 #' @param smoothing_method Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".
-#' @param decoupling_df **Recommended.** A pre-calculated data frame from `calculate_decoupling()`.
-#'   When provided, analysis uses local data only (no API calls).
-#'   Must contain 'date' and 'decoupling' columns.
-
+#' @param caption Plot caption. Default NULL (no caption).
+#' @param title Optional. Custom title for the plot.
+#' @param subtitle Optional. Custom subtitle for the plot.
+#' @param ... Additional arguments.
+#'   Arguments `activity_type`, `decouple_metric`, `start_date`, `end_date`,
+#'   `min_duration_mins`, `decoupling_df` are deprecated and ignored.
+#'
 #' @return A ggplot object showing the decoupling trend.
 #'
 #' @details Plots decoupling percentage ((EF_1st_half - EF_2nd_half) / EF_1st_half * 100).
 #'   Positive values mean HR drifted relative to output. A 5\\% threshold line is often
-#'   used as reference. **Best practice: Use `load_local_activities()` + `calculate_decoupling()` + this function.**
-
-#' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when group_by summarise pull first last tibble
-#' @importFrom lubridate as_date
-#' @importFrom lubridate date
-#' @importFrom lubridate days
-#' @importFrom lubridate ymd
-#' @importFrom lubridate ymd_hms
-#' @importFrom lubridate as_datetime
-#' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal scale_x_date theme element_text geom_hline
-#' @importFrom rlang .data
+#'   used as reference. **Best practice: Use `calculate_decoupling()` first, then pass the result to this function.**
+#'
 #' @export
 #'
 #' @examples
 #' # Example using pre-calculated sample data
 #' data("sample_decoupling", package = "Athlytics")
-#' p <- plot_decoupling(decoupling_df = sample_decoupling)
+#' p <- plot_decoupling(sample_decoupling)
 #' print(p)
 #'
-#' \dontrun{
-#' # Example using local Strava export data
-#' activities <- load_local_activities("strava_export_data/activities.csv")
-#'
-#' # Example 1: Plot Decoupling trend for Runs (last 6 months)
-#' decoupling_runs_6mo <- calculate_decoupling(
-#'   activities_data = activities,
-#'   export_dir = "strava_export_data",
-#'   activity_type = "Run",
-#'   decouple_metric = "pace_hr",
-#'   start_date = Sys.Date() - months(6)
+#' # Runnable example with a manually created decoupling data frame:
+#' decoupling_df <- data.frame(
+#'   date = seq(Sys.Date() - 29, Sys.Date(), by = "day"),
+#'   decoupling = rnorm(30, mean = 5, sd = 2)
 #' )
-#' plot_decoupling(decoupling_runs_6mo)
+#' plot_decoupling(data = decoupling_df)
 #'
-#' # Example 2: Plot Decoupling trend for Rides
-#' decoupling_rides <- calculate_decoupling(
-#'   activities_data = activities,
-#'   export_dir = "strava_export_data",
-#'   activity_type = "Ride",
-#'   decouple_metric = "power_hr"
-#' )
-#' plot_decoupling(decoupling_rides)
-#'
-#' # Example 3: Plot Decoupling trend for multiple Run types (no trend line)
-#' decoupling_multi_run <- calculate_decoupling(
-#'   activities_data = activities,
-#'   export_dir = "strava_export_data",
-#'   activity_type = c("Run", "VirtualRun"),
-#'   decouple_metric = "pace_hr"
-#' )
-#' plot_decoupling(decoupling_multi_run, add_trend_line = FALSE)
-#' }
 plot_decoupling <- function(data,
-                            activity_type = c("Run", "Ride"), # Default to both if not specified
-                            decouple_metric = c("pace_hr", "power_hr"),
-                            start_date = NULL,
-                            end_date = NULL,
-                            min_duration_mins = 45,
                             add_trend_line = TRUE,
                             smoothing_method = "loess",
-                            decoupling_df = NULL) {
-  # Match arg for decouple_metric to ensure only one is used internally if multiple are provided
-  decouple_metric_label <- match.arg(decouple_metric)
-
-  # --- Get Data ---
-  # If decoupling_df is not provided, calculate it
-  if (is.null(decoupling_df)) {
-    # Ensure data is provided if decoupling_df is not
-    if (missing(data)) stop("Either 'data' or 'decoupling_df' must be provided.")
-
-    message("No pre-calculated decoupling_df provided. Calculating data now... (This may take a while)")
-    # Call the calculation function
-    decoupling_df <- calculate_decoupling(
-      activities_data = data,
-      activity_type = activity_type, # Can be a vector
-      decouple_metric = decouple_metric_label, # Use the matched, single metric
-      start_date = start_date,
-      end_date = end_date,
-      min_duration_mins = min_duration_mins
+                            caption = NULL,
+                            title = NULL,
+                            subtitle = NULL,
+                            ...) {
+  # Check for deprecated args
+  deprecated_args <- list(...)
+  if (length(deprecated_args) > 0) {
+    analysis_args <- c(
+      "activity_type", "decouple_metric", "start_date", "end_date",
+      "min_duration_mins", "decoupling_df"
     )
+    if (any(names(deprecated_args) %in% analysis_args)) {
+      warning(
+        "Analysis arguments (e.g. activity_type) are deprecated in plot_decoupling(). ",
+        "Please use calculate_decoupling() first, then pass the result to plot_decoupling()."
+      )
+    }
   }
 
-  # Check if decoupling_df is empty or invalid
-  if (!is.data.frame(decoupling_df) || nrow(decoupling_df) == 0 || !all(c("date", "decoupling") %in% names(decoupling_df))) {
-    warning("No valid decoupling data available to plot (or missing required columns).")
-    return(ggplot2::ggplot() +
-      ggplot2::theme_void() +
-      ggplot2::ggtitle("No decoupling data to plot"))
+  # Validate input
+  decoupling_df <- data
+  if (!is.data.frame(decoupling_df)) {
+    stop("Input 'data' must be a data frame from calculate_decoupling().")
+  }
+
+  if (!inherits(decoupling_df, "athlytics_decoupling") && !all(c("date", "decoupling") %in% names(decoupling_df))) {
+    stop("Input 'data' must be the output of calculate_decoupling() or contain 'date' and 'decoupling' columns.")
+  }
+
+  if (nrow(decoupling_df) == 0) {
+    stop("Input data frame is empty.")
+  }
+
+  if (!all(c("date", "decoupling") %in% names(decoupling_df))) {
+    stop("Input data must contain 'date' and 'decoupling' columns.")
   }
 
   # Rename for clarity
   plot_data <- decoupling_df
 
-  # --- Generate Dynamic Title ---
-  # Determine title based on activity_type and data
-  if ("activity_type" %in% colnames(plot_data)) {
-    unique_types <- unique(plot_data$activity_type)
-    if (length(unique_types) == 1) {
-      plot_title <- paste("Trend for", unique_types[1])
+  # Retrieve params for labeling
+  params <- attr(decoupling_df, "params")
+
+  # Determine title/subtitle
+  if (is.null(title)) title <- "Aerobic Decoupling Trend"
+
+  if (is.null(subtitle)) {
+    if (!is.null(params)) {
+      subtitle <- paste0("Metric: ", params$decouple_metric)
+      if (!is.null(params$activity_type)) {
+        subtitle <- paste0(subtitle, " | Activity: ", paste(params$activity_type, collapse = ", "))
+      }
     } else {
-      plot_title <- "Trend for Selected Activities"
-    }
-  } else {
-    if (length(activity_type) == 1) {
-      plot_title <- paste("Trend for", activity_type[1])
-    } else {
-      plot_title <- "Trend for Selected Activities"
+      subtitle <- "Decoupling (%)"
     }
   }
 
-  # --- Plotting ---
-  message("Generating plot...")
+  y_label <- "Decoupling (%)"
 
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling)) +
     ggplot2::geom_point(alpha = 0.7, size = 2, color = "#E64B35") +
-    ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
+    ggplot2::scale_x_date(labels = english_month_year) +
     ggplot2::labs(
-      title = plot_title,
-      subtitle = paste("Metric:", decouple_metric_label),
+      title = title,
+      subtitle = subtitle,
       x = "Date",
-      y = "Decoupling (%)",
-      caption = "Positive values indicate HR drift relative to output"
+      y = y_label,
+      caption = caption
     )
 
   # Add 5% threshold line
@@ -155,7 +118,10 @@ plot_decoupling <- function(data,
   }
 
   p <- p +
-    theme_athlytics()
+    theme_athlytics() +
+    ggplot2::theme(
+      legend.position = "bottom"
+    )
 
   return(p)
 }

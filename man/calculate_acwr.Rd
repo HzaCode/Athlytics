@@ -11,11 +11,12 @@ calculate_acwr(
   acute_period = 7,
   chronic_period = 28,
   start_date = NULL,
-  end_date = NULL,
+  end_date = Sys.Date(),
   user_ftp = NULL,
   user_max_hr = NULL,
   user_resting_hr = NULL,
-  smoothing_period = 7
+  smoothing_period = 7,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -61,6 +62,8 @@ when \code{load_metric = "tss"}. Used to normalize power-based training stress.}
 
 \item{smoothing_period}{Integer. Number of days for smoothing the ACWR using a
 rolling mean (default: 7). Reduces day-to-day noise for clearer trend visualization.}
+
+\item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }
 \value{
 A tibble with the following columns:
@@ -127,10 +130,55 @@ Formula: \code{duration_sec * (HR - resting_HR) / (max_HR - resting_HR)}.
 For cohort analyses, add an \code{athlete_id} column before calculation and use
 \code{group_by(athlete_id)} with \code{group_modify()}. See examples below and vignettes for details.
 }
+\section{Scientific Considerations}{
+
+\strong{Important}: The predictive value of ACWR for injury risk has been debated in
+recent literature. Some researchers argue that ACWR may have limited utility for
+predicting injuries (Impellizzeri et al., 2020), and a subsequent analysis has
+called for dismissing the ACWR framework entirely (Impellizzeri et al., 2021).
+Users should interpret ACWR risk zones with caution and consider them as
+descriptive heuristics rather than validated injury predictors.
+
+Impellizzeri, F. M., Tenan, M. S., Kempton, T., Novak, A., & Coutts, A. J. (2020).
+Acute:chronic workload ratio: conceptual issues and fundamental pitfalls.
+\emph{International Journal of Sports Physiology and Performance}, 15(6), 907-913.
+\doi{10.1123/ijspp.2019-0864}
+
+Impellizzeri, F. M., Woodcock, S., Coutts, A. J., Fanchini, M., McCall, A.,
+& Vigotsky, A. D. (2021). What role do chronic workloads play in the acute to
+chronic workload ratio? Time to dismiss ACWR and its underlying theory.
+\emph{Sports Medicine}, 51(3), 581-592. \doi{10.1007/s40279-020-01378-6}
+}
+
 \examples{
 # Example using simulated data (Note: sample data is pre-calculated, shown for demonstration)
 data(sample_acwr)
 print(head(sample_acwr))
+
+# Runnable example with dummy data:
+end <- Sys.Date()
+dates <- seq(end - 59, end, by = "day")
+dummy_activities <- data.frame(
+  date = dates,
+  type = "Run",
+  moving_time = rep(3600, length(dates)), # 1 hour
+  distance = rep(10000, length(dates)),   # 10 km
+  average_heartrate = rep(140, length(dates)),
+  suffer_score = rep(50, length(dates)),
+  tss = rep(50, length(dates)),
+  stringsAsFactors = FALSE
+)
+
+# Calculate ACWR
+result <- calculate_acwr(
+  activities_data = dummy_activities,
+  activity_type = "Run",
+  load_metric = "distance_km",
+  acute_period = 7,
+  chronic_period = 28,
+  end_date = end
+)
+print(head(result))
 
 \dontrun{
 # Example using local Strava export data
@@ -192,14 +240,16 @@ print(cohort_acwr)
 \references{
 Gabbett, T. J. (2016). The training-injury prevention paradox: should athletes
 be training smarter and harder? \emph{British Journal of Sports Medicine}, 50(5), 273-280.
+\doi{10.1136/bjsports-2015-095788}
 
-Hulin, B. T., et al. (2016). The acute:chronic workload ratio predicts injury:
-high chronic workload may decrease injury risk in elite rugby league players.
-\emph{British Journal of Sports Medicine}, 50(4), 231-236.
+Hulin, B. T., Gabbett, T. J., Lawson, D. W., Caputi, P., & Sampson, J. A. (2016).
+The acute:chronic workload ratio predicts injury: high chronic workload may decrease
+injury risk in elite rugby league players. \emph{British Journal of Sports Medicine},
+50(4), 231-236. \doi{10.1136/bjsports-2015-094817}
 }
 \seealso{
-\code{\link{plot_acwr}} for visualization,
-\code{\link{calculate_acwr_ewma}} for EWMA-based ACWR,
-\code{\link{load_local_activities}} for data loading,
-\code{\link{calculate_cohort_reference}} for multi-athlete comparisons
+\code{\link[=plot_acwr]{plot_acwr()}} for visualization,
+\code{\link[=calculate_acwr_ewma]{calculate_acwr_ewma()}} for EWMA-based ACWR,
+\code{\link[=load_local_activities]{load_local_activities()}} for data loading,
+\code{\link[=calculate_cohort_reference]{calculate_cohort_reference()}} for multi-athlete comparisons
 }

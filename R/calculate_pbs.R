@@ -10,10 +10,11 @@
 #' @param export_dir Base directory of the Strava export containing the activities folder.
 #'   Default is "strava_export_data".
 #' @param activity_type Type of activities to analyze (typically "Run"). Default "Run".
-#' @param start_date Optional start date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).
-#' @param end_date Optional end date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).
+#' @param start_date Optional start date for analysis (YYYY-MM-DD). If NULL, defaults to 365 days before `end_date`.
+#' @param end_date End date for analysis (YYYY-MM-DD). Default `Sys.Date()` (today).
 #' @param distances_m Target distances in meters to track.
 #'   Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marathon.
+#' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
 #' @return A data frame with columns: activity_id, activity_date, distance,
 #'   elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb,
@@ -24,12 +25,20 @@
 #' efforts at specified distances. It tracks cumulative personal bests over time,
 #' showing when new PBs are set.
 #'
+#' Personal best tracking is a standard approach in endurance sport performance
+#' monitoring. Systematic PB analysis over multiple distances helps identify
+#' fitness improvements, training phase effectiveness, and performance peaks
+#' (Matveyev, 1981). The multi-distance approach enables
+#' athletes to assess both speed (shorter distances) and endurance (longer
+#' distances) progression simultaneously.
+#'
+#' ## References
+#' - Matveyev, L. P. (1981). *Fundamentals of Sports Training*. Moscow: Progress
+#'   Publishers.
+#'
 #' **Note**: Requires detailed activity files from your Strava export. Activities
 #' must be long enough to contain the target distance segments.
 #'
-#' @importFrom dplyr filter select mutate arrange %>% group_by
-#' @importFrom lubridate as_date period seconds_to_period
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -48,13 +57,22 @@
 #'   activity_type = "Run"
 #' )
 #' print(head(pbs_data))
+#'
+#' # Calculate PBs for custom distances (e.g., 400m, 800m, 1500m for track)
+#' track_pbs <- calculate_pbs(
+#'   activities_data = activities,
+#'   export_dir = "strava_export_data",
+#'   activity_type = "Run",
+#'   distances_m = c(400, 800, 1500, 3000) # Custom distances in meters
+#' )
 #' }
 calculate_pbs <- function(activities_data,
                           export_dir = "strava_export_data",
                           activity_type = "Run",
                           start_date = NULL,
-                          end_date = NULL,
-                          distances_m = c(1000, 5000, 10000, 21097.5, 42195)) {
+                          end_date = Sys.Date(),
+                          distances_m = c(1000, 5000, 10000, 21097.5, 42195),
+                          verbose = FALSE) {
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
@@ -78,8 +96,10 @@ calculate_pbs <- function(activities_data,
   analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
   analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
 
-  message(sprintf("Calculating PBs from %s to %s.", analysis_start_date, analysis_end_date))
-  message(sprintf("Target distances: %s", paste(distances_m, "m", collapse = ", ")))
+  verbose_on <- isTRUE(verbose) || athlytics_is_verbose()
+
+  athlytics_message(sprintf("Calculating PBs from %s to %s.", analysis_start_date, analysis_end_date), .verbose = verbose_on)
+  athlytics_message(sprintf("Target distances: %s", paste(distances_m, "m", collapse = ", ")), .verbose = verbose_on)
 
   # --- Filter Activities ---
   filtered_activities <- activities_data %>%
@@ -115,16 +135,16 @@ calculate_pbs <- function(activities_data,
     ))
   }
 
-  message(sprintf("Analyzing %d activities for PBs...", nrow(filtered_activities)))
+  athlytics_message(sprintf("Analyzing %d activities for PBs...", nrow(filtered_activities)), .verbose = verbose_on)
 
   # --- Calculate Best Efforts for Each Activity ---
-  all_efforts <- purrr::map_dfr(1:nrow(filtered_activities), function(i) {
+  all_efforts <- lapply(1:nrow(filtered_activities), function(i) {
     activity <- filtered_activities[i, ]
 
-    message(sprintf(
+    athlytics_message(sprintf(
       "Processing activity %d/%d: %s (%s)",
       i, nrow(filtered_activities), activity$name, activity$date
-    ))
+    ), .verbose = verbose_on)
 
     # Parse activity file
     file_path <- file.path(export_dir, activity$filename)
@@ -142,7 +162,7 @@ calculate_pbs <- function(activities_data,
     }
 
     # Calculate best efforts for each target distance
-    efforts <- purrr::map_dfr(distances_m, function(target_distance) {
+    efforts <- lapply(distances_m, function(target_distance) {
       best_effort <- find_best_effort(stream_data, target_distance)
 
       if (is.null(best_effort)) {
@@ -158,10 +178,10 @@ calculate_pbs <- function(activities_data,
         end_distance = best_effort$end_distance,
         stringsAsFactors = FALSE
       )
-    })
+    }) |> dplyr::bind_rows()
 
     return(efforts)
-  })
+  }) |> dplyr::bind_rows()
 
   if (is.null(all_efforts) || nrow(all_efforts) == 0) {
     warning("No best efforts could be calculated.")
@@ -196,7 +216,7 @@ calculate_pbs <- function(activities_data,
     "1000" = "1k",
     "5000" = "5k",
     "10000" = "10k",
-    "21097.5" = "Half Marathon",
+    "21097.5" = "21.1k",
     "42195" = "Marathon"
   )
 
@@ -206,12 +226,12 @@ calculate_pbs <- function(activities_data,
         .data$distance == 1000 ~ "1k",
         .data$distance == 5000 ~ "5k",
         .data$distance == 10000 ~ "10k",
-        .data$distance == 21097.5 ~ "Half Marathon",
+        .data$distance == 21097.5 ~ "21.1k",
         .data$distance == 42195 ~ "Marathon",
         TRUE ~ paste0(round(.data$distance), "m")
       ),
       distance_label = factor(.data$distance_label,
-        levels = c("1k", "5k", "10k", "Half Marathon", "Marathon")
+        levels = c("1k", "5k", "10k", "21.1k", "Marathon")
       ),
       time_period = as.character(lubridate::seconds_to_period(.data$time_seconds))
     )
@@ -233,11 +253,19 @@ calculate_pbs <- function(activities_data,
     ) %>%
     dplyr::arrange(.data$activity_date, .data$distance)
 
-  message(sprintf(
+  athlytics_message(sprintf(
     "PB analysis complete. Found %d efforts, %d are new PBs.",
     nrow(pb_results), sum(pb_results$is_pb)
-  ))
+  ), .verbose = verbose_on)
 
+  # Add parameters as attributes
+  attr(pb_results, "params") <- list(
+    activity_type = activity_type,
+    distances_m = distances_m
+  )
+
+  # Add S3 class for type identification
+  class(pb_results) <- c("athlytics_pbs", class(pb_results))
   return(pb_results)
 }
 

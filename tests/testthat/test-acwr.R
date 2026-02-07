@@ -4,6 +4,7 @@
 
 library(Athlytics)
 library(testthat)
+library(dplyr)
 
 # Load sample data from the package
 data(sample_acwr)
@@ -98,6 +99,8 @@ test_that("calculate_acwr works with different load metrics", {
     load_metric = "duration_mins"
   )
   expect_s3_class(acwr_duration, "data.frame")
+  expect_gt(nrow(acwr_duration), 0)
+  expect_true(all(acwr_duration$atl >= 0, na.rm = TRUE))
 
   # Test distance_km
   acwr_distance <- calculate_acwr(
@@ -106,6 +109,8 @@ test_that("calculate_acwr works with different load metrics", {
     load_metric = "distance_km"
   )
   expect_s3_class(acwr_distance, "data.frame")
+  expect_gt(nrow(acwr_distance), 0)
+  expect_true(all(acwr_distance$atl >= 0, na.rm = TRUE))
 
   # Test elevation
   acwr_elevation <- calculate_acwr(
@@ -114,6 +119,7 @@ test_that("calculate_acwr works with different load metrics", {
     load_metric = "elevation_gain_m"
   )
   expect_s3_class(acwr_elevation, "data.frame")
+  expect_gt(nrow(acwr_elevation), 0)
 })
 
 test_that("calculate_acwr filters by activity type correctly", {
@@ -139,25 +145,162 @@ test_that("calculate_acwr works with sample data", {
 
 # --- Test plot_acwr ---
 
-test_that("plot_acwr works with pre-calculated data", {
+test_that("plot_acwr works with pre-calculated data and has correct labels", {
   skip_if(is.null(sample_acwr), "Sample ACWR data not available")
 
-  p <- plot_acwr(sample_acwr, highlight_zones = FALSE)
+  p <- plot_acwr(sample_acwr, highlight_zones = TRUE)
 
   expect_s3_class(p, "ggplot")
+  expect_equal(p$labels$x, "Date")
+  expect_true(grepl("ACWR", p$labels$y),
+    info = sprintf("Y-axis label should contain 'ACWR', got: %s", p$labels$y)
+  )
+  expect_gte(length(p$layers), 1)
 })
 
 test_that("plot_acwr validates input", {
   # Test with non-data.frame - should error
   expect_error(
     plot_acwr("not_a_dataframe"),
-    "activities_data.*must be a data frame"
+    "Input 'data' must be a data frame from calculate_acwr()."
   )
 
-  # Test with missing required columns - should error or warn
+  # Test with missing required columns - should error
   bad_df <- data.frame(x = 1:10, y = 1:10)
   expect_error(
     plot_acwr(bad_df),
-    "activity_type.*must be explicitly specified" # Now checks for activity_type first
+    "must be the output of calculate_acwr"
+  )
+})
+
+# ============================================================
+# Numerical Value Validation
+# ============================================================
+
+test_that("calculate_acwr produces correct rolling averages for constant load", {
+  # Create deterministic test data: one activity per day with known load
+  end_date <- Sys.Date()
+  start_date <- end_date - 120
+  dates <- seq(start_date, end_date, by = "day")
+  n <- length(dates)
+
+  # Fixed load of 60 minutes every day
+  activities <- data.frame(
+    id = seq_len(n),
+    name = paste("Run", seq_len(n)),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n),
+    moving_time = rep(3600, n), # 60 min in seconds
+    elapsed_time = rep(3600, n),
+    average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n),
+    stringsAsFactors = FALSE
+  )
+
+  result <- calculate_acwr(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "duration_mins",
+    acute_period = 7,
+    chronic_period = 28,
+    start_date = start_date,
+    end_date = end_date
+  )
+
+  # With constant daily load of 60 min:
+  # ATL (7-day avg) should be 60
+  # CTL (28-day avg) should be 60
+  # ACWR should be ~1.0
+  valid_rows <- result %>% filter(!is.na(acwr))
+  expect_gt(nrow(valid_rows), 0)
+
+  # After the chronic period stabilizes, ATL and CTL should both be ~60
+  late_rows <- valid_rows %>% filter(date >= (end_date - 30))
+  expect_true(all(abs(late_rows$atl - 60) < 1, na.rm = TRUE),
+    info = "ATL should be ~60 for constant 60min daily load"
+  )
+  expect_true(all(abs(late_rows$ctl - 60) < 1, na.rm = TRUE),
+    info = "CTL should be ~60 for constant 60min daily load"
+  )
+  expect_true(all(abs(late_rows$acwr - 1.0) < 0.05, na.rm = TRUE),
+    info = "ACWR should be ~1.0 for constant daily load"
+  )
+})
+
+test_that("calculate_acwr responds to load changes correctly", {
+  # Phase 1: 28 days at 30 min/day, Phase 2: 7 days at 90 min/day
+  end_date <- Sys.Date()
+  start_phase1 <- end_date - 34
+  dates_p1 <- seq(start_phase1, start_phase1 + 27, by = "day")
+  dates_p2 <- seq(start_phase1 + 28, end_date, by = "day")
+  dates_all <- c(dates_p1, dates_p2)
+  n <- length(dates_all)
+
+  activities <- data.frame(
+    id = seq_len(n),
+    name = paste("Run", seq_len(n)),
+    type = "Run",
+    sport_type = "Run",
+    date = dates_all,
+    start_date_local = as.POSIXct(dates_all),
+    distance = rep(10000, n),
+    moving_time = c(rep(1800, length(dates_p1)), rep(5400, length(dates_p2))),
+    elapsed_time = c(rep(1800, length(dates_p1)), rep(5400, length(dates_p2))),
+    average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n),
+    stringsAsFactors = FALSE
+  )
+
+  result <- calculate_acwr(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "duration_mins",
+    acute_period = 7,
+    chronic_period = 28,
+    start_date = start_phase1,
+    end_date = end_date
+  )
+
+  # At the end: ATL should be ~90 (7-day avg of 90min/day)
+  # ACWR should be > 1.5 after sudden load increase
+  last_valid <- result %>%
+    filter(date == end_date, !is.na(acwr))
+
+  if (nrow(last_valid) > 0) {
+    expect_true(last_valid$atl > 80,
+      info = sprintf("ATL should be >80 after days at 90min, got %.1f", last_valid$atl)
+    )
+    expect_true(last_valid$acwr > 1.5,
+      info = sprintf("ACWR should be >1.5 after sudden load increase, got %.2f", last_valid$acwr)
+    )
+  }
+})
+
+test_that("calculate_acwr returns S3 class athlytics_acwr", {
+  end_date <- Sys.Date()
+  start_date <- end_date - 90
+  dates <- seq(start_date, end_date, by = "day")
+  n <- length(dates)
+  activities <- data.frame(
+    id = seq_len(n), name = paste("Run", seq_len(n)),
+    type = "Run", sport_type = "Run",
+    date = dates, start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n), moving_time = rep(3600, n),
+    elapsed_time = rep(3600, n), average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n), stringsAsFactors = FALSE
+  )
+
+  result <- calculate_acwr(
+    activities_data = activities,
+    activity_type = "Run",
+    start_date = start_date,
+    end_date = end_date
+  )
+
+  expect_true("athlytics_acwr" %in% class(result),
+    info = "Result should have athlytics_acwr S3 class"
   )
 })

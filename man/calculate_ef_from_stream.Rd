@@ -22,7 +22,7 @@ calculate_ef_from_stream(
 
 \item{act_type}{Activity type (e.g., "Run", "Ride")}
 
-\item{ef_metric}{Efficiency metric to calculate ("pace_hr" or "power_hr")}
+\item{ef_metric}{Efficiency metric to calculate ("speed_hr" or "power_hr")}
 
 \item{min_steady_minutes}{Minimum duration for steady-state analysis (minutes)}
 
@@ -48,7 +48,7 @@ ef_result <- calculate_ef_from_stream(
   stream_data = streams,
   activity_date = as.Date("2025-01-15"),
   act_type = "Run",
-  ef_metric = "pace_hr",
+  ef_metric = "speed_hr",
   min_steady_minutes = 20,
   steady_cv_threshold = 0.08,
   min_hr_coverage = 0.9,

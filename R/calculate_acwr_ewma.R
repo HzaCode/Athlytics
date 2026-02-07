@@ -29,11 +29,9 @@
 #'
 #' @details
 #' This function extends the basic ACWR calculation with two methods:
-#' \itemize{
-#'   \item **RA (Rolling Average)**: Traditional rolling mean approach (default).
-#'   \item **EWMA (Exponentially Weighted Moving Average)**: Uses exponential decay
-#'     with configurable half-lives. More responsive to recent changes.
-#' }
+#' - **RA (Rolling Average)**: Traditional rolling mean approach (default).
+#' - **EWMA (Exponentially Weighted Moving Average)**: Uses exponential decay
+#'   with configurable half-lives. More responsive to recent changes.
 #'
 #' **EWMA Formula**: The smoothing parameter alpha is calculated from half-life:
 #' `alpha = ln(2) / half_life`. The EWMA update is: `E_t = alpha * L_t + (1-alpha) * E_{t-1}`
@@ -45,9 +43,6 @@
 #' and percentiles form the confidence bands. This accounts for temporal correlation
 #' in training load patterns.
 #'
-#' @importFrom dplyr filter select mutate group_by summarise arrange %>% left_join coalesce
-#' @importFrom lubridate as_date days
-#' @importFrom stats quantile
 #'
 #' @examples
 #' # Example using pre-calculated sample data
@@ -84,7 +79,7 @@ calculate_acwr_ewma <- function(activities_data,
                                 half_life_acute = 3.5,
                                 half_life_chronic = 14,
                                 start_date = NULL,
-                                end_date = NULL,
+                                end_date = Sys.Date(),
                                 user_ftp = NULL,
                                 user_max_hr = NULL,
                                 user_resting_hr = NULL,
@@ -167,11 +162,11 @@ calculate_acwr_ewma <- function(activities_data,
     )
   }
 
-  message(sprintf(
+  athlytics_message(sprintf(
     "Calculating ACWR (%s) from %s to %s.",
     toupper(method), analysis_start_date, analysis_end_date
   ))
-  message(sprintf(
+  athlytics_message(sprintf(
     "Load metric: %s, Activity types: %s",
     load_metric, paste(activity_type %||% "All", collapse = ", ")
   ))
@@ -189,7 +184,7 @@ calculate_acwr_ewma <- function(activities_data,
       dplyr::filter(.data$type %in% activity_type)
   }
 
-  message(sprintf("Processing %d activities...", nrow(activities_df_filtered)))
+  athlytics_message(sprintf("Processing %d activities...", nrow(activities_df_filtered)))
 
   if (nrow(activities_df_filtered) == 0) {
     stop("No activities found for the specified criteria.")
@@ -228,7 +223,7 @@ calculate_acwr_ewma <- function(activities_data,
     )
   }
 
-  message("Calculation complete.")
+  athlytics_message("Calculation complete.")
   return(acwr_data)
 }
 
@@ -249,9 +244,9 @@ calculate_acwr_ra_internal <- function(daily_load_complete, acute_period, chroni
       acwr_smooth = zoo::rollmean(.data$acwr, k = smoothing_period, align = "right", fill = NA)
     ) %>%
     dplyr::filter(.data$date >= start_date & .data$date <= end_date) %>%
-    dplyr::select(.data$date,
-      atl = .data$acute_load, ctl = .data$chronic_load,
-      .data$acwr, .data$acwr_smooth
+    dplyr::select("date",
+      atl = "acute_load", ctl = "chronic_load",
+      "acwr", "acwr_smooth"
     )
 
   return(acwr_data)
@@ -301,7 +296,7 @@ calculate_acwr_ewma_internal <- function(daily_load_complete, half_life_acute, h
 
   # --- Bootstrap Confidence Bands ---
   if (ci) {
-    message(sprintf(
+    athlytics_message(sprintf(
       "Calculating %d%% confidence bands using %d bootstrap iterations...",
       conf_level * 100, B
     ))

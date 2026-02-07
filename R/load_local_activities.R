@@ -21,31 +21,31 @@
 #'
 #' @return A tibble of activity data with standardized column names compatible
 #'   with Athlytics functions. Key columns include:
-#'   \itemize{
-#'     \item \code{id}: Activity ID (numeric)
-#'     \item \code{name}: Activity name
-#'     \item \code{type}: Activity type (Run, Ride, etc.)
-#'     \item \code{start_date_local}: Activity start datetime (POSIXct)
-#'     \item \code{date}: Activity date (Date)
-#'     \item \code{distance}: Distance in meters (numeric)
-#'     \item \code{moving_time}: Moving time in seconds (integer)
-#'     \item \code{elapsed_time}: Elapsed time in seconds (integer)
-#'     \item \code{average_heartrate}: Average heart rate (numeric)
-#'     \item \code{average_watts}: Average power in watts (numeric)
-#'     \item \code{elevation_gain}: Elevation gain in meters (numeric)
-#'   }
+#'   - `id`: Activity ID (numeric)
+#'   - `name`: Activity name
+#'   - `type`: Activity type (Run, Ride, etc.)
+#'   - `start_date_local`: Activity start datetime (POSIXct)
+#'   - `date`: Activity date (Date)
+#'   - `distance`: Distance in meters (numeric)
+#'   - `moving_time`: Moving time in seconds (integer)
+#'   - `elapsed_time`: Elapsed time in seconds (integer)
+#'   - `average_heartrate`: Average heart rate (numeric)
+#'   - `average_watts`: Average power in watts (numeric)
+#'   - `elevation_gain`: Elevation gain in meters (numeric)
 #'
 #' @details
 #' This function reads the activities.csv file from a Strava data export
 #' and transforms the data to match the structure expected by Athlytics
 #' analysis functions. The transformation includes:
-#' \itemize{
-#'   \item Converting column names to match API format
-#'   \item Parsing dates into POSIXct format
-#'   \item Converting distances to meters
-#'   \item Converting times to seconds
-#'   \item Filtering by date range and activity type if specified
-#' }
+#' - Standardizing column names for analysis functions
+#' - Parsing dates into POSIXct format
+#' - Converting distances to meters
+#' - Converting times to seconds
+#' - Filtering by date range and activity type if specified
+#'
+#' **Language Note**: Strava export language must be set to **English** for proper
+#' CSV parsing. Change this in Strava Settings > Display Preferences > Language
+#' before requesting your data export.
 #'
 #' **Privacy Note**: This function processes local export data only and does not
 #' connect to the internet. Ensure you have permission to analyze the data and
@@ -72,14 +72,10 @@
 #' plot_acwr(acwr_data, highlight_zones = TRUE)
 #'
 #' # Multi-metric analysis
-#' ef_data <- calculate_ef(activities, ef_metric = "pace_hr")
+#' ef_data <- calculate_ef(activities, ef_metric = "speed_hr")
 #' plot_ef(ef_data, add_trend_line = TRUE)
 #' }
 #'
-#' @importFrom dplyr tibble mutate select filter arrange %>% rename
-#' @importFrom lubridate parse_date_time as_datetime as_date
-#' @importFrom readr read_csv cols
-#' @importFrom rlang .data
 #' @export
 load_local_activities <- function(path = "strava_export_data/activities.csv",
                                   start_date = NULL,
@@ -99,7 +95,7 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
 
   # Check if input is a ZIP file
   if (tolower(tools::file_ext(path)) == "zip") {
-    message("Detected ZIP archive. Extracting activities.csv...")
+    athlytics_message("Detected ZIP archive. Extracting activities.csv...")
 
     # Create a temporary directory for extraction
     temp_dir <- tempdir()
@@ -127,7 +123,7 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
         utils::unzip(path, files = activities_file, exdir = temp_dir, overwrite = TRUE)
         path <- file.path(temp_dir, activities_file)
         temp_extracted <- TRUE
-        message("Successfully extracted to temporary location.")
+        athlytics_message("Successfully extracted to temporary location.")
       },
       error = function(e) {
         stop("Failed to extract ZIP archive: ", e$message)
@@ -136,12 +132,16 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
   }
 
   # --- Read CSV ---
-  message("Reading activities from: ", basename(original_path))
+  athlytics_message("Reading activities from: ", basename(original_path))
 
   # Read CSV with appropriate column types
   activities_raw <- tryCatch(
     {
-      readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols())
+      if (requireNamespace("readr", quietly = TRUE)) {
+        readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols())
+      } else {
+        utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+      }
     },
     error = function(e) {
       stop("Failed to read CSV file: ", e$message)
@@ -165,7 +165,7 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
     ))
   }
 
-  message("Found ", nrow(activities_raw), " activities in CSV file.")
+  athlytics_message("Found ", nrow(activities_raw), " activities in CSV file.")
 
   # --- Transform Data ---
   # Store column names to avoid using `.` inside mutate
@@ -233,6 +233,16 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
       average_speed = as.numeric(if ("Average.Speed" %in% col_names) .data$Average.Speed else .data$`Average Speed`),
       max_speed = as.numeric(if ("Max.Speed" %in% col_names) .data$Max.Speed else .data$`Max Speed`),
 
+      # Grade Adjusted Pace (GAP) - accounts for elevation changes
+      # Note: despite the column name "Pace", Strava stores this as speed in m/s
+      average_gap = as.numeric(if ("Average.Grade.Adjusted.Pace" %in% col_names) {
+        .data$Average.Grade.Adjusted.Pace
+      } else if ("Average Grade Adjusted Pace" %in% col_names) {
+        .data$`Average Grade Adjusted Pace`
+      } else {
+        NA_real_
+      }),
+
       # Other useful metrics
       calories = as.numeric(.data$Calories),
       relative_effort = as.numeric(if ("Relative.Effort.1" %in% col_names) {
@@ -256,7 +266,7 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
     "average_heartrate", "max_heartrate",
     "average_watts", "max_watts", "weighted_average_watts",
     "elevation_gain", "elevation_loss",
-    "average_speed", "max_speed",
+    "average_speed", "max_speed", "average_gap",
     "calories", "relative_effort",
     "filename"
   )
@@ -282,7 +292,7 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
     activities_df <- activities_df %>%
       dplyr::filter(.data$start_date_local >= start_date_parsed)
 
-    message("Filtered to activities after ", start_date_parsed)
+    athlytics_message("Filtered to activities after ", start_date_parsed)
   }
 
   if (!is.null(end_date)) {
@@ -303,7 +313,7 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
     activities_df <- activities_df %>%
       dplyr::filter(.data$start_date_local <= end_date_parsed)
 
-    message("Filtered to activities before ", end_date_parsed)
+    athlytics_message("Filtered to activities before ", end_date_parsed)
   }
 
   # Filter by activity type
@@ -315,14 +325,14 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
     activities_df <- activities_df %>%
       dplyr::filter(.data$type %in% activity_types)
 
-    message("Filtered to activity types: ", paste(activity_types, collapse = ", "))
+    athlytics_message("Filtered to activity types: ", paste(activity_types, collapse = ", "))
   }
 
   # --- Final Sorting ---
   activities_df <- activities_df %>%
     dplyr::arrange(.data$start_date_local)
 
-  message("Data loading complete. ", nrow(activities_df), " activities after filtering.")
+  athlytics_message("Data loading complete. ", nrow(activities_df), " activities after filtering.")
 
   return(activities_df)
 }
