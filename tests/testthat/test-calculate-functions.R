@@ -177,7 +177,7 @@ test_that("calculate_ef works with simulated data", {
 
   result <- calculate_ef(
     activities_data = activities,
-    ef_metric = "pace_hr"
+    ef_metric = "speed_hr"
   )
 
   expect_s3_class(result, "data.frame")
@@ -196,8 +196,8 @@ test_that("calculate_ef handles different metrics", {
     NA
   )
 
-  # Test pace/HR
-  result_pace <- calculate_ef(activities_data = activities, ef_metric = "pace_hr")
+  # Test speed/HR
+  result_pace <- calculate_ef(activities_data = activities, ef_metric = "speed_hr")
   expect_gt(nrow(result_pace), 0)
 
   # Test power/HR (only for activities with power)
@@ -214,7 +214,7 @@ test_that("calculate_decoupling works with simulated stream data", {
 
   decoupling_steady <- calculate_decoupling(
     stream_df = steady_stream,
-    decouple_metric = "pace_hr"
+    decouple_metric = "speed_hr"
   )
 
   expect_type(decoupling_steady, "double")
@@ -238,7 +238,7 @@ test_that("calculate_decoupling handles non-steady state", {
   # Should still calculate but might have higher values
   decoupling <- calculate_decoupling(
     stream_df = variable_stream,
-    decouple_metric = "pace_hr"
+    decouple_metric = "speed_hr"
   )
 
   expect_type(decoupling, "double")
@@ -278,34 +278,28 @@ test_that("calculate_pbs handles missing stream files gracefully", {
 })
 
 # Test flag_quality
-test_that("flag_quality works with simulated data", {
-  skip("Temporarily disabled - needs stream data")
-  activities <- create_realistic_activities(30)
+test_that("flag_quality works with simulated stream data", {
+  stream <- create_activity_stream(duration_seconds = 3600, steady_state = TRUE)
 
-  # Add some quality issues
-  activities$average_heartrate[c(5, 10)] <- NA
-  activities$distance[15] <- 0
-  if (nrow(activities) >= 20) {
-    activities$moving_time[20] <- activities$elapsed_time[20] * 2 # Impossible
-  }
+  # Inject some quality issues
+  stream$heartrate[c(100, 200)] <- 250 # Out-of-range HR spikes
+  stream$velocity_smooth[300] <- 15 # Unrealistic speed
 
-  flagged <- flag_quality(activities)
+  flagged <- flag_quality(stream, sport = "Run")
 
   expect_s3_class(flagged, "data.frame")
-  expect_true("quality_flag" %in% colnames(flagged))
-  expect_true("quality_note" %in% colnames(flagged))
-  expect_gt(sum(!is.na(flagged$quality_flag)), 0) # Should flag some issues
+  expect_true(all(c("flag_hr_spike", "flag_any", "is_steady_state", "quality_score") %in% colnames(flagged)))
+  expect_gt(sum(flagged$flag_any), 0) # Should flag some issues
 })
 
-test_that("quality_summary works with flagged data", {
-  skip("Temporarily disabled - needs stream data")
-  activities <- create_realistic_activities(30)
-  flagged <- flag_quality(activities)
+test_that("quality_summary works with flagged stream data", {
+  stream <- create_activity_stream(duration_seconds = 3600, steady_state = TRUE)
+  flagged <- flag_quality(stream, sport = "Run")
 
-  summary <- summarize_quality(flagged)
+  summary_result <- summarize_quality(flagged)
 
-  expect_s3_class(summary, "data.frame")
-  expect_true(all(c("flag", "count", "percentage", "example_dates") %in% colnames(summary)))
+  expect_type(summary_result, "list")
+  expect_true(all(c("total_points", "flagged_points", "flagged_pct", "quality_score") %in% names(summary_result)))
 })
 
 # Test cohort_reference

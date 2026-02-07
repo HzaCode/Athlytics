@@ -13,7 +13,14 @@ plot_acwr_enhanced(
   highlight_zones = TRUE,
   title = NULL,
   subtitle = NULL,
-  method_label = NULL
+  method_label = NULL,
+  caption = if (highlight_zones) {
+    
+    "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
+ }
+    else {
+     NULL
+ }
 )
 }
 \arguments{
@@ -37,6 +44,8 @@ Default TRUE.}
 \item{subtitle}{Plot subtitle. Default NULL (auto-generated).}
 
 \item{method_label}{Optional label for the method used (e.g., "RA", "EWMA"). Default NULL.}
+
+\item{caption}{Plot caption. Set to NULL to remove. Defaults to zone description when \code{highlight_zones = TRUE}.}
 }
 \value{
 A ggplot object.
@@ -61,6 +70,11 @@ The layering order (bottom to top):
 \item Confidence intervals (individual uncertainty)
 \item ACWR line (individual trend)
 }
+
+\strong{Note:} The predictive value of ACWR for injury risk is debated in the
+literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
+as descriptive heuristics, not validated injury predictors. See
+\code{calculate_acwr()} documentation for full references.
 }
 \examples{
 # Example using sample data

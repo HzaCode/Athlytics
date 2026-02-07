@@ -32,20 +32,15 @@
 #'
 #' @details
 #' This function performs several quality checks:
-#' \itemize{
-#'   \item **HR/Power Spikes**: Flags values outside physiological ranges or with
-#'     sudden jumps (Delta HR > 10 bpm/s, Delta P > 300 W/s).
-#'   \item **GPS Drift**: Flags implausible speeds or accelerations based on sport type.
-#'   \item **Steady-State Detection**: Identifies segments with low variability
-#'     (CV < 8%) lasting >= 20 minutes, suitable for EF/decoupling calculations.
-#' }
+#' - **HR/Power Spikes**: Flags values outside physiological ranges or with
+#'   sudden jumps (Delta HR > 10 bpm/s, Delta P > 300 W/s).
+#' - **GPS Drift**: Flags implausible speeds or accelerations based on sport type.
+#' - **Steady-State Detection**: Identifies segments with low variability
+#'   (CV < 8%) lasting >= 20 minutes, suitable for EF/decoupling calculations.
 #'
 #' The function is sport-aware and adjusts thresholds accordingly. All thresholds
 #' are configurable to accommodate different athlete profiles and data quality.
 #'
-#' @importFrom dplyr mutate lag lead if_else coalesce %>%
-#' @importFrom zoo rollmean rollapply
-#' @importFrom stats sd
 #' @export
 #'
 #' @examples
@@ -213,7 +208,7 @@ flag_quality <- function(streams,
   pct_flagged <- round(100 * n_flagged / nrow(streams), 1)
   pct_steady <- round(100 * n_steady / nrow(streams), 1)
 
-  message(sprintf(
+  athlytics_message(sprintf(
     "Quality check complete: %.1f%% flagged, %.1f%% steady-state",
     pct_flagged, pct_steady
   ))

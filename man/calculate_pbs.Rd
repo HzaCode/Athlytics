@@ -9,8 +9,9 @@ calculate_pbs(
   export_dir = "strava_export_data",
   activity_type = "Run",
   start_date = NULL,
-  end_date = NULL,
-  distances_m = c(1000, 5000, 10000, 21097.5, 42195)
+  end_date = Sys.Date(),
+  distances_m = c(1000, 5000, 10000, 21097.5, 42195),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -22,12 +23,14 @@ Default is "strava_export_data".}
 
 \item{activity_type}{Type of activities to analyze (typically "Run"). Default "Run".}
 
-\item{start_date}{Optional start date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).}
+\item{start_date}{Optional start date for analysis (YYYY-MM-DD). If NULL, defaults to 365 days before \code{end_date}.}
 
-\item{end_date}{Optional end date for analysis (YYYY-MM-DD). Defaults to NULL (all dates).}
+\item{end_date}{End date for analysis (YYYY-MM-DD). Default \code{Sys.Date()} (today).}
 
 \item{distances_m}{Target distances in meters to track.
 Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marathon.}
+
+\item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }
 \value{
 A data frame with columns: activity_id, activity_date, distance,
@@ -43,8 +46,21 @@ This function analyzes detailed activity files (FIT/TCX/GPX) to find the fastest
 efforts at specified distances. It tracks cumulative personal bests over time,
 showing when new PBs are set.
 
+Personal best tracking is a standard approach in endurance sport performance
+monitoring. Systematic PB analysis over multiple distances helps identify
+fitness improvements, training phase effectiveness, and performance peaks
+(Matveyev, 1981). The multi-distance approach enables
+athletes to assess both speed (shorter distances) and endurance (longer
+distances) progression simultaneously.
+\subsection{References}{
+\itemize{
+\item Matveyev, L. P. (1981). \emph{Fundamentals of Sports Training}. Moscow: Progress
+Publishers.
+}
+
 \strong{Note}: Requires detailed activity files from your Strava export. Activities
 must be long enough to contain the target distance segments.
+}
 }
 \examples{
 # Example using simulated data
@@ -62,5 +78,13 @@ pbs_data <- calculate_pbs(
   activity_type = "Run"
 )
 print(head(pbs_data))
+
+# Calculate PBs for custom distances (e.g., 400m, 800m, 1500m for track)
+track_pbs <- calculate_pbs(
+  activities_data = activities,
+  export_dir = "strava_export_data",
+  activity_type = "Run",
+  distances_m = c(400, 800, 1500, 3000)  # Custom distances in meters
+)
 }
 }

@@ -1,5 +1,4 @@
 # Script to generate sample_exposure data
-# This script creates a simulated training exposure dataset for package examples and testing
 
 library(dplyr)
 library(tibble)

@@ -13,7 +13,8 @@ calculate_exposure(
   user_ftp = NULL,
   user_max_hr = NULL,
   user_resting_hr = NULL,
-  end_date = NULL
+  end_date = Sys.Date(),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -39,6 +40,8 @@ Default includes common run/ride types.}
 
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 The analysis period covers the \code{chronic_period} days ending on this date.}
+
+\item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }
 \value{
 A data frame with columns: \code{date}, \code{daily_load}, \code{atl} (Acute Load),
@@ -57,6 +60,31 @@ accurate initial CTL. Requires FTP/HR parameters for TSS/HRSS metrics.
 # Example using simulated data
 data(sample_exposure)
 print(head(sample_exposure))
+
+# Runnable example with dummy data:
+end <- Sys.Date()
+dates <- seq(end - 59, end, by = "day")
+dummy_activities <- data.frame(
+  date = dates,
+  type = "Run",
+  moving_time = rep(3600, length(dates)), # 1 hour
+  distance = rep(10000, length(dates)),   # 10 km
+  average_heartrate = rep(140, length(dates)),
+  suffer_score = rep(50, length(dates)),
+  tss = rep(50, length(dates)),
+  stringsAsFactors = FALSE
+)
+
+# Calculate Exposure (ATL/CTL)
+exposure_result <- calculate_exposure(
+  activities_data = dummy_activities,
+  activity_type = "Run",
+  load_metric = "distance_km",
+  acute_period = 7,
+  chronic_period = 28,
+  end_date = end
+)
+print(head(exposure_result))
 
 \dontrun{
 # Example using local Strava export data

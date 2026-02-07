@@ -6,31 +6,32 @@
 \usage{
 plot_pbs(
   data,
-  activity_type = "Run",
-  distance_meters,
-  max_activities = 500,
-  date_range = NULL,
   add_trend_line = TRUE,
-  pbs_df = NULL
+  caption = NULL,
+  facet_ncol = 2,
+  title = NULL,
+  subtitle = NULL,
+  ...
 )
 }
 \arguments{
-\item{data}{\strong{Recommended: Pass pre-calculated data via \code{pbs_df} (local export preferred).}
-A data frame from \code{calculate_pbs()} or activities data from \code{load_local_activities()}.}
-
-\item{activity_type}{Type(s) of activities to search (e.g., "Run"). Default "Run".}
-
-\item{distance_meters}{Numeric vector of distances (meters) to plot PBs for (e.g., \code{c(1000, 5000)}).
-Relies on Strava's \code{best_efforts} data.}
-
-\item{max_activities}{Max number of recent activities to check. Default 500. Reduce for speed.}
-
-\item{date_range}{Optional. Filter activities by date \code{c("YYYY-MM-DD", "YYYY-MM-DD")}.}
+\item{data}{A data frame from \code{calculate_pbs()}.
+Must contain \code{activity_date}, \code{distance}, \code{time_seconds}.}
 
 \item{add_trend_line}{Logical. Whether to add a trend line to the plot. Default TRUE.}
 
-\item{pbs_df}{\strong{Recommended.} A pre-calculated data frame from \code{calculate_pbs()}.
-When provided, analysis uses local data only (no API calls).}
+\item{caption}{Plot caption. Default NULL (no caption).}
+
+\item{facet_ncol}{Integer. Number of columns for faceted plots when multiple distances
+are shown. Default 2 for better aspect ratio. Set to 1 for vertical stacking.}
+
+\item{title}{Optional. Custom title for the plot.}
+
+\item{subtitle}{Optional. Custom subtitle for the plot.}
+
+\item{...}{Additional arguments.
+Arguments \code{activity_type}, \code{distance_meters}, \code{max_activities}, \code{date_range},
+\code{pbs_df} are deprecated and ignored.}
 }
 \value{
 A ggplot object showing PB trends, faceted by distance if multiple are plotted.
@@ -39,64 +40,33 @@ A ggplot object showing PB trends, faceted by distance if multiple are plotted.
 Visualizes the trend of personal best times for specific running distances.
 }
 \details{
-Plots the trend of best efforts for specified distances, highlighting new PBs.
-\strong{Recommended workflow: Use local data via \code{pbs_df}.}
-
 Visualizes data from \code{calculate_pbs}. Points show best efforts;
 solid points mark new PBs. Y-axis is MM:SS.
-\strong{Best practice: Use \code{load_local_activities()} + \code{calculate_pbs()} + this function.}
-Legacy API mode is maintained for backward compatibility only.
+\strong{Best practice: Use \code{calculate_pbs()} first, then pass the result to this function.}
 }
 \examples{
 # Example using the built-in sample data
-# This data now contains a simulated history of performance improvements
 data("sample_pbs", package = "Athlytics")
 
 if (!is.null(sample_pbs) && nrow(sample_pbs) > 0) {
   # Plot PBs using the package sample data directly
-  p <- plot_pbs(pbs_df = sample_pbs, activity_type = "Run")
+  p <- plot_pbs(sample_pbs)
   print(p)
 }
 
-if (FALSE) {
+\dontrun{
   # Example using local Strava export data
   activities <- load_local_activities("strava_export_data/activities.csv")
 
-  # Plot PBS trend for Runs (last 6 months)
+  # Calculate PBs first
   pb_data_run <- calculate_pbs(
     activities_data = activities,
     activity_type = "Run",
-    distance_meters = c(1000, 5000, 10000),
-    date_range = c(
-      format(Sys.Date() - months(6)),
-      format(Sys.Date())
-    )
+    distances_m = c(1000, 5000, 10000)
   )
+  
   if (nrow(pb_data_run) > 0) {
-    plot_pbs(pbs_df = pb_data_run, distance_meters = c(1000, 5000, 10000))
-  }
-
-  # Plot PBS trend for Rides (if applicable, though PBs are mainly for Runs)
-  pb_data_ride <- calculate_pbs(
-    activities_data = activities,
-    activity_type = "Ride",
-    distance_meters = c(10000, 20000)
-  )
-  if (nrow(pb_data_ride) > 0) {
-    plot_pbs(pbs_df = pb_data_ride, distance_meters = c(10000, 20000))
-  }
-
-  # Plot PBS trend for multiple Run types (no trend line)
-  pb_data_multi <- calculate_pbs(
-    activities_data = activities,
-    activity_type = c("Run", "VirtualRun"),
-    distance_meters = c(1000, 5000)
-  )
-  if (nrow(pb_data_multi) > 0) {
-    plot_pbs(
-      pbs_df = pb_data_multi, distance_meters = c(1000, 5000),
-      add_trend_line = FALSE
-    )
+    plot_pbs(pb_data_run)
   }
 }
 

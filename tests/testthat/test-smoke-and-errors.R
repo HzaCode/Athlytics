@@ -8,23 +8,23 @@ library(Athlytics)
 test_that("input validation errors", {
   # calculate_ef errors
   expect_error(calculate_ef())
-  expect_error(calculate_ef(NULL, activity_type = "Run", ef_metric = "pace_hr"))
-  expect_error(calculate_ef("not_a_df", activity_type = "Run", ef_metric = "pace_hr"))
-  expect_error(calculate_ef(data.frame(), activity_type = "Run", ef_metric = "pace_hr"))
+  expect_error(calculate_ef(NULL, activity_type = "Run", ef_metric = "speed_hr"))
+  expect_error(calculate_ef("not_a_df", activity_type = "Run", ef_metric = "speed_hr"))
+  expect_error(calculate_ef(data.frame(), activity_type = "Run", ef_metric = "speed_hr"))
 
   # Invalid parameters
   df <- data.frame(
     id = 1, date = Sys.Date(), type = "Run", moving_time = 1800,
     distance = 5000, average_heartrate = 150, average_speed = 10
   )
-  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "pace_hr", min_duration_mins = -5))
-  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "pace_hr", min_steady_minutes = -10))
-  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "pace_hr", steady_cv_threshold = 1.5))
-  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "pace_hr", steady_cv_threshold = 0))
-  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "pace_hr", min_hr_coverage = 1.5))
-  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "pace_hr", min_hr_coverage = 0))
+  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "speed_hr", min_duration_mins = -5))
+  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "speed_hr", min_steady_minutes = -10))
+  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "speed_hr", steady_cv_threshold = 1.5))
+  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "speed_hr", steady_cv_threshold = 0))
+  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "speed_hr", min_hr_coverage = 1.5))
+  expect_error(calculate_ef(df, activity_type = "Run", ef_metric = "speed_hr", min_hr_coverage = 0))
   expect_error(calculate_ef(df,
-    activity_type = "Run", ef_metric = "pace_hr",
+    activity_type = "Run", ef_metric = "speed_hr",
     start_date = Sys.Date(), end_date = Sys.Date() - 30
   ))
 
@@ -44,29 +44,13 @@ test_that("input validation errors", {
 # ========== Smoke tests - basic functionality ==========
 test_that("all palette functions work", {
   pal_nature <- athlytics_palette_nature()
-  pal_academic <- athlytics_palette_academic()
   pal_vibrant <- athlytics_palette_vibrant()
-  pal_science <- athlytics_palette_science()
-  pal_cell <- athlytics_palette_cell()
 
   expect_length(pal_nature, 9)
-  expect_length(pal_academic, 8)
   expect_length(pal_vibrant, 8)
-  expect_length(pal_science, 8)
-  expect_length(pal_cell, 8)
 
   expect_true(all(grepl("^#", pal_nature)))
-  expect_true(all(grepl("^#", pal_academic)))
-})
-
-test_that("all color functions work", {
-  acwr_colors <- athlytics_colors_acwr_zones()
-  load_colors <- athlytics_colors_training_load()
-  ef_colors <- athlytics_colors_ef()
-
-  expect_true(is.character(acwr_colors) || is.list(acwr_colors))
-  expect_true(is.character(load_colors) || is.list(load_colors))
-  expect_true(is.character(ef_colors) || is.list(ef_colors))
+  expect_true(all(grepl("^#", pal_vibrant)))
 })
 
 test_that("theme functions work", {
@@ -76,18 +60,14 @@ test_that("theme functions work", {
       expect_s3_class(theme, "theme")
     }
 
-    for (pal in c("nature", "academic", "vibrant")) {
-      scale_c <- scale_athlytics(pal, type = "color")
-      scale_f <- scale_athlytics(pal, type = "fill")
-      expect_s3_class(scale_c, "Scale")
-      expect_s3_class(scale_f, "Scale")
-    }
+    theme <- theme_athlytics()
+    expect_s3_class(theme, "theme")
   }
 })
 
 # ========== Real data tests (will work if data exists) ==========
 test_that("real data workflow if available", {
-  csv_file <- "C:/Users/Ang/Documents/GitHub/Athlytics/export_data/activities.csv"
+  csv_file <- testthat::test_path("..", "..", "export_data", "activities.csv")
 
   if (file.exists(csv_file)) {
     # Load data
@@ -135,22 +115,27 @@ test_that("quality flag functions", {
   flagged_run <- flag_quality(streams, sport = "Run")
   expect_s3_class(flagged_run, "data.frame")
   expect_gt(ncol(flagged_run), ncol(streams))
+  expect_equal(nrow(flagged_run), nrow(streams))
 
   flagged_ride <- flag_quality(streams, sport = "Ride")
   expect_s3_class(flagged_ride, "data.frame")
+  expect_equal(nrow(flagged_ride), nrow(streams))
 
   # Test quality_summary
   summary <- summarize_quality(flagged_run)
   expect_type(summary, "list")
   expect_true("total_points" %in% names(summary))
   expect_true("flagged_points" %in% names(summary))
+  expect_equal(summary$total_points, 1000)
 
   # Test with different parameters
   flagged2 <- flag_quality(streams, sport = "Run", hr_range = c(40, 200))
   expect_s3_class(flagged2, "data.frame")
+  expect_equal(nrow(flagged2), nrow(streams))
 
   flagged3 <- flag_quality(streams, sport = "Ride", pw_range = c(50, 1000))
   expect_s3_class(flagged3, "data.frame")
+  expect_equal(nrow(flagged3), nrow(streams))
 })
 
 # ========== Cohort reference tests ==========
@@ -171,21 +156,27 @@ test_that("cohort_reference comprehensive", {
   # Basic cohort reference
   ref1 <- calculate_cohort_reference(cohort, metric = "acwr_smooth")
   expect_s3_class(ref1, "data.frame")
+  expect_gt(nrow(ref1), 0)
+  expect_true("date" %in% names(ref1))
 
   # With grouping
   ref2 <- calculate_cohort_reference(cohort, metric = "acwr_smooth", by = "sport")
   expect_s3_class(ref2, "data.frame")
+  expect_true("sport" %in% names(ref2))
 
   ref3 <- calculate_cohort_reference(cohort, metric = "ef_value", by = c("sport", "level"))
   expect_s3_class(ref3, "data.frame")
+  expect_true(all(c("sport", "level") %in% names(ref3)))
 
   # Different percentiles
   ref4 <- calculate_cohort_reference(cohort, metric = "acwr_smooth", probs = c(0.1, 0.5, 0.9))
   expect_s3_class(ref4, "data.frame")
+  expect_gt(nrow(ref4), 0)
 
   # Different min_athletes
   ref5 <- calculate_cohort_reference(cohort, metric = "acwr_smooth", min_athletes = 5)
   expect_s3_class(ref5, "data.frame")
+  expect_gt(nrow(ref5), 0)
 
   # Test errors
   expect_error(calculate_cohort_reference(cohort[1:50, ], metric = "acwr_smooth", min_athletes = 100))
@@ -210,28 +201,36 @@ test_that("calculations with mock data", {
   # Calculate ACWR
   acwr_run <- calculate_acwr(mock_act[mock_act$type == "Run", ], activity_type = "Run")
   expect_s3_class(acwr_run, "data.frame")
+  expect_true("acwr_smooth" %in% names(acwr_run))
+  expect_true("date" %in% names(acwr_run))
+  expect_gt(nrow(acwr_run), 0)
 
   # Calculate ACWR EWMA
   acwr_ewma <- calculate_acwr_ewma(mock_act[mock_act$type == "Run", ],
     activity_type = "Run", method = "ewma"
   )
   expect_s3_class(acwr_ewma, "data.frame")
+  expect_true("acwr_smooth" %in% names(acwr_ewma))
+  expect_gt(nrow(acwr_ewma), 0)
 
   acwr_ra <- calculate_acwr_ewma(mock_act[mock_act$type == "Run", ],
     activity_type = "Run", method = "ra"
   )
   expect_s3_class(acwr_ra, "data.frame")
+  expect_true("acwr_smooth" %in% names(acwr_ra))
 
   # Calculate EF
   ef_run <- calculate_ef(mock_act[mock_act$type == "Run", ],
-    activity_type = "Run", ef_metric = "pace_hr"
+    activity_type = "Run", ef_metric = "speed_hr"
   )
   expect_s3_class(ef_run, "data.frame")
+  expect_true(all(c("date", "ef_value") %in% names(ef_run)))
 
   ef_ride <- calculate_ef(mock_act[mock_act$type == "Ride", ],
     activity_type = "Ride", ef_metric = "power_hr"
   )
   expect_s3_class(ef_ride, "data.frame")
+  expect_true(all(c("date", "ef_value") %in% names(ef_ride)))
 })
 
 # ========== Plot tests with mock data ==========
@@ -250,12 +249,16 @@ test_that("plots with mock data", {
 
   p1 <- plot_acwr(acwr_data)
   expect_s3_class(p1, "gg")
+  expect_true(length(p1$layers) >= 1)
+  expect_true(!is.null(p1$labels$y))
 
   p2 <- plot_acwr_enhanced(acwr_data, highlight_zones = TRUE)
   expect_s3_class(p2, "gg")
+  expect_true(length(p2$layers) >= 1)
 
   p3 <- plot_acwr_enhanced(acwr_data, highlight_zones = FALSE)
   expect_s3_class(p3, "gg")
+  expect_true(length(p3$layers) <= length(p2$layers))
 
   # Mock EF data
   mock_runs <- data.frame(
@@ -270,14 +273,22 @@ test_that("plots with mock data", {
     average_speed = runif(50, 9, 14)
   )
 
-  p4 <- plot_ef(mock_runs, activity_type = "Run", ef_metric = "pace_hr")
+  # Calculate EF first, then plot
+  ef_run <- calculate_ef(mock_runs, activity_type = "Run", ef_metric = "speed_hr")
+
+  p4 <- plot_ef(ef_run)
   expect_s3_class(p4, "gg")
+  expect_true(length(p4$layers) >= 1)
+  expect_true(!is.null(p4$labels$y))
 
-  p5 <- plot_ef(mock_runs, activity_type = "Run", ef_metric = "pace_hr", add_trend_line = FALSE)
+  p5 <- plot_ef(ef_run, add_trend_line = FALSE)
   expect_s3_class(p5, "gg")
+  has_smooth_5 <- any(sapply(p5$layers, function(l) inherits(l$geom, "GeomSmooth")))
+  expect_false(has_smooth_5)
 
-  p6 <- plot_ef(mock_runs, activity_type = "Run", ef_metric = "pace_hr", smoothing_method = "lm")
+  p6 <- plot_ef(ef_run, smoothing_method = "lm")
   expect_s3_class(p6, "gg")
+  expect_true(length(p6$layers) >= 1)
 
   # Mock PBs data
   pbs_data <- data.frame(
@@ -291,14 +302,18 @@ test_that("plots with mock data", {
     activity_type = "Run"
   )
 
-  p7 <- plot_pbs(pbs_df = pbs_data)
+  p7 <- plot_pbs(data = pbs_data)
   expect_s3_class(p7, "gg")
+  expect_true(length(p7$layers) >= 1)
 
-  p8 <- plot_pbs(pbs_df = pbs_data, add_trend_line = FALSE)
+  p8 <- plot_pbs(data = pbs_data, add_trend_line = FALSE)
   expect_s3_class(p8, "gg")
+  has_smooth_8 <- any(sapply(p8$layers, function(l) inherits(l$geom, "GeomSmooth")))
+  expect_false(has_smooth_8)
 
-  p9 <- plot_pbs(pbs_df = pbs_data, date_range = c(Sys.Date() - 150, Sys.Date() - 30))
+  p9 <- plot_pbs(data = pbs_data)
   expect_s3_class(p9, "gg")
+  expect_true(length(p9$layers) >= 1)
 })
 
 # ========== Edge cases ==========
@@ -317,7 +332,7 @@ test_that("edge cases", {
   result <- tryCatch(
     {
       calculate_ef(empty_act,
-        activity_type = "Run", ef_metric = "pace_hr",
+        activity_type = "Run", ef_metric = "speed_hr",
         start_date = Sys.Date() - 10, end_date = Sys.Date()
       )
     },

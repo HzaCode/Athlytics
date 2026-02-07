@@ -150,7 +150,7 @@ test_that("calculate_ef works with real export data", {
 
       ef <- calculate_ef(hr_activities,
         activity_type = main_type,
-        ef_metric = "pace_hr"
+        ef_metric = "speed_hr"
       )
       expect_s3_class(ef, "data.frame")
       expect_true("ef_value" %in% names(ef))

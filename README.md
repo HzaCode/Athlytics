@@ -1,8 +1,8 @@
-<div align="center">
+<p align="center">
+  <img src="man/figures/image.png" alt="Athlytics Logo" width="180" />
+</p>
 
-<img src="man/figures/image.png" alt="Athlytics logo" width="220"/>
-
-# Athlytics
+<h1 align="center">Athlytics</h1>
 
 [![CRAN Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![CRAN Listed](https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square)](https://CRAN.R-project.org/view=SportsAnalytics)
@@ -13,8 +13,6 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Awesome](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-)
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-
-</div>
 
 ## Overview
 
@@ -61,16 +59,27 @@ install.packages('Athlytics')
 remotes::install_github("HzaCode/Athlytics")
 ```
 
+### Optional: FIT file support
 
-### 🚀 Quick Start
+Athlytics can parse activity stream files in TCX/GPX formats out of the box. **FIT support is optional** and uses **FITfileR**, which is installed from GitHub (not CRAN).
 
+If your Strava export includes `.fit` files (and you want Athlytics to parse them), install FITfileR:
+
+```r
+if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+remotes::install_github("grimbough/FITfileR")
+```
+
+
+## 🚀 Quick Start
 
 ### 📥 Step 1: Export Your Strava Data
 
+0.  **Important**: Before requesting your export, set Strava language to **English** (Settings → Display Preferences → Language). This helps ensure the exported CSV column names match what Athlytics expects.
 1.  Navigate to **[Strava](https://www.strava.com/)** and open Settings → My Account.
 2.  Under "Download or Delete Your Account," click **"Get Started"** and then **"Request Your Archive"**.
 3.  You'll receive an email with a download link - this may take some time.
-4.  Download the ZIP file (e.g., `export_12345678.zip`). **There is no need to unzip it.**
+4.  Download the ZIP file (e.g., `export_12345678.zip`). You can pass the `.zip` directly to `load_local_activities()` for CSV-based analyses (e.g., ACWR). For stream-based analyses (EF/decoupling/PBs), **unzip the archive** and set `export_dir` to the extracted folder.
 
 ### 💻 Step 2: Load and Analyze (Cohort Example)
 
@@ -81,21 +90,21 @@ library(Athlytics)
 library(dplyr)
 
 # 1. Load data for a cohort of athletes, adding unique IDs
-athlete1 <- load_local_activities("path/to/athlete1_export.zip") %>% mutate(athlete_id = "A1")
-athlete2 <- load_local_activities("path/to/athlete2_export.zip") %>% mutate(athlete_id = "A2")
+athlete1 <- load_local_activities("path/to/athlete1_export.zip") |> mutate(athlete_id = "A1")
+athlete2 <- load_local_activities("path/to/athlete2_export.zip") |> mutate(athlete_id = "A2")
 cohort_data <- bind_rows(athlete1, athlete2)
 
 # 2. Calculate ACWR for each athlete in the cohort
-cohort_acwr <- cohort_data %>%
-  group_by(athlete_id) %>%
-  group_modify(~ calculate_acwr(.x, activity_type = "Run", load_metric = "duration_mins")) %>%
+cohort_acwr <- cohort_data |>
+  group_by(athlete_id) |>
+  group_modify(~ calculate_acwr(.x, activity_type = "Run", load_metric = "duration_mins")) |>
   ungroup()
 
 # 3. Generate percentile bands to serve as a reference for the cohort
 reference_bands <- calculate_cohort_reference(cohort_acwr, metric = "acwr_smooth")
 
 # 4. Plot an individual's data against the cohort reference bands
-individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")
+individual_acwr <- cohort_acwr |> filter(athlete_id == "A1")
 plot_with_reference(individual = individual_acwr, reference = reference_bands)
 ```
 
@@ -107,9 +116,9 @@ All functions return clean, tidy `tibble` data frames, making it easy to perform
 
 ### Training Load Monitoring (ACWR)
 
-Track how your training load is progressing to avoid ramping up too quickly, which can help in managing injury risk.
+Track how your training load is progressing to avoid ramping up too quickly — a key metric for monitoring training progression.
 
-![ACWR Analysis](analysis_output/01b_acwr_multi_group.png)
+![ACWR Analysis](man/figures/01b_acwr_multi_group.png)
 
 *[Learn more about ACWR analysis](https://hezhiang.com/Athlytics/reference/calculate_acwr.html)*
 
@@ -117,7 +126,7 @@ Track how your training load is progressing to avoid ramping up too quickly, whi
 
 See how your aerobic fitness is changing over time by comparing your output (pace or power) to your effort (heart rate). A rising trend is a great sign of improving fitness.
 
-![Efficiency Factor](analysis_output/02b_ef_multi_group.png)
+![Efficiency Factor](man/figures/02b_ef_multi_group.png)
 
 *[Learn more about Aerobic Efficiency](https://hezhiang.com/Athlytics/reference/calculate_ef.html)*
 
@@ -125,7 +134,7 @@ See how your aerobic fitness is changing over time by comparing your output (pac
 
 Measure your endurance by analyzing how much your heart rate "drifts" upward during a steady-state workout. A low decoupling rate (<5%) is a marker of excellent aerobic conditioning.
 
-![Decoupling Analysis](analysis_output/05b_decoupling_multi_group.png)
+![Decoupling Analysis](man/figures/05b_decoupling_multi_group.png)
 
 *[Learn more about Decoupling](https://hezhiang.com/Athlytics/reference/calculate_decoupling.html)*
 
@@ -137,6 +146,8 @@ This release implements widely used constructs in endurance-exercise analytics:
 - **ACWR**: rolling acute (e.g., 7-day) vs chronic (e.g., 28-day) load ratios with smoothing options.
 - **Aerobic Efficiency (EF)**: output (pace/power) relative to effort (heart rate) over time.
 - **Cardiovascular Decoupling (pa:hr)**: drift between pace/power and heart rate during steady efforts.
+
+**Important**: ACWR is a descriptive monitoring tool and should be interpreted with caution. It is not a validated injury-prediction model; see discussion in the sports science literature (e.g., DOI: 10.1007/s40279-020-01378-6).
 
 We provide input validation, outlier handling, and activity-level QC filters (e.g., minimal duration, HR plausibility ranges). For cohort summarization, Athlytics computes percentile bands and supports stratification by sport, sex, or other covariates when available.
 
@@ -151,7 +162,7 @@ If you use **Athlytics** in academic work, please cite the software as well as t
   title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
   author  = {Zhiang He},
   year    = {2025},
-  version = {1.0.2},
+  version = {1.0.3},
   url     = {https://github.com/HzaCode/Athlytics}
 }
 ```

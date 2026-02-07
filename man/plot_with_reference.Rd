@@ -10,7 +10,8 @@ plot_with_reference(
   metric = "acwr_smooth",
   date_col = "date",
   title = NULL,
-  bands = c("p25_p75", "p05_p95", "p50")
+  bands = c("p25_p75", "p05_p95", "p50"),
+  caption = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ plot_with_reference(
 \item{title}{Plot title. Default NULL (auto-generated).}
 
 \item{bands}{Which reference bands to show. Default c("p25_p75", "p05_p95", "p50").}
+
+\item{caption}{Plot caption. Default NULL (no caption).}
 }
 \value{
 A ggplot object.
@@ -34,20 +37,23 @@ Creates a complete plot showing an individual's metric trend with cohort
 reference percentile bands.
 }
 \examples{
-# Simple example with fixed data
+# Example with weekly data for smooth curves
+set.seed(123)
+n_weeks <- 40
+dates <- seq(as.Date("2023-01-01"), by = "week", length.out = n_weeks)
+
+# Individual athlete data with realistic ACWR fluctuation
 individual_data <- data.frame(
-  date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
-  acwr_smooth = c(1.0, 1.2, 0.9, 1.1)
+  date = dates,
+  acwr_smooth = 1.0 + cumsum(rnorm(n_weeks, 0, 0.03))
 )
+
+# Cohort reference percentiles with gradual variation
+base_trend <- 1.0 + cumsum(rnorm(n_weeks, 0, 0.015))
 reference_data <- data.frame(
-  date = as.Date(c("2023-01-01", "2023-04-01", "2023-07-01", "2023-10-01")),
-  percentile = rep(c("p05", "p25", "p50", "p75", "p95"), 4),
-  value = c(
-    0.7, 0.9, 1.1, 1.3, 1.5,
-    0.7, 0.9, 1.1, 1.3, 1.5,
-    0.7, 0.9, 1.1, 1.3, 1.5,
-    0.7, 0.9, 1.1, 1.3, 1.5
-  )
+  date  = rep(dates, each = 5),
+  percentile = rep(c("p05", "p25", "p50", "p75", "p95"), n_weeks),
+  value = as.vector(t(outer(base_trend, c(-0.35, -0.15, 0, 0.15, 0.35), "+")))
 )
 
 p <- plot_with_reference(

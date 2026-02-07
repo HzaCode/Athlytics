@@ -1,6 +1,6 @@
 Package: Athlytics
 Title: Academic R Package for Sports Physiology Analysis from Local 'Strava' Data
-Version: 1.0.2
+Version: 1.0.3
 Author: Zhiang He [aut, cre]
 Maintainer: Zhiang He <ang@hezhiang.com>
 Authors@R: 
@@ -17,28 +17,25 @@ BugReports: https://github.com/HzaCode/Athlytics/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 3.6.0) 
+    R (>= 4.1.0) 
 Imports:
     dplyr (>= 1.0.0),
     ggplot2,
     lubridate,
-    purrr,
-    readr,
     rlang (>= 0.4.0),
-    scales,
     tidyr,
     zoo,
-    R.utils,
     tools,
     utils
 Suggests:
-    devtools,
+    FITfileR,
     knitr,
     pkgdown,
+    R.utils,
+    readr,
     rmarkdown,
     testthat (>= 3.0.0),
-    mockery,
-    rStrava,
+    vdiffr,
     xml2
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3

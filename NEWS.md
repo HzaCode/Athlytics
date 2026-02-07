@@ -1,4 +1,46 @@
-﻿# Athlytics 1.0.2
+# Athlytics 1.0.3
+
+* **Test suite rewrite**: Reduced from ~1500 to ~200 focused tests with meaningful value assertions; added vdiffr snapshot testing for all plot functions (15 visual regression tests).
+
+* **Bug fixes**:
+  - Fixed FIT import when `FITfileR::records()` returns a list
+  - Fixed `calculate_ef_from_stream()` column name mismatch (`power` vs `watts`)
+  - Fixed `calculate_decoupling()` column name mismatch (`heart_rate` vs `heartrate`)
+  - Empty data now returns an error instead of a warning with an empty plot
+
+* **Analysis–plotting separation**: All plot functions now require pre-computed data; passing analysis arguments emits a deprecation warning.
+
+* **Custom S3 classes**: All calculation functions return dedicated classes (`athlytics_acwr`, `athlytics_ef`, `athlytics_decoupling`, `athlytics_pbs`, `athlytics_exposure`).
+
+* **Scientific references**: Added references with DOIs throughout vignettes and roxygen documentation (Gabbett, Hulin, Impellizzeri, Coyle, Allen, Williams, etc.).
+
+* **ACWR caveats**: Added "Important Caveats" section discussing scientific debate on ACWR predictive validity.
+
+* **New features**:
+  - Grade Adjusted Pace (`gap_hr`) support for EF calculation
+  - `smooth_per_activity_type` option in `plot_ef()`
+  - Configurable risk zone thresholds in `plot_acwr()`
+  - `plot_exposure()` risk zones no longer require an ACWR column
+  - Custom distances in `calculate_pbs()`
+
+* **Documentation improvements**:
+  - Strava language setting requirement documented
+  - Volume vs load terminology clarified
+  - Pace vs speed distinction corrected (`pace_hr` deprecated in favor of `speed_hr`)
+  - Native pipe `|>` used in vignettes
+  - Roxygen markdown formatting enabled
+
+* **Code cleanup**: Removed `zzz.R`, unused color palette functions, `rStrava`/`mockery` from Suggests, Strava API references; cleaned NAMESPACE imports.
+
+* **CI**: R CMD check now runs on 3 R versions (devel, release, oldrel-1) across 3 OS.
+
+* **Shipped example files**: `inst/extdata/` contains `example.fit`, `.gpx`, `.tcx`.
+
+* **Code style**: Applied `styler::style_pkg()` formatting.
+
+---
+
+# Athlytics 1.0.2
  
 ## Documentation & Review Fixes
  

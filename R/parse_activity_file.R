@@ -21,11 +21,38 @@
 #' streams <- parse_activity_file("activity_12345.gpx.gz")
 #' }
 #'
-#' @importFrom utils read.csv
 #' @export
 parse_activity_file <- function(file_path, export_dir = NULL) {
+  zip_temp_dir <- NULL
+  original_path <- file_path
+
+  is_zip_export <- !is.null(export_dir) &&
+    nzchar(export_dir) &&
+    file.exists(export_dir) &&
+    tolower(tools::file_ext(export_dir)) == "zip"
+
+  if (is_zip_export) {
+    resolved <- tryCatch(
+      {
+        resolve_zip_activity_file(export_dir, file_path)
+      },
+      error = function(e) {
+        warning(sprintf("Error parsing %s: %s", paste0(export_dir, "::", file_path), e$message))
+        return(NULL)
+      }
+    )
+
+    if (is.null(resolved)) {
+      return(NULL)
+    }
+
+    file_path <- resolved$file_path
+    original_path <- resolved$original_path
+    zip_temp_dir <- resolved$temp_dir
+  }
+
   # Resolve full path
-  if (!is.null(export_dir) && !file.exists(file_path)) {
+  if (!is_zip_export && !is.null(export_dir) && !file.exists(file_path)) {
     file_path <- file.path(export_dir, file_path)
   }
 
@@ -35,10 +62,13 @@ parse_activity_file <- function(file_path, export_dir = NULL) {
   }
 
   # Handle .gz compressed files
-  original_path <- file_path
   is_compressed <- grepl("\\.gz$", file_path, ignore.case = TRUE)
 
   if (is_compressed) {
+    if (!requireNamespace("R.utils", quietly = TRUE)) {
+      warning("Package 'R.utils' is required to decompress .gz files. Please install it: install.packages('R.utils')")
+      return(NULL)
+    }
     # Decompress to temp file
     temp_file <- tempfile(fileext = gsub("\\.gz$", "", basename(file_path)))
     tryCatch(
@@ -75,9 +105,97 @@ parse_activity_file <- function(file_path, export_dir = NULL) {
     if (is_compressed && exists("temp_file") && file.exists(temp_file)) {
       unlink(temp_file)
     }
+
+    if (!is.null(zip_temp_dir) && dir.exists(zip_temp_dir)) {
+      unlink(zip_temp_dir, recursive = TRUE)
+    }
   })
 
   return(result)
+}
+
+.athlytics_zip_contents_cache <- new.env(parent = emptyenv())
+
+get_zip_contents <- function(zip_path) {
+  zip_key <- normalizePath(zip_path, winslash = "/", mustWork = FALSE)
+  if (exists(zip_key, envir = .athlytics_zip_contents_cache, inherits = FALSE)) {
+    return(get(zip_key, envir = .athlytics_zip_contents_cache, inherits = FALSE))
+  }
+  zip_contents <- utils::unzip(zip_path, list = TRUE)
+  assign(zip_key, zip_contents, envir = .athlytics_zip_contents_cache)
+  zip_contents
+}
+
+resolve_zip_activity_file <- function(zip_path, file_path) {
+  if (is.null(file_path) || is.na(file_path)) {
+    stop("`file_path` must be provided")
+  }
+
+  internal_path <- as.character(file_path)
+  internal_path <- gsub("\\\\", "/", internal_path)
+  internal_path <- sub("^/+", "", internal_path)
+
+  if (grepl("\\.zip[/\\\\]", internal_path, ignore.case = TRUE)) {
+    internal_path <- sub("^.*\\.zip[/\\\\]", "", internal_path, ignore.case = TRUE)
+    internal_path <- gsub("\\\\", "/", internal_path)
+    internal_path <- sub("^/+", "", internal_path)
+  }
+
+  if (!nzchar(internal_path)) {
+    stop("Empty `file_path`")
+  }
+
+  zip_contents <- get_zip_contents(zip_path)
+  if (is.null(zip_contents) || nrow(zip_contents) == 0) {
+    stop("ZIP archive is empty")
+  }
+
+  name_lower <- tolower(zip_contents$Name)
+  target_lower <- tolower(internal_path)
+
+  matches <- which(name_lower == target_lower)
+  if (length(matches) == 0) {
+    matches <- which(endsWith(name_lower, target_lower))
+  }
+  if (length(matches) == 0) {
+    matches <- which(basename(name_lower) == basename(target_lower))
+  }
+  if (length(matches) == 0) {
+    warning(sprintf("Activity file not found in ZIP: %s", internal_path))
+    return(NULL)
+  }
+
+  zip_entry <- zip_contents$Name[matches[1]]
+
+  tmp_dir <- tempfile(pattern = "athlytics_zip_")
+  dir.create(tmp_dir, recursive = TRUE, showWarnings = FALSE)
+  extracted_file <- file.path(tmp_dir, basename(zip_entry))
+
+  ok <- tryCatch(
+    {
+      utils::unzip(zip_path, files = zip_entry, exdir = tmp_dir, overwrite = TRUE, junkpaths = TRUE)
+      TRUE
+    },
+    error = function(e) {
+      warning(sprintf("Failed to extract from ZIP: %s", e$message))
+      FALSE
+    }
+  )
+
+  if (!ok || !file.exists(extracted_file)) {
+    unlink(tmp_dir, recursive = TRUE)
+    warning(sprintf("Failed to extract activity file from ZIP: %s", internal_path))
+    return(NULL)
+  }
+
+  structure(
+    list(
+      file_path = extracted_file,
+      original_path = paste0(zip_path, "::", zip_entry),
+      temp_dir = tmp_dir
+    ),
+    class = "athlytics_zip_resolved"
+  )
 }
 
 #' Parse FIT file
@@ -96,6 +214,15 @@ parse_fit_file <- function(file_path) {
 
   fit_data <- readFitFile(file_path)
   records <- records_fn(fit_data)
+
+  # Handle case where records() returns a list (common behavior)
+  if (is.list(records) && !is.data.frame(records)) {
+    # Bind all record types into a single data frame
+    records <- tryCatch(
+      dplyr::bind_rows(records),
+      error = function(e) NULL
+    )
+  }
 
   if (is.null(records) || nrow(records) == 0) {
     return(NULL)
@@ -121,6 +248,26 @@ parse_fit_file <- function(file_path) {
   return(df)
 }
 
+read_xml_file_safely <- function(file_path) {
+  file_size <- file.info(file_path)$size
+  xml_raw <- readBin(file_path, what = "raw", n = file_size)
+
+  if (length(xml_raw) == 0) {
+    stop("Empty XML file")
+  }
+
+  if (length(xml_raw) >= 3 && identical(xml_raw[1:3], as.raw(c(0xEF, 0xBB, 0xBF)))) {
+    xml_raw <- xml_raw[-(1:3)]
+  }
+
+  first_lt <- match(as.raw(0x3C), xml_raw)
+  if (is.na(first_lt)) {
+    stop("No XML content found")
+  }
+
+  xml2::read_xml(xml_raw[first_lt:length(xml_raw)])
+}
+
 #' Parse TCX file
 #' @keywords internal
 parse_tcx_file <- function(file_path) {
@@ -129,7 +276,7 @@ parse_tcx_file <- function(file_path) {
     return(NULL)
   }
 
-  doc <- xml2::read_xml(file_path)
+  doc <- read_xml_file_safely(file_path)
 
   # Define namespaces
   ns <- xml2::xml_ns(doc)
@@ -202,7 +349,7 @@ parse_gpx_file <- function(file_path) {
     return(NULL)
   }
 
-  doc <- xml2::read_xml(file_path)
+  doc <- read_xml_file_safely(file_path)
 
   # Get namespaces from document
   ns <- xml2::xml_ns(doc)

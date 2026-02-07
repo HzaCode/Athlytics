@@ -14,7 +14,7 @@ calculate_acwr_ewma(
   half_life_acute = 3.5,
   half_life_chronic = 14,
   start_date = NULL,
-  end_date = NULL,
+  end_date = Sys.Date(),
   user_ftp = NULL,
   user_max_hr = NULL,
   user_resting_hr = NULL,

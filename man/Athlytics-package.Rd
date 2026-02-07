@@ -17,38 +17,38 @@ standardized functions to calculate and visualize key physiological indicators.
 
 \strong{Data Loading:}
 \itemize{
-\item \code{\link{load_local_activities}}: Load activities from Strava export ZIP or directory
-\item \code{\link{parse_activity_file}}: Parse individual FIT/TCX/GPX files
+\item \code{\link[=load_local_activities]{load_local_activities()}}: Load activities from Strava export ZIP or directory
+\item \code{\link[=parse_activity_file]{parse_activity_file()}}: Parse individual FIT/TCX/GPX files
 }
 
 \strong{Training Load Analysis:}
 \itemize{
-\item \code{\link{calculate_acwr}}: Calculate Acute:Chronic Workload Ratio
-\item \code{\link{calculate_acwr_ewma}}: ACWR using exponentially weighted moving averages
-\item \code{\link{calculate_exposure}}: Calculate training load exposure metrics
+\item \code{\link[=calculate_acwr]{calculate_acwr()}}: Calculate Acute:Chronic Workload Ratio
+\item \code{\link[=calculate_acwr_ewma]{calculate_acwr_ewma()}}: ACWR using exponentially weighted moving averages
+\item \code{\link[=calculate_exposure]{calculate_exposure()}}: Calculate training load exposure metrics
 }
 
 \strong{Physiological Metrics:}
 \itemize{
-\item \code{\link{calculate_ef}}: Calculate Efficiency Factor (EF)
-\item \code{\link{calculate_decoupling}}: Calculate cardiovascular decoupling
-\item \code{\link{calculate_pbs}}: Calculate personal bests
+\item \code{\link[=calculate_ef]{calculate_ef()}}: Calculate Efficiency Factor (EF)
+\item \code{\link[=calculate_decoupling]{calculate_decoupling()}}: Calculate cardiovascular decoupling
+\item \code{\link[=calculate_pbs]{calculate_pbs()}}: Calculate personal bests
 }
 
 \strong{Visualization:}
 \itemize{
-\item \code{\link{plot_acwr}}, \code{\link{plot_acwr_enhanced}}: Plot ACWR trends
-\item \code{\link{plot_ef}}: Plot Efficiency Factor trends
-\item \code{\link{plot_decoupling}}: Plot decoupling analysis
-\item \code{\link{plot_exposure}}: Plot training load exposure
-\item \code{\link{plot_pbs}}: Plot personal bests progression
+\item \code{\link[=plot_acwr]{plot_acwr()}}, \code{\link[=plot_acwr_enhanced]{plot_acwr_enhanced()}}: Plot ACWR trends
+\item \code{\link[=plot_ef]{plot_ef()}}: Plot Efficiency Factor trends
+\item \code{\link[=plot_decoupling]{plot_decoupling()}}: Plot decoupling analysis
+\item \code{\link[=plot_exposure]{plot_exposure()}}: Plot training load exposure
+\item \code{\link[=plot_pbs]{plot_pbs()}}: Plot personal bests progression
 }
 
 \strong{Quality Control & Cohort Analysis:}
 \itemize{
-\item \code{\link{flag_quality}}: Flag activities based on quality criteria
-\item \code{\link{summarize_quality}}: Summarize stream quality flags
-\item \code{\link{calculate_cohort_reference}}: Generate cohort reference bands
+\item \code{\link[=flag_quality]{flag_quality()}}: Flag activities based on quality criteria
+\item \code{\link[=summarize_quality]{summarize_quality()}}: Summarize stream quality flags
+\item \code{\link[=calculate_cohort_reference]{calculate_cohort_reference()}}: Generate cohort reference bands
 }
 }
 
@@ -56,11 +56,11 @@ standardized functions to calculate and visualize key physiological indicators.
 
 The package includes simulated datasets for examples and testing:
 \itemize{
-\item \code{\link{sample_acwr}}: Sample ACWR data
-\item \code{\link{sample_ef}}: Sample Efficiency Factor data
-\item \code{\link{sample_decoupling}}: Sample decoupling data
-\item \code{\link{sample_exposure}}: Sample exposure data
-\item \code{\link{sample_pbs}}: Sample personal bests data
+\item \link{sample_acwr}: Sample ACWR data
+\item \link{sample_ef}: Sample Efficiency Factor data
+\item \link{sample_decoupling}: Sample decoupling data
+\item \link{sample_exposure}: Sample exposure data
+\item \link{sample_pbs}: Sample personal bests data
 }
 }
 

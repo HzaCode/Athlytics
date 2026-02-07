@@ -7,9 +7,9 @@
 calculate_ef(
   activities_data,
   activity_type = c("Run", "Ride"),
-  ef_metric = c("pace_hr", "power_hr"),
+  ef_metric = c("speed_hr", "gap_hr", "power_hr"),
   start_date = NULL,
-  end_date = NULL,
+  end_date = Sys.Date(),
   min_duration_mins = 20,
   min_steady_minutes = 20,
   steady_cv_threshold = 0.08,
@@ -29,12 +29,16 @@ Default: \code{c("Run", "Ride")}.}
 
 \item{ef_metric}{Character string specifying the efficiency metric:
 \itemize{
-\item \code{"pace_hr"}: Pace-based efficiency (for running).
+\item \code{"speed_hr"}: Speed-based efficiency (for running).
 Formula: speed (m/s) / avg_HR. Units: m/s/bpm (higher = better fitness)
+\item \code{"gap_hr"}: Grade Adjusted Speed efficiency (for running on hilly terrain).
+Formula: GAP speed (m/s) / avg_HR. Accounts for elevation changes. Units: m/s/bpm
 \item \code{"power_hr"}: Power-based efficiency (for cycling).
 Formula: avg_watts / avg_HR. Units: W/bpm (higher = better fitness)
-}
-Default: \code{c("pace_hr", "power_hr")} (uses first matching metric for activity type).}
+Default: \code{c("speed_hr", "power_hr")} (uses first matching metric for activity type).
+Note: \code{"pace_hr"} is accepted as a deprecated alias for \code{"speed_hr"} for
+backward compatibility.
+}}
 
 \item{start_date}{Optional. Analysis start date (YYYY-MM-DD string, Date, or POSIXct).
 Defaults to one year before \code{end_date}.}
@@ -67,7 +71,7 @@ A tibble with the following columns:
 \item{date}{Activity date (Date class)}
 \item{activity_type}{Activity type (character: "Run" or "Ride")}
 \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
-Units: m/s/bpm for pace_hr, W/bpm for power_hr.}
+Units: m/s/bpm for speed_hr, W/bpm for power_hr.}
 \item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for
 activity-level calculation without stream data, "non_steady" if steady-state
 criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
@@ -82,10 +86,14 @@ aerobic base development and training effectiveness.
 
 \strong{EF Metrics:}
 \itemize{
-\item \strong{pace_hr} (for running): Speed (m/s) / Average HR
-- Higher values = faster pace at same HR = better fitness
+\item \strong{speed_hr} (for running): Speed (m/s) / Average HR
+\itemize{
+\item Higher values = faster speed at same HR = better fitness
+}
 \item \strong{power_hr} (for cycling): Average Power (watts) / Average HR
-- Higher values = more power at same HR = better fitness
+\itemize{
+\item Higher values = more power at same HR = better fitness
+}
 }
 
 \strong{What Improves EF?}
@@ -98,7 +106,7 @@ aerobic base development and training effectiveness.
 }
 \details{
 Computes Efficiency Factor (EF) for endurance activities, quantifying the
-relationship between performance output (pace or power) and heart rate.
+relationship between performance output (speed or power) and heart rate.
 EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 2019).
 
 \strong{Algorithm:}
@@ -106,11 +114,32 @@ EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 
 \item Filter activities by type, date range, and minimum duration
 \item For each activity, calculate:
 \itemize{
-\item pace_hr: (distance / moving_time) / average_heartrate
+\item speed_hr: (distance / moving_time) / average_heartrate
 \item power_hr: average_watts / average_heartrate
 }
 \item Return one EF value per activity
 }
+
+\strong{Steady-State Detection Method:}
+
+When stream data is available (via \code{export_dir}), the function applies a rolling
+coefficient of variation (CV) approach to identify steady-state periods:
+\enumerate{
+\item \strong{Rolling window}: A sliding window (default 300 seconds, or 1/4 of data, min 60 s)
+computes the rolling mean and standard deviation of the output metric (velocity or power).
+\item \strong{CV calculation}: CV = rolling SD / rolling mean at each time point.
+\item \strong{Threshold filtering}: Time points where CV < \code{steady_cv_threshold} (default 8\%)
+are classified as steady-state.
+\item \strong{Minimum duration}: At least \code{min_steady_minutes} of steady-state data
+must be present; otherwise the activity is marked as \code{"non_steady"}.
+\item \strong{EF computation}: The median EF across all steady-state data points is reported.
+}
+
+This approach follows the principle that valid EF comparisons require quasi-constant
+output intensity, as outlined by Coyle & González-Alonso (2001), who demonstrated that
+cardiovascular drift is meaningful only under steady-state exercise conditions.
+The rolling CV method is a common signal-processing technique for detecting stationarity
+in physiological time series.
 
 \strong{Data Quality Considerations:}
 \itemize{
@@ -129,7 +158,7 @@ EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 
 \item \strong{Sudden drop}: Check for illness, equipment change, or data quality
 }
 
-\strong{Typical EF Ranges (pace_hr for running):}
+\strong{Typical EF Ranges (speed_hr for running):}
 \itemize{
 \item Beginner: 0.01 - 0.015 (m/s per bpm)
 \item Intermediate: 0.015 - 0.020
@@ -145,15 +174,39 @@ rather than absolute comparisons with other athletes.
 data(sample_ef)
 print(head(sample_ef))
 
+# Runnable example with dummy data:
+end <- Sys.Date()
+dates <- seq(end - 29, end, by = "day")
+dummy_activities <- data.frame(
+  date = dates,
+  type = "Run",
+  moving_time = rep(3600, length(dates)), # 1 hour
+  distance = rep(10000, length(dates)),   # 10 km
+  average_heartrate = rep(140, length(dates)),
+  average_watts = rep(200, length(dates)),
+  weighted_average_watts = rep(210, length(dates)),
+  filename = "",
+  stringsAsFactors = FALSE
+)
+
+# Calculate EF (Speed/HR)
+ef_result <- calculate_ef(
+  activities_data = dummy_activities,
+  activity_type = "Run",
+  ef_metric = "speed_hr",
+  end_date = end
+)
+print(head(ef_result))
+
 \dontrun{
 # Example using local Strava export data
 activities <- load_local_activities("strava_export_data/activities.csv")
 
-# Calculate Pace/HR efficiency factor for Runs
+# Calculate Speed/HR efficiency factor for Runs
 ef_data_run <- calculate_ef(
   activities_data = activities,
   activity_type = "Run",
-  ef_metric = "pace_hr"
+  ef_metric = "speed_hr"
 )
 print(tail(ef_data_run))
 
@@ -169,9 +222,13 @@ print(tail(ef_data_ride))
 \references{
 Allen, H., Coggan, A. R., & McGregor, S. (2019). \emph{Training and Racing with a
 Power Meter} (3rd ed.). VeloPress.
+
+Coyle, E. F., & González-Alonso, J. (2001). Cardiovascular drift during
+prolonged exercise: New perspectives. \emph{Exercise and Sport Sciences Reviews},
+29(2), 88-92. \doi{10.1097/00003677-200104000-00009}
 }
 \seealso{
-\code{\link{plot_ef}} for visualization with trend lines,
-\code{\link{calculate_decoupling}} for within-activity efficiency analysis,
-\code{\link{load_local_activities}} for data loading
+\code{\link[=plot_ef]{plot_ef()}} for visualization with trend lines,
+\code{\link[=calculate_decoupling]{calculate_decoupling()}} for within-activity efficiency analysis,
+\code{\link[=load_local_activities]{load_local_activities()}} for data loading
 }

@@ -1,179 +1,217 @@
+# R/plot_exposure.R
+
 #' Plot Training Load Exposure (ATL vs CTL)
 #'
 #' Visualizes the relationship between Acute and Chronic Training Load.
 #'
-#' Plots ATL vs CTL, optionally showing risk zones based on ACWR. Uses
-#' pre-calculated data or calls `calculate_exposure`.
-#'
-#' @param data A data frame from `load_local_activities()`. Required unless `exposure_df` is provided.
-#' @param activity_type Type(s) of activities to include (e.g., "Run", "Ride"). Default uses common types.
-#' @param load_metric Method for calculating daily load (e.g., "duration_mins", "tss", "hrss"). Default "duration_mins".
-#'   See `calculate_exposure` for details on approximate TSS/HRSS calculations.
-#' @param acute_period Days for acute load window (e.g., 7).
-#' @param chronic_period Days for chronic load window (e.g., 42). Must be > `acute_period`.
-#' @param user_ftp Required if `load_metric = "tss"`. Your FTP.
-#' @param user_max_hr Required if `load_metric = "hrss"`. Your max HR.
-#' @param user_resting_hr Required if `load_metric = "hrss"`. Your resting HR.
-#' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
+#' @param data A data frame from `calculate_exposure()`.
+#'   Must contain `date`, `atl`, and `ctl` columns.
 #' @param risk_zones Add background shading for typical ACWR risk zones? Default `TRUE`.
-#' @param exposure_df Optional. A pre-calculated data frame from `calculate_exposure`.
-#'   If provided, `data` and other calculation parameters are ignored. Must contain
-#'   `date`, `atl`, `ctl` (and `acwr` if `risk_zones = TRUE`).
+#' @param show_date_color Logical. Whether to color points by date (gradient). Default `TRUE`.
+#'   The date gradient helps visualize the training trajectory over time: lighter colors
+#'   represent earlier dates and darker colors represent more recent dates, so you can
+#'   trace how training state has evolved across a season.
+#'   Set to `FALSE` for a simpler single-color plot (useful when the temporal ordering
+#'   is less important than the overall distribution).
+#' @param caption Plot caption. Default NULL (no caption).
+#' @param axis_limit Optional. Numeric value to set both x and y axis limits (0 to axis_limit).
+#'   Useful when plotting risk zones without data or with sparse data. Default NULL (auto-scale).
+#' @param title Optional. Custom title for the plot.
+#' @param subtitle Optional. Custom subtitle for the plot.
+#' @param ... Additional arguments.
+#'   Arguments `activity_type`, `load_metric`, `acute_period`, `chronic_period`,
+#'   `user_ftp`, `user_max_hr`, `user_resting_hr`, `end_date`, `exposure_df` are deprecated and ignored.
 #'
 #' @return A ggplot object showing ATL vs CTL.
 #'
 #' @details Visualizes training state by plotting ATL vs CTL (related to PMC charts).
 #'   Points are colored by date, latest point is highlighted (red triangle).
 #'   Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
-#'   If `exposure_df` is not provided, it calls `calculate_exposure` first.
+#'   **Best practice: Use `calculate_exposure()` first, then pass the result to this function.**
 #'
-#' @importFrom dplyr filter select mutate arrange group_by summarise ungroup lead lag rename recode full_join %>% coalesce
-#' @importFrom purrr map_dfr possibly
-#' @importFrom lubridate ymd_hms as_date days floor_date ceiling_date interval duration
-#' @importFrom zoo rollmean
 #' @import ggplot2
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
 #' # Example using simulated data
 #' data(sample_exposure)
 #' # Ensure exposure_df is named and other necessary parameters like activity_type are provided
-#' p <- plot_exposure(exposure_df = sample_exposure, activity_type = "Run")
+#' p <- plot_exposure(sample_exposure)
 #' print(p)
 #'
-#' \dontrun{
-#' # Example using local Strava export data
-#' activities <- load_local_activities("strava_export_data/activities.csv")
+#' # Runnable example with dummy data:
+#' end <- Sys.Date()
+#' dates <- seq(end - 59, end, by = "day")
+#' dummy_activities <- data.frame(
+#'   date = dates,
+#'   type = "Run",
+#'   moving_time = rep(3600, length(dates)), # 1 hour
+#'   distance = rep(10000, length(dates)), # 10 km
+#'   average_heartrate = rep(140, length(dates)),
+#'   suffer_score = rep(50, length(dates)),
+#'   tss = rep(50, length(dates)),
+#'   stringsAsFactors = FALSE
+#' )
 #'
-#' # Plot Exposure trend for Runs (last 6 months)
-#' plot_exposure(
-#'   data = activities,
+#' # Calculate Exposure (ATL/CTL)
+#' exposure_result <- calculate_exposure(
+#'   activities_data = dummy_activities,
 #'   activity_type = "Run",
-#'   end_date = Sys.Date(),
-#'   user_ftp = 280
-#' ) # Example, if load_metric = "tss"
+#'   load_metric = "distance_km",
+#'   acute_period = 7,
+#'   chronic_period = 28,
+#'   end_date = end
+#' )
+#' plot_exposure(exposure_result)
 #'
-#' # Plot Exposure trend for Rides
-#' plot_exposure(
-#'   data = activities,
-#'   activity_type = "Ride",
-#'   user_ftp = 280
-#' ) # Example, provide if load_metric = "tss"
-#'
-#' # Plot Exposure trend for multiple Run types (risk_zones = FALSE for this example)
-#' plot_exposure(
-#'   data = activities,
-#'   activity_type = c("Run", "VirtualRun"),
-#'   risk_zones = FALSE,
-#'   user_ftp = 280
-#' ) # Example, provide if load_metric = "tss"
-#' }
 plot_exposure <- function(data,
-                          activity_type = c("Run", "Ride", "VirtualRide", "VirtualRun"),
-                          load_metric = "duration_mins",
-                          acute_period = 7,
-                          chronic_period = 42,
-                          user_ftp = NULL,
-                          user_max_hr = NULL,
-                          user_resting_hr = NULL,
-                          end_date = NULL,
                           risk_zones = TRUE,
-                          exposure_df = NULL) {
-  # --- Get Data ---
-  if (is.null(exposure_df)) {
-    if (missing(data)) stop("Either 'data' or 'exposure_df' must be provided.")
-
-    exposure_df <- calculate_exposure(
-      activities_data = data,
-      activity_type = activity_type,
-      load_metric = load_metric,
-      acute_period = acute_period,
-      chronic_period = chronic_period,
-      user_ftp = user_ftp,
-      user_max_hr = user_max_hr,
-      user_resting_hr = user_resting_hr,
-      end_date = end_date
+                          show_date_color = TRUE,
+                          caption = NULL,
+                          axis_limit = NULL,
+                          title = NULL,
+                          subtitle = NULL,
+                          ...) {
+  # Check for deprecated args
+  deprecated_args <- list(...)
+  if (length(deprecated_args) > 0) {
+    analysis_args <- c(
+      "activity_type", "load_metric", "acute_period", "chronic_period",
+      "user_ftp", "user_max_hr", "user_resting_hr", "end_date", "exposure_df"
     )
+    if (any(names(deprecated_args) %in% analysis_args)) {
+      warning(
+        "Analysis arguments (e.g. activity_type) are deprecated in plot_exposure(). ",
+        "Please use calculate_exposure() first, then pass the result to plot_exposure()."
+      )
+    }
   }
 
-  if (!is.data.frame(exposure_df) || nrow(exposure_df) == 0 || !all(c("date", "atl", "ctl") %in% names(exposure_df))) {
-    warning("No valid exposure data available to plot (or missing required columns).")
-    return(ggplot2::ggplot() +
-      ggplot2::theme_void() +
-      ggplot2::ggtitle("No exposure data available"))
+  # Validate input
+  exposure_df <- data
+  if (!is.data.frame(exposure_df)) {
+    stop("Input 'data' must be a data frame from calculate_exposure().")
+  }
+
+  if (!inherits(exposure_df, "athlytics_exposure") && !all(c("date", "atl", "ctl") %in% names(exposure_df))) {
+    stop("Input 'data' must be the output of calculate_exposure() or contain 'date', 'atl', and 'ctl' columns.")
+  }
+
+  if (nrow(exposure_df) == 0) {
+    stop("Input data frame is empty.")
+  }
+
+  if (!all(c("date", "atl", "ctl") %in% names(exposure_df))) {
+    stop("Input data must contain 'date', 'atl', and 'ctl' columns.")
   }
 
   load_ts <- exposure_df
 
-  # --- Plotting ---
-  message("Generating plot...")
+  # Retrieve params for labeling
+  params <- attr(exposure_df, "params")
 
+  # --- Plotting ---
   plot_end_date <- max(load_ts$date)
 
-  metric_label <- switch(load_metric,
-    "duration_mins" = "Duration (mins)",
-    "distance_km" = "Distance (km)",
-    "tss" = "TSS",
-    "hrss" = "HRSS",
-    "elevation_gain_m" = "Elevation Gain (m)",
-    load_metric
-  )
+  if (is.null(subtitle)) {
+    if (!is.null(params)) {
+      subtitle <- sprintf(
+        "Metric: %s | Acute: %d days, Chronic: %d days | End Date: %s",
+        params$load_metric, params$acute_period, params$chronic_period, plot_end_date
+      )
+    } else {
+      subtitle <- paste("End Date:", plot_end_date)
+    }
+  }
+
+  if (is.null(title)) title <- "Training Load Exposure (ATL vs CTL)"
+
+  x_label <- "Chronic Training Load (CTL)"
+  y_label <- "Acute Training Load (ATL)"
 
   latest_point <- load_ts %>% dplyr::filter(.data$date == plot_end_date)
 
-  p <- ggplot2::ggplot(load_ts, ggplot2::aes(x = .data$ctl, y = .data$atl)) +
-    ggplot2::geom_point(ggplot2::aes(color = .data$date), alpha = 0.7, size = 2.5) +
-    ggplot2::scale_color_gradient(low = athlytics_palette_nature()[1], high = athlytics_palette_nature()[5], name = "Date") +
+  p <- ggplot2::ggplot(load_ts, ggplot2::aes(x = .data$ctl, y = .data$atl))
+
+  if (isTRUE(show_date_color)) {
+    p <- p +
+      ggplot2::geom_point(ggplot2::aes(color = .data$date), alpha = 0.7, size = 2.5) +
+      ggplot2::scale_color_gradient(
+        low = athlytics_palette_nature()[1],
+        high = athlytics_palette_nature()[5],
+        name = "Date",
+        labels = function(x) {
+          d <- as.Date(x, origin = "1970-01-01")
+          date_range <- diff(range(d))
+          months_en <- c(
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+          )
+          if (date_range < 180) {
+            # Short range: show day + month
+            paste(lubridate::day(d), months_en[lubridate::month(d)])
+          } else {
+            # Long range: show month + year
+            paste(months_en[lubridate::month(d)], lubridate::year(d))
+          }
+        },
+        breaks = function(lim) {
+          # Use exactly 3 evenly spaced breaks (start, middle, end)
+          seq(lim[1], lim[2], length.out = 3)
+        },
+        guide = ggplot2::guide_colorbar(
+          direction = "horizontal",
+          title.position = "top",
+          barwidth = ggplot2::unit(8, "cm"),
+          barheight = ggplot2::unit(0.4, "cm")
+        )
+      )
+  } else {
+    p <- p +
+      ggplot2::geom_point(color = athlytics_palette_nature()[3], alpha = 0.7, size = 2.5)
+  }
+
+  p <- p +
     ggplot2::geom_point(data = latest_point, ggplot2::aes(x = .data$ctl, y = .data$atl), color = "#E64B35", size = 5, shape = 17) +
     ggplot2::labs(
-      title = paste("Training Load Exposure (ATL vs CTL):", metric_label),
-      subtitle = sprintf(
-        "Acute: %d days, Chronic: %d days | End Date: %s",
-        acute_period, chronic_period, plot_end_date
-      ),
-      x = sprintf("Chronic Training Load (CTL - %d day avg)", chronic_period),
-      y = sprintf("Acute Training Load (ATL - %d day avg)", acute_period),
-      caption = "Data from local Strava export. Red triangle is latest data point."
+      title = title,
+      subtitle = subtitle,
+      x = x_label,
+      y = y_label,
+      caption = caption
     ) +
     theme_athlytics() +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5),
-      legend.position = "right"
+      legend.position = "bottom"
     )
 
   if (risk_zones) {
-    if (!"acwr" %in% colnames(load_ts)) {
-      warning("ACWR column not found in calculated data. Cannot add risk zones.")
-    } else {
-      sweet_spot_lower <- 0.8
-      sweet_spot_upper <- 1.3
-      danger_zone_upper <- 1.5
+    sweet_spot_lower <- 0.8
+    sweet_spot_upper <- 1.3
+    danger_zone_upper <- 1.5
 
+    # Use axis_limit if provided, otherwise calculate from data
+    if (!is.null(axis_limit) && is.numeric(axis_limit) && axis_limit > 0) {
+      max_ctl_limit <- axis_limit
+      max_atl_limit <- axis_limit
+    } else {
       max_ctl_limit <- max(0, load_ts$ctl, na.rm = TRUE) * 1.1
       max_atl_limit <- max(0, load_ts$atl, na.rm = TRUE) * 1.1
-
-      if (max_ctl_limit == 0) max_ctl_limit <- 1
-      if (max_atl_limit == 0) max_atl_limit <- 1
-
-      p <- p +
-        ggplot2::geom_abline(intercept = 0, slope = sweet_spot_lower, linetype = "dotted", color = "blue") +
-        ggplot2::geom_abline(intercept = 0, slope = sweet_spot_upper, linetype = "dotted", color = "orange") +
-        ggplot2::geom_abline(intercept = 0, slope = danger_zone_upper, linetype = "dotted", color = "red") +
-        ggplot2::coord_cartesian(xlim = c(0, max_ctl_limit), ylim = c(0, max_atl_limit), expand = FALSE)
-
-      p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.05, y = max_atl_limit * 0.95, label = sprintf("High Risk (>%.1f)", danger_zone_upper), hjust = 0, vjust = 1, color = "red", size = 3, alpha = 0.8)
-      p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.2, y = max_atl_limit * 0.7, label = sprintf("Caution (%.1f-%.1f)", sweet_spot_upper, danger_zone_upper), hjust = 0, vjust = 1, color = "orange", size = 3, alpha = 0.8)
-      p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.5, y = max_atl_limit * 0.5, label = sprintf("Sweet Spot (%.1f-%.1f)", sweet_spot_lower, sweet_spot_upper), hjust = 0, vjust = 1, color = "darkgreen", size = 3, alpha = 0.8)
-      p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.7, y = max_atl_limit * 0.2, label = sprintf("Low Load (<%.1f)", sweet_spot_lower), hjust = 0, vjust = 0, color = "blue", size = 3, alpha = 0.8)
+      if (max_ctl_limit == 0) max_ctl_limit <- 100 # Default for empty data
+      if (max_atl_limit == 0) max_atl_limit <- 100
     }
+
+    p <- p +
+      ggplot2::geom_abline(intercept = 0, slope = sweet_spot_lower, linetype = "dotted", color = "blue") +
+      ggplot2::geom_abline(intercept = 0, slope = sweet_spot_upper, linetype = "dotted", color = "orange") +
+      ggplot2::geom_abline(intercept = 0, slope = danger_zone_upper, linetype = "dotted", color = "red") +
+      ggplot2::coord_cartesian(xlim = c(0, max_ctl_limit), ylim = c(0, max_atl_limit), expand = FALSE)
+
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.05, y = max_atl_limit * 0.95, label = sprintf("High Risk (>%.1f)", danger_zone_upper), hjust = 0, vjust = 1, color = "red", size = 3, alpha = 0.8)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.2, y = max_atl_limit * 0.7, label = sprintf("Caution (%.1f-%.1f)", sweet_spot_upper, danger_zone_upper), hjust = 0, vjust = 1, color = "orange", size = 3, alpha = 0.8)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.5, y = max_atl_limit * 0.5, label = sprintf("Sweet Spot (%.1f-%.1f)", sweet_spot_lower, sweet_spot_upper), hjust = 0, vjust = 1, color = "darkgreen", size = 3, alpha = 0.8)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.7, y = max_atl_limit * 0.2, label = sprintf("Low Load (<%.1f)", sweet_spot_lower), hjust = 0, vjust = 0, color = "blue", size = 3, alpha = 0.8)
   }
 
   return(p)
 }
-
-# Helper for null default (from purrr example) - avoids direct dependency if only used here
-# `%||%` <- function(x, y) {
-#   if (is.null(x) || length(x) == 0) y else x
-# }

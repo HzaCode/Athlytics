@@ -1,5 +1,4 @@
 # Script to generate sample_acwr data
-# This script creates a simulated ACWR dataset for package examples and testing
 
 library(dplyr)
 library(tibble)

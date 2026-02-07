@@ -16,8 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release'}
+          # rOpenSci requires testing on multiple R versions
+          - {os: ubuntu-latest, r: 'devel'}
           - {os: ubuntu-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'oldrel-1'}
+          - {os: windows-latest, r: 'release'}
           - {os: macOS-latest, r: 'release'}
 
     env:
@@ -39,19 +42,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::covr, any::devtools, any::mockery, any::testthat, any::remotes
+          extra-packages: any::rcmdcheck, any::covr, any::devtools, any::testthat, any::remotes, github::grimbough/FITfileR
           needs: check
-
-      - name: Install GitHub dependencies
-        run: |
-          if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
-          # Install FITfileR from GitHub (in Suggests, so won't fail if install fails)
-          tryCatch({
-            remotes::install_github("grimbough/FITfileR", quiet = TRUE)
-          }, error = function(e) {
-            message("Note: FITfileR installation skipped (optional dependency)")
-          })
-        shell: Rscript {0}
 
       - name: Get package name and version
         id: pkg_info
@@ -68,8 +60,8 @@ jobs:
         run: |
           # Remove any existing tarballs to ensure we test the fresh build
           rm -f *.tar.gz || true
-          # Build the package from current source (skip vignettes to avoid pandoc issues)
-          R CMD build . --no-build-vignettes
+          # Build the package from current source
+          R CMD build . --no-manual
           # Verify the expected tarball was created
           EXPECTED_TARBALL="${{ steps.pkg_info.outputs.PKG }}_${{ steps.pkg_info.outputs.VERSION }}.tar.gz"
           if [ ! -f "$EXPECTED_TARBALL" ]; then
@@ -84,7 +76,7 @@ jobs:
 
       - name: Run R CMD check on tarball (CRAN-like check)
         run: |
-          R CMD check ${{ steps.build_package.outputs.TARBALL_NAME }} --no-manual --no-build-vignettes --no-examples
+          R CMD check ${{ steps.build_package.outputs.TARBALL_NAME }} --no-manual
         shell: bash
         env:
           _R_CHECK_CRAN_INCOMING_: false 
@@ -105,7 +97,6 @@ jobs:
           if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
           if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")
           if (!requireNamespace("testthat", quietly = TRUE)) install.packages("testthat")
-          if (!requireNamespace("mockery", quietly = TRUE)) install.packages("mockery")
           
           message(sprintf("Installing package from tarball for coverage testing: %s", tarball))
           devtools::install_local(tarball, force = TRUE, quiet = TRUE, dependencies = TRUE)

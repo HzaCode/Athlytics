@@ -1,5 +1,4 @@
 # Script to generate sample_decoupling data
-# This script creates a simulated decoupling dataset for package examples and testing
 
 library(dplyr)
 library(tibble)

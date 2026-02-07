@@ -3,7 +3,7 @@
 library(testthat)
 library(Athlytics)
 
-base_dir <- "C:/Users/Ang/Documents/GitHub/Athlytics"
+base_dir <- testthat::test_path("..", "..")
 csv_path <- file.path(base_dir, "export_data", "activities.csv")
 activities_dir <- file.path(base_dir, "export_data", "activities")
 

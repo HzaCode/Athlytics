@@ -1,7 +1,7 @@
 # Test to boost coverage for calculate_ef_from_stream function
 
 test_that("calculate_ef_from_stream handles missing required columns", {
-  # Test missing velocity data for pace_hr
+  # Test missing velocity data for speed_hr
   stream_no_velocity <- data.frame(
     time = 1:100,
     heartrate = rep(150, 100)
@@ -11,7 +11,7 @@ test_that("calculate_ef_from_stream handles missing required columns", {
     stream_data = stream_no_velocity,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr"
+    ef_metric = "speed_hr"
   )
 
   expect_equal(result$status, "missing_velocity_data")
@@ -43,7 +43,7 @@ test_that("calculate_ef_from_stream handles missing required columns", {
     stream_data = stream_no_hr,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr"
+    ef_metric = "speed_hr"
   )
 
   expect_equal(result3$status, "missing_hr_data")
@@ -62,7 +62,7 @@ test_that("calculate_ef_from_stream handles insufficient data", {
     stream_data = small_stream,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr"
+    ef_metric = "speed_hr"
   )
 
   expect_equal(result$status, "insufficient_data_points")
@@ -81,7 +81,7 @@ test_that("calculate_ef_from_stream handles low HR coverage", {
     stream_data = stream_low_hr,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_hr_coverage = 0.7 # Require 70% HR coverage
   )
 
@@ -101,7 +101,7 @@ test_that("calculate_ef_from_stream handles velocity calculation from distance",
     stream_data = stream_with_distance,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_steady_minutes = 5,
     steady_cv_threshold = 0.1,
     min_hr_coverage = 0.7,
@@ -124,7 +124,7 @@ test_that("calculate_ef_from_stream handles velocity_smooth column", {
     stream_data = stream_with_velocity,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_steady_minutes = 5,
     steady_cv_threshold = 0.1,
     min_hr_coverage = 0.7,
@@ -170,7 +170,7 @@ test_that("calculate_ef_from_stream handles quality control filtering", {
     stream_data = stream_bad_values,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_steady_minutes = 5,
     steady_cv_threshold = 0.1,
     min_hr_coverage = 0.7,
@@ -193,7 +193,7 @@ test_that("calculate_ef_from_stream handles too short duration", {
     stream_data = stream_short,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_steady_minutes = 10, # Require 10 minutes
     steady_cv_threshold = 0.1,
     min_hr_coverage = 0.7,
@@ -217,7 +217,7 @@ test_that("calculate_ef_from_stream handles non-steady activity", {
     stream_data = stream_variable,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_steady_minutes = 5,
     steady_cv_threshold = 0.05, # Very strict CV threshold
     min_hr_coverage = 0.7,
@@ -241,7 +241,7 @@ test_that("calculate_ef_from_stream calculates valid EF for good steady data", {
     stream_data = stream_steady,
     activity_date = Sys.Date(),
     act_type = "Run",
-    ef_metric = "pace_hr",
+    ef_metric = "speed_hr",
     min_steady_minutes = 10,
     steady_cv_threshold = 0.1,
     min_hr_coverage = 0.7,

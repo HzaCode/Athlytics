@@ -17,17 +17,16 @@
 #' @param title Plot title. Default NULL (auto-generated).
 #' @param subtitle Plot subtitle. Default NULL (auto-generated).
 #' @param method_label Optional label for the method used (e.g., "RA", "EWMA"). Default NULL.
+#' @param caption Plot caption. Set to NULL to remove. Defaults to zone description when `highlight_zones = TRUE`.
 #'
 #' @return A ggplot object.
 #'
 #' @details
 #' This enhanced plot function combines multiple visualization layers:
-#' \itemize{
-#'   \item Risk zone shading (sweet spot: 0.8-1.3, caution: 1.3-1.5, high risk: >1.5)
-#'   \item Cohort reference percentile bands (if provided)
-#'   \item Bootstrap confidence bands (if available in data)
-#'   \item Individual ACWR trend line
-#' }
+#' - Risk zone shading (sweet spot: 0.8-1.3, caution: 1.3-1.5, high risk: >1.5)
+#' - Cohort reference percentile bands (if provided)
+#' - Bootstrap confidence bands (if available in data)
+#' - Individual ACWR trend line
 #'
 #' The layering order (bottom to top):
 #' 1. Risk zones (background)
@@ -35,10 +34,11 @@
 #' 3. Confidence intervals (individual uncertainty)
 #' 4. ACWR line (individual trend)
 #'
-#' @importFrom ggplot2 ggplot aes geom_ribbon geom_line geom_hline labs
-#'   scale_x_date theme_minimal theme element_text
-#' @importFrom dplyr %>% filter
-#' @importFrom tidyr pivot_wider
+#' **Note:** The predictive value of ACWR for injury risk is debated in the
+#' literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
+#' as descriptive heuristics, not validated injury predictors. See
+#' `calculate_acwr()` documentation for full references.
+#'
 #' @export
 #'
 #' @examples
@@ -76,10 +76,19 @@ plot_acwr_enhanced <- function(acwr_data,
                                highlight_zones = TRUE,
                                title = NULL,
                                subtitle = NULL,
-                               method_label = NULL) {
+                               method_label = NULL,
+                               caption = if (highlight_zones) {
+                                 "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
+                               } else {
+                                 NULL
+                               }) {
   # --- Input Validation ---
   if (!is.data.frame(acwr_data)) {
     stop("`acwr_data` must be a data frame from calculate_acwr_ewma().")
+  }
+
+  if (!inherits(acwr_data, "athlytics_acwr") && !all(c("date", "acwr_smooth") %in% colnames(acwr_data))) {
+    stop("Input 'acwr_data' must be the output of calculate_acwr_ewma() or contain 'date' and 'acwr_smooth' columns.")
   }
 
   required_cols <- c("date", "acwr_smooth")
@@ -90,13 +99,13 @@ plot_acwr_enhanced <- function(acwr_data,
   # Check for CI columns
   has_ci <- all(c("acwr_lower", "acwr_upper") %in% colnames(acwr_data))
   if (show_ci && !has_ci) {
-    message("Confidence interval columns not found. Setting show_ci = FALSE.")
+    athlytics_message("Confidence interval columns not found. Setting show_ci = FALSE.")
     show_ci <- FALSE
   }
 
   # Check for reference data
   if (show_reference && is.null(reference_data)) {
-    message("No reference data provided. Setting show_reference = FALSE.")
+    athlytics_message("No reference data provided. Setting show_reference = FALSE.")
     show_reference <- FALSE
   }
 
@@ -155,8 +164,8 @@ plot_acwr_enhanced <- function(acwr_data,
   if (show_reference && !is.null(reference_data)) {
     # Pivot reference to wide format
     ref_wide <- reference_data %>%
-      dplyr::select(.data$date, .data$percentile, .data$value) %>%
-      tidyr::pivot_wider(names_from = .data$percentile, values_from = .data$value)
+      dplyr::select("date", "percentile", "value") %>%
+      tidyr::pivot_wider(names_from = "percentile", values_from = "value")
 
     # Add P5-P95 band (outermost)
     if ("p05_p95" %in% reference_bands && all(c("p05", "p95") %in% colnames(ref_wide))) {
@@ -230,11 +239,7 @@ plot_acwr_enhanced <- function(acwr_data,
       subtitle = subtitle,
       x = "Date",
       y = "ACWR (Smoothed)",
-      caption = if (highlight_zones) {
-        "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
-      } else {
-        NULL
-      }
+      caption = caption
     ) +
     ggplot2::scale_x_date(
       date_breaks = "3 months",
@@ -265,8 +270,6 @@ plot_acwr_enhanced <- function(acwr_data,
 #'
 #' @return A ggplot object with faceted comparison.
 #'
-#' @importFrom ggplot2 ggplot aes geom_line facet_wrap labs theme_minimal
-#' @importFrom dplyr bind_rows mutate
 #' @export
 #'
 #' @examples

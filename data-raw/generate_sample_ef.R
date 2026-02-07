@@ -1,5 +1,4 @@
 # Script to generate sample_ef data
-# This script creates a simulated Efficiency Factor dataset for package examples and testing
 
 library(dplyr)
 library(tibble)
@@ -20,9 +19,7 @@ run_dates <- start_date + cumsum(c(0, run_intervals[-n_runs]))
 ride_intervals <- round(runif(n_rides, 4, 8))
 ride_dates <- start_date + cumsum(c(0, ride_intervals[-n_rides]))
 
-# Simulate EF values
-# Running EF typically ranges from 1.0 to 2.0 (pace per HR)
-# Improving fitness shows increasing EF over time
+# Simulate EF values with improving trend
 run_base_ef <- seq(1.2, 1.6, length.out = n_runs)
 run_ef <- run_base_ef + rnorm(n_runs, 0, 0.08)
 
@@ -44,6 +41,13 @@ sample_ef <- bind_rows(
   )
 ) %>%
   arrange(date)
+
+# Add params attribute (as calculate_ef() would) so plot_ef() shows proper labels
+attr(sample_ef, "params") <- list(
+  activity_type = c("Run", "Ride"),
+  ef_metric = "speed_hr",
+  min_duration_mins = 30
+)
 
 # Save to data directory
 save(sample_ef, file = "data/sample_ef.rda", compress = "xz")

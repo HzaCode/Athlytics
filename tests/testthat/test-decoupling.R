@@ -3,7 +3,6 @@
 library(testthat)
 library(Athlytics)
 library(lubridate) # Ensure lubridate is loaded for ymd in english_month_year tests
-# library(rStrava) # No longer needed directly if we use stream_df or sample data
 
 # Load main sample data for the package
 data(sample_decoupling)
@@ -44,15 +43,15 @@ test_that("calculate_decoupling computes a plausible value from mock stream_df",
   expect_true(exists("mock_activity_streams"), "mock_activity_streams not loaded from helper.")
 
   decoupling_power_hr <- calculate_decoupling(stream_df = mock_activity_streams, decouple_metric = "power_hr")
-  decoupling_pace_hr <- calculate_decoupling(stream_df = mock_activity_streams, decouple_metric = "pace_hr")
+  decoupling_speed_hr <- calculate_decoupling(stream_df = mock_activity_streams, decouple_metric = "speed_hr")
 
   expect_type(decoupling_power_hr, "double")
-  expect_type(decoupling_pace_hr, "double")
+  expect_type(decoupling_speed_hr, "double")
   expect_true(is.finite(decoupling_power_hr))
-  expect_true(is.finite(decoupling_pace_hr))
+  expect_true(is.finite(decoupling_speed_hr))
   # Check for a plausible range (e.g., -20% to +50%)
   expect_true(decoupling_power_hr > -20 && decoupling_power_hr < 50)
-  expect_true(decoupling_pace_hr > -20 && decoupling_pace_hr < 50)
+  expect_true(decoupling_speed_hr > -20 && decoupling_speed_hr < 50)
 })
 
 test_that("calculate_decoupling handles missing columns in stream_df", {
@@ -64,9 +63,9 @@ test_that("calculate_decoupling handles missing columns in stream_df", {
     regexp = "must contain 'watts' column"
   )
 
-  # Test missing velocity_smooth AND distance for pace_hr
+  # Test missing velocity_smooth AND distance for speed_hr
   mock_streams_no_speed <- mock_activity_streams[, !(names(mock_activity_streams) %in% c("velocity_smooth", "distance"))]
-  expect_error(calculate_decoupling(stream_df = mock_streams_no_speed, decouple_metric = "pace_hr"),
+  expect_error(calculate_decoupling(stream_df = mock_streams_no_speed, decouple_metric = "speed_hr"),
     regexp = "must contain 'distance' or 'velocity_smooth' column"
   )
 
@@ -87,7 +86,8 @@ test_that("plot_decoupling returns a ggplot object using sample_decoupling", {
 
   # plot_decoupling requires decouple_metric for labeling if not directly derivable from decoupling_df
   # We assume sample_decoupling might be for a mix or needs this specified.
-  p_decouple <- plot_decoupling(decoupling_df = sample_decoupling, decouple_metric = "pace_hr")
+  # suppressWarnings: decouple_metric is analysis arg, ignored with pre-calculated data
+  p_decouple <- suppressWarnings(plot_decoupling(data = sample_decoupling, decouple_metric = "speed_hr"))
   expect_s3_class(p_decouple, "ggplot")
 
   # Check that the plot is not empty / uses the data
@@ -95,75 +95,55 @@ test_that("plot_decoupling returns a ggplot object using sample_decoupling", {
   expect_true("decoupling" %in% names(p_decouple$data))
 })
 
-test_that("plot_decoupling throws error if data is missing and decoupling_df is NULL", {
+test_that("plot_decoupling throws error if data is missing", {
   expect_error(
-    plot_decoupling(decouple_metric = "pace_hr"), # data is missing by default
-    regexp = "Either 'data' or 'decoupling_df' must be provided."
+    plot_decoupling(decouple_metric = "speed_hr"), # data is missing
+    # Standard R error for missing argument, or check if I should handle it
+    # Since 'data' has no default, it errors with "argument "data" is missing"
   )
 })
 
-test_that("plot_decoupling returns a blank plot with warning for invalid decoupling_df", {
-  # Test with an empty data frame
+test_that("plot_decoupling throws error for invalid decoupling_df", {
+  # Test with an empty data frame (missing required columns triggers class check first)
   empty_df <- data.frame()
-  expect_warning(
-    p_empty <- plot_decoupling(decoupling_df = empty_df, decouple_metric = "pace_hr"),
-    regexp = "No valid decoupling data available to plot"
+  expect_error(
+    suppressWarnings(plot_decoupling(data = empty_df, decouple_metric = "speed_hr")),
+    regexp = "must be the output of calculate_decoupling"
   )
-  expect_s3_class(p_empty, "ggplot")
-  expect_true(grepl("No decoupling data to plot", p_empty$labels$title, ignore.case = TRUE))
 
   # Test with a data frame missing the 'decoupling' column
   df_missing_col <- data.frame(date = Sys.Date())
-  expect_warning(
-    p_missing_col <- plot_decoupling(decoupling_df = df_missing_col, decouple_metric = "pace_hr"),
-    regexp = "No valid decoupling data available to plot"
+  expect_error(
+    suppressWarnings(plot_decoupling(data = df_missing_col, decouple_metric = "speed_hr")),
+    regexp = "must be the output of calculate_decoupling"
   )
-  expect_s3_class(p_missing_col, "ggplot")
-  expect_true(grepl("No decoupling data to plot", p_missing_col$labels$title, ignore.case = TRUE))
 
   # Test with a data frame missing the 'date' column
   df_missing_date <- data.frame(decoupling = 0.5)
-  expect_warning(
-    p_missing_date <- plot_decoupling(decoupling_df = df_missing_date, decouple_metric = "pace_hr"),
-    regexp = "No valid decoupling data available to plot"
+  expect_error(
+    suppressWarnings(plot_decoupling(data = df_missing_date, decouple_metric = "speed_hr")),
+    regexp = "must be the output of calculate_decoupling"
   )
-  expect_s3_class(p_missing_date, "ggplot")
-  expect_true(grepl("No decoupling data to plot", p_missing_date$labels$title, ignore.case = TRUE))
 })
 
-test_that("plot_decoupling sets title correctly based on activity_type and data", {
+test_that("plot_decoupling sets title correctly", {
   # Valid dummy data for plotting
   valid_df <- data.frame(date = Sys.Date() - 0:2, decoupling = c(1, 2, 3))
 
-  # Case 1: activity_type is a single string
-  p1 <- plot_decoupling(decoupling_df = valid_df, activity_type = "MyRun", decouple_metric = "pace_hr")
-  expect_true(grepl("Trend for MyRun", p1$labels$title))
+  # Default title
+  p1 <- plot_decoupling(data = valid_df)
+  expect_true(grepl("Aerobic Decoupling Trend", p1$labels$title))
 
-  # Case 2: activity_type (plot arg) is vector, decoupling_df has single activity_type column
-  df_single_type_col <- data.frame(
-    date = Sys.Date() - 0:2,
-    decoupling = c(1, 2, 3),
-    activity_type = rep("SpecificRunType", 3)
-  )
-  p2 <- plot_decoupling(decoupling_df = df_single_type_col, activity_type = c("Run", "Ride"), decouple_metric = "pace_hr")
-  expect_true(grepl("Trend for SpecificRunType", p2$labels$title))
+  # Custom title
+  p2 <- plot_decoupling(data = valid_df, title = "My Custom Title")
+  expect_equal(p2$labels$title, "My Custom Title")
 
-  # Case 3: activity_type (plot arg) is vector, decoupling_df has multiple activity_types in its column
-  df_multi_type_col <- data.frame(
-    date = Sys.Date() - 0:3,
-    decoupling = c(1, 2, 3, 4),
-    activity_type = c("RunA", "RunA", "RunB", "RunB")
-  )
-  p3 <- plot_decoupling(decoupling_df = df_multi_type_col, activity_type = c("RunA", "RunB"), decouple_metric = "pace_hr")
-  expect_true(grepl("Trend for Selected Activities", p3$labels$title)) # Expect generic
-
-  # Case 4: activity_type (plot arg) is vector, decoupling_df does NOT have activity_type column
-  p4 <- plot_decoupling(decoupling_df = valid_df, activity_type = c("Run", "Ride"), decouple_metric = "pace_hr")
-  expect_true(grepl("Trend for Selected Activities", p4$labels$title)) # Expect generic
-
-  # Case 5: activity_type (plot arg) is default (vector), decoupling_df does NOT have activity_type column
-  p5 <- plot_decoupling(decoupling_df = valid_df, decouple_metric = "pace_hr") # activity_type uses default
-  expect_true(grepl("Trend for Selected Activities", p5$labels$title)) # Expect generic
+  # Data with params attribute (from calculate_decoupling)
+  attr(valid_df, "params") <- list(decouple_metric = "speed_hr", activity_type = "Run")
+  p3 <- plot_decoupling(data = valid_df)
+  expect_true(grepl("Aerobic Decoupling Trend", p3$labels$title))
+  expect_true(grepl("speed_hr", p3$labels$subtitle))
+  expect_true(grepl("Run", p3$labels$subtitle))
 })
 
 test_that("plot_decoupling handles add_trend_line argument correctly", {
@@ -172,99 +152,76 @@ test_that("plot_decoupling handles add_trend_line argument correctly", {
     any(sapply(p$layers, function(layer) inherits(layer$geom, "GeomSmooth")))
   }
 
+  # suppressWarnings: analysis args are ignored with pre-calculated data (expected behavior)
   # Case 1: add_trend_line = TRUE, but not enough data points (e.g., 1 point)
   df_one_point <- data.frame(date = Sys.Date(), decoupling = 1)
-  p_one_point <- plot_decoupling(decoupling_df = df_one_point, add_trend_line = TRUE, decouple_metric = "pace_hr")
+  p_one_point <- suppressWarnings(plot_decoupling(data = df_one_point, add_trend_line = TRUE, decouple_metric = "speed_hr"))
   expect_false(has_smooth_layer(p_one_point))
 
   # Case 2: add_trend_line = TRUE, enough data points (e.g., 2 points)
   df_two_points <- data.frame(date = Sys.Date() - 0:1, decoupling = c(1, 2))
-  p_two_points <- plot_decoupling(decoupling_df = df_two_points, add_trend_line = TRUE, decouple_metric = "pace_hr")
+  p_two_points <- suppressWarnings(plot_decoupling(data = df_two_points, add_trend_line = TRUE, decouple_metric = "speed_hr"))
   expect_true(has_smooth_layer(p_two_points))
 
   # Case 3: add_trend_line = FALSE, enough data points
   df_enough_points <- data.frame(date = Sys.Date() - 0:2, decoupling = c(1, 2, 3))
-  p_no_trend <- plot_decoupling(decoupling_df = df_enough_points, add_trend_line = FALSE, decouple_metric = "pace_hr")
+  p_no_trend <- suppressWarnings(plot_decoupling(data = df_enough_points, add_trend_line = FALSE, decouple_metric = "speed_hr"))
   expect_false(has_smooth_layer(p_no_trend))
 })
 
-test_that("plot_decoupling handles NULL/empty df from internal calculate_decoupling call", {
-  skip("API mode is deprecated; test no longer applicable as stoken parameter removed")
-})
+# ============================================================
+# Numerical Value Validation
+# ============================================================
 
-# --- Tests for API path of calculate_decoupling (kept separate, may fail/skip without real token/mocking) ---
-# Dummy stoken for API path tests (basic signature checks)
-dummy_stoken <- structure(list(token = list(access_token = "dummy")), class = "Token2.0")
-
-test_that("calculate_decoupling (API path) throws error for deprecated API mode", {
-  skip("API mode is deprecated; stoken parameter removed")
-})
-
-test_that("calculate_decoupling (API path) rejects non-Token2.0 stoken", {
-  skip("API mode is deprecated; stoken parameter removed")
-})
-
-# Mock for rStrava::get_activity_streams specific to decoupling tests
-# Needs to return a dataframe with time, heartrate, and distance/watts
-mock_rStrava_get_activity_streams_decoupling <- function(act_data, acts, stoken, types, resolution) {
-  # message(sprintf("MOCK get_activity_streams called for index: %d, types: %s", acts, paste(types, collapse=", "))) # Debug
-  # Use the existing mock_activity_streams, assuming it has the needed columns
-  # In a real scenario, this might need to vary based on 'acts' or types requested
-  if (exists("mock_activity_streams")) {
-    # Ensure the mock stream has the requested types
-    if (all(types %in% names(mock_activity_streams))) {
-      return(mock_activity_streams[, types, drop = FALSE])
-    } else {
-      warning("Mock get_activity_streams called but mock_activity_streams doesn't have all requested types.")
-      return(NULL) # Simulate failure if types mismatch drastically
-    }
-  } else {
-    stop("Mock error: mock_activity_streams not found in test environment.")
-  }
-}
-
-test_that("calculate_decoupling (API path) works with mocked API calls", {
-  # Use mocks defined in test-strava_helpers.R or define similar ones here
-  # Ensure mock_activity_list_list is loaded from helper
-  expect_true(exists("mock_activity_list_list"), "mock_activity_list_list not loaded from helper.")
-  expect_true(exists("mock_activity_streams"), "mock_activity_streams not loaded from helper.") # Needed for stream mock
-
-  local_mocked_bindings(
-    .package = "rStrava",
-    get_activity_list = function(...) mock_activity_list_list, # Use the list mock
-    get_activity_streams = mock_rStrava_get_activity_streams_decoupling # Use the stream mock
+test_that("decoupling is near-zero for constant HR stream", {
+  n <- 3600
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = rep(150, n),
+    velocity_smooth = rep(3.0, n),
+    distance = cumsum(rep(3.0, n)),
+    stringsAsFactors = FALSE
   )
 
-  # API mode is deprecated, so this test is skipped
-  skip("API mode is deprecated; decoupling now uses local files only")
+  result <- calculate_decoupling(
+    stream_df = stream,
+    decouple_metric = "speed_hr"
+  )
 
-  # Check the output structure
-  expect_s3_class(result_df, "data.frame")
-  expect_true(all(c("date", "decoupling") %in% names(result_df)))
-  expect_s3_class(result_df$date, "Date")
-  expect_type(result_df$decoupling, "double")
-
-  # Check the number of results (should correspond to the number of 'Run' activities in mock_activity_list_list)
-  # Mock has 2 Runs (id 1 and 3)
-  expect_equal(nrow(result_df), 2)
-
-  # Check specific decoupling values (optional, depends on stability of mock data calculation)
-  # This requires running the decoupling logic manually on mock_activity_streams
-  # For now, checking structure and count is a good start.
+  expect_true(is.numeric(result))
+  if (!is.na(result)) {
+    expect_true(abs(result) < 2.0,
+      info = sprintf("Decoupling with constant HR should be ~0%%, got %.1f%%", result)
+    )
+  }
 })
 
-# Test skipped as API call would fail without proper mocking or real token
-test_that("calculate_decoupling (API path) structure check (SKIPPED)", {
-  skip_on_cran()
-  skip("Skipping API call test for calculate_decoupling; requires network or full API mock.")
-  # Original test logic commented out as it relies on an actual or complex mocked API call:
-  # result_df <- tryCatch({
-  #    calculate_decoupling(stoken = dummy_stoken, activity_type = "Run", decouple_metric = "pace_hr", max_activities = 2, min_duration_mins = 1)
-  #  }, error = function(e) { NULL })
-  # if (is.null(result_df)) {
-  #     skip("Test skipped as API call failed or function returned NULL, likely due to missing mock/real token.")
-  # }
-  # # else { # If somehow it didn't fail, check structure
-  # #   expect_s3_class(result_df, "data.frame")
-  # # }
+test_that("decoupling detects HR drift correctly", {
+  n <- 3600
+  half <- n / 2
+  # First half: HR=140, speed=3.0 -> EF1 = 3.0/140
+  # Second half: HR=154, speed=3.0 -> EF2 = 3.0/154
+  # Decoupling = (EF1-EF2)/EF1 * 100 ~ 9.1%
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = c(rep(140, half), rep(154, half)),
+    velocity_smooth = rep(3.0, n),
+    distance = cumsum(rep(3.0, n)),
+    stringsAsFactors = FALSE
+  )
+
+  result <- calculate_decoupling(
+    stream_df = stream,
+    decouple_metric = "speed_hr"
+  )
+
+  expect_true(is.numeric(result))
+  if (!is.na(result)) {
+    # Expected ~9.1%, allow some tolerance
+    expect_true(abs(result - 9.1) < 3.0,
+      info = sprintf("Decoupling should be ~9.1%%, got %.1f%%", result)
+    )
+    # Should be positive (HR drifted up)
+    expect_true(result > 0, info = "Decoupling should be positive when HR drifts up")
+  }
 })

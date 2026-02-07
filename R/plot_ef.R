@@ -4,33 +4,27 @@
 #'
 #' Visualizes the trend of Efficiency Factor (EF) over time.
 #'
-#' Plots the Efficiency Factor (EF) trend over time. **Recommended workflow: Use local data via `ef_df`.**
-#'
-#' @param data **Recommended: Pass pre-calculated data via `ef_df` (local export preferred).**
-#'   A data frame from `calculate_ef()` or activities data from `load_local_activities()`.
-#' @param activity_type Type(s) of activities to analyze (e.g., "Run", "Ride").
-#' @param ef_metric Metric to calculate: "pace_hr" (Speed/HR) or "power_hr" (Power/HR).
-#' @param start_date Optional. Analysis start date (YYYY-MM-DD string or Date). Defaults to ~1 year ago.
-#' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
-#' @param min_duration_mins Minimum activity duration (minutes) to include. Default 20.
+#' @param data A data frame from `calculate_ef()`.
+#'   Must contain `date`, `ef_value`, and `activity_type` columns.
 #' @param add_trend_line Add a smoothed trend line (`geom_smooth`)? Default `TRUE`.
 #' @param smoothing_method Smoothing method for trend line (e.g., "loess", "lm"). Default "loess".
-#' @param ef_df **Recommended.** A pre-calculated data frame from `calculate_ef()`.
-#'   When provided, analysis uses local data only (no API calls).
+#' @param smooth_per_activity_type Logical. If `TRUE` and `add_trend_line = TRUE`, draws separate
+#'   trend lines for each activity type. Default `FALSE` (single trend line for all data).
+#'   Note: this parameter only applies when `group_var = NULL`. When `group_var` is set,
+#'   smoothing is always done per group and this parameter is ignored with a warning.
 #' @param group_var Optional. Column name for grouping/faceting (e.g., "athlete_id").
 #' @param group_colors Optional. Named vector of colors for groups.
+#' @param title Optional. Custom title for the plot.
+#' @param subtitle Optional. Custom subtitle for the plot.
+#' @param ... Additional arguments.
+#'   Arguments `activity_type`, `ef_metric`, `start_date`, `end_date`,
+#'   `min_duration_mins`, `ef_df` are deprecated and ignored.
 #'
 #' @return A ggplot object showing the EF trend.
 #'
-#' @details Plots EF (output/HR based on activity averages). An upward trend
-#'   often indicates improved aerobic fitness. Points colored by activity type.
-#'   **Best practice: Use `load_local_activities()` + `calculate_ef()` + this function.**
+#' @details Plots EF (output/HR based on activity averages).
+#'   **Best practice: Use `calculate_ef()` first, then pass the result to this function.**
 #'
-#'
-#' @importFrom dplyr filter select mutate arrange %>% rename left_join case_when pull
-#' @importFrom lubridate as_date date days ymd ymd_hms as_datetime
-#' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_minimal scale_x_date theme element_text scale_color_viridis_d
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -39,74 +33,46 @@
 #' p <- plot_ef(sample_ef)
 #' print(p)
 #'
-#' \dontrun{
-#' # Example using local Strava export data
-#' activities <- load_local_activities("strava_export_data/activities.csv")
-#'
-#' # Plot Pace/HR EF trend for Runs (last 6 months)
-#' plot_ef(
-#'   data = activities,
-#'   activity_type = "Run",
-#'   ef_metric = "pace_hr",
-#'   start_date = Sys.Date() - months(6)
-#' )
-#'
-#' # Plot Power/HR EF trend for Rides
-#' plot_ef(
-#'   data = activities,
-#'   activity_type = "Ride",
-#'   ef_metric = "power_hr"
-#' )
-#'
-#' # Plot Pace/HR EF trend for multiple Run types (no trend line)
-#' plot_ef(
-#'   data = activities,
-#'   activity_type = c("Run", "VirtualRun"),
-#'   ef_metric = "pace_hr",
-#'   add_trend_line = FALSE
-#' )
-#' }
 plot_ef <- function(data,
-                    activity_type = c("Run", "Ride"),
-                    ef_metric = c("pace_hr", "power_hr"),
-                    start_date = NULL,
-                    end_date = NULL,
-                    min_duration_mins = 20,
                     add_trend_line = TRUE,
                     smoothing_method = "loess",
-                    ef_df = NULL,
+                    smooth_per_activity_type = FALSE,
                     group_var = NULL,
-                    group_colors = NULL) {
-  # Match arg here as it's needed for plot labels
-  ef_metric_label <- match.arg(ef_metric)
-
-  # --- Check if first argument is already EF data frame ---
-  if (is.data.frame(data) && all(c("date", "ef_value") %in% colnames(data))) {
-    ef_df <- data
-  }
-
-  # --- Get Data ---
-  # If ef_df is not provided, calculate it
-  if (is.null(ef_df)) {
-    # Check if data provided when ef_df is not
-    if (missing(data)) stop("Either provide EF data frame from calculate_ef() as first argument, or provide activities_data.")
-
-    ef_df <- calculate_ef(
-      activities_data = data,
-      activity_type = activity_type,
-      ef_metric = ef_metric_label,
-      start_date = start_date,
-      end_date = end_date,
-      min_duration_mins = min_duration_mins
+                    group_colors = NULL,
+                    title = NULL,
+                    subtitle = NULL,
+                    ...) {
+  # Check for deprecated args
+  deprecated_args <- list(...)
+  if (length(deprecated_args) > 0) {
+    analysis_args <- c(
+      "activity_type", "ef_metric", "start_date", "end_date",
+      "min_duration_mins", "ef_df"
     )
+    if (any(names(deprecated_args) %in% analysis_args)) {
+      warning(
+        "Analysis arguments (e.g. activity_type) are deprecated in plot_ef(). ",
+        "Please use calculate_ef() first, then pass the result to plot_ef()."
+      )
+    }
   }
 
-  # Check if ef_df is empty or invalid
-  if (!is.data.frame(ef_df) || nrow(ef_df) == 0 || !all(c("date", "ef_value", "activity_type") %in% names(ef_df))) {
-    warning("No valid EF data available to plot (or missing required columns).")
-    return(ggplot2::ggplot() +
-      ggplot2::theme_void() +
-      ggplot2::ggtitle("No EF data available"))
+  # Validate input
+  ef_df <- data
+  if (!is.data.frame(ef_df)) {
+    stop("Input 'data' must be a data frame from calculate_ef().")
+  }
+
+  if (!inherits(ef_df, "athlytics_ef") && !all(c("date", "ef_value", "activity_type") %in% names(ef_df))) {
+    stop("Input 'data' must be the output of calculate_ef() or contain 'date', 'ef_value', and 'activity_type' columns.")
+  }
+
+  if (nrow(ef_df) == 0) {
+    stop("Input data frame is empty.")
+  }
+
+  if (!all(c("date", "ef_value", "activity_type") %in% names(ef_df))) {
+    stop("Input data must contain 'date', 'ef_value', and 'activity_type' columns.")
   }
 
   # Rename for clarity
@@ -115,21 +81,49 @@ plot_ef <- function(data,
   # --- Check for group variable ---
   has_groups <- !is.null(group_var) && group_var %in% colnames(plot_data)
 
+  # Retrieve params for labeling
+  params <- attr(ef_df, "params")
+  ef_metric_label <- params$ef_metric
+  if (is.null(ef_metric_label)) ef_metric_label <- "Unknown Metric"
+
   # --- Plotting ---
-  message("Generating plot...")
   y_label <- switch(ef_metric_label,
-    "pace_hr" = "Efficiency Factor (Speed [m/s] / HR)",
-    "power_hr" = "Efficiency Factor (Power [W] / HR)"
+    "speed_hr" = "Efficiency Factor (Speed [m/s] / HR)",
+    "pace_hr" = "Efficiency Factor (Speed [m/s] / HR)", # legacy alias
+    "power_hr" = "Efficiency Factor (Power [W] / HR)",
+    "gap_hr" = "Efficiency Factor (GAP [m/s] / HR)",
+    "Efficiency Factor"
   )
 
+  if (is.null(subtitle)) {
+    if (!is.null(params)) {
+      subtitle <- paste0(
+        "Metric: ", ef_metric_label,
+        ", Activity: ", paste(params$activity_type, collapse = ", ")
+      )
+    } else {
+      subtitle <- paste("Metric:", ef_metric_label)
+    }
+  }
+
+  if (is.null(title)) title <- "Efficiency Factor (EF) Trend"
+
   if (has_groups) {
+    # Warn if smooth_per_activity_type is set but will be ignored
+    if (isTRUE(smooth_per_activity_type)) {
+      warning(
+        "'smooth_per_activity_type' is ignored when 'group_var' is set. ",
+        "Smoothing is done per group ('", group_var, "') instead."
+      )
+    }
+
     # Multi-group plotting
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(
       x = .data$date, y = .data$ef_value,
       color = .data[[group_var]]
     )) +
       ggplot2::geom_point(alpha = 0.7, size = 2.5) +
-      ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months")
+      ggplot2::scale_x_date(labels = english_month_year)
 
     # Apply custom colors if provided
     if (!is.null(group_colors)) {
@@ -144,8 +138,8 @@ plot_ef <- function(data,
 
     p <- p +
       ggplot2::labs(
-        title = "Efficiency Factor (EF) Trend",
-        subtitle = paste("Metric:", ef_metric_label, "| Grouped by:", group_var),
+        title = title,
+        subtitle = subtitle,
         x = "Date",
         y = y_label
       )
@@ -159,18 +153,30 @@ plot_ef <- function(data,
     # Single group plotting (original logic)
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$ef_value)) +
       ggplot2::geom_point(ggplot2::aes(color = .data$activity_type), alpha = 0.7, size = 2) +
-      ggplot2::scale_x_date(labels = english_month_year, date_breaks = "3 months") +
-      ggplot2::scale_color_viridis_d(option = "plasma", end = 0.8) +
+      ggplot2::scale_x_date(labels = english_month_year) +
+      ggplot2::scale_color_manual(
+        values = athlytics_palette_nature(),
+        name = "Activity Type"
+      ) +
       ggplot2::labs(
-        title = "Efficiency Factor (EF) Trend",
-        subtitle = paste("Metric:", ef_metric_label),
+        title = title,
+        subtitle = subtitle,
         x = "Date",
         y = y_label,
         color = "Activity Type"
       )
 
     if (add_trend_line) {
-      p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
+      if (isTRUE(smooth_per_activity_type)) {
+        # Smooth separately for each activity type
+        p <- p + ggplot2::geom_smooth(
+          ggplot2::aes(group = .data$activity_type, color = .data$activity_type),
+          method = smoothing_method, se = FALSE, linewidth = 0.8
+        )
+      } else {
+        # Single trend line for all data
+        p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
+      }
     }
   }
 
@@ -182,8 +188,3 @@ plot_ef <- function(data,
 
   return(p)
 }
-
-# Helper for null default (copied from plot_pbs)
-# `%||%` <- function(x, y) {
-#   if (is.null(x) || length(x) == 0) y else x
-# }
