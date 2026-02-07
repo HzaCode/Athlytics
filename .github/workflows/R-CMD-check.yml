@@ -42,19 +42,8 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::covr, any::devtools, any::testthat, any::remotes
+          extra-packages: any::rcmdcheck, any::covr, any::devtools, any::testthat, any::remotes, github::grimbough/FITfileR
           needs: check
-
-      - name: Install GitHub dependencies
-        run: |
-          if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
-          # Install FITfileR from GitHub (in Suggests, so won't fail if install fails)
-          tryCatch({
-            remotes::install_github("grimbough/FITfileR", quiet = TRUE)
-          }, error = function(e) {
-            message("Note: FITfileR installation skipped (optional dependency)")
-          })
-        shell: Rscript {0}
 
       - name: Get package name and version
         id: pkg_info
