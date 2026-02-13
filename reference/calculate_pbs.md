@@ -116,7 +116,7 @@ track_pbs <- calculate_pbs(
   activities_data = activities,
   export_dir = "strava_export_data",
   activity_type = "Run",
-  distances_m = c(400, 800, 1500, 3000)  # Custom distances in meters
+  distances_m = c(400, 800, 1500, 3000) # Custom distances in meters
 )
 } # }
 ```

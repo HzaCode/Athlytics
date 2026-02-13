@@ -994,8 +994,8 @@ sessionInfo()
 #> [21] desc_1.4.3         lubridate_1.9.5    bslib_0.10.0       pillar_1.11.1     
 #> [25] RColorBrewer_1.1-3 rlang_1.1.7        cachem_1.1.0       xfun_0.56         
 #> [29] fs_1.6.6           sass_0.4.10        S7_0.2.1           otel_0.2.0        
-#> [33] timechange_0.4.0   cli_3.6.5          mgcv_1.9-3         pkgdown_2.2.0     
-#> [37] withr_3.0.2        magrittr_2.0.4     digest_0.6.39      grid_4.5.2        
+#> [33] timechange_0.4.0   cli_3.6.5          mgcv_1.9-3         withr_3.0.2       
+#> [37] pkgdown_2.2.0      magrittr_2.0.4     digest_0.6.39      grid_4.5.2        
 #> [41] nlme_3.1-168       lifecycle_1.0.5    vctrs_0.7.1        evaluate_1.0.5    
 #> [45] glue_1.8.0         farver_2.1.2       ragg_1.5.0         rmarkdown_2.30    
 #> [49] tools_4.5.2        pkgconfig_2.0.3    htmltools_0.5.9

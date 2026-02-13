@@ -73,7 +73,7 @@ Default c("p25_p75", "p05_p95", "p50").</p></dd>
 
 
 <dt id="arg-colors">colors<a class="anchor" aria-label="anchor" href="#arg-colors"></a></dt>
-<dd><p>Named list of colors for bands. Default uses viridis colors.</p></dd>
+<dd><p>Named list of colors for bands. Default uses Nature-inspired palette colors.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -83,14 +83,22 @@ Default c("p25_p75", "p05_p95", "p50").</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Create base plot</span></span></span>
-<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="plot_acwr.html">plot_acwr</a></span><span class="op">(</span>acwr_df <span class="op">=</span> <span class="va">individual_acwr</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Example: add reference bands to an ACWR plot</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"sample_acwr"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cohort</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">sample_acwr</span>, athlete_id <span class="op">=</span> <span class="st">"A1"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">sample_acwr</span>, athlete_id <span class="op">=</span> <span class="st">"A2"</span>,</span></span>
+<span class="r-in"><span>    acwr_smooth <span class="op">=</span> <span class="va">acwr_smooth</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">sample_acwr</span><span class="op">)</span>, <span class="fl">0.9</span>, <span class="fl">1.1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="calculate_cohort_reference.html">calculate_cohort_reference</a></span><span class="op">(</span><span class="va">cohort</span>, metric <span class="op">=</span> <span class="st">"acwr_smooth"</span>, min_athletes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages</a></span><span class="op">(</span><span class="fu"><a href="plot_acwr.html">plot_acwr</a></span><span class="op">(</span><span class="va">sample_acwr</span>, highlight_zones <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">p_ref</span> <span class="op">&lt;-</span> <span class="fu">add_reference_bands</span><span class="op">(</span><span class="va">p</span>, reference_data <span class="op">=</span> <span class="va">ref</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p_ref</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="add_reference_bands-1.png" alt="" width="1500" height="1050"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Add reference bands</span></span></span>
-<span class="r-in"><span><span class="va">p_with_ref</span> <span class="op">&lt;-</span> <span class="fu">add_reference_bands</span><span class="op">(</span><span class="va">p</span>, reference_data <span class="op">=</span> <span class="va">cohort_ref</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">p_with_ref</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

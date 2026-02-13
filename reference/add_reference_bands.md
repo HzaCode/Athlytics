@@ -38,7 +38,8 @@ add_reference_bands(
 
 - colors:
 
-  Named list of colors for bands. Default uses viridis colors.
+  Named list of colors for bands. Default uses Nature-inspired palette
+  colors.
 
 ## Value
 
@@ -47,12 +48,19 @@ A ggplot object with added reference bands.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Create base plot
-p <- plot_acwr(acwr_df = individual_acwr)
+# Example: add reference bands to an ACWR plot
+data("sample_acwr", package = "Athlytics")
+set.seed(42)
+cohort <- dplyr::bind_rows(
+  dplyr::mutate(sample_acwr, athlete_id = "A1"),
+  dplyr::mutate(sample_acwr, athlete_id = "A2",
+    acwr_smooth = acwr_smooth * runif(nrow(sample_acwr), 0.9, 1.1))
+)
+ref <- suppressWarnings(
+  calculate_cohort_reference(cohort, metric = "acwr_smooth", min_athletes = 2)
+)
+p <- suppressMessages(plot_acwr(sample_acwr, highlight_zones = FALSE))
+p_ref <- add_reference_bands(p, reference_data = ref)
+print(p_ref)
 
-# Add reference bands
-p_with_ref <- add_reference_bands(p, reference_data = cohort_ref)
-print(p_with_ref)
-} # }
 ```

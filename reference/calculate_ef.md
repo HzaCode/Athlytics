@@ -274,7 +274,7 @@ dummy_activities <- data.frame(
   date = dates,
   type = "Run",
   moving_time = rep(3600, length(dates)), # 1 hour
-  distance = rep(10000, length(dates)),   # 10 km
+  distance = rep(10000, length(dates)), # 10 km
   average_heartrate = rep(140, length(dates)),
   average_watts = rep(200, length(dates)),
   weighted_average_watts = rep(210, length(dates)),
@@ -291,12 +291,12 @@ ef_result <- calculate_ef(
 )
 print(head(ef_result))
 #>         date activity_type   ef_value     status
-#> 1 2026-01-09           Run 0.01984127 no_streams
-#> 2 2026-01-10           Run 0.01984127 no_streams
-#> 3 2026-01-11           Run 0.01984127 no_streams
-#> 4 2026-01-12           Run 0.01984127 no_streams
-#> 5 2026-01-13           Run 0.01984127 no_streams
-#> 6 2026-01-14           Run 0.01984127 no_streams
+#> 1 2026-01-15           Run 0.01984127 no_streams
+#> 2 2026-01-16           Run 0.01984127 no_streams
+#> 3 2026-01-17           Run 0.01984127 no_streams
+#> 4 2026-01-18           Run 0.01984127 no_streams
+#> 5 2026-01-19           Run 0.01984127 no_streams
+#> 6 2026-01-20           Run 0.01984127 no_streams
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data

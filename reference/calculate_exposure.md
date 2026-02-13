@@ -107,7 +107,7 @@ dummy_activities <- data.frame(
   date = dates,
   type = "Run",
   moving_time = rep(3600, length(dates)), # 1 hour
-  distance = rep(10000, length(dates)),   # 10 km
+  distance = rep(10000, length(dates)), # 10 km
   average_heartrate = rep(140, length(dates)),
   suffer_score = rep(50, length(dates)),
   tss = rep(50, length(dates)),
@@ -125,12 +125,12 @@ exposure_result <- calculate_exposure(
 )
 print(head(exposure_result))
 #>         date daily_load atl ctl acwr
-#> 1 2026-01-11         10  10  10    1
-#> 2 2026-01-12         10  10  10    1
-#> 3 2026-01-13         10  10  10    1
-#> 4 2026-01-14         10  10  10    1
-#> 5 2026-01-15         10  10  10    1
-#> 6 2026-01-16         10  10  10    1
+#> 1 2026-01-17         10  10  10    1
+#> 2 2026-01-18         10  10  10    1
+#> 3 2026-01-19         10  10  10    1
+#> 4 2026-01-20         10  10  10    1
+#> 5 2026-01-21         10  10  10    1
+#> 6 2026-01-22         10  10  10    1
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data

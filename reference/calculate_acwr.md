@@ -273,7 +273,7 @@ dummy_activities <- data.frame(
   date = dates,
   type = "Run",
   moving_time = rep(3600, length(dates)), # 1 hour
-  distance = rep(10000, length(dates)),   # 10 km
+  distance = rep(10000, length(dates)), # 10 km
   average_heartrate = rep(140, length(dates)),
   suffer_score = rep(50, length(dates)),
   tss = rep(50, length(dates)),
@@ -293,12 +293,12 @@ print(head(result))
 #> # A tibble: 6 × 5
 #>   date         atl   ctl  acwr acwr_smooth
 #>   <date>     <dbl> <dbl> <dbl>       <dbl>
-#> 1 2025-02-07     0     0    NA          NA
-#> 2 2025-02-08     0     0    NA          NA
-#> 3 2025-02-09     0     0    NA          NA
-#> 4 2025-02-10     0     0    NA          NA
-#> 5 2025-02-11     0     0    NA          NA
-#> 6 2025-02-12     0     0    NA          NA
+#> 1 2025-02-13     0     0    NA          NA
+#> 2 2025-02-14     0     0    NA          NA
+#> 3 2025-02-15     0     0    NA          NA
+#> 4 2025-02-16     0     0    NA          NA
+#> 5 2025-02-17     0     0    NA          NA
+#> 6 2025-02-18     0     0    NA          NA
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data

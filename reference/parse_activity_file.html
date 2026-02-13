@@ -68,12 +68,24 @@ Returns NULL if file cannot be parsed or does not exist.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Parse a FIT file</span></span></span>
-<span class="r-in"><span><span class="va">streams</span> <span class="op">&lt;-</span> <span class="fu">parse_activity_file</span><span class="op">(</span><span class="st">"activity_12345.fit"</span>, export_dir <span class="op">=</span> <span class="st">"strava_export/"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Parse a built-in example TCX file</span></span></span>
+<span class="r-in"><span><span class="va">tcx_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"activities"</span>, <span class="st">"example.tcx"</span>, package <span class="op">=</span> <span class="st">"Athlytics"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">tcx_path</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">streams</span> <span class="op">&lt;-</span> <span class="fu">parse_activity_file</span><span class="op">(</span><span class="va">tcx_path</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">streams</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">streams</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                  time latitude longitude elevation heart_rate power cadence</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2025-01-01 00:00:00   1.3000  103.8000        10        120   150      80</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2025-01-01 00:00:10   1.3001  103.8001        11        122   155      81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2025-01-01 00:00:20   1.3002  103.8002        12        124   160      82</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   distance speed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        0    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       15   1.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       30   1.5</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Parse a compressed GPX file</span></span></span>
-<span class="r-in"><span><span class="va">streams</span> <span class="op">&lt;-</span> <span class="fu">parse_activity_file</span><span class="op">(</span><span class="st">"activity_12345.gpx.gz"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Parse a FIT file from a Strava export</span></span></span>
+<span class="r-in"><span><span class="va">streams</span> <span class="op">&lt;-</span> <span class="fu">parse_activity_file</span><span class="op">(</span><span class="st">"activity_12345.fit"</span>, export_dir <span class="op">=</span> <span class="st">"strava_export/"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

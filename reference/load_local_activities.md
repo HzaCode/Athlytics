@@ -98,27 +98,37 @@ for research purposes.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Load all activities from local CSV
-activities <- load_local_activities("strava_export_data/activities.csv")
+# Example using built-in sample CSV
+csv_path <- system.file("extdata", "activities.csv", package = "Athlytics")
+if (nzchar(csv_path)) {
+  activities <- load_local_activities(csv_path)
+  head(activities)
+}
+#> # A tibble: 6 × 22
+#>      id name           type  sport_type start_date_local    date       distance
+#>   <dbl> <chr>          <chr> <chr>      <dttm>              <date>        <dbl>
+#> 1     4 Afternoon Ride Ride  Ride       2024-10-01 11:35:00 2024-10-01    33892
+#> 2     5 Tempo Run      Run   Run        2024-10-02 08:35:00 2024-10-02     7925
+#> 3     6 Morning Run    Run   Run        2024-10-04 06:41:00 2024-10-04     6976
+#> 4     7 Long Run       Run   Run        2024-10-05 07:44:00 2024-10-05    18440
+#> 5     8 Morning Run    Run   Run        2024-10-07 06:25:00 2024-10-07     6834
+#> 6     9 Afternoon Ride Ride  Ride       2024-10-08 10:39:00 2024-10-08    31874
+#> # ℹ 15 more variables: moving_time <int>, elapsed_time <int>,
+#> #   average_heartrate <dbl>, max_heartrate <dbl>, average_watts <dbl>,
+#> #   max_watts <dbl>, weighted_average_watts <dbl>, elevation_gain <dbl>,
+#> #   elevation_loss <dbl>, average_speed <dbl>, max_speed <dbl>,
+#> #   average_gap <dbl>, calories <dbl>, relative_effort <dbl>, filename <chr>
 
-# Load directly from ZIP archive (no need to extract manually!)
+if (FALSE) { # \dontrun{
+# Load from a local Strava export ZIP archive
 activities <- load_local_activities("export_12345678.zip")
 
-# Load only running activities from 2023
+# Filter by date and activity type
 activities <- load_local_activities(
   path = "export_12345678.zip",
   start_date = "2023-01-01",
   end_date = "2023-12-31",
   activity_types = "Run"
 )
-
-# Use with Athlytics functions
-acwr_data <- calculate_acwr(activities, load_metric = "distance_km")
-plot_acwr(acwr_data, highlight_zones = TRUE)
-
-# Multi-metric analysis
-ef_data <- calculate_ef(activities, ef_metric = "speed_hr")
-plot_ef(ef_data, add_trend_line = TRUE)
 } # }
 ```
