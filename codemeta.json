@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/HzaCode/Athlytics",
   "issueTracker": "https://github.com/HzaCode/Athlytics/issues ",
   "license": "https://spdx.org/licenses/MIT",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -249,7 +249,7 @@
       ],
       "name": "Athlytics: A Reproducible Framework for Endurance Data Analysis",
       "url": "https://github.com/HzaCode/Athlytics",
-      "description": "R package version 1.0.3"
+      "description": "R package version 1.0.4"
     }
   ],
   "releaseNotes": "https://github.com/HzaCode/Athlytics/blob/main/NEWS.md",
