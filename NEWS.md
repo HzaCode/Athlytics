@@ -1,3 +1,15 @@
+# Athlytics 1.0.4
+
+* **Test suite cleanup**: Further streamlined from ~600 to 373 assertions. All tests now pass locally with zero warnings and zero skips.
+
+* **Test idiom improvements**: Replaced `expect_true(is.data.frame())` with `expect_s3_class()`, `expect_equal(length())` with `expect_length()`. Removed redundant `gg`-class checks already covered by vdiffr snapshots.
+
+* **Test file consolidation**: Deleted fragmented files (`test-smoke-and-errors.R`, `test-uncovered-branches.R`, etc.) and merged relevant tests into per-feature files.
+
+* **Dependency cleanup**: Removed `purrr` entirely (only used once via superseded `purrr::transpose()`). R CMD check now passes with 0 errors and 0 warnings.
+
+* **Packaging**: Removed `CITATION.cff` (was flagged by R CMD check as non-standard), cleaned up NAMESPACE and `.Rbuildignore`.
+
 # Athlytics 1.0.3
 
 * **Test suite rewrite**: Reduced from ~1500 to ~200 focused tests with meaningful value assertions; added vdiffr snapshot testing for all plot functions (15 visual regression tests).

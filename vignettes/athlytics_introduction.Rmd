@@ -825,7 +825,7 @@ If you use Athlytics in your research, please cite:
   title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
   author  = {Zhiang He},
   year    = {2025},
-  version = {1.0.3},
+  version = {1.0.4},
   url     = {https://github.com/HzaCode/Athlytics}
 }
 ```
