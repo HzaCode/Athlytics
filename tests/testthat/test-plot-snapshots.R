@@ -2,11 +2,8 @@
 # Snapshot tests for plotting functions using vdiffr
 # As recommended by rOpenSci reviewer
 
-library(testthat)
-library(Athlytics)
-
-# Skip if vdiffr is not available
 skip_if_not_installed("vdiffr")
+skip_on_cran()
 
 test_that("plot_acwr produces consistent output", {
   vdiffr::expect_doppelganger(

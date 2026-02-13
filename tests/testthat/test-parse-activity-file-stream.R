@@ -1,190 +1,115 @@
-# Test for parse_activity_file.R to boost coverage
+# Tests for parse_activity_file.R
+# Consolidated: redundant nonexistent-file tests merged into focused groups
 
-test_that("parse_activity_file handles different file types", {
-  # Suppress expected "file not found" warnings for all tests
+test_that("parse_activity_file handles missing and invalid files", {
+  # Nonexistent files across all supported formats return NULL
   suppressWarnings({
-    # Test with FIT files
-    result1 <- Athlytics:::parse_activity_file("test.fit")
-    expect_null(result1)
-
-    # Test with TCX files
-    result2 <- Athlytics:::parse_activity_file("test.tcx")
-    expect_null(result2)
-
-    # Test with GPX files
-    result3 <- Athlytics:::parse_activity_file("test.gpx")
-    expect_null(result3)
-
-    # Test with uppercase extensions
-    result4 <- Athlytics:::parse_activity_file("test.FIT")
-    expect_null(result4)
-
-    result5 <- Athlytics:::parse_activity_file("test.TCX")
-    expect_null(result5)
-
-    result6 <- Athlytics:::parse_activity_file("test.GPX")
-    expect_null(result6)
+    expect_null(parse_activity_file("nonexistent.fit"))
+    expect_null(parse_activity_file("nonexistent.tcx"))
+    expect_null(parse_activity_file("nonexistent.gpx"))
+    expect_null(parse_activity_file("nonexistent.fit.gz"))
   })
+
+  # Unsupported format
+  temp_file <- tempfile(fileext = ".unknown")
+  on.exit(unlink(temp_file))
+  writeLines("test", temp_file)
+  expect_warning(parse_activity_file(temp_file), "Unsupported file format")
+
+  # NULL and NA inputs error
+  expect_error(parse_activity_file(NULL))
+  expect_error(parse_activity_file(NA))
+
+  # Empty string returns NULL
+  suppressWarnings(expect_null(parse_activity_file("")))
 })
 
-test_that("parse_activity_file handles compressed files", {
-  suppressWarnings({
-    # Test with .gz extension
-    result1 <- Athlytics:::parse_activity_file("test.fit.gz")
-    expect_null(result1)
+test_that("parse_activity_file handles corrupted files", {
+  # Empty file
+  empty_file <- tempfile(fileext = ".fit")
+  on.exit(unlink(empty_file), add = TRUE)
+  file.create(empty_file)
+  suppressWarnings(expect_null(parse_activity_file(empty_file)))
 
-    # Test with .GZ extension (case insensitive)
-    result2 <- Athlytics:::parse_activity_file("test.fit.GZ")
-    expect_null(result2)
-
-    # Test with .gz in middle of filename
-    result3 <- Athlytics:::parse_activity_file("test.gz.fit")
-    expect_null(result3)
-  })
+  # File with invalid content
+  bad_file <- tempfile(fileext = ".fit")
+  on.exit(unlink(bad_file), add = TRUE)
+  writeLines("corrupted data", bad_file)
+  suppressWarnings(expect_null(parse_activity_file(bad_file)))
 })
 
-test_that("parse_activity_file handles unsupported file types", {
-  suppressWarnings({
-    # Test with unsupported extension
-    result1 <- Athlytics:::parse_activity_file("test.txt")
-    expect_null(result1)
+test_that("parse_activity_file with .gz compression", {
+  skip_if_not_installed("R.utils")
 
-    # Test with no extension
-    result2 <- Athlytics:::parse_activity_file("test")
-    expect_null(result2)
+  temp_tcx <- tempfile(fileext = ".tcx")
+  on.exit(unlink(c(temp_tcx, paste0(temp_tcx, ".gz"))), add = TRUE)
+  writeLines("<xml>test</xml>", temp_tcx)
+  temp_gz <- paste0(temp_tcx, ".gz")
+  R.utils::gzip(temp_tcx, destname = temp_gz, remove = FALSE)
 
-    # Test with multiple extensions
-    result3 <- Athlytics:::parse_activity_file("test.fit.backup")
-    expect_null(result3)
-  })
-})
-
-test_that("parse_activity_file handles error conditions", {
-  suppressWarnings({
-    # Test with NULL file_path (should error)
-    expect_error(Athlytics:::parse_activity_file(NULL))
-
-    # Test with empty string
-    result2 <- Athlytics:::parse_activity_file("")
-    expect_null(result2)
-
-    # Test with NA (should error)
-    expect_error(Athlytics:::parse_activity_file(NA))
-  })
+  # Compressed file with invalid content should return NULL
+  suppressWarnings(expect_null(parse_activity_file(temp_gz)))
 })
 
 test_that("parse_activity_file handles export_dir parameter", {
   suppressWarnings({
-    # Test with NULL export_dir
-    result1 <- Athlytics:::parse_activity_file("test.fit", export_dir = NULL)
-    expect_null(result1)
-
-    # Test with empty export_dir
-    result2 <- Athlytics:::parse_activity_file("test.fit", export_dir = "")
-    expect_null(result2)
-
-    # Test with nonexistent export_dir
-    result3 <- Athlytics:::parse_activity_file("test.fit", export_dir = "/nonexistent/dir")
-    expect_null(result3)
+    expect_null(parse_activity_file("test.fit", export_dir = NULL))
+    expect_null(parse_activity_file("test.fit", export_dir = "/nonexistent/dir"))
   })
 })
 
-test_that("parse_activity_file handles file path edge cases", {
-  suppressWarnings({
-    # Test with path containing spaces
-    result1 <- Athlytics:::parse_activity_file("test file.fit")
-    expect_null(result1)
+# ============================================================
+# Real File Parsing (inst/extdata)
+# ============================================================
 
-    # Test with path containing special characters
-    result2 <- Athlytics:::parse_activity_file("test-file.fit")
-    expect_null(result2)
-
-    # Test with very long path
-    long_path <- paste(rep("a", 200), collapse = "")
-    result3 <- Athlytics:::parse_activity_file(paste0(long_path, ".fit"))
-    expect_null(result3)
-  })
+test_that("parse_activity_file parses real TCX file correctly", {
+  tcx_path <- system.file("extdata", "activities", "example.tcx", package = "Athlytics")
+  result <- suppressWarnings(parse_activity_file(tcx_path))
+  expect_s3_class(result, "data.frame")
+  expect_gt(nrow(result), 0)
+  expect_true(any(c("time", "distance", "heartrate") %in% names(result)))
 })
 
-test_that("parse_activity_file handles compression errors", {
-  suppressWarnings({
-    # Test with corrupted .gz file (simulated by nonexistent file)
-    result1 <- Athlytics:::parse_activity_file("corrupted.fit.gz")
-    expect_null(result1)
-
-    # Test with .gz file that's not actually compressed
-    result2 <- Athlytics:::parse_activity_file("notcompressed.fit.gz")
-    expect_null(result2)
-  })
+test_that("parse_activity_file parses real GPX file correctly", {
+  gpx_path <- system.file("extdata", "activities", "example.gpx", package = "Athlytics")
+  result <- suppressWarnings(parse_activity_file(gpx_path))
+  expect_s3_class(result, "data.frame")
+  expect_gt(nrow(result), 0)
+  expect_true(any(c("time", "distance", "lat", "lon") %in% names(result)))
 })
 
-test_that("parse_activity_file handles file parsing errors", {
-  suppressWarnings({
-    # Test with empty file
-    empty_file <- tempfile(fileext = ".fit")
-    file.create(empty_file)
-    result1 <- Athlytics:::parse_activity_file(empty_file)
-    expect_null(result1)
-    unlink(empty_file)
-
-    # Test with corrupted file
-    corrupted_file <- tempfile(fileext = ".fit")
-    writeLines("corrupted data", corrupted_file)
-    result2 <- Athlytics:::parse_activity_file(corrupted_file)
-    expect_null(result2)
-    unlink(corrupted_file)
-  })
+test_that("parse_activity_file with export_dir resolves path", {
+  result <- suppressWarnings(
+    parse_activity_file("activities/example.tcx", export_dir = extdata_dir)
+  )
+  expect_s3_class(result, "data.frame")
+  expect_gt(nrow(result), 0)
 })
 
-test_that("parse_activity_file handles temporary file cleanup", {
-  suppressWarnings({
-    # Test that temporary files are cleaned up properly
-    # This is more of an integration test
-    result <- Athlytics:::parse_activity_file("test.fit.gz")
-    expect_null(result)
+test_that("parse_tcx_file handles empty/invalid XML content", {
+  skip_if(!requireNamespace("xml2", quietly = TRUE), "xml2 not available")
 
-    # Check that no temp files are left behind
-    temp_files <- list.files(tempdir(), pattern = ".*\\.fit$", full.names = TRUE)
-    # Should be empty or contain only files from other tests
-  })
+  empty_file <- tempfile(fileext = ".tcx")
+  on.exit(unlink(empty_file), add = TRUE)
+  file.create(empty_file)
+  suppressWarnings(expect_null(parse_activity_file(empty_file)))
+
+  bad_file <- tempfile(fileext = ".tcx")
+  on.exit(unlink(bad_file), add = TRUE)
+  writeLines("this is not xml", bad_file)
+  suppressWarnings(expect_null(parse_activity_file(bad_file)))
 })
 
-test_that("parse_activity_file handles different file formats", {
-  suppressWarnings({
-    # Test with mixed case file extensions
-    result1 <- Athlytics:::parse_activity_file("test.FiT")
-    expect_null(result1)
+test_that("parse_gpx_file handles empty/invalid XML content", {
+  skip_if(!requireNamespace("xml2", quietly = TRUE), "xml2 not available")
 
-    result2 <- Athlytics:::parse_activity_file("test.TcX")
-    expect_null(result2)
+  empty_file <- tempfile(fileext = ".gpx")
+  on.exit(unlink(empty_file), add = TRUE)
+  file.create(empty_file)
+  suppressWarnings(expect_null(parse_activity_file(empty_file)))
 
-    result3 <- Athlytics:::parse_activity_file("test.GpX")
-    expect_null(result3)
-
-    # Test with file extensions in different positions
-    result4 <- Athlytics:::parse_activity_file("test.fit.gz")
-    expect_null(result4)
-
-    result5 <- Athlytics:::parse_activity_file("test.tcx.gz")
-    expect_null(result5)
-
-    result6 <- Athlytics:::parse_activity_file("test.gpx.gz")
-    expect_null(result6)
-  })
-})
-
-test_that("parse_activity_file handles path resolution", {
-  suppressWarnings({
-    # Test with absolute path
-    result1 <- Athlytics:::parse_activity_file("nonexistent.fit")
-    expect_null(result1)
-
-    # Test with export_dir parameter
-    result2 <- Athlytics:::parse_activity_file("nonexistent.fit", export_dir = ".")
-    expect_null(result2)
-
-    # Test with relative path resolution
-    result3 <- Athlytics:::parse_activity_file("nonexistent.fit", export_dir = "/tmp")
-    expect_null(result3)
-  })
+  bad_file <- tempfile(fileext = ".gpx")
+  on.exit(unlink(bad_file), add = TRUE)
+  writeLines("not gpx content", bad_file)
+  suppressWarnings(expect_null(parse_activity_file(bad_file)))
 })

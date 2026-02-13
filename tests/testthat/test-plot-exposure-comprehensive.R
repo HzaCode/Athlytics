@@ -1,106 +1,68 @@
-# Comprehensive test for plot_exposure.R to boost coverage
+# Behavior-focused test for plot_exposure.R (visuals covered by vdiffr)
 
 test_that("plot_exposure handles pre-calculated data", {
   data("sample_exposure")
 
-  # Test basic plotting with pre-calculated data
   p1 <- plot_exposure(data = sample_exposure)
-  expect_s3_class(p1, "ggplot")
-  expect_true(length(p1$layers) >= 1)
-  expect_equal(p1$labels$x, "Chronic Training Load (CTL)")
-  expect_equal(p1$labels$y, "Acute Training Load (ATL)")
-  expect_true(grepl("Training Load Exposure", p1$labels$title))
-
-  # Verify plot data matches input
   expect_equal(nrow(p1$data), nrow(sample_exposure))
-  expect_true(all(c("atl", "ctl") %in% names(p1$data)))
+  expect_contains(names(p1$data), c("atl", "ctl"))
 
-  # Test with risk_zones = FALSE
   p2 <- plot_exposure(data = sample_exposure, risk_zones = FALSE)
-  expect_s3_class(p2, "ggplot")
-  n_layers_no_zones <- length(p2$layers)
-
-  # Test with risk_zones = TRUE (should have more layers for zone shading)
   p3 <- plot_exposure(data = sample_exposure, risk_zones = TRUE)
-  expect_s3_class(p3, "ggplot")
-  expect_true(length(p3$layers) >= n_layers_no_zones)
-
-  # Verify risk zone lines are ablines when zones enabled
-  layer_geoms_3 <- sapply(p3$layers, function(l) class(l$geom)[1])
-  expect_true("GeomAbline" %in% layer_geoms_3,
-    info = "Risk zones should include abline layers for zone boundaries"
-  )
+  geoms_no_zones <- vapply(p2$layers, function(l) class(l$geom)[1], character(1))
+  geoms_zones <- vapply(p3$layers, function(l) class(l$geom)[1], character(1))
+  expect_false("GeomAbline" %in% geoms_no_zones)
+  expect_true("GeomAbline" %in% geoms_zones)
 })
 
 test_that("plot_exposure handles data calculation from activities", {
-  # Create mock activities data
-  mock_activities <- data.frame(
-    date = seq(Sys.Date() - 100, Sys.Date(), by = "1 day"),
-    type = rep("Run", 101),
-    moving_time = rep(2400, 101),
-    distance = rep(8000, 101),
-    average_heartrate = rep(150, 101),
-    filename = rep(NA, 101),
-    stringsAsFactors = FALSE
-  )
+  csv_path <- system.file("extdata", "activities.csv", package = "Athlytics")
+  activities <- load_local_activities(csv_path, start_date = "2025-01-01", end_date = "2025-01-31")
 
-  # Calculate exposure first, then plot
   exposure_result <- calculate_exposure(
-    activities_data = mock_activities,
+    activities_data = activities,
     activity_type = "Run",
-    load_metric = "duration_mins"
+    load_metric = "duration_mins",
+    end_date = "2025-01-31"
   )
   p <- plot_exposure(data = exposure_result)
-  expect_s3_class(p, "ggplot")
-  expect_true(nrow(p$data) > 0)
+  expect_equal(nrow(p$data), nrow(exposure_result))
 
-  # Test with different parameters
   exposure_result2 <- calculate_exposure(
-    activities_data = mock_activities,
+    activities_data = activities,
     activity_type = "Run",
     load_metric = "duration_mins",
     acute_period = 5,
     chronic_period = 30,
-    end_date = Sys.Date()
+    end_date = "2025-01-31"
   )
   p2 <- plot_exposure(data = exposure_result2)
-  expect_s3_class(p2, "ggplot")
-  expect_true(nrow(p2$data) > 0)
+  expect_equal(nrow(p2$data), nrow(exposure_result2))
 })
 
 test_that("plot_exposure handles different load metrics", {
-  # Create mock activities data
-  mock_activities <- data.frame(
-    date = seq(Sys.Date() - 100, Sys.Date(), by = "1 day"),
-    type = rep("Run", 101),
-    moving_time = rep(2400, 101),
-    distance = rep(8000, 101),
-    average_heartrate = rep(150, 101),
-    filename = rep(NA, 101),
-    stringsAsFactors = FALSE
-  )
+  csv_path <- system.file("extdata", "activities.csv", package = "Athlytics")
+  activities <- load_local_activities(csv_path, start_date = "2025-01-01", end_date = "2025-01-31")
 
-  # Test with duration_mins
   exposure_duration <- calculate_exposure(
-    activities_data = mock_activities,
+    activities_data = activities,
     activity_type = "Run",
-    load_metric = "duration_mins"
+    load_metric = "duration_mins",
+    end_date = "2025-01-31"
   )
   p_duration <- plot_exposure(data = exposure_duration)
-  expect_s3_class(p_duration, "ggplot")
-  expect_true(length(p_duration$layers) >= 1)
+  expect_equal(nrow(p_duration$data), nrow(exposure_duration))
 
-  # Test with hrss (requires HR parameters)
   exposure_hrss <- calculate_exposure(
-    activities_data = mock_activities,
+    activities_data = activities,
     activity_type = "Run",
     load_metric = "hrss",
     user_max_hr = 200,
-    user_resting_hr = 50
+    user_resting_hr = 50,
+    end_date = "2025-01-31"
   )
   p_hrss <- plot_exposure(data = exposure_hrss)
-  expect_s3_class(p_hrss, "ggplot")
-  expect_true(length(p_hrss$layers) >= 1)
+  expect_equal(nrow(p_hrss$data), nrow(exposure_hrss))
 })
 
 test_that("plot_exposure handles edge cases", {
@@ -117,7 +79,6 @@ test_that("plot_exposure handles edge cases", {
     regexp = "Input data frame is empty."
   )
 
-  # Test with single data point
   single_exposure <- data.frame(
     date = Sys.Date(),
     atl = 50,
@@ -126,8 +87,7 @@ test_that("plot_exposure handles edge cases", {
   )
 
   p_single <- plot_exposure(data = single_exposure)
-  expect_s3_class(p_single, "ggplot")
-  expect_true(length(p_single$layers) >= 1)
+  expect_equal(nrow(p_single$data), 1)
 })
 
 test_that("plot_exposure handles missing columns gracefully", {
@@ -139,36 +99,27 @@ test_that("plot_exposure handles missing columns gracefully", {
   )
 
   p_no_acwr <- plot_exposure(data = exposure_no_acwr, risk_zones = FALSE)
-  expect_s3_class(p_no_acwr, "ggplot")
-  expect_true(nrow(p_no_acwr$data) == 2)
+  expect_equal(nrow(p_no_acwr$data), 2)
 })
 
-test_that("plot_exposure handles parameter combinations", {
+test_that("plot_exposure handles parameter combinations and labels", {
   data("sample_exposure")
 
-  # Test with risk_zones and show_date_color options
   p_combo <- plot_exposure(
     data = sample_exposure,
     risk_zones = TRUE,
     show_date_color = TRUE
   )
-  expect_s3_class(p_combo, "ggplot")
-  expect_true(length(p_combo$layers) >= 1)
 
-  # Verify date color scale is present when show_date_color = TRUE
   scale_names <- sapply(p_combo$scales$scales, function(s) s$aesthetics[1])
-  expect_true("colour" %in% scale_names,
-    info = "Date color gradient scale should be present when show_date_color = TRUE"
-  )
+  expect_contains(scale_names, "colour")
 
   p_no_date <- plot_exposure(
     data = sample_exposure,
     risk_zones = FALSE,
     show_date_color = FALSE
   )
-  expect_s3_class(p_no_date, "ggplot")
 
-  # Verify custom title and subtitle work
   p_custom <- plot_exposure(
     data = sample_exposure,
     title = "My Custom Title",

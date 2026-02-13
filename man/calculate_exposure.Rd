@@ -68,7 +68,7 @@ dummy_activities <- data.frame(
   date = dates,
   type = "Run",
   moving_time = rep(3600, length(dates)), # 1 hour
-  distance = rep(10000, length(dates)),   # 10 km
+  distance = rep(10000, length(dates)), # 10 km
   average_heartrate = rep(140, length(dates)),
   suffer_score = rep(50, length(dates)),
   tss = rep(50, length(dates)),

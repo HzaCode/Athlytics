@@ -23,7 +23,7 @@ Default c("p25_p75", "p05_p95", "p50").}
 
 \item{alpha}{Transparency for reference bands (0-1). Default 0.15.}
 
-\item{colors}{Named list of colors for bands. Default uses viridis colors.}
+\item{colors}{Named list of colors for bands. Default uses Nature-inspired palette colors.}
 }
 \value{
 A ggplot object with added reference bands.
@@ -32,12 +32,19 @@ A ggplot object with added reference bands.
 Adds percentile reference bands from a cohort to an individual's metric plot.
 }
 \examples{
-\dontrun{
-# Create base plot
-p <- plot_acwr(acwr_df = individual_acwr)
+# Example: add reference bands to an ACWR plot
+data("sample_acwr", package = "Athlytics")
+set.seed(42)
+cohort <- dplyr::bind_rows(
+  dplyr::mutate(sample_acwr, athlete_id = "A1"),
+  dplyr::mutate(sample_acwr, athlete_id = "A2",
+    acwr_smooth = acwr_smooth * runif(nrow(sample_acwr), 0.9, 1.1))
+)
+ref <- suppressWarnings(
+  calculate_cohort_reference(cohort, metric = "acwr_smooth", min_athletes = 2)
+)
+p <- suppressMessages(plot_acwr(sample_acwr, highlight_zones = FALSE))
+p_ref <- add_reference_bands(p, reference_data = ref)
+print(p_ref)
 
-# Add reference bands
-p_with_ref <- add_reference_bands(p, reference_data = cohort_ref)
-print(p_with_ref)
-}
 }

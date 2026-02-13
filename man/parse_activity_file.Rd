@@ -21,12 +21,16 @@ Parse activity files from Strava export data.
 Supports FIT, TCX, and GPX formats (including .gz compressed files).
 }
 \examples{
-\dontrun{
-# Parse a FIT file
-streams <- parse_activity_file("activity_12345.fit", export_dir = "strava_export/")
+# Parse a built-in example TCX file
+tcx_path <- system.file("extdata", "activities", "example.tcx", package = "Athlytics")
+if (nzchar(tcx_path)) {
+  streams <- parse_activity_file(tcx_path)
+  if (!is.null(streams)) head(streams)
+}
 
-# Parse a compressed GPX file
-streams <- parse_activity_file("activity_12345.gpx.gz")
+\dontrun{
+# Parse a FIT file from a Strava export
+streams <- parse_activity_file("activity_12345.fit", export_dir = "strava_export/")
 }
 
 }

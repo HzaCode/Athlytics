@@ -1,9 +1,6 @@
-# tests/testthat/test-cohort_reference.R
+# tests/testthat/test-cohort-reference.R
 
 test_that("cohort_reference calculates percentiles correctly", {
-  skip_if_not_installed("dplyr")
-  skip_if_not_installed("tidyr")
-
   # Create multi-athlete test data
   dates <- rep(seq(as.Date("2024-01-01"), by = "day", length.out = 30), times = 10)
 
@@ -25,20 +22,18 @@ test_that("cohort_reference calculates percentiles correctly", {
   )
 
   # Check structure
-  expect_true(is.data.frame(result))
-  expect_true(all(c("date", "percentile", "value", "n_athletes") %in% colnames(result)))
+  expect_s3_class(result, "data.frame")
+  expect_contains(colnames(result), c("date", "percentile", "value", "n_athletes"))
 
   # Check that we have 3 percentiles per date
   dates_count <- unique(result$date)
-  expect_equal(length(unique(result$percentile)), 3)
+  expect_length(unique(result$percentile), 3)
 
   # Check that n_athletes is correct (should be 10)
-  expect_true(all(result$n_athletes == 10))
+  expect_equal(unique(result$n_athletes), 10)
 })
 
 test_that("cohort_reference respects min_athletes threshold", {
-  skip_if_not_installed("dplyr")
-
   # Create data with only 3 athletes
   cohort_data <- data.frame(
     date = rep(as.Date("2024-01-01"), 3),
@@ -69,8 +64,6 @@ test_that("cohort_reference respects min_athletes threshold", {
 })
 
 test_that("cohort_reference handles grouping variables", {
-  skip_if_not_installed("dplyr")
-
   # Create data with multiple sports
   cohort_data <- data.frame(
     date = rep(seq(as.Date("2024-01-01"), by = "day", length.out = 10), times = 10),
@@ -89,7 +82,7 @@ test_that("cohort_reference handles grouping variables", {
   )
 
   # Should have both sports
-  expect_true("sport" %in% colnames(result))
+  expect_contains(colnames(result), "sport")
   expect_setequal(unique(result$sport), c("Run", "Ride"))
 })
 
@@ -113,10 +106,6 @@ test_that("cohort_reference validates input", {
 })
 
 test_that("plot_with_reference creates valid plot", {
-  skip_if_not_installed("ggplot2")
-  skip_if_not_installed("dplyr")
-  skip_if_not_installed("tidyr")
-
   # Create individual data
   individual_data <- data.frame(
     date = seq(as.Date("2024-01-01"), by = "day", length.out = 30),
@@ -144,17 +133,11 @@ test_that("plot_with_reference creates valid plot", {
     metric = "acwr_smooth"
   )
 
-  # Check that plot is created
-  expect_s3_class(p, "ggplot")
-
-  # Check plot components
-  expect_true(length(p$layers) > 0)
+  # Check plot components (plot_with_reference not in vdiffr, validate structure)
+  expect_gt(length(p$layers), 0)
 })
 
 test_that("add_reference_bands adds layers to plot", {
-  skip_if_not_installed("ggplot2")
-  skip_if_not_installed("dplyr")
-
   # Create base plot
   plot_data <- data.frame(
     date = seq(as.Date("2024-01-01"), by = "day", length.out = 30),
@@ -177,14 +160,11 @@ test_that("add_reference_bands adds layers to plot", {
   # Add bands
   plot_with_bands <- add_reference_bands(base_plot, reference_data)
 
-  # Check that layers were added
-  expect_s3_class(plot_with_bands, "ggplot")
+  # Check that layers were added (add_reference_bands not in vdiffr)
   expect_gt(length(plot_with_bands$layers), length(base_plot$layers))
 })
 
 test_that("cohort_reference handles missing grouping variables gracefully", {
-  skip_if_not_installed("dplyr")
-
   cohort_data <- data.frame(
     date = rep(as.Date("2024-01-01"), 10),
     athlete_id = paste0("athlete", 1:10),
@@ -204,14 +184,11 @@ test_that("cohort_reference handles missing grouping variables gracefully", {
   )
 
   # Should still work, just without grouping
-  expect_true(is.data.frame(result))
+  expect_s3_class(result, "data.frame")
 })
 
 
 test_that("cohort_reference is deprecated but remains available", {
-  skip_if_not_installed("dplyr")
-  skip_if_not_installed("tidyr")
-
   dates <- rep(seq(as.Date("2024-01-01"), by = "day", length.out = 10), times = 10)
   cohort_data <- data.frame(
     date = dates,
@@ -225,5 +202,5 @@ test_that("cohort_reference is deprecated but remains available", {
     out <- cohort_reference(cohort_data, metric = "acwr_smooth", by = "sport", min_athletes = 3),
     "deprecated"
   )
-  expect_true(is.data.frame(out))
+  expect_s3_class(out, "data.frame")
 })
