@@ -951,7 +951,7 @@ If you use Athlytics in your research, please cite:
   title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
   author  = {Zhiang He},
   year    = {2025},
-  version = {1.0.3},
+  version = {1.0.4},
   url     = {https://github.com/HzaCode/Athlytics}
 }
 ```
@@ -983,7 +983,7 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] ggplot2_4.0.2   Athlytics_1.0.3
+#> [1] ggplot2_4.0.2   Athlytics_1.0.4
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] Matrix_1.7-4       gtable_0.3.6       jsonlite_2.0.0     dplyr_1.2.0       

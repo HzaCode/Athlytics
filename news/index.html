@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Athlytics</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,14 @@
       <small>Source: <a href="https://github.com/HzaCode/Athlytics/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.4" id="athlytics-104">Athlytics 1.0.4<a class="anchor" aria-label="anchor" href="#athlytics-104"></a></h2>
+<ul><li><p><strong>Test suite cleanup</strong>: Further streamlined from ~600 to 373 assertions. All tests now pass locally with zero warnings and zero skips.</p></li>
+<li><p><strong>Test idiom improvements</strong>: Replaced <code>expect_true(is.data.frame())</code> with <code>expect_s3_class()</code>, <code>expect_equal(length())</code> with <code>expect_length()</code>. Removed redundant <code>gg</code>-class checks already covered by vdiffr snapshots.</p></li>
+<li><p><strong>Test file consolidation</strong>: Deleted fragmented files (<code>test-smoke-and-errors.R</code>, <code>test-uncovered-branches.R</code>, etc.) and merged relevant tests into per-feature files.</p></li>
+<li><p><strong>Dependency cleanup</strong>: Removed <code>purrr</code> entirely (only used once via superseded <code><a href="https://purrr.tidyverse.org/reference/transpose.html" class="external-link">purrr::transpose()</a></code>). R CMD check now passes with 0 errors and 0 warnings.</p></li>
+<li><p><strong>Packaging</strong>: Removed <code>CITATION.cff</code> (was flagged by R CMD check as non-standard), cleaned up NAMESPACE and <code>.Rbuildignore</code>.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.3" id="athlytics-103">Athlytics 1.0.3<a class="anchor" aria-label="anchor" href="#athlytics-103"></a></h2>
 <ul><li><p><strong>Test suite rewrite</strong>: Reduced from ~1500 to ~200 focused tests with meaningful value assertions; added vdiffr snapshot testing for all plot functions (15 visual regression tests).</p></li>
