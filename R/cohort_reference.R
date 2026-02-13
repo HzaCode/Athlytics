@@ -226,17 +226,23 @@ cohort_reference <- function(data,
 #'
 #' @examples
 #' # Example: add reference bands to an ACWR plot
-#' data("sample_acwr", package = "Athlytics")
 #' set.seed(42)
+#' n <- 60
+#' dates <- seq(as.Date("2024-01-01"), by = "day", length.out = n)
+#' base_acwr <- 1.0 + cumsum(rnorm(n, 0, 0.03))
+#' individual <- data.frame(
+#'   date = dates, atl = runif(n, 30, 60), ctl = runif(n, 35, 55),
+#'   acwr = base_acwr, acwr_smooth = base_acwr
+#' )
 #' cohort <- dplyr::bind_rows(
-#'   dplyr::mutate(sample_acwr, athlete_id = "A1"),
-#'   dplyr::mutate(sample_acwr, athlete_id = "A2",
-#'     acwr_smooth = acwr_smooth * runif(nrow(sample_acwr), 0.9, 1.1))
+#'   dplyr::mutate(individual, athlete_id = "A1"),
+#'   dplyr::mutate(individual, athlete_id = "A2",
+#'     acwr_smooth = acwr_smooth * runif(n, 0.9, 1.1))
 #' )
 #' ref <- suppressWarnings(
 #'   calculate_cohort_reference(cohort, metric = "acwr_smooth", min_athletes = 2)
 #' )
-#' p <- suppressMessages(plot_acwr(sample_acwr, highlight_zones = FALSE))
+#' p <- suppressMessages(plot_acwr(individual, highlight_zones = FALSE))
 #' p_ref <- add_reference_bands(p, reference_data = ref)
 #' print(p_ref)
 #'
