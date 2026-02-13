@@ -181,7 +181,7 @@ dummy_activities <- data.frame(
   date = dates,
   type = "Run",
   moving_time = rep(3600, length(dates)), # 1 hour
-  distance = rep(10000, length(dates)),   # 10 km
+  distance = rep(10000, length(dates)), # 10 km
   average_heartrate = rep(140, length(dates)),
   average_watts = rep(200, length(dates)),
   weighted_average_watts = rep(210, length(dates)),

@@ -97,7 +97,7 @@
 ^package\.json$
 ^package-lock\.json$
 ^strava_api.*\.md$
-^提交指南.*\.md$
+^submission_guide.*\.md$
 ^export_data$
 ^athlytics_downloads_raw_data\.csv$
 ^Athlytics_.*\.tar\.gz$
@@ -108,7 +108,7 @@
 ^analysis_output$
 ^Athlytics$
 ^\.lang$
-^.*调试.*$
+^.*debug.*$
 ^create_multi_athlete_sample_data\.R$
 ^regenerate_figures\.R$
 ^.*coverage.*\.R$
@@ -154,3 +154,8 @@
 ^\.pytest_cache$
 ^review.*\.md$
 ^document_output\.log$
+^PACKAGES$
+^PACKAGES\.gz$
+^PACKAGES\.rds$
+^coverage_output\.txt$
+^test-ef-adv\.Rout$

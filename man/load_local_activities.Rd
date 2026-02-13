@@ -71,28 +71,24 @@ connect to the internet. Ensure you have permission to analyze the data and
 follow applicable privacy regulations when using this data for research purposes.
 }
 \examples{
-\dontrun{
-# Load all activities from local CSV
-activities <- load_local_activities("strava_export_data/activities.csv")
+# Example using built-in sample CSV
+csv_path <- system.file("extdata", "activities.csv", package = "Athlytics")
+if (nzchar(csv_path)) {
+  activities <- load_local_activities(csv_path)
+  head(activities)
+}
 
-# Load directly from ZIP archive (no need to extract manually!)
+\dontrun{
+# Load from a local Strava export ZIP archive
 activities <- load_local_activities("export_12345678.zip")
 
-# Load only running activities from 2023
+# Filter by date and activity type
 activities <- load_local_activities(
   path = "export_12345678.zip",
   start_date = "2023-01-01",
   end_date = "2023-12-31",
   activity_types = "Run"
 )
-
-# Use with Athlytics functions
-acwr_data <- calculate_acwr(activities, load_metric = "distance_km")
-plot_acwr(acwr_data, highlight_zones = TRUE)
-
-# Multi-metric analysis
-ef_data <- calculate_ef(activities, ef_metric = "speed_hr")
-plot_ef(ef_data, add_trend_line = TRUE)
 }
 
 }

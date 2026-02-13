@@ -51,7 +51,7 @@ individual_data <- data.frame(
 # Cohort reference percentiles with gradual variation
 base_trend <- 1.0 + cumsum(rnorm(n_weeks, 0, 0.015))
 reference_data <- data.frame(
-  date  = rep(dates, each = 5),
+  date = rep(dates, each = 5),
   percentile = rep(c("p05", "p25", "p50", "p75", "p95"), n_weeks),
   value = as.vector(t(outer(base_trend, c(-0.35, -0.15, 0, 0.15, 0.35), "+")))
 )

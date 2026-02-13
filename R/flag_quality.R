@@ -239,10 +239,17 @@ flag_quality <- function(streams,
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' flagged_data <- flag_quality(stream_data)
+#' # Create sample stream and summarize quality
+#' set.seed(42)
+#' stream_data <- data.frame(
+#'   time = seq(0, 3600, by = 1),
+#'   heartrate = pmax(60, pmin(200, rnorm(3601, mean = 150, sd = 10))),
+#'   watts = pmax(0, rnorm(3601, mean = 200, sd = 20)),
+#'   velocity_smooth = pmax(0, rnorm(3601, mean = 3.5, sd = 0.3))
+#' )
+#' flagged_data <- flag_quality(stream_data, sport = "Run")
 #' summarize_quality(flagged_data)
-#' }
+#'
 summarize_quality <- function(flagged_streams) {
   if (!is.data.frame(flagged_streams)) {
     stop("`flagged_streams` must be a data frame from flag_quality().")

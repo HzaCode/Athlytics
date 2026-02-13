@@ -218,21 +218,28 @@ cohort_reference <- function(data,
 #'   "p25_p75" (inner quartiles), "p05_p95" (outer 5-95 range), "p50" (median).
 #'   Default c("p25_p75", "p05_p95", "p50").
 #' @param alpha Transparency for reference bands (0-1). Default 0.15.
-#' @param colors Named list of colors for bands. Default uses viridis colors.
+#' @param colors Named list of colors for bands. Default uses Nature-inspired palette colors.
 #'
 #' @return A ggplot object with added reference bands.
 #'
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' # Create base plot
-#' p <- plot_acwr(acwr_df = individual_acwr)
+#' # Example: add reference bands to an ACWR plot
+#' data("sample_acwr", package = "Athlytics")
+#' set.seed(42)
+#' cohort <- dplyr::bind_rows(
+#'   dplyr::mutate(sample_acwr, athlete_id = "A1"),
+#'   dplyr::mutate(sample_acwr, athlete_id = "A2",
+#'     acwr_smooth = acwr_smooth * runif(nrow(sample_acwr), 0.9, 1.1))
+#' )
+#' ref <- suppressWarnings(
+#'   calculate_cohort_reference(cohort, metric = "acwr_smooth", min_athletes = 2)
+#' )
+#' p <- suppressMessages(plot_acwr(sample_acwr, highlight_zones = FALSE))
+#' p_ref <- add_reference_bands(p, reference_data = ref)
+#' print(p_ref)
 #'
-#' # Add reference bands
-#' p_with_ref <- add_reference_bands(p, reference_data = cohort_ref)
-#' print(p_with_ref)
-#' }
 add_reference_bands <- function(p,
                                 reference_data,
                                 bands = c("p25_p75", "p05_p95", "p50"),
@@ -261,7 +268,8 @@ add_reference_bands <- function(p,
       data = ref_wide,
       ggplot2::aes(x = .data$date, ymin = .data$p05, ymax = .data$p95),
       fill = colors$p05_p95,
-      alpha = alpha
+      alpha = alpha,
+      inherit.aes = FALSE
     )
   }
 
@@ -270,7 +278,8 @@ add_reference_bands <- function(p,
       data = ref_wide,
       ggplot2::aes(x = .data$date, ymin = .data$p25, ymax = .data$p75),
       fill = colors$p25_p75,
-      alpha = alpha * 1.5
+      alpha = alpha * 1.5,
+      inherit.aes = FALSE
     )
   }
 
@@ -280,7 +289,8 @@ add_reference_bands <- function(p,
       ggplot2::aes(x = .data$date, y = .data$p50),
       color = colors$p50,
       linetype = "dashed",
-      linewidth = 0.8
+      linewidth = 0.8,
+      inherit.aes = FALSE
     )
   }
 

@@ -29,7 +29,6 @@
 #'   Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
 #'   **Best practice: Use `calculate_exposure()` first, then pass the result to this function.**
 #'
-#' @import ggplot2
 #' @export
 #'
 #' @examples

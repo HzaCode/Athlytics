@@ -73,7 +73,6 @@ athlytics_palette_vibrant <- function() {
 #'   theme_athlytics()
 #'
 #' @export
-#' @import ggplot2
 theme_athlytics <- function(base_size = 13, base_family = "") {
   ggplot2::theme_minimal(base_size = base_size, base_family = base_family) +
     ggplot2::theme(

@@ -55,19 +55,19 @@ if (!is.null(sample_pbs) && nrow(sample_pbs) > 0) {
 }
 
 \dontrun{
-  # Example using local Strava export data
-  activities <- load_local_activities("strava_export_data/activities.csv")
+# Example using local Strava export data
+activities <- load_local_activities("strava_export_data/activities.csv")
 
-  # Calculate PBs first
-  pb_data_run <- calculate_pbs(
-    activities_data = activities,
-    activity_type = "Run",
-    distances_m = c(1000, 5000, 10000)
-  )
-  
-  if (nrow(pb_data_run) > 0) {
-    plot_pbs(pb_data_run)
-  }
+# Calculate PBs first
+pb_data_run <- calculate_pbs(
+  activities_data = activities,
+  activity_type = "Run",
+  distances_m = c(1000, 5000, 10000)
+)
+
+if (nrow(pb_data_run) > 0) {
+  plot_pbs(pb_data_run)
+}
 }
 
 }

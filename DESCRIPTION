@@ -34,7 +34,7 @@ Suggests:
     R.utils,
     readr,
     rmarkdown,
-    testthat (>= 3.0.0),
+    testthat (>= 3.1.5),
     vdiffr,
     xml2
 Remotes:
@@ -43,4 +43,5 @@ Additional_repositories: https://grimbough.r-universe.dev
 VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 3
 NeedsCompilation: no

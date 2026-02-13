@@ -22,7 +22,6 @@
 #'   solid points mark new PBs. Y-axis is MM:SS.
 #'   **Best practice: Use `calculate_pbs()` first, then pass the result to this function.**
 #'
-#' @import ggplot2
 #' @export
 #'
 #' @examples
@@ -181,7 +180,7 @@ plot_pbs <- function(data,
     # Use linear model (lm) instead of loess to avoid errors with sparse data
     # and to better represent the overall improvement trend
     p <- p + ggplot2::geom_smooth(
-      method = "lm", se = TRUE, aes(group = .data$distance_label),
+      method = "lm", se = TRUE, ggplot2::aes(group = .data$distance_label),
       linewidth = 1.0, alpha = 0.15, linetype = "dashed"
     )
   }

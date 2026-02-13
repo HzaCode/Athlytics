@@ -92,7 +92,7 @@ test_that("flag_quality handles empty data gracefully", {
 
   expect_warning(result <- flag_quality(empty_data))
   expect_equal(nrow(result), 0)
-  expect_true("flag_any" %in% colnames(result))
+  expect_contains(colnames(result), "flag_any")
 })
 
 test_that("flag_quality detects steady state", {
@@ -138,4 +138,96 @@ test_that("flag_quality is sport-aware", {
   # Should NOT be flagged for cycling
   result_ride <- flag_quality(stream_data, sport = "Ride", max_ride_speed = 25.0)
   expect_equal(sum(result_ride$flag_gps_drift), 0)
+})
+
+test_that("quality_summary is deprecated but remains available", {
+  stream_data <- data.frame(
+    time = 1:100,
+    heartrate = rep(150, 100)
+  )
+  flagged <- flag_quality(stream_data, sport = "Run")
+
+  expect_warning(
+    out <- quality_summary(flagged),
+    "deprecated"
+  )
+  expect_type(out, "list")
+})
+
+# --- Stream-level tests (using create_stream_data from helper-test-data.R) ---
+
+test_that("flag_quality works with full cycling stream data", {
+  set.seed(402)
+  streams <- create_stream_data(sport = "Ride")
+
+  flagged <- flag_quality(streams, sport = "Ride")
+
+  expect_s3_class(flagged, "data.frame")
+  expect_equal(nrow(flagged), nrow(streams))
+  expect_gt(sum(flagged$flag_pw_spike, na.rm = TRUE), 0)
+})
+
+test_that("flag_quality handles custom thresholds", {
+  set.seed(406)
+  streams <- create_stream_data(sport = "Run")
+
+  flagged_strict <- flag_quality(
+    streams,
+    sport = "Run",
+    hr_range = c(50, 200),
+    max_hr_jump = 5,
+    max_run_speed = 5.0
+  )
+  expect_gt(sum(flagged_strict$flag_any, na.rm = TRUE), 0)
+
+  flagged_lenient <- flag_quality(
+    streams,
+    sport = "Run",
+    hr_range = c(20, 250),
+    max_hr_jump = 20,
+    max_run_speed = 10.0
+  )
+  expect_s3_class(flagged_lenient, "data.frame")
+})
+
+test_that("flag_quality handles missing data columns", {
+  set.seed(407)
+  streams <- create_stream_data(sport = "Run")
+
+  streams_no_hr <- streams[, !names(streams) %in% "heartrate"]
+  streams_no_speed <- streams[, !names(streams) %in% c("velocity_smooth", "speed")]
+
+  flagged_no_hr <- flag_quality(streams_no_hr, sport = "Run")
+  expect_s3_class(flagged_no_hr, "data.frame")
+
+  flagged_no_speed <- flag_quality(streams_no_speed, sport = "Run")
+  expect_s3_class(flagged_no_speed, "data.frame")
+})
+
+test_that("flag_quality handles short and all-NA edge cases", {
+  short_streams <- data.frame(
+    time = 1:10,
+    heartrate = rep(150, 10),
+    watts = NA,
+    velocity_smooth = rep(3.5, 10),
+    speed = rep(3.5, 10),
+    distance = cumsum(rep(3.5, 10)),
+    stringsAsFactors = FALSE
+  )
+
+  flagged <- flag_quality(short_streams, sport = "Run")
+  expect_s3_class(flagged, "data.frame")
+
+  na_streams <- data.frame(
+    time = 1:100,
+    heartrate = NA,
+    watts = NA,
+    velocity_smooth = NA,
+    speed = NA,
+    distance = NA,
+    stringsAsFactors = FALSE
+  )
+
+  flagged_na <- flag_quality(na_streams, sport = "Run")
+  expect_s3_class(flagged_na, "data.frame")
 })

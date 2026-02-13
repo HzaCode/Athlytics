@@ -433,20 +433,26 @@ calculate_ef <- function(activities_data,
 #' @return Data frame with EF calculation results
 #'
 #' @examples
-#' \dontrun{
-#' # Parse activity file and calculate EF from streams
-#' streams <- parse_activity_file("activity_12345.fit")
-#' ef_result <- calculate_ef_from_stream(
-#'   stream_data = streams,
+#' # Example with synthetic stream data
+#' set.seed(42)
+#' n <- 3600
+#' stream <- data.frame(
+#'   time = 0:(n - 1),
+#'   heartrate = round(150 + rnorm(n, 0, 2)),
+#'   velocity_smooth = 3.0 + rnorm(n, 0, 0.05),
+#'   distance = cumsum(rep(3.0, n))
+#' )
+#' result <- calculate_ef_from_stream(
+#'   stream_data = stream,
 #'   activity_date = as.Date("2025-01-15"),
 #'   act_type = "Run",
 #'   ef_metric = "speed_hr",
-#'   min_steady_minutes = 20,
-#'   steady_cv_threshold = 0.08,
-#'   min_hr_coverage = 0.9,
-#'   quality_control = "filter"
+#'   min_steady_minutes = 10,
+#'   steady_cv_threshold = 0.1,
+#'   min_hr_coverage = 0.8,
+#'   quality_control = "off"
 #' )
-#' }
+#' print(result)
 #'
 #' @export
 calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_metric,
