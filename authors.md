@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/HzaCode/Athlytics/blob/v1.0.4/inst/CITATION)
+[`inst/CITATION`](https://github.com/HzaCode/Athlytics/blob/main/inst/CITATION)
 
 Zhiang He (2025). Athlytics: A Reproducible Framework for Endurance Data
 Analysis. R package version 1.0.4. https://github.com/HzaCode/Athlytics
