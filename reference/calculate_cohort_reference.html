@@ -33,7 +33,7 @@ stratified by specified grouping variables (e.g., sport, sex, age band)."></head
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Calculate Cohort Reference Percentiles</h1>
-      <small class="dont-index">Source: <a href="https://github.com/HzaCode/Athlytics/blob/main/R/cohort_reference.R" class="external-link"><code>R/cohort_reference.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/HzaCode/Athlytics/blob/v1.0.4/R/cohort_reference.R" class="external-link"><code>R/cohort_reference.R</code></a></small>
       <div class="d-none name"><code>calculate_cohort_reference.Rd</code></div>
     </div>
 
@@ -152,12 +152,12 @@ statistical confidence intervals for individual values.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   date       sport n_athletes percentile value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2023-02-03 Run            3 p05        0.825</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2023-02-03 Run            3 p25        0.853</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2023-02-03 Run            3 p05        0.791</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2023-02-03 Run            3 p25        0.834</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2023-02-03 Run            3 p50        0.888</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2023-02-03 Run            3 p75        0.898</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-02-03 Run            3 p95        0.906</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-02-04 Run            3 p05        0.889</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2023-02-03 Run            3 p75        0.915</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2023-02-03 Run            3 p95        0.936</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2023-02-04 Run            3 p05        0.791</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="co"># Full workflow with real data - Load activities for multiple athletes</span></span></span>
