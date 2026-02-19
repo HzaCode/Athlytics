@@ -18,7 +18,7 @@ affiliations:
     index: 1
 date: "2025-10-11"
 bibliography: paper.bib
-version: 1.0.0
+version: 1.0.4
 license: MIT
 ---
 
@@ -28,7 +28,7 @@ license: MIT
 
 # Statement of Need
 
-Analyzing endurance training data in R often requires stitching together API clients, file parsers, and custom scripts. This creates workflows that are fragile and difficult to reproduce, especially for **cohort-scale** research. **Athlytics** addresses this gap by providing a **single, research-oriented pipeline** that works offline with local archives, offers an integrated suite of physiological models, and is built from the ground up for multi-athlete analysis. This design **reduces "glue code"** and makes cohort-scale analyses auditable and easy to reproduce.
+Analyzing endurance training data in R often requires stitching together API clients, file parsers, and custom scripts. This creates workflows that are fragile and difficult to reproduce, especially for **cohort-scale** research. **Athlytics** addresses this gap by providing a **single, research-oriented pipeline** that works offline with local archives, offers an integrated suite of physiological models, and is built from the ground up for multi-athlete analysis. This design **reduces "glue code"** and makes cohort-scale analyses auditable and easy to reproduce. The primary audience for Athlytics includes **sports scientists, sports epidemiologists, and endurance coaches** who need a reliable, programmatic way to process cohort-scale Strava data reproducibly, bridging the gap between raw XML/FIT files and advanced physiological models.
 
 # Related Work 
 
@@ -49,11 +49,12 @@ Athlytics is unique in providing an API-free, end-to-end workflow that integrate
 
 # Software Description
 
--   **Inputs & Data Model:** Reads Strava ZIP archives or `activities.csv`. Activity streams (FIT/TCX/GPX) are loaded **on demand** from the archive, optionally using `FITfileR` for FIT files [@FITfileR]. The core function `load_local_activities()` produces a standardized tibble.
--   **Core Metrics:** `calculate_acwr()`, `calculate_ef()`, and `calculate_decoupling()` compute key summaries with sensible, research-oriented defaults. The implementation of ACWR acknowledges its conceptual issues and is presented as a monitoring tool [@impellizzeri2020acwr; @impellizzeri2021dismiss].
--   **Uncertainty Quantification:** Provides confidence intervals for EWMA-based ACWR using a moving-block bootstrap [@kunsch1989; @politis1994], a key feature for research applications.
--   **Cohort Benchmarking:** `calculate_cohort_reference()` computes percentile bands, which can be layered onto individual plots using `plot_with_reference()`.
--   **Plotting & Diagnostics:** Visualization functions follow a **data-first API**. Functions return **diagnostic fields** (e.g., `status`, `reason`) when inputs are insufficient, making the workflow transparent.
+-   **Offline Data Parsing:** Operates directly on local Strava ZIP exports. Using `.fit`, `.tcx`, and `.gpx` parsers via underlying XML and binary decoders (with optional `FITfileR` [@FITfileR] support), activity streams are loaded on demand.
+-   **Physiological & Load Metrics:** Supports multiple load tracking algorithms including HRSS (TRIMP-based) and TSS approximations. Calculates core metrics such as **Aerobic Decoupling**, **Efficiency Factor (EF)**, and automatically tracks **Personal Bests (PBs)** using sliding-window spatial algorithms.
+-   **Signal Processing & Quality Control:** Automatically filters non-steady-state segments using a rolling coefficient of variation (CV) algorithm to ensure valid physiological comparisons, discarding activities with excessive HR/power drift or GPS anomalies.
+-   **Uncertainty Quantification:** Provides confidence intervals for EWMA-based ACWR models using a moving-block bootstrap [@kunsch1989; @politis1994], effectively handling temporal autocorrelation in training loads. This rigorous uncertainty reporting acknowledges the ongoing conceptual debates surrounding ACWR as a predictive tool [@impellizzeri2020acwr; @impellizzeri2021dismiss].
+-   **Cohort Benchmarking & Visualization:** Generates population-level percentile reference bands (`calculate_cohort_reference()`) layered via an elegant, Nature-journal-inspired plotting API (e.g., `plot_acwr_enhanced()`).
+-   **Diagnostics & Transparency:** Functions return **diagnostic fields** (e.g., `status`, `reason`) when inputs are insufficient, making the workflow transparent and debuggable.
 
 # Example
 
@@ -63,27 +64,41 @@ The following example demonstrates a common cohort analysis workflow: loading da
 library(Athlytics)
 library(dplyr)
 
-# 1. Load and combine data for a cohort of athletes, adding identifiers
-athlete1 <- load_local_activities("athlete1_export.zip") %>% mutate(athlete_id = "A1")
-athlete2 <- load_local_activities("athlete2_export.zip") %>% mutate(athlete_id = "A2")
-cohort_data <- bind_rows(athlete1, athlete2)
+# 1. Use built-in sample data to simulate a cohort of athletes
+data("sample_acwr", package = "Athlytics")
+cohort_acwr <- bind_rows(
+  sample_acwr %>% mutate(athlete_id = "A1"),
+  sample_acwr %>% mutate(
+    athlete_id = "A2", 
+    acwr_smooth = acwr_smooth * runif(n(), 0.9, 1.1)
+  ),
+  sample_acwr %>% mutate(
+    athlete_id = "A3", 
+    acwr_smooth = acwr_smooth * runif(n(), 0.85, 1.15)
+  )
+)
 
-# 2. Calculate ACWR across the entire cohort using a modern dplyr workflow
-cohort_acwr <- cohort_data %>%
-  group_by(athlete_id) %>%
-  group_modify(~ calculate_acwr(.x, load_metric = "duration_mins")) %>%
-  ungroup()
+# 2. Generate cohort-wide percentile reference bands
+reference_bands <- calculate_cohort_reference(
+  cohort_acwr, 
+  metric = "acwr_smooth", 
+  min_athletes = 2
+)
 
-# 3. Generate cohort-wide percentile reference bands
-reference_bands <- calculate_cohort_reference(cohort_acwr, metric = "acwr_smooth")
-
-# 4. Plot an individual's data against the cohort reference
+# 3. Extract individual data
 individual_acwr <- cohort_acwr %>% filter(athlete_id == "A1")
-plot_with_reference(individual = individual_acwr, reference = reference_bands)
+
+# 4. Plot an individual's ACWR against the cohort reference using the enhanced plotting API
+plot_acwr_enhanced(
+  acwr_data = individual_acwr,
+  reference_data = reference_bands,
+  show_reference = TRUE,
+  highlight_zones = TRUE
+)
 ```
 
 # Acknowledgements
 
-The author acknowledges the helpful feedback from the pyOpenSci community, and the constructive suggestions provided by Professors Benjamin S. Baumer and Iztok Fister Jr., as well as the developers of the referenced R packages.
+I would like to thank Benjamin S. Baumer and Iztok Fister Jr. for their insightful feedback and constructive suggestions during the development of this package.
 
 # References
