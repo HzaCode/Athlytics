@@ -17,7 +17,7 @@ Description: An open-source computational framework for longitudinal analysis of
     including Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and 
     training load metrics. 
 License: MIT + file LICENSE
-URL: https://docs.ropensci.org/Athlytics, https://github.com/ropensci/Athlytics
+URL: https://ropensci.github.io/Athlytics/, https://github.com/ropensci/Athlytics
 BugReports: https://github.com/ropensci/Athlytics/issues
 Encoding: UTF-8
 LazyData: true

@@ -9,7 +9,7 @@
 [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![R-CMD-check](https://img.shields.io/github/actions/workflow/status/ropensci/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/ropensci/Athlytics/actions/workflows/R-CMD-check.yml)
 [![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/728_status.svg)](https://github.com/ropensci/software-review/issues/728)
-[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://docs.ropensci.org/Athlytics/)
+[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://ropensci.github.io/Athlytics/)
 [![Codecov](https://img.shields.io/codecov/c/github/ropensci/Athlytics?style=flat-square)](https://app.codecov.io/gh/ropensci/Athlytics)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Awesome](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-)
@@ -113,7 +113,7 @@ Track how your training load is progressing to avoid ramping up too quickly — 
 
 ![ACWR Analysis](man/figures/01b_acwr_multi_group.png)
 
-*[Learn more about ACWR analysis](https://docs.ropensci.org/Athlytics/reference/calculate_acwr.html)*
+*[Learn more about ACWR analysis](https://ropensci.github.io/Athlytics/reference/calculate_acwr.html)*
 
 ### Aerobic Efficiency (EF)
 
@@ -121,7 +121,7 @@ See how your aerobic fitness is changing over time by comparing your output (pac
 
 ![Efficiency Factor](man/figures/02b_ef_multi_group.png)
 
-*[Learn more about Aerobic Efficiency](https://docs.ropensci.org/Athlytics/reference/calculate_ef.html)*
+*[Learn more about Aerobic Efficiency](https://ropensci.github.io/Athlytics/reference/calculate_ef.html)*
 
 ### Cardiovascular Decoupling
 
@@ -129,7 +129,7 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
 
 ![Decoupling Analysis](man/figures/05b_decoupling_multi_group.png)
 
-*[Learn more about Decoupling](https://docs.ropensci.org/Athlytics/reference/calculate_decoupling.html)*
+*[Learn more about Decoupling](https://ropensci.github.io/Athlytics/reference/calculate_decoupling.html)*
 
 
 
