@@ -293,12 +293,12 @@ print(head(result))
 #> # A tibble: 6 × 5
 #>   date         atl   ctl  acwr acwr_smooth
 #>   <date>     <dbl> <dbl> <dbl>       <dbl>
-#> 1 2025-02-19     0     0    NA          NA
-#> 2 2025-02-20     0     0    NA          NA
-#> 3 2025-02-21     0     0    NA          NA
-#> 4 2025-02-22     0     0    NA          NA
-#> 5 2025-02-23     0     0    NA          NA
-#> 6 2025-02-24     0     0    NA          NA
+#> 1 2025-02-20     0     0    NA          NA
+#> 2 2025-02-21     0     0    NA          NA
+#> 3 2025-02-22     0     0    NA          NA
+#> 4 2025-02-23     0     0    NA          NA
+#> 5 2025-02-24     0     0    NA          NA
+#> 6 2025-02-25     0     0    NA          NA
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data

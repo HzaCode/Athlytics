@@ -291,12 +291,12 @@ ef_result <- calculate_ef(
 )
 print(head(ef_result))
 #>         date activity_type   ef_value     status
-#> 1 2026-01-21           Run 0.01984127 no_streams
-#> 2 2026-01-22           Run 0.01984127 no_streams
-#> 3 2026-01-23           Run 0.01984127 no_streams
-#> 4 2026-01-24           Run 0.01984127 no_streams
-#> 5 2026-01-25           Run 0.01984127 no_streams
-#> 6 2026-01-26           Run 0.01984127 no_streams
+#> 1 2026-01-22           Run 0.01984127 no_streams
+#> 2 2026-01-23           Run 0.01984127 no_streams
+#> 3 2026-01-24           Run 0.01984127 no_streams
+#> 4 2026-01-25           Run 0.01984127 no_streams
+#> 5 2026-01-26           Run 0.01984127 no_streams
+#> 6 2026-01-27           Run 0.01984127 no_streams
 
 if (FALSE) { # \dontrun{
 # Example using local Strava export data
