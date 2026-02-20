@@ -4,7 +4,7 @@ bibentry(
   author = person("Zhiang", "He", email = "ang@hezhiang.com"),
   year = 2025,
   note = "R package version 1.0.4",
-  url = "https://github.com/HzaCode/Athlytics",
-  textVersion = paste("Zhiang He (2025). Athlytics: A Reproducible Framework for Endurance Data Analysis. R package version 1.0.4. https://github.com/HzaCode/Athlytics")
+  url = "https://github.com/ropensci/Athlytics",
+  textVersion = paste("Zhiang He (2025). Athlytics: A Reproducible Framework for Endurance Data Analysis. R package version 1.0.4. https://github.com/ropensci/Athlytics")
 )
 

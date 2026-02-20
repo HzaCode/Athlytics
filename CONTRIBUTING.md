@@ -4,14 +4,14 @@
 
 We follow a "GitHub Flow" like process where contributions are made through Pull Requests. To make a contribution, please follow these steps:
 
-1.  **Check for Existing Issues:** Before starting work on a new feature or bug fix, please check the [Issues tab](https://github.com/HzaCode/Athlytics/issues) to see if someone else has already reported the issue or is working on it.
+1.  **Check for Existing Issues:** Before starting work on a new feature or bug fix, please check the [Issues tab](https://github.com/ropensci/Athlytics/issues) to see if someone else has already reported the issue or is working on it.
 
 2.  **Open an Issue (If Necessary):**
     *   **For Bug Reports:** If you find a bug, please open a new issue. Describe the bug clearly, including steps to reproduce it, what you expected to happen, and what actually happened. Include relevant version information for Athlytics and R.
     *   **For Feature Requests:** If you have an idea for a new feature, please open an issue to discuss it. This allows us to discuss the potential feature and ensure it aligns with the project's goals before significant development effort is made.
     *   **For Other Contributions:** If you want to contribute in other ways (e.g., documentation improvements, refactoring), it's still a good idea to open an issue first to discuss your proposed changes.
 
-3.  **Fork the Repository:** Fork the [Athlytics repository](https://github.com/HzaCode/Athlytics) to your own GitHub account.
+3.  **Fork the Repository:** Fork the [Athlytics repository](https://github.com/ropensci/Athlytics) to your own GitHub account.
 
 4.  **Create a Branch:** Create a new branch in your forked repository for your contribution. Choose a descriptive branch name (e.g., `fix-plot-bug`, `add-new-metric`).
 
@@ -32,7 +32,7 @@ We follow a "GitHub Flow" like process where contributions are made through Pull
 
 ## Code of Conduct
 
-By participating in this project, you are expected to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
+By participating in this project, you are expected to uphold the [rOpenSci Code of Conduct](https://ropensci.org/code-of-conduct/).
 
 ## Questions?
 

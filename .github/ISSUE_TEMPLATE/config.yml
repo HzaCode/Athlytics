@@ -1,12 +1,12 @@
 blank_issues_enabled: true
 contact_links:
   - name: ❓ Ask a Question
-    url: https://github.com/HzaCode/Athlytics/discussions
+    url: https://github.com/ropensci/Athlytics/discussions
     about: Ask questions about using Athlytics or discuss ideas
   - name: 📖 Documentation
-    url: https://hezhiang.com/Athlytics/
+    url: https://docs.ropensci.org/Athlytics/
     about: Read the full documentation and vignettes
   - name: 💬 Community Discussion
-    url: https://github.com/HzaCode/Athlytics/discussions
+    url: https://github.com/ropensci/Athlytics/discussions
     about: Join community discussions about sports analytics and training science
 

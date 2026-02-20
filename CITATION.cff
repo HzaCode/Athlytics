@@ -4,8 +4,8 @@ type: software
 title: "Athlytics: A Reproducible Framework for Endurance Data Analysis"
 version: 1.0.4
 date-released: 2025-02-19
-url: "https://github.com/HzaCode/Athlytics"
-repository-code: "https://github.com/HzaCode/Athlytics"
+url: "https://github.com/ropensci/Athlytics"
+repository-code: "https://github.com/ropensci/Athlytics"
 license: MIT
 authors:
   - family-names: "He"

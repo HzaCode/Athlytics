@@ -43,19 +43,19 @@ This tutorial will guide you through a complete workflow—from loading your Str
 
 ## Installation
 
-For installation instructions, see the [README](https://github.com/HzaCode/Athlytics#installation). The quick version:
+For installation instructions, see the [README](https://github.com/ropensci/Athlytics#installation). The quick version:
 
 ```{r eval=FALSE}
 # CRAN (stable)
 install.packages("Athlytics")
 
 # GitHub (latest features)
-remotes::install_github("HzaCode/Athlytics")
+remotes::install_github("ropensci/Athlytics")
 ```
 
 ## Your Strava Data Export
 
-You'll need a Strava data export ZIP file. If you haven't exported your data yet, start from [Strava](https://www.strava.com/) and follow the steps in the [README Quick Start](https://github.com/HzaCode/Athlytics#quick-start).
+You'll need a Strava data export ZIP file. If you haven't exported your data yet, start from [Strava](https://www.strava.com/) and follow the steps in the [README Quick Start](https://github.com/ropensci/Athlytics#quick-start).
 
 **Quick Summary:**
 1. **Set Strava language to English** first: Strava Settings → Display Preferences → Language → English. The CSV export uses localized column headers, so non-English exports will fail to parse correctly.
@@ -792,7 +792,7 @@ plot(acwr_data$date, acwr_data$acwr_smooth, type = "l")
 ## Getting Help
 
 - **Function documentation**: `?calculate_acwr`, `?plot_ef`, etc.
-- **GitHub Issues**: [Report bugs](https://github.com/HzaCode/Athlytics/issues)
+- **GitHub Issues**: [Report bugs](https://github.com/ropensci/Athlytics/issues)
 - **Package vignettes**: `browseVignettes("Athlytics")`
 
 ---
@@ -826,7 +826,7 @@ If you use Athlytics in your research, please cite:
   author  = {Zhiang He},
   year    = {2025},
   version = {1.0.4},
-  url     = {https://github.com/HzaCode/Athlytics}
+  url     = {https://github.com/ropensci/Athlytics}
 }
 ```
 

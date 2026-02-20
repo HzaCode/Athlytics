@@ -1,8 +1,7 @@
-url: https://hzacode.github.io/Athlytics/
+url: https://docs.ropensci.org/Athlytics/
 
 template:
   bootstrap: 5
-  bootswatch: litera
 
 figures:
   dev: ragg::agg_png

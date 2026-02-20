@@ -83,15 +83,15 @@ plot_acwr(acwr_data)
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://hzacode.github.io/Athlytics/}
-  \item \url{https://github.com/HzaCode/Athlytics}
-  \item Report bugs at \url{https://github.com/HzaCode/Athlytics/issues}
+  \item \url{https://docs.ropensci.org/Athlytics/}
+  \item \url{https://github.com/ropensci/Athlytics}
+  \item Report bugs at \url{https://github.com/ropensci/Athlytics/issues}
 }
 
 
 \itemize{
-\item Package website: \url{https://hzacode.github.io/Athlytics/}
-\item GitHub repository: \url{https://github.com/HzaCode/Athlytics}
+\item Package website: \url{https://docs.ropensci.org/Athlytics/}
+\item GitHub repository: \url{https://github.com/ropensci/Athlytics}
 \item Strava: \url{https://www.strava.com/}
 }
 }

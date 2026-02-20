@@ -7,9 +7,10 @@
 [![CRAN Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
 [![CRAN Listed](https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square)](https://CRAN.R-project.org/view=SportsAnalytics)
 [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square)](https://cran.r-project.org/package=Athlytics)
-[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/HzaCode/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/HzaCode/Athlytics/actions/workflows/R-CMD-check.yml)
-[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://hezhiang.com/Athlytics/)
-[![Codecov](https://img.shields.io/codecov/c/github/HzaCode/Athlytics?style=flat-square)](https://app.codecov.io/gh/HzaCode/Athlytics)
+[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/ropensci/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/ropensci/Athlytics/actions/workflows/R-CMD-check.yml)
+[![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/728_status.svg)](https://github.com/ropensci/software-review/issues/728)
+[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://docs.ropensci.org/Athlytics/)
+[![Codecov](https://img.shields.io/codecov/c/github/ropensci/Athlytics?style=flat-square)](https://app.codecov.io/gh/ropensci/Athlytics)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Awesome](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-)
 [![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -40,23 +41,15 @@ install.packages("Athlytics")
 ```
 *Note: The CRAN version may not include the latest features like direct ZIP file support.*
 
-**2. R-Universe**
+**2. R-Universe (rOpenSci)**
 ```r
-# Enable repository from r-universe
-options(repos = c(
-  hzacode = 'https://hzacode.r-universe.dev'))
-
-# Install Athlytics
-install.packages('Athlytics')
+install.packages("Athlytics", repos = c('https://ropensci.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
-**3. Development Version (GitHub - Recommended)**
+**3. Development Version (GitHub)**
 ```r
-# First, install remotes if you don't have it
 # install.packages("remotes")
-
-# Install the latest development version from GitHub
-remotes::install_github("HzaCode/Athlytics")
+remotes::install_github("ropensci/Athlytics")
 ```
 
 ### Optional: FIT file support
@@ -120,7 +113,7 @@ Track how your training load is progressing to avoid ramping up too quickly — 
 
 ![ACWR Analysis](man/figures/01b_acwr_multi_group.png)
 
-*[Learn more about ACWR analysis](https://hezhiang.com/Athlytics/reference/calculate_acwr.html)*
+*[Learn more about ACWR analysis](https://docs.ropensci.org/Athlytics/reference/calculate_acwr.html)*
 
 ### Aerobic Efficiency (EF)
 
@@ -128,7 +121,7 @@ See how your aerobic fitness is changing over time by comparing your output (pac
 
 ![Efficiency Factor](man/figures/02b_ef_multi_group.png)
 
-*[Learn more about Aerobic Efficiency](https://hezhiang.com/Athlytics/reference/calculate_ef.html)*
+*[Learn more about Aerobic Efficiency](https://docs.ropensci.org/Athlytics/reference/calculate_ef.html)*
 
 ### Cardiovascular Decoupling
 
@@ -136,7 +129,7 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
 
 ![Decoupling Analysis](man/figures/05b_decoupling_multi_group.png)
 
-*[Learn more about Decoupling](https://hezhiang.com/Athlytics/reference/calculate_decoupling.html)*
+*[Learn more about Decoupling](https://docs.ropensci.org/Athlytics/reference/calculate_decoupling.html)*
 
 
 
@@ -163,7 +156,7 @@ If you use **Athlytics** in academic work, please cite the software as well as t
   author  = {Zhiang He},
   year    = {2025},
   version = {1.0.4},
-  url     = {https://github.com/HzaCode/Athlytics}
+  url     = {https://github.com/ropensci/Athlytics}
 }
 ```
 
@@ -177,14 +170,14 @@ Athlytics processes personal training records. Ensure appropriate consent for co
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide and follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) guide. Please note that this package is released with a [Contributor Code of Conduct](https://ropensci.org/code-of-conduct/). By contributing to this project, you agree to abide by its terms.
 
-*   **🐛 Report an Issue**: [Open an Issue](https://github.com/HzaCode/Athlytics/issues)
-*   **💡 Suggest a Feature**: [Start a Discussion](https://github.com/HzaCode/Athlytics/discussions)
+*   **🐛 Report an Issue**: [Open an Issue](https://github.com/ropensci/Athlytics/issues)
+*   **💡 Suggest a Feature**: [Start a Discussion](https://github.com/ropensci/Athlytics/discussions)
 *   **🔧 Submit a Pull Request**: We appreciate your help in improving Athlytics.
 
 
 
 ## 🙏 Acknowledgements
 
-We thank the [pyOpenSci](https://www.pyopensci.org/) community, [Prof. Benjamin S. Baumer](https://github.com/beanumber), and [Prof. Iztok Fister Jr.](https://github.com/firefly-cpp) for their valuable feedback and suggestions.
+This package has been [peer-reviewed](https://github.com/ropensci/software-review/issues/728) by rOpenSci. We thank [Eunseop Kim](https://github.com/markean) and [Simon Nolte](https://github.com/smnnlt) for their constructive reviews, and [Prof. Benjamin S. Baumer](https://github.com/beanumber) and [Prof. Iztok Fister Jr.](https://github.com/firefly-cpp) for their valuable feedback and suggestions.

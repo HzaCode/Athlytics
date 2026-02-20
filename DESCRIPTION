@@ -3,8 +3,13 @@ Title: Academic R Package for Sports Physiology Analysis from Local 'Strava' Dat
 Version: 1.0.4
 Author: Zhiang He [aut, cre]
 Maintainer: Zhiang He <ang@hezhiang.com>
-Authors@R: 
-    person("Zhiang", "He", email = "ang@hezhiang.com", role = c("aut", "cre"))
+Authors@R: c(
+    person("Zhiang", "He", email = "ang@hezhiang.com", role = c("aut", "cre")),
+    person("Eunseop", "Kim", role = "rev",
+           comment = "Eunseop Kim reviewed the package (v. 1.0.4) for rOpenSci, see https://github.com/ropensci/software-review/issues/728"),
+    person("Simon", "Nolte", role = "rev",
+           comment = "Simon Nolte reviewed the package (v. 1.0.4) for rOpenSci, see https://github.com/ropensci/software-review/issues/728")
+    )
 Description: An open-source computational framework for longitudinal analysis of 
     exercise physiology metrics using local 'Strava' data exports. Designed 
     for personal analysis and sports science applications, this package provides 
@@ -12,8 +17,8 @@ Description: An open-source computational framework for longitudinal analysis of
     including Acute:Chronic Workload Ratio (ACWR), Efficiency Factor (EF), and 
     training load metrics. 
 License: MIT + file LICENSE
-URL: https://hzacode.github.io/Athlytics/, https://github.com/HzaCode/Athlytics
-BugReports: https://github.com/HzaCode/Athlytics/issues 
+URL: https://docs.ropensci.org/Athlytics, https://github.com/ropensci/Athlytics
+BugReports: https://github.com/ropensci/Athlytics/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 

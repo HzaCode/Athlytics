@@ -60,8 +60,8 @@
 #' ```
 #'
 #' @seealso
-#' - Package website: <https://hzacode.github.io/Athlytics/>
-#' - GitHub repository: <https://github.com/HzaCode/Athlytics>
+#' - Package website: <https://docs.ropensci.org/Athlytics/>
+#' - GitHub repository: <https://github.com/ropensci/Athlytics>
 #' - Strava: <https://www.strava.com/>
 #'
 #' @importFrom dplyr %>%
