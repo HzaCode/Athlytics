@@ -4,16 +4,21 @@
 
 <h1 align="center">Athlytics</h1>
 
-[![CRAN Status](https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square)](https://cran.r-project.org/package=Athlytics)
-[![CRAN Listed](https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square)](https://CRAN.R-project.org/view=SportsAnalytics)
-[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square)](https://cran.r-project.org/package=Athlytics)
-[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/ropensci/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check)](https://github.com/ropensci/Athlytics/actions/workflows/R-CMD-check.yml)
-[![Status at rOpenSci Software Peer Review](https://badges.ropensci.org/728_status.svg)](https://github.com/ropensci/software-review/issues/728)
-[![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square)](https://ropensci.github.io/Athlytics/)
-[![Codecov](https://img.shields.io/codecov/c/github/ropensci/Athlytics?style=flat-square)](https://app.codecov.io/gh/ropensci/Athlytics)
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Awesome](https://awesome.re/badge-flat.svg)](https://github.com/firefly-cpp/awesome-computational-intelligence-in-sports?tab=readme-ov-file#software-)
-[![Project Status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+<p align="center">
+  <!-- Group 1: CI/CD, Reviews & Licenses -->
+  <a href="https://github.com/ropensci/Athlytics/actions/workflows/R-CMD-check.yml"><img src="https://img.shields.io/github/actions/workflow/status/ropensci/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check" alt="R-CMD-check"></a>
+  <a href="https://github.com/ropensci/software-review/issues/728"><img src="https://badges.ropensci.org/728_status.svg" alt="rOpenSci Status"></a>
+  <a href="https://ropensci.github.io/Athlytics/"><img src="https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square" alt="Documentation"></a>
+  <a href="https://app.codecov.io/gh/ropensci/Athlytics"><img src="https://img.shields.io/codecov/c/github/ropensci/Athlytics?style=flat-square" alt="Codecov"></a>
+  <a href="https://www.repostatus.org/#active"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a>
+  <br>
+  <!-- Group 2: CRAN Release & Status (Moved to the back) -->
+  <a href="https://cran.r-project.org/package=Athlytics"><img src="https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square" alt="CRAN Status"></a>
+  <a href="https://CRAN.R-project.org/view=SportsAnalytics"><img src="https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square" alt="CRAN Listed"></a>
+  <a href="https://cran.r-project.org/package=Athlytics"><img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square" alt="CRAN Downloads"></a>
+</p>
+
 
 ## Overview
 
