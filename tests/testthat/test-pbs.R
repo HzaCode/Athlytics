@@ -250,3 +250,178 @@ test_that("plot_pbs custom title and caption work", {
   expect_equal(p$labels$subtitle, "Custom Sub")
   expect_equal(p$labels$caption, "Test caption")
 })
+
+# ============================================================
+# Regression tests — bug-fix guards grouped by version
+# ============================================================
+
+# --- zip support (v1.0.4) -----------------------------------------------
+
+test_that("calculate_pbs accepts zip export_dir (regression)", {
+  zip_path <- make_extdata_zip()
+  on.exit(unlink(zip_path), add = TRUE)
+
+  activities <- suppressWarnings(load_local_activities(zip_path))
+  result <- suppressWarnings(calculate_pbs(
+    activities_data = activities,
+    export_dir = zip_path,
+    activity_type = "Run",
+    distances_m = c(1000)
+  ))
+
+  expect_s3_class(result, "data.frame")
+  # Should not error; actual content may be empty depending on example files,
+  # but the gate must not reject zip.
+})
+
+test_that("calculate_pbs rejects non-zip non-dir export_dir with a clear error", {
+  expect_error(
+    calculate_pbs(
+      activities_data = data.frame(
+        filename = character(),
+        date = as.Date(character()),
+        type = character(),
+        distance = numeric()
+      ),
+      export_dir = "nonexistent_path_xyz"
+    ),
+    "directory or a .zip file"
+  )
+})
+
+# --- Custom distance labels preserved (v1.0.4) --------------------------
+
+test_that("calculate_pbs preserves custom distance labels like 3000m (regression)", {
+  tmp_dir <- tempfile(pattern = "athlytics_pb_")
+  dir.create(file.path(tmp_dir, "activities"), recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(tmp_dir, recursive = TRUE), add = TRUE)
+
+  # 6km synthetic run so 1k, 3k, and 5k PBs all fit inside.
+  tcx_path <- file.path(tmp_dir, "activities", "synthetic.tcx")
+  write_synthetic_tcx(tcx_path, total_m = 6000, pace_s_per_m = 0.3)
+
+  activities <- data.frame(
+    id = 1L,
+    name = "Synthetic run",
+    type = "Run",
+    date = as.Date("2025-01-01"),
+    start_date_local = as.POSIXct("2025-01-01 00:00:00", tz = "UTC"),
+    distance = 6000,
+    moving_time = 1800L,
+    elapsed_time = 1800L,
+    average_heartrate = 150,
+    filename = "activities/synthetic.tcx",
+    stringsAsFactors = FALSE
+  )
+
+  result <- suppressWarnings(calculate_pbs(
+    activities_data = activities,
+    export_dir = tmp_dir,
+    activity_type = "Run",
+    distances_m = c(1000, 3000, 5000),
+    start_date = as.Date("2024-01-01"),
+    end_date = as.Date("2025-12-31")
+  ))
+
+  expect_s3_class(result, "data.frame")
+  expect_gt(nrow(result), 0)
+
+  # distance_label must not contain NA values
+  expect_false(any(is.na(as.character(result$distance_label))),
+    info = paste0(
+      "distance_label contains NA; unique values: ",
+      paste(unique(as.character(result$distance_label)), collapse = ", ")
+    )
+  )
+
+  # 3000m row label must be "3000m", not NA
+  rows_3000 <- result[result$distance == 3000, , drop = FALSE]
+  expect_gt(nrow(rows_3000), 0)
+  label_3000 <- as.character(rows_3000$distance_label)
+  expect_true(all(label_3000 == "3000m"),
+    info = sprintf("3000m row label expected '3000m', got: %s",
+      paste(label_3000, collapse = ", "))
+  )
+
+  # factor levels must include "3000m"
+  expect_true("3000m" %in% levels(result$distance_label))
+})
+
+# --- find_best_effort correctness & performance (v1.0.4) ----------------
+
+test_that("find_best_effort interpolates target distance crossings (regression)", {
+  # Stream sampled at 1 Hz, constant 3 m/s. Target = 1000 m → expected
+  # elapsed time = 1000 / 3 ≈ 333.333 s. Nearest-row lookup would have
+  # reported 334 s; linear interpolation recovers the fractional-second answer.
+  d <- seq(0, 2000, by = 3)
+  t <- seq(0, by = 1, length.out = length(d))
+  stream <- data.frame(distance = d, time = t)
+
+  eff <- Athlytics:::find_best_effort(stream, target_distance = 1000)
+
+  expect_false(is.null(eff))
+  expect_equal(eff$time_seconds, 1000 / 3, tolerance = 1e-6)
+})
+
+test_that("find_best_effort drops non-monotonic distance samples (regression)", {
+  # Inject a GPS bounce-back that previously manufactured fake sub-second
+  # 100 m segments via pure nearest-row lookup. After the fix, the monotonic-
+  # distance filter discards the bounce and returns the true ~33 s time.
+  d_clean <- seq(0, 600, by = 3)
+  t_clean <- seq(0, by = 1, length.out = length(d_clean))
+  stream <- data.frame(
+    distance = c(d_clean[1:50], 10, 20, 30, d_clean[51:length(d_clean)]),
+    time = c(t_clean[1:50], t_clean[50] + 0.25,
+      t_clean[50] + 0.5, t_clean[50] + 0.75,
+      t_clean[51:length(d_clean)])
+  )
+
+  eff <- Athlytics:::find_best_effort(stream, target_distance = 100)
+
+  expect_false(is.null(eff))
+  # 100 m at 3 m/s = ~33.33 s; must not drop below 20 s due to GPS bounce.
+  expect_gt(eff$time_seconds, 25)
+})
+
+test_that("find_best_effort runs in ~linear time on large streams (regression)", {
+  # A 10-hour run (36000 rows) used to be O(n^2) in the number of start
+  # indices. Post-fix the two-pointer sweep completes in well under a
+  # second even in a cold R session.
+  n <- 36000
+  d <- seq(0, by = 3, length.out = n)
+  t <- seq(0, by = 1, length.out = n)
+  stream <- data.frame(distance = d, time = t)
+
+  timing <- system.time({
+    eff <- Athlytics:::find_best_effort(stream, target_distance = 5000)
+  })
+
+  expect_false(is.null(eff))
+  # Generous bound to avoid flaky CI failures while still catching an
+  # O(n^2) regression (the old algorithm took tens of seconds for n = 36000).
+  expect_lt(as.numeric(timing["elapsed"]), 5)
+})
+
+# --- time_basis output column (v1.0.5) ----------------------------------
+
+test_that("calculate_pbs output contract includes time_basis column", {
+  # The synthetic PB pipeline above already exercises PB calculation against
+  # real filenames; here we just assert the new column is part of the output
+  # contract (even on the empty-frame path).
+  set.seed(6)
+  empty <- calculate_pbs(
+    activities_data = data.frame(
+      id = integer(0),
+      date = as.Date(character(0)),
+      type = character(0),
+      filename = character(0),
+      distance = numeric(0),
+      moving_time = numeric(0),
+      stringsAsFactors = FALSE
+    ),
+    export_dir = tempdir(),
+    distances_m = c(1000)
+  ) |> suppressWarnings()
+
+  expect_true("time_basis" %in% colnames(empty))
+})

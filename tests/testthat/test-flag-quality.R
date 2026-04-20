@@ -231,3 +231,124 @@ test_that("flag_quality handles short and all-NA edge cases", {
   flagged_na <- flag_quality(na_streams, sport = "Run")
   expect_s3_class(flagged_na, "data.frame")
 })
+
+# ============================================================
+# Regression tests — bug-fix guards grouped by version
+# ============================================================
+
+# --- Column-name aliasing (v1.0.4) --------------------------------------
+
+test_that("flag_quality accepts heart_rate / power aliases from parse_activity_file (regression)", {
+  # parse_activity_file() emits heart_rate (not heartrate) and power (not watts).
+  # Pre-fix, flag_quality() silently skipped all QC checks because the
+  # expected columns were absent.
+  stream <- data.frame(
+    time = 0:99,
+    heart_rate = c(rep(150, 50), 250, rep(150, 49)), # one spike
+    power = c(rep(200, 50), 1600, rep(200, 49))      # one power spike
+  )
+
+  result <- suppressMessages(flag_quality(stream, sport = "Run"))
+
+  # Alias-applied columns must exist downstream
+  expect_true("heartrate" %in% colnames(result))
+  expect_true("watts" %in% colnames(result))
+  # QC checks must fire on the aliased columns
+  expect_true(result$flag_hr_spike[51])
+  expect_true(result$flag_pw_spike[51])
+})
+
+# --- steady_cv_threshold unit unification (v1.0.4) ----------------------
+
+test_that("flag_quality auto-normalizes legacy percent steady_cv_threshold with warning (regression)", {
+  stream <- data.frame(
+    time = 0:99,
+    heartrate = rep(150, 100),
+    velocity_smooth = rep(3.0, 100)
+  )
+
+  expect_warning(
+    suppressMessages(flag_quality(
+      stream,
+      sport = "Run",
+      min_steady_minutes = 1,
+      steady_cv_threshold = 8 # legacy percent value
+    )),
+    regexp = "looks like a percentage"
+  )
+})
+
+test_that("flag_quality fraction-space default produces same steady points as old percent default (regression)", {
+  # Old default 8 (percent) and new default 0.08 (fraction) must select the
+  # same samples as steady-state for a given stream.
+  set.seed(303)
+  n <- 25 * 60
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = rep(150, n),
+    velocity_smooth = rnorm(n, mean = 3.5, sd = 0.1)
+  )
+
+  res_fraction <- suppressMessages(flag_quality(
+    stream,
+    sport = "Run",
+    min_steady_minutes = 20,
+    steady_cv_threshold = 0.08
+  ))
+  res_percent <- suppressWarnings(suppressMessages(flag_quality(
+    stream,
+    sport = "Run",
+    min_steady_minutes = 20,
+    steady_cv_threshold = 8
+  )))
+
+  expect_identical(res_fraction$is_steady_state, res_percent$is_steady_state)
+})
+
+# --- Per-second HR / power jump rates (v1.0.5) --------------------------
+
+test_that("flag_quality HR jump is compared per second on a non-1Hz stream (regression)", {
+  # HR jump of 12 bpm across 1 second = 12 bpm/s > 10 bpm/s threshold → flag.
+  # The first sample can never be flagged (no preceding dt).
+  streams <- data.frame(
+    time = c(0, 1, 2, 3, 4),
+    heartrate = c(140, 152, 153, 154, 155),
+    stringsAsFactors = FALSE
+  )
+  flagged <- suppressMessages(flag_quality(streams, sport = "Run"))
+  expect_true(flagged$flag_hr_spike[2])
+  expect_false(flagged$flag_hr_spike[1])
+})
+
+test_that("flag_quality does not over-flag when per-sample diff is large but per-second rate is small (regression)", {
+  # 5-second sampling: HR jumps by 12 bpm → 2.4 bpm/s, below the 10 bpm/s
+  # threshold. Under the buggy per-sample check this WOULD have been flagged;
+  # under the per-second fix it should not.
+  streams <- data.frame(
+    time = c(0, 5, 10, 15, 20),
+    heartrate = c(140, 152, 150, 151, 149),
+    stringsAsFactors = FALSE
+  )
+  flagged <- suppressMessages(flag_quality(streams, sport = "Run"))
+  expect_false(any(flagged$flag_hr_spike, na.rm = TRUE))
+})
+
+# --- Activity-level quality score attribute (v1.0.5) --------------------
+
+test_that("flag_quality exposes activity_quality_score attribute (regression)", {
+  set.seed(4)
+  streams <- data.frame(
+    time = 0:3600,
+    heartrate = pmax(60, pmin(200, rnorm(3601, mean = 150, sd = 5))),
+    watts = pmax(0, rnorm(3601, mean = 200, sd = 10)),
+    velocity_smooth = pmax(0, rnorm(3601, mean = 3.5, sd = 0.3)),
+    stringsAsFactors = FALSE
+  )
+  flagged <- suppressMessages(flag_quality(streams, sport = "Run"))
+  aqs <- attr(flagged, "activity_quality_score")
+  expect_true(is.numeric(aqs))
+  expect_gte(aqs, 0)
+  expect_lte(aqs, 1)
+  # column and attribute should carry the same numeric summary.
+  expect_equal(unique(flagged$quality_score), aqs, tolerance = 1e-9)
+})

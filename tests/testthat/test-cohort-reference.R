@@ -204,3 +204,76 @@ test_that("cohort_reference is deprecated but remains available", {
   )
   expect_s3_class(out, "data.frame")
 })
+
+# ============================================================
+# Regression tests — bug-fix guards grouped by version
+# ============================================================
+
+# --- Athlete-weighted percentiles (v1.0.4) ------------------------------
+
+test_that("calculate_cohort_reference is athlete-weighted, not row-weighted (regression)", {
+  # Cohort where one athlete has 10x more rows than another on the same
+  # date. Under the old row-weighted behaviour that athlete dominates the
+  # percentile; under the fix each athlete contributes a single
+  # representative value.
+  dates <- rep(as.Date("2024-06-01"), 11)
+  athlete_ids <- c(rep("A", 10), "B")
+  values <- c(rep(0.5, 10), 5.0) # athlete B is an outlier with ACWR = 5.0
+  cohort <- data.frame(
+    date = dates,
+    athlete_id = athlete_ids,
+    sport = "Run",
+    acwr_smooth = values,
+    stringsAsFactors = FALSE
+  )
+
+  ref <- suppressMessages(calculate_cohort_reference(
+    cohort,
+    metric = "acwr_smooth",
+    by = "sport",
+    probs = c(0.5),
+    min_athletes = 2
+  ))
+
+  # Median across two athletes (A=0.5, B=5.0) should be the average = 2.75,
+  # not 0.5 (which would imply row-weighted behaviour).
+  p50_row <- ref$value[ref$percentile == "p50"]
+  expect_length(p50_row, 1)
+  expect_gt(p50_row, 0.6)
+  expect_lt(p50_row, 5.0)
+})
+
+# --- athlete_id requirement (v1.0.5) ------------------------------------
+
+test_that("calculate_cohort_reference errors when athlete_id is missing by default (regression)", {
+  dat <- data.frame(
+    date = seq(as.Date("2024-01-01"), by = "day", length.out = 10),
+    sport = "Run",
+    acwr_smooth = rnorm(10, 1, 0.1),
+    stringsAsFactors = FALSE
+  )
+  expect_error(
+    calculate_cohort_reference(dat, metric = "acwr_smooth", by = "sport"),
+    "athlete_id.*is required"
+  )
+})
+
+test_that("calculate_cohort_reference tolerates missing athlete_id when opted in (regression)", {
+  dat <- data.frame(
+    date = rep(seq(as.Date("2024-01-01"), by = "day", length.out = 10), times = 2),
+    sport = "Run",
+    acwr_smooth = rnorm(20, 1, 0.1),
+    stringsAsFactors = FALSE
+  )
+  expect_warning(
+    res <- calculate_cohort_reference(
+      dat,
+      metric = "acwr_smooth",
+      by = "sport",
+      min_athletes = 1,
+      allow_unknown_athlete = TRUE
+    ),
+    "pooling all rows under a single synthetic"
+  )
+  expect_s3_class(res, "data.frame")
+})

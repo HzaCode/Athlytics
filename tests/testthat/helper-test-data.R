@@ -71,6 +71,80 @@ create_activity_stream <- function(duration_seconds = 3600, steady_state = TRUE)
   return(stream_df)
 }
 
+# Build a minimal Strava-export ZIP from inst/extdata.
+# Returns the path to a temporary .zip containing activities.csv and the
+# activities/ directory. Used by tests that exercise the zip-aware gates
+# in calculate_pbs() and calculate_decoupling().
+make_extdata_zip <- function() {
+  src_csv <- system.file("extdata", "activities.csv", package = "Athlytics")
+  src_acts <- system.file("extdata", "activities", package = "Athlytics")
+  skip_if_not(nzchar(src_csv) && dir.exists(src_acts), "extdata not available")
+
+  zip_path <- tempfile(fileext = ".zip")
+  staging <- tempfile(pattern = "athlytics_zip_src_")
+  dir.create(file.path(staging, "activities"), recursive = TRUE, showWarnings = FALSE)
+
+  file.copy(src_csv, file.path(staging, "activities.csv"), overwrite = TRUE)
+  act_files <- list.files(src_acts, full.names = TRUE)
+  file.copy(act_files, file.path(staging, "activities"), overwrite = TRUE)
+
+  old_wd <- getwd()
+  on.exit(setwd(old_wd), add = TRUE)
+  setwd(staging)
+  utils::zip(zip_path, files = c("activities.csv", "activities"), flags = "-q")
+
+  zip_path
+}
+
+# Write a synthetic TCX file with constant pace so PBs are well-defined.
+# Used by calculate_pbs() tests that need a deterministic distance-label
+# expectation (e.g. the 3000m custom-label regression).
+#   total_m        : total distance covered
+#   pace_s_per_m   : seconds per metre (inverse of speed in m/s)
+#   step_s         : seconds between trackpoints
+write_synthetic_tcx <- function(path, total_m = 6000, pace_s_per_m = 0.3, step_s = 1) {
+  total_s <- total_m * pace_s_per_m
+  n_points <- as.integer(floor(total_s / step_s)) + 1L
+  times <- seq(0, by = step_s, length.out = n_points)
+  distances <- pmin(total_m, times / pace_s_per_m)
+  start_time <- as.POSIXct("2025-01-01 00:00:00", tz = "UTC")
+  timestamps <- format(start_time + times, format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
+
+  header <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>\n',
+    '<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2" ',
+    'xmlns:ns3="http://www.garmin.com/xmlschemas/ActivityExtension/v2">\n',
+    '  <Activities>\n',
+    '    <Activity Sport="Running">\n',
+    sprintf('      <Id>%s</Id>\n', timestamps[1]),
+    sprintf('      <Lap StartTime="%s">\n', timestamps[1]),
+    sprintf('        <TotalTimeSeconds>%s</TotalTimeSeconds>\n', format(total_s)),
+    sprintf('        <DistanceMeters>%s</DistanceMeters>\n', format(total_m)),
+    '        <Track>\n'
+  )
+
+  trackpoints <- vapply(seq_along(times), function(i) {
+    paste0(
+      '          <Trackpoint>\n',
+      sprintf('            <Time>%s</Time>\n', timestamps[i]),
+      sprintf('            <DistanceMeters>%s</DistanceMeters>\n', format(distances[i], nsmall = 1)),
+      '            <HeartRateBpm><Value>150</Value></HeartRateBpm>\n',
+      '          </Trackpoint>\n'
+    )
+  }, character(1))
+
+  footer <- paste0(
+    '        </Track>\n',
+    '      </Lap>\n',
+    '    </Activity>\n',
+    '  </Activities>\n',
+    '</TrainingCenterDatabase>\n'
+  )
+
+  writeLines(c(header, trackpoints, footer), con = path, sep = "")
+  invisible(path)
+}
+
 # Create realistic stream data with quality issues
 # Used by: test-flag-quality-streams.R
 create_stream_data <- function(n_points = 3600, sport = "Run") {

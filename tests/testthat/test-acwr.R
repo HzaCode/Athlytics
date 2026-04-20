@@ -522,3 +522,113 @@ test_that("calculate_acwr_ewma handles single activity edge case", {
   expect_gt(nrow(result), 0)
   expect_true(single_activity$date[1] %in% result$date)
 })
+
+# ============================================================
+# Regression tests — bug-fix guards grouped by version
+# ============================================================
+
+# --- Rest-day vs missing-data clip warning (v1.0.4) ---------------------
+
+test_that("calculate_acwr warns when requested start_date is far before first activity (regression)", {
+  end <- Sys.Date()
+  first_activity <- end - 30
+  start <- end - 365
+
+  activities <- data.frame(
+    id = 1:20,
+    type = "Run",
+    date = seq(first_activity, end, length.out = 20),
+    moving_time = 3600,
+    distance = 10000,
+    average_heartrate = 150,
+    stringsAsFactors = FALSE
+  )
+
+  expect_warning(
+    suppressMessages(calculate_acwr(
+      activities_data = activities,
+      activity_type = "Run",
+      load_metric = "distance_km",
+      start_date = start,
+      end_date = end
+    )),
+    regexp = "is.*day.*after.*start_date"
+  )
+})
+
+test_that("calculate_acwr does not warn when start_date equals first_activity_date (regression)", {
+  # Common benign pattern: user sets start_date to their first activity date.
+  # Pre-fix this warned every time; post-fix the threshold check suppresses
+  # benign 0 / 1 day gaps.
+  end <- Sys.Date()
+  first_activity <- end - 60
+  activities <- data.frame(
+    id = 1:20,
+    type = "Run",
+    date = seq(first_activity, end, length.out = 20),
+    moving_time = 3600,
+    distance = 10000,
+    average_heartrate = 150,
+    stringsAsFactors = FALSE
+  )
+
+  expect_no_warning(suppressMessages(calculate_acwr(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "distance_km",
+    start_date = first_activity,
+    end_date = end
+  )))
+})
+
+# --- missing_load: rest day vs missing-data training day (v1.0.5) -------
+
+test_that("calculate_acwr missing_load = 'na' distinguishes rest days from missing-data training days", {
+  # 60 days of daily runs, but exactly one day in the middle has no HR
+  # recorded so HRSS cannot be computed. With missing_load = "zero" that
+  # day becomes 0 load (same as a rest); with "na" it should stay NA and
+  # propagate through the rolling mean.
+  n <- 60
+  end_day <- as.Date("2024-03-01")
+  dates <- seq(end_day - (n - 1), end_day, by = "day")
+  activities <- data.frame(
+    id = seq_len(n),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n),
+    moving_time = rep(3600, n),
+    elapsed_time = rep(3600, n),
+    average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n),
+    stringsAsFactors = FALSE
+  )
+  gap_idx <- 30
+  activities$average_heartrate[gap_idx] <- NA_real_
+
+  acwr_zero <- suppressWarnings(calculate_acwr(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "hrss",
+    user_max_hr = 190,
+    user_resting_hr = 50,
+    start_date = dates[1],
+    end_date = end_day,
+    missing_load = "zero"
+  ))
+
+  acwr_na <- suppressWarnings(calculate_acwr(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "hrss",
+    user_max_hr = 190,
+    user_resting_hr = 50,
+    start_date = dates[1],
+    end_date = end_day,
+    missing_load = "na"
+  ))
+
+  expect_equal(nrow(acwr_zero), nrow(acwr_na))
+  expect_gte(sum(is.na(acwr_na$acwr) & !is.na(acwr_zero$acwr)), 1)
+})

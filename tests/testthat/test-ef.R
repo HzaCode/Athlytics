@@ -717,3 +717,348 @@ test_that("calculate_ef stream data branches with extdata", {
     expect_s3_class(ef, "data.frame")
   }
 })
+
+# ============================================================
+# Regression tests — bug-fix guards grouped by version
+# ============================================================
+
+# --- gap_hr stream path (v1.0.4: must not run the power_hr formula) -----
+
+test_that("gap_hr stream path does not require watts (regression)", {
+  # Stream has velocity + HR, but no watts. Pre-fix: returned missing_power_data.
+  n <- 3600
+  set.seed(1)
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = rep(150, n) + rnorm(n, 0, 0.5),
+    velocity_smooth = rep(3.0, n) + rnorm(n, 0, 0.01),
+    distance = cumsum(rep(3.0, n))
+  )
+
+  result <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2024-01-01"),
+    act_type = "Run",
+    ef_metric = "gap_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.1,
+    min_hr_coverage = 0.8,
+    quality_control = "off"
+  ))
+
+  expect_false(identical(result$status, "missing_power_data"),
+    info = "gap_hr should fall back to velocity/HR, not require watts"
+  )
+  expect_false(is.na(result$ef_value))
+  # EF should match speed_hr (velocity/HR ~= 3/150 = 0.02), NOT watts/HR
+  expect_true(abs(result$ef_value - 0.02) < 0.005,
+    info = sprintf("gap_hr stream EF expected ~0.02, got %.4f", result$ef_value)
+  )
+})
+
+test_that("gap_hr stream path does not silently compute watts/heartrate (regression)", {
+  # Stream has velocity AND watts. Pre-fix: silently ran watts/HR = 300/150 = 2.0
+  # and labelled it gap_hr. Must now return ~velocity/HR = 0.02 instead.
+  n <- 3600
+  set.seed(2)
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = rep(150, n) + rnorm(n, 0, 0.5),
+    velocity_smooth = rep(3.0, n) + rnorm(n, 0, 0.01),
+    distance = cumsum(rep(3.0, n)),
+    watts = rep(300, n) + rnorm(n, 0, 2)
+  )
+
+  result <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2024-01-01"),
+    act_type = "Run",
+    ef_metric = "gap_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.1,
+    min_hr_coverage = 0.8,
+    quality_control = "off"
+  ))
+
+  expect_false(is.na(result$ef_value))
+  # Must be velocity/HR (~0.02), never watts/HR (~2.0)
+  expect_lt(result$ef_value, 1)
+  expect_true(abs(result$ef_value - 0.02) < 0.005)
+})
+
+# --- gap_hr fallback transparency (v1.0.5: explicit in result columns) --
+
+test_that("calculate_ef_from_stream flags gap_hr fallback in ef_metric_used and status", {
+  # Synthetic 30-minute 1 Hz run: constant 3 m/s pace, constant 150 bpm.
+  # The stream has no GAP channel (none of our parsers emit one), so
+  # ef_metric = "gap_hr" must fall back to speed/HR, and the returned row
+  # must make that visible.
+  set.seed(42)
+  n <- 1800L
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = 150 + rnorm(n, 0, 1),
+    velocity_smooth = 3 + rnorm(n, 0, 0.05),
+    distance = cumsum(rep(3, n)),
+    stringsAsFactors = FALSE
+  )
+
+  res <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2025-01-01"),
+    act_type = "Run",
+    ef_metric = "gap_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.2,
+    min_hr_coverage = 0.5,
+    quality_control = "off"
+  ))
+
+  expect_true("ef_metric_requested" %in% colnames(res))
+  expect_true("ef_metric_used" %in% colnames(res))
+  expect_equal(res$ef_metric_requested, "gap_hr")
+  expect_equal(res$ef_metric_used, "speed_hr")
+  expect_equal(res$status, "gap_stream_unavailable_fallback_to_speed")
+  expect_true(is.finite(res$ef_value))
+  expect_gt(res$ef_value, 0.015)
+})
+
+test_that("calculate_ef_from_stream leaves ef_metric_requested/used equal when no fallback", {
+  set.seed(42)
+  n <- 1800L
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = 150 + rnorm(n, 0, 1),
+    velocity_smooth = 3 + rnorm(n, 0, 0.05),
+    distance = cumsum(rep(3, n)),
+    stringsAsFactors = FALSE
+  )
+
+  res <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2025-01-01"),
+    act_type = "Run",
+    ef_metric = "speed_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.2,
+    min_hr_coverage = 0.5,
+    quality_control = "off"
+  ))
+
+  expect_equal(res$ef_metric_requested, "speed_hr")
+  expect_equal(res$ef_metric_used, "speed_hr")
+  expect_equal(res$status, "ok")
+})
+
+# --- Contiguous-block steady-state detection (v1.0.5) --------------------
+
+test_that("calculate_ef_from_stream rejects scattered steady islands shorter than min_steady_minutes", {
+  # Construct a 30-minute stream with 3 steady 5-minute islands separated by
+  # 5-minute turbulent (high-CV) stretches. No single contiguous block is
+  # >= min_steady_minutes = 15, so EF must return insufficient_steady_duration.
+  set.seed(1)
+  block_len <- 300L # 5 min at 1 Hz
+  steady_v <- rep(3, block_len) + rnorm(block_len, 0, 0.02)
+  noisy_v <- rep(3, block_len) + rnorm(block_len, 0, 1.5)
+
+  velocity <- c(steady_v, noisy_v, steady_v, noisy_v, steady_v, noisy_v)
+  hr <- rep(150, length(velocity)) + rnorm(length(velocity), 0, 1)
+
+  stream <- data.frame(
+    time = seq_along(velocity) - 1L,
+    heartrate = hr,
+    velocity_smooth = velocity,
+    distance = cumsum(velocity),
+    stringsAsFactors = FALSE
+  )
+
+  res <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2025-01-01"),
+    act_type = "Run",
+    ef_metric = "speed_hr",
+    min_steady_minutes = 15,
+    steady_cv_threshold = 0.08,
+    min_hr_coverage = 0.5,
+    quality_control = "off"
+  ))
+
+  expect_equal(res$status, "insufficient_steady_duration")
+  expect_true(is.na(res$ef_value))
+})
+
+test_that("calculate_ef_from_stream accepts a contiguous steady block >= min_steady_minutes", {
+  # 30-minute fully-steady run. Longest contiguous steady block is ~30 min,
+  # so EF should succeed and steady_duration_minutes should be close to 30.
+  set.seed(2)
+  n <- 1800L
+  velocity <- rep(3, n) + rnorm(n, 0, 0.02)
+  hr <- rep(150, n) + rnorm(n, 0, 1)
+
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = hr,
+    velocity_smooth = velocity,
+    distance = cumsum(velocity),
+    stringsAsFactors = FALSE
+  )
+
+  res <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2025-01-01"),
+    act_type = "Run",
+    ef_metric = "speed_hr",
+    min_steady_minutes = 20,
+    steady_cv_threshold = 0.08,
+    min_hr_coverage = 0.5,
+    quality_control = "off"
+  ))
+
+  expect_equal(res$status, "ok")
+  expect_gt(res$steady_duration_minutes, 19)
+  expect_gte(res$n_steady_blocks, 1)
+})
+
+# --- Sampling-rate aware rolling window (v1.0.5) -------------------------
+
+test_that("calculate_ef_from_stream reports sampling_interval_seconds for 0.5 Hz data", {
+  # Half-second-resolution stream of ~30 minutes of steady 3 m/s pace.
+  set.seed(3)
+  n <- 3600L
+  time <- seq(0, by = 0.5, length.out = n) # 0.5 Hz, total = 30 min
+  velocity <- rep(3, n) + rnorm(n, 0, 0.02)
+  hr <- rep(150, n) + rnorm(n, 0, 1)
+
+  stream <- data.frame(
+    time = time,
+    heartrate = hr,
+    velocity_smooth = velocity,
+    distance = cumsum(velocity * 0.5),
+    stringsAsFactors = FALSE
+  )
+
+  res <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2025-01-01"),
+    act_type = "Run",
+    ef_metric = "speed_hr",
+    min_steady_minutes = 20,
+    steady_cv_threshold = 0.08,
+    min_hr_coverage = 0.5,
+    quality_control = "off"
+  ))
+
+  expect_equal(res$status, "ok")
+  expect_equal(res$sampling_interval_seconds, 0.5, tolerance = 1e-6)
+})
+
+# --- Time-weighted HR coverage (v1.0.4) ---------------------------------
+
+test_that("calculate_ef_from_stream rejects streams with late HR dropout (regression)", {
+  # 1-hour stream, but the final 45 minutes lost HR. Time-weighted coverage
+  # for the 15-min valid window out of 60 min ≈ 25%. With min_hr_coverage =
+  # 0.5 the stream must be rejected (pre-fix row-fraction coverage hid the gap).
+  n_valid <- 15 * 60
+  n_gap <- 45 * 60
+  stream <- data.frame(
+    time = 0:(n_valid + n_gap - 1),
+    heartrate = c(rep(150, n_valid), rep(NA_real_, n_gap)),
+    velocity_smooth = rep(3.0, n_valid + n_gap),
+    distance = cumsum(rep(3.0, n_valid + n_gap))
+  )
+
+  result <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2024-01-01"),
+    act_type = "Run",
+    ef_metric = "speed_hr",
+    min_hr_coverage = 0.5,
+    min_steady_minutes = 5,
+    steady_cv_threshold = 0.1,
+    quality_control = "off"
+  ))
+
+  expect_identical(result$status, "insufficient_hr_data")
+  expect_true(is.na(result$ef_value))
+  expect_gt(result$hr_coverage, 0.2)
+  expect_lt(result$hr_coverage, 0.3)
+})
+
+# --- quality_score / hr_coverage propagation (v1.0.4) -------------------
+
+test_that("calculate_ef_from_stream ok-path returns quality_score and hr_coverage (regression)", {
+  set.seed(201)
+  n <- 3600
+  stream <- data.frame(
+    time = 0:(n - 1),
+    heartrate = rep(150, n) + rnorm(n, 0, 0.5),
+    velocity_smooth = rep(3.0, n) + rnorm(n, 0, 0.01),
+    distance = cumsum(rep(3.0, n))
+  )
+
+  result <- suppressMessages(calculate_ef_from_stream(
+    stream_data = stream,
+    activity_date = as.Date("2024-01-01"),
+    act_type = "Run",
+    ef_metric = "speed_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.1,
+    min_hr_coverage = 0.8,
+    quality_control = "filter"
+  ))
+
+  expect_identical(result$status, "ok")
+  expect_true(all(c("quality_score", "hr_coverage") %in% colnames(result)))
+  expect_true(is.finite(result$quality_score))
+  expect_true(is.finite(result$hr_coverage))
+  expect_gte(result$quality_score, 0)
+  expect_lte(result$quality_score, 1)
+  expect_gte(result$hr_coverage, 0)
+  expect_lte(result$hr_coverage, 1)
+})
+
+# --- Legacy capitalized metric names (v1.0.4) ---------------------------
+
+test_that("calculate_ef accepts legacy capitalized ef_metric like 'Speed_HR' (regression)", {
+  end <- Sys.Date()
+  start <- end - 9
+  dates <- seq(start, end, by = "day")
+  n <- length(dates)
+
+  activities <- data.frame(
+    id = seq_len(n),
+    name = paste("Run", seq_len(n)),
+    type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n),
+    moving_time = rep(3600, n),
+    elapsed_time = rep(3600, n),
+    average_heartrate = rep(150, n),
+    average_speed = rep(2.778, n),
+    filename = rep(NA_character_, n),
+    stringsAsFactors = FALSE
+  )
+
+  expect_no_error(suppressMessages(calculate_ef(
+    activities_data = activities,
+    activity_type = "Run",
+    ef_metric = "Speed_HR",
+    quality_control = "off",
+    min_duration_mins = 10,
+    min_steady_minutes = 10,
+    start_date = start,
+    end_date = end
+  )))
+
+  expect_no_error(suppressMessages(calculate_ef(
+    activities_data = activities,
+    activity_type = "Run",
+    ef_metric = "SPEED_HR",
+    quality_control = "off",
+    min_duration_mins = 10,
+    min_steady_minutes = 10,
+    start_date = start,
+    end_date = end
+  )))
+})
