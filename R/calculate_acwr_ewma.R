@@ -243,6 +243,9 @@ calculate_acwr_ewma <- function(activities_data,
     user_ftp, user_max_hr, user_resting_hr
   )
 
+  # Warn once if "zero" mode is silently absorbing data-quality gaps.
+  warn_missing_load_absorbed(daily_load_df, missing_load)
+
   # Aggregate to daily load; preserve NA on days where every activity had a
   # non-computable load so `missing_load = "na"` can propagate it below.
   daily_load_summary <- daily_load_df %>%

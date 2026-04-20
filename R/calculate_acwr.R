@@ -347,6 +347,11 @@ calculate_acwr <- function(activities_data,
     stop("No activities found with valid load data for the specified criteria.")
   }
 
+  # If the caller is on the default "zero" imputation and any activity
+  # produced a non-computable load, emit a one-shot warning so users are
+  # aware that data-quality gaps are being silently treated as rest days.
+  warn_missing_load_absorbed(daily_load_df, missing_load)
+
   # Aggregate to daily load. A date gets NA_real_ (rather than 0) only when
   # every activity on that date had a non-computable load (e.g. HRSS with
   # missing HR); this is what `missing_load = "na"` preserves downstream.

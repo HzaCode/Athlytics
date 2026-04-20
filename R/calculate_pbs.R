@@ -28,10 +28,16 @@
 #' counter plateaus (traffic stops, laps pausing the watch, signal
 #' dropouts) are therefore excluded from the candidate window. That makes
 #' the reported times *moving-time* best efforts rather than elapsed-time
-#' best efforts. To reflect that in the output the `time_basis` column is
-#' hard-coded to `"moving"`, and both `elapsed_time` and `moving_time` are
-#' populated with the same numeric seconds value so existing downstream
-#' code that reads either column still works.
+#' best efforts.
+#'
+#' The authoritative field is `time_basis`, which is hard-coded to
+#' `"moving"` in the current implementation. For backward compatibility
+#' with earlier releases the output still exposes two columns:
+#' `elapsed_time` and `moving_time`. Both are populated with the same
+#' numeric `time_seconds` value — they are *compatibility columns*, not
+#' two independently-computed quantities. Filter on `time_basis` rather
+#' than relying on `elapsed_time != moving_time` to tell the two apart,
+#' because the current implementation never produces that difference.
 #'
 #' If you need an elapsed-time PB (i.e. including paused seconds), use the
 #' raw stream with a separate tool; the current implementation intentionally
@@ -176,9 +182,13 @@ calculate_pbs <- function(activities_data,
       i, nrow(filtered_activities), activity$name, activity$date
     ), .verbose = verbose_on)
 
-    # Parse activity file
-    file_path <- file.path(export_dir, activity$filename)
-    stream_data <- parse_activity_file(file_path, export_dir)
+    # Parse activity file. parse_activity_file() resolves both directory
+    # and .zip export_dir values via its zip-aware logic, so we pass
+    # activity$filename and export_dir straight through rather than
+    # pre-building a path with file.path() (which the zip resolver then
+    # has to strip the export_dir prefix from). This matches the call
+    # pattern used by calculate_decoupling().
+    stream_data <- parse_activity_file(activity$filename, export_dir)
 
     if (is.null(stream_data) || nrow(stream_data) < 10) {
       warning(sprintf("Insufficient data in file for activity %s", activity$id))

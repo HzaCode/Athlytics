@@ -160,6 +160,10 @@ calculate_exposure <- function(activities_data,
     stop("No valid load data could be calculated from activities. Check if activities have the required metrics (HR, power, duration, distance).")
   }
 
+  # Warn once if "zero" mode is silently absorbing data-quality gaps so
+  # users spot hidden missing-data training days.
+  warn_missing_load_absorbed(daily_load_df, missing_load)
+
   # --- Aggregate Daily Load ---
   # Rest vs missing-data distinction: a date keeps NA_real_ rather than 0
   # only when every activity on that date had a non-computable load. The

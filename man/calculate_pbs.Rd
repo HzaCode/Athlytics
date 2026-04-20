@@ -71,10 +71,16 @@ must be long enough to contain the target distance segments.
 counter plateaus (traffic stops, laps pausing the watch, signal
 dropouts) are therefore excluded from the candidate window. That makes
 the reported times \emph{moving-time} best efforts rather than elapsed-time
-best efforts. To reflect that in the output the \code{time_basis} column is
-hard-coded to \code{"moving"}, and both \code{elapsed_time} and \code{moving_time} are
-populated with the same numeric seconds value so existing downstream
-code that reads either column still works.
+best efforts.
+
+The authoritative field is \code{time_basis}, which is hard-coded to
+\code{"moving"} in the current implementation. For backward compatibility
+with earlier releases the output still exposes two columns:
+\code{elapsed_time} and \code{moving_time}. Both are populated with the same
+numeric \code{time_seconds} value — they are \emph{compatibility columns}, not
+two independently-computed quantities. Filter on \code{time_basis} rather
+than relying on \code{elapsed_time != moving_time} to tell the two apart,
+because the current implementation never produces that difference.
 
 If you need an elapsed-time PB (i.e. including paused seconds), use the
 raw stream with a separate tool; the current implementation intentionally

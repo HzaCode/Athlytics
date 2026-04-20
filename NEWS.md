@@ -75,15 +75,53 @@
   now `stop()`s unless the caller explicitly opts in via
   `allow_unknown_athlete = TRUE`.
 
+## Transparency additions (continued)
+
+* **`missing_load = "zero"` now warns when it silently absorbs data
+  gaps.** `calculate_acwr()`, `calculate_acwr_ewma()` and
+  `calculate_exposure()` invoke a shared helper that scans the
+  per-activity `load_status` column produced by
+  `compute_single_load()`; if any activity returned a `missing_*` /
+  `hr_out_of_range` status and the caller kept the historical `"zero"`
+  default, the function now emits a one-shot `warning()` listing the
+  top statuses and recommending `missing_load = "na"`. The default is
+  still `"zero"` for backward compatibility.
+
+## Code cleanup
+
+* **`calculate_pbs()` now uses the same stream-parse call pattern as
+  `calculate_decoupling()`.** Previously PB processing called
+  `parse_activity_file(file.path(export_dir, activity$filename),
+  export_dir)` which relied on the zip resolver stripping the
+  `export_dir/` prefix internally. The new call passes
+  `activity$filename` and `export_dir` directly, matching the
+  decoupling path and removing the redundant prefix hop.
+
+* **`calculate_decoupling()` `stream_df` roxygen corrected.** Earlier
+  drafts said "If provided, calculates decoupling for this data
+  directly, ignoring other parameters". The implementation has not
+  ignored those parameters since 1.0.4; the documentation now matches
+  the behaviour and explicitly lists which arguments `stream_df`
+  honours.
+
 ## Documentation
 
 * Expanded the EF and decoupling roxygen `@return` tables and the
   `Status vocabulary` sections with every status string the two
   functions can emit.
 * Added a dedicated `PB time semantics` section to `calculate_pbs()`
-  explaining elapsed-vs-moving interpretation.
+  explaining elapsed-vs-moving interpretation; clarified that
+  `elapsed_time` and `moving_time` are *compatibility columns* that
+  carry the same `time_seconds` value and that `time_basis` is the
+  authoritative field.
 * Documented the `missing_load` knob on every training-load entry
   point.
+* README: installation section now prominently flags the
+  CRAN / GitHub version mismatch (CRAN `0.1.2` vs GitHub `1.0.5`) and
+  recommends r-universe or GitHub for the current offline workflow.
+  Citation `version` updated from 1.0.4 to 1.0.5. The Quick Start
+  ZIP note now reflects `calculate_pbs()` and `calculate_decoupling()`
+  being zip-aware in 1.0.5.
 
 ---
 

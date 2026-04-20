@@ -405,9 +405,7 @@ test_that("find_best_effort runs in ~linear time on large streams (regression)",
 # --- time_basis output column (v1.0.5) ----------------------------------
 
 test_that("calculate_pbs output contract includes time_basis column", {
-  # The synthetic PB pipeline above already exercises PB calculation against
-  # real filenames; here we just assert the new column is part of the output
-  # contract (even on the empty-frame path).
+  # Empty-frame path still exercises the output contract shape.
   set.seed(6)
   empty <- calculate_pbs(
     activities_data = data.frame(
@@ -424,4 +422,88 @@ test_that("calculate_pbs output contract includes time_basis column", {
   ) |> suppressWarnings()
 
   expect_true("time_basis" %in% colnames(empty))
+})
+
+# --- End-to-end PB extraction from a zip export_dir (v1.0.5) -----------
+
+test_that("calculate_pbs reads streams from a zip export and emits v1.0.5 output columns (regression)", {
+  # Build a self-contained .zip export so this test covers the full
+  # read path (zip resolver in parse_activity_file() + zip-aware gate
+  # in calculate_pbs()) rather than the unpacked-dir branch.
+  staging <- tempfile(pattern = "athlytics_pb_zip_src_")
+  dir.create(file.path(staging, "activities"), recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(staging, recursive = TRUE), add = TRUE)
+
+  # 6 km synthetic run at 3 m/s → 1k / 3k / 5k PBs all fit inside.
+  tcx_rel <- file.path("activities", "synthetic.tcx")
+  write_synthetic_tcx(file.path(staging, tcx_rel),
+    total_m = 6000, pace_s_per_m = 1 / 3, step_s = 1
+  )
+
+  # Write an activities.csv matching Strava's English-export schema so
+  # load_local_activities() can consume it. The column set mirrors the
+  # one shipped in inst/extdata/activities.csv (same 18 columns). Strava
+  # stores Distance in METRES (not km), so a 6 km run is 6000.
+  activities_csv <- data.frame(
+    `Activity ID` = 1L,
+    `Activity Date` = "Jan 1, 2025, 12:00:00 AM",
+    `Activity Name` = "Synthetic PB run",
+    `Activity Type` = "Run",
+    `Elapsed Time` = 1800L,
+    `Moving Time` = 1800L,
+    `Distance` = 6000,
+    `Filename` = tcx_rel,
+    `Elevation Gain` = 0,
+    `Elevation Loss` = 0,
+    `Average Heart Rate` = 150,
+    `Max Heart Rate` = 160,
+    `Average Speed` = 3.0,
+    `Max Speed` = 3.0,
+    `Average Watts` = NA_real_,
+    `Max Watts` = NA_real_,
+    `Calories` = 500,
+    `Relative Effort` = 50,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
+  )
+  utils::write.csv(activities_csv,
+    file = file.path(staging, "activities.csv"),
+    row.names = FALSE
+  )
+
+  # Package staging/ as a .zip whose internal layout is
+  # activities.csv + activities/synthetic.tcx. Use `-r` so the TCX
+  # file *inside* the activities/ directory is actually included
+  # (without -r, utils::zip writes the empty folder entry only).
+  zip_path <- tempfile(fileext = ".zip")
+  on.exit(unlink(zip_path), add = TRUE)
+  old_wd <- getwd()
+  setwd(staging)
+  utils::zip(zip_path, files = c("activities.csv", "activities"), flags = "-rq")
+  setwd(old_wd)
+
+  activities <- suppressWarnings(load_local_activities(zip_path))
+  skip_if(nrow(activities) == 0,
+    "load_local_activities could not read synthetic csv; unrelated to PB fix"
+  )
+
+  result <- suppressWarnings(calculate_pbs(
+    activities_data = activities,
+    export_dir = zip_path,
+    activity_type = "Run",
+    distances_m = c(1000, 3000, 5000),
+    start_date = as.Date("2024-01-01"),
+    end_date = as.Date("2025-12-31")
+  ))
+
+  expect_s3_class(result, "data.frame")
+  expect_gt(nrow(result), 0)
+  # v1.0.5 output contract
+  expect_true(all(
+    c("distance_label", "time_basis", "time_seconds", "is_pb")
+      %in% colnames(result)
+  ))
+  expect_true(all(result$time_basis == "moving"))
+  # custom 3000m label must reach the output (tied to the zip path)
+  expect_true("3000m" %in% as.character(result$distance_label))
 })

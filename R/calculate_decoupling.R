@@ -24,10 +24,17 @@
 #'   Activities with lower HR coverage are rejected as insufficient data quality.
 #' @param quality_control Quality control mode: "off" (no filtering), "flag" (mark issues),
 #'   or "filter" (exclude flagged data). Default "filter" for scientific rigor.
-#' @param stream_df Optional. A pre-fetched data frame for a *single* activity's stream.
-#'   If provided, calculates decoupling for this data directly, ignoring other parameters.
-#'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance`
-#'   (for speed_hr) or `watts` (for power_hr).
+#' @param stream_df Optional. A pre-fetched data frame for a *single*
+#'   activity's stream. If provided, decoupling is calculated directly
+#'   from this stream, and the activities-level arguments
+#'   (`activities_data`, `export_dir`, `activity_type`, `start_date`,
+#'   `end_date`, `min_duration_mins`) are not used. The stream-level
+#'   quality-control and steady-state parameters — `quality_control`,
+#'   `min_steady_minutes`, `steady_cv_threshold`, `min_hr_coverage` — are
+#'   honoured and forwarded into the internal calculator, so callers can
+#'   tune rejection behaviour per call. Must include columns: `time`,
+#'   `heartrate`, and either `velocity_smooth`/`distance` (for speed_hr)
+#'   or `watts` (for power_hr).
 #' @param return_diagnostics Logical. Only consulted when `stream_df` is
 #'   supplied. When `FALSE` (default) the function returns a bare numeric
 #'   decoupling value for backward compatibility with early releases. When

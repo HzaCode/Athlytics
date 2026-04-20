@@ -50,10 +50,17 @@ Activities with lower HR coverage are rejected as insufficient data quality.}
 \item{quality_control}{Quality control mode: "off" (no filtering), "flag" (mark issues),
 or "filter" (exclude flagged data). Default "filter" for scientific rigor.}
 
-\item{stream_df}{Optional. A pre-fetched data frame for a \emph{single} activity's stream.
-If provided, calculates decoupling for this data directly, ignoring other parameters.
-Must include columns: \code{time}, \code{heartrate}, and either \code{velocity_smooth}/\code{distance}
-(for speed_hr) or \code{watts} (for power_hr).}
+\item{stream_df}{Optional. A pre-fetched data frame for a \emph{single}
+activity's stream. If provided, decoupling is calculated directly
+from this stream, and the activities-level arguments
+(\code{activities_data}, \code{export_dir}, \code{activity_type}, \code{start_date},
+\code{end_date}, \code{min_duration_mins}) are not used. The stream-level
+quality-control and steady-state parameters — \code{quality_control},
+\code{min_steady_minutes}, \code{steady_cv_threshold}, \code{min_hr_coverage} — are
+honoured and forwarded into the internal calculator, so callers can
+tune rejection behaviour per call. Must include columns: \code{time},
+\code{heartrate}, and either \code{velocity_smooth}/\code{distance} (for speed_hr)
+or \code{watts} (for power_hr).}
 
 \item{return_diagnostics}{Logical. Only consulted when \code{stream_df} is
 supplied. When \code{FALSE} (default) the function returns a bare numeric

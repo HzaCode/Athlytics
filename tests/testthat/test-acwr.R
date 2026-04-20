@@ -632,3 +632,43 @@ test_that("calculate_acwr missing_load = 'na' distinguishes rest days from missi
   expect_equal(nrow(acwr_zero), nrow(acwr_na))
   expect_gte(sum(is.na(acwr_na$acwr) & !is.na(acwr_zero$acwr)), 1)
 })
+
+test_that("calculate_acwr warns when missing_load = 'zero' silently absorbs data gaps (regression)", {
+  # Same synthetic activity set as the previous test, but this time we
+  # intentionally stay on the historical "zero" default. Since at least
+  # one training day now has a non-computable load (missing HR for an
+  # HRSS metric), the consumer must emit a one-shot `warning()` pointing
+  # at `missing_load = "na"`. Without this signal, data-quality gaps are
+  # silently imputed as rest days.
+  n <- 60
+  end_day <- as.Date("2024-03-01")
+  dates <- seq(end_day - (n - 1), end_day, by = "day")
+  activities <- data.frame(
+    id = seq_len(n),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n),
+    moving_time = rep(3600, n),
+    elapsed_time = rep(3600, n),
+    average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n),
+    stringsAsFactors = FALSE
+  )
+  activities$average_heartrate[30] <- NA_real_
+
+  expect_warning(
+    suppressMessages(calculate_acwr(
+      activities_data = activities,
+      activity_type = "Run",
+      load_metric = "hrss",
+      user_max_hr = 190,
+      user_resting_hr = 50,
+      start_date = dates[1],
+      end_date = end_day
+      # missing_load default = "zero"
+    )),
+    regexp = "non-computable load.*missing_load = \"na\""
+  )
+})

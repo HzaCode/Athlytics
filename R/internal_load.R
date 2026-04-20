@@ -86,6 +86,59 @@ calculate_daily_load_internal <- function(activities_df,
 }
 
 
+#' Warn when `missing_load = "zero"` is silently absorbing data gaps
+#'
+#' Shared helper used by `calculate_acwr()`, `calculate_acwr_ewma()` and
+#' `calculate_exposure()`. When the caller keeps the historical default
+#' `missing_load = "zero"` but the per-activity load computation emitted
+#' any `missing_*` / `hr_out_of_range` statuses, those days are currently
+#' being treated as rest days. That is a data-quality issue users should
+#' notice. The helper emits a one-shot, non-fatal `warning()` pointing at
+#' the alternative `missing_load = "na"`.
+#'
+#' @param daily_load_df A data frame produced by
+#'   `calculate_daily_load_internal()`. Must include a `load_status`
+#'   character column.
+#' @param missing_load The caller's `missing_load` argument value.
+#'
+#' @return Invisibly, `NULL`.
+#'
+#' @keywords internal
+#' @noRd
+warn_missing_load_absorbed <- function(daily_load_df, missing_load) {
+  if (missing_load != "zero") {
+    return(invisible(NULL))
+  }
+  if (!is.data.frame(daily_load_df) || !"load_status" %in% colnames(daily_load_df)) {
+    return(invisible(NULL))
+  }
+
+  bad <- daily_load_df$load_status[!daily_load_df$load_status %in% c("ok", NA_character_)]
+  if (length(bad) == 0) {
+    return(invisible(NULL))
+  }
+
+  status_counts <- sort(table(bad), decreasing = TRUE)
+  top <- utils::head(status_counts, 3)
+  summary <- paste(
+    sprintf("%s (%d)", names(top), as.integer(top)),
+    collapse = ", "
+  )
+
+  warning(sprintf(
+    paste0(
+      "%d training day(s) had a non-computable load and are being treated as zero ",
+      "because missing_load = \"zero\". Most common statuses: %s. ",
+      "Pass missing_load = \"na\" to keep those days as NA instead of 0, so rolling ",
+      "means surface the data gap rather than silently imputing rest."
+    ),
+    length(bad), summary
+  ), call. = FALSE)
+
+  invisible(NULL)
+}
+
+
 #' Compute Load Value for a Single Activity
 #'
 #' Internal function that computes the load value for a single activity

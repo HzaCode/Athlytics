@@ -40,22 +40,33 @@ The package standardizes the workflow from data ingestion and quality control to
 
 ## 📦 Installation
 
-**1. Stable Release (CRAN)**
-```r
-install.packages("Athlytics")
-```
-*Note: The CRAN version may not include the latest features like direct ZIP file support.*
+> ⚠️ **Version mismatch notice.** The current GitHub / rOpenSci release is
+> **1.0.5** (offline `.zip` / FIT / TCX / GPX workflow, rOpenSci-reviewed).
+> The CRAN release is still **0.1.2**, a much older codebase that predates
+> the offline workflow and still depends on the Strava API stack
+> (`httr`, `jsonlite`, `rStrava`, `viridis`). Until CRAN catches up,
+> install from **r-universe** or **GitHub** to get the current package.
 
-**2. R-Universe (rOpenSci)**
+**1. R-Universe (rOpenSci, recommended)**
 ```r
 install.packages("Athlytics", repos = c('https://ropensci.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
-**3. Development Version (GitHub)**
+**2. Development Version (GitHub)**
 ```r
 # install.packages("remotes")
 remotes::install_github("ropensci/Athlytics")
 ```
+
+**3. CRAN (outdated; 0.1.2)**
+```r
+install.packages("Athlytics")
+```
+*The CRAN build does **not** include the offline-export workflow, the
+time-weighted HR coverage fix, the continuous steady-block EF /
+decoupling logic, zip-aware PB calculation, `time_basis`, the
+`missing_load` knob, or any of the 1.0.x rOpenSci review fixes. Only
+use it if you specifically need the legacy Strava-API pipeline.*
 
 ### Optional: FIT file support
 
@@ -77,7 +88,7 @@ remotes::install_github("grimbough/FITfileR")
 1.  Navigate to **[Strava](https://www.strava.com/)** and open Settings → My Account.
 2.  Under "Download or Delete Your Account," click **"Get Started"** and then **"Request Your Archive"**.
 3.  You'll receive an email with a download link - this may take some time.
-4.  Download the ZIP file (e.g., `export_12345678.zip`). You can pass the `.zip` directly to `load_local_activities()` for CSV-based analyses (e.g., ACWR). For stream-based analyses (EF/decoupling/PBs), **unzip the archive** and set `export_dir` to the extracted folder.
+4.  Download the ZIP file (e.g., `export_12345678.zip`). As of **1.0.5** the `.zip` can be passed directly to `load_local_activities()`, `calculate_pbs()`, and `calculate_decoupling()` via their `export_dir` argument; `calculate_ef()` still operates on activity summaries and therefore does not need `export_dir` for its main workflow. Unzipping into a directory is still supported and is a reasonable option if you plan to iterate over the export many times.
 
 ### 💻 Step 2: Load and Analyze (Cohort Example)
 
@@ -160,7 +171,7 @@ If you use **Athlytics** in academic work, please cite the software as well as t
   title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
   author  = {Zhiang He},
   year    = {2025},
-  version = {1.0.4},
+  version = {1.0.5},
   url     = {https://github.com/ropensci/Athlytics}
 }
 ```
