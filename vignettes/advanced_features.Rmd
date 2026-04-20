@@ -55,7 +55,7 @@ flagged_data <- flag_quality(
   max_hr_jump = 10, # Max HR change per second
   max_pw_jump = 300, # Max power change per second
   min_steady_minutes = 20, # Min duration for steady-state
-  steady_cv_threshold = 8 # CV% threshold for steady-state
+  steady_cv_threshold = 0.08 # CV fraction (0-1) threshold for steady-state
 )
 
 # View quality summary

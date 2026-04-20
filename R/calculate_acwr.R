@@ -249,8 +249,12 @@ calculate_acwr <- function(activities_data,
   }
 
   # --- Date Handling ---
-  analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
-  analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
+  analysis_end_date <- parse_analysis_date(end_date, default = Sys.Date(), arg_name = "end_date")
+  analysis_start_date <- parse_analysis_date(
+    start_date,
+    default = analysis_end_date - lubridate::days(365),
+    arg_name = "start_date"
+  )
   if (analysis_start_date >= analysis_end_date) stop("start_date must be before end_date.")
 
   verbose_on <- isTRUE(verbose) || athlytics_is_verbose()
@@ -278,6 +282,42 @@ calculate_acwr <- function(activities_data,
 
   if (activities_fetched_count == 0) {
     stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date, ").")
+  }
+
+  # Clip the chronic-buffer start to the earliest recorded activity to avoid
+  # conflating "rest day" (real 0 load) with "no data yet" (unknown load).
+  # Prior versions coalesced every pre-history day to 0 and dragged the
+  # chronic baseline toward 0, producing spuriously high ACWR in the first
+  # chronic_period days of output.
+  first_activity_date <- suppressWarnings(min(
+    as.Date(activities_df_filtered$date),
+    na.rm = TRUE
+  ))
+  if (is.finite(first_activity_date) && first_activity_date > fetch_start_date) {
+    # Only warn when the gap is material: i.e. the earliest activity is so
+    # late that roughly half or more of the chronic window's worth of
+    # analysis days cannot be fully populated by real history. A 1- or 2-day
+    # start-date misalignment is a common, benign pattern (users set
+    # start_date = first_activity_date) and should not spam warnings.
+    gap_days <- as.integer(first_activity_date - analysis_start_date)
+    warn_threshold <- max(7L, as.integer(chronic_period / 2))
+    if (gap_days >= warn_threshold) {
+      affected_days <- as.integer(
+        pmin(first_activity_date + chronic_period - 1, analysis_end_date) -
+          analysis_start_date + 1
+      )
+      affected_days <- max(0L, affected_days)
+      warning(sprintf(
+        paste0(
+          "Earliest activity (%s) is %d day(s) after the requested start_date (%s). ",
+          "ACWR for roughly the first %d day(s) of the analysis window will be NA ",
+          "because the chronic baseline has no prior data to anchor on."
+        ),
+        format(first_activity_date), gap_days,
+        format(analysis_start_date), affected_days
+      ), call. = FALSE)
+    }
+    fetch_start_date <- first_activity_date
   }
 
   # --- Process Activities into Daily Load (using internal helper) ---

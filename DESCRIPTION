@@ -34,6 +34,7 @@ Imports:
     utils
 Suggests:
     FITfileR,
+    ggborderline,
     knitr,
     pkgdown,
     R.utils,

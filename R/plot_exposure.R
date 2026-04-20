@@ -134,8 +134,8 @@ plot_exposure <- function(data,
 
   if (isTRUE(show_date_color)) {
     p <- p +
-      ggplot2::geom_point(ggplot2::aes(color = .data$date), alpha = 0.7, size = 2.5) +
-      ggplot2::scale_color_gradient(
+      ggplot2::geom_point(ggplot2::aes(fill = .data$date), shape = 21, colour = "white", stroke = 0.5, alpha = 0.8, size = 2.5) +
+      ggplot2::scale_fill_gradient(
         low = athlytics_palette_nature()[1],
         high = athlytics_palette_nature()[5],
         name = "Date",
@@ -167,7 +167,7 @@ plot_exposure <- function(data,
       )
   } else {
     p <- p +
-      ggplot2::geom_point(color = athlytics_palette_nature()[3], alpha = 0.7, size = 2.5)
+      ggplot2::geom_point(fill = athlytics_palette_nature()[3], shape = 21, colour = "white", stroke = 0.5, alpha = 0.8, size = 2.5)
   }
 
   p <- p +
@@ -206,10 +206,10 @@ plot_exposure <- function(data,
       ggplot2::geom_abline(intercept = 0, slope = danger_zone_upper, linetype = "dotted", color = "red") +
       ggplot2::coord_cartesian(xlim = c(0, max_ctl_limit), ylim = c(0, max_atl_limit), expand = FALSE)
 
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.05, y = max_atl_limit * 0.95, label = sprintf("High Risk (>%.1f)", danger_zone_upper), hjust = 0, vjust = 1, color = "red", size = 3, alpha = 0.8)
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.2, y = max_atl_limit * 0.7, label = sprintf("Caution (%.1f-%.1f)", sweet_spot_upper, danger_zone_upper), hjust = 0, vjust = 1, color = "orange", size = 3, alpha = 0.8)
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.5, y = max_atl_limit * 0.5, label = sprintf("Sweet Spot (%.1f-%.1f)", sweet_spot_lower, sweet_spot_upper), hjust = 0, vjust = 1, color = "darkgreen", size = 3, alpha = 0.8)
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.7, y = max_atl_limit * 0.2, label = sprintf("Low Load (<%.1f)", sweet_spot_lower), hjust = 0, vjust = 0, color = "blue", size = 3, alpha = 0.8)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.05, y = max_atl_limit * 0.95, label = sprintf("High Risk (>%.1f)", danger_zone_upper), hjust = 0, vjust = 1, color = "red", size = 2.8, alpha = 0.7)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.2, y = max_atl_limit * 0.7, label = sprintf("Caution (%.1f-%.1f)", sweet_spot_upper, danger_zone_upper), hjust = 0, vjust = 1, color = "orange", size = 2.8, alpha = 0.7)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.5, y = max_atl_limit * 0.5, label = sprintf("Sweet Spot (%.1f-%.1f)", sweet_spot_lower, sweet_spot_upper), hjust = 0, vjust = 1, color = "darkgreen", size = 2.8, alpha = 0.7)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.7, y = max_atl_limit * 0.2, label = sprintf("Low Load (<%.1f)", sweet_spot_lower), hjust = 0, vjust = 0, color = "blue", size = 2.8, alpha = 0.7)
   }
 
   return(p)

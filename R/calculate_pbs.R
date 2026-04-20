@@ -86,15 +86,27 @@ calculate_pbs <- function(activities_data,
     stop("`activities_data` must include 'filename' column. Please use the latest version of load_local_activities().")
   }
 
-  if (!dir.exists(export_dir)) {
-    stop("Export directory not found: ", export_dir)
+  is_zip_export <- is.character(export_dir) &&
+    length(export_dir) == 1 &&
+    file.exists(export_dir) &&
+    tolower(tools::file_ext(export_dir)) == "zip"
+  is_dir_export <- is.character(export_dir) &&
+    length(export_dir) == 1 &&
+    dir.exists(export_dir)
+
+  if (!is_zip_export && !is_dir_export) {
+    stop("`export_dir` must be an existing directory or a .zip file: ", export_dir)
   }
 
   `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
 
   # --- Date Handling ---
-  analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
-  analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
+  analysis_end_date <- parse_analysis_date(end_date, default = Sys.Date(), arg_name = "end_date")
+  analysis_start_date <- parse_analysis_date(
+    start_date,
+    default = analysis_end_date - lubridate::days(365),
+    arg_name = "start_date"
+  )
 
   verbose_on <- isTRUE(verbose) || athlytics_is_verbose()
 
@@ -211,15 +223,9 @@ calculate_pbs <- function(activities_data,
     ) %>%
     dplyr::ungroup()
 
-  # Add distance labels
-  distance_labels <- c(
-    "1000" = "1k",
-    "5000" = "5k",
-    "10000" = "10k",
-    "21097.5" = "21.1k",
-    "42195" = "Marathon"
-  )
-
+  # Add distance labels. Build factor levels dynamically from the distances
+  # actually present so custom entries (e.g. 3000m, 800m) are preserved rather
+  # than silently collapsed to NA by a hardcoded levels whitelist.
   pb_results <- pb_results %>%
     dplyr::mutate(
       distance_label = dplyr::case_when(
@@ -230,11 +236,18 @@ calculate_pbs <- function(activities_data,
         .data$distance == 42195 ~ "Marathon",
         TRUE ~ paste0(round(.data$distance), "m")
       ),
-      distance_label = factor(.data$distance_label,
-        levels = c("1k", "5k", "10k", "21.1k", "Marathon")
-      ),
       time_period = as.character(lubridate::seconds_to_period(.data$time_seconds))
     )
+
+  label_levels <- pb_results %>%
+    dplyr::distinct(.data$distance, .data$distance_label) %>%
+    dplyr::arrange(.data$distance) %>%
+    dplyr::pull(.data$distance_label)
+
+  pb_results$distance_label <- factor(
+    pb_results$distance_label,
+    levels = as.character(label_levels)
+  )
 
   # Add elapsed_time and moving_time (same as time_seconds for best efforts)
   pb_results <- pb_results %>%
@@ -270,66 +283,120 @@ calculate_pbs <- function(activities_data,
 }
 
 #' Find Best Effort for Target Distance
+#'
+#' Locates the fastest contiguous sub-segment that covers `target_distance`
+#' within a stream. Two robustness improvements over the original
+#' nearest-row approach:
+#'
+#' 1. **Strictly-monotonic-distance filter**: the input is reduced to rows
+#'    where cumulative distance and time both strictly increase, so spurious
+#'    backward jumps (GPS glitches, laps restarting the distance counter) no
+#'    longer contribute fake short intervals.
+#' 2. **Linear interpolation at the target distance**: the start and end
+#'    points of each candidate window are interpolated between recorded
+#'    samples, eliminating a systematic bias toward slower efforts that
+#'    nearest-row lookup introduced on low-Hz streams (a ~0.1 Hz Garmin
+#'    smart-recording sample could previously inflate a 5 km time by up to
+#'    ~10 s on each side).
+#' 3. **O(n) two-pointer sweep**: replaces the previous O(n^2) scan across
+#'    start indices with a single left-to-right pass, making per-activity
+#'    PB extraction tractable on multi-hour ultras.
+#'
 #' @keywords internal
 find_best_effort <- function(stream_data, target_distance) {
-  # Remove rows with missing distance or time
-  valid_data <- stream_data[!is.na(stream_data$distance) & !is.na(stream_data$time), ]
-
-  if (nrow(valid_data) < 10) {
+  if (!is.data.frame(stream_data) ||
+    !all(c("distance", "time") %in% colnames(stream_data))) {
     return(NULL)
   }
 
-  # Check if activity is long enough
-  max_distance <- max(valid_data$distance, na.rm = TRUE)
-  if (max_distance < target_distance) {
+  # Drop rows with missing distance/time and coerce time to POSIXct-numeric
+  # seconds for arithmetic.
+  valid <- !is.na(stream_data$distance) & !is.na(stream_data$time)
+  d <- as.numeric(stream_data$distance[valid])
+  t <- as.numeric(stream_data$time[valid])
+
+  if (length(d) < 10) {
     return(NULL)
   }
 
-  # Use sliding window to find fastest segment of target distance
-  # Allow 2% tolerance for distance matching
-  tolerance <- target_distance * 0.02
+  # Sort by time (not assumed to already be sorted), then enforce strict
+  # monotonicity of distance. This rejects GPS bounce-backs, lap resets and
+  # paused-then-resumed intervals that would otherwise create pseudo-segments
+  # of near-zero elapsed time.
+  ord <- order(t)
+  t <- t[ord]
+  d <- d[ord]
 
-  best_time <- Inf
-  best_start_idx <- NA
-  best_end_idx <- NA
-
-  # For each starting point, find the point where distance >= target
-  for (i in 1:(nrow(valid_data) - 1)) {
-    start_dist <- valid_data$distance[i]
-    target_dist <- start_dist + target_distance
-
-    # Find first point that reaches or exceeds target distance
-    candidates <- which(valid_data$distance >= target_dist)
-
-    if (length(candidates) == 0) {
-      break # No more segments possible
-    }
-
-    end_idx <- candidates[1]
-    actual_dist <- valid_data$distance[end_idx] - start_dist
-
-    # Check if distance is within tolerance
-    if (abs(actual_dist - target_distance) <= tolerance) {
-      elapsed_time <- as.numeric(difftime(valid_data$time[end_idx],
-        valid_data$time[i],
-        units = "secs"
-      ))
-
-      if (elapsed_time > 0 && elapsed_time < best_time) {
-        best_time <- elapsed_time
-        best_start_idx <- i
-        best_end_idx <- end_idx
+  keep <- rep(TRUE, length(d))
+  if (length(d) >= 2) {
+    running_max <- d[1]
+    running_t <- t[1]
+    for (i in 2:length(d)) {
+      if (d[i] > running_max && t[i] > running_t) {
+        running_max <- d[i]
+        running_t <- t[i]
+      } else {
+        keep[i] <- FALSE
       }
     }
   }
+  d <- d[keep]
+  t <- t[keep]
 
-  if (is.infinite(best_time) || is.na(best_start_idx)) {
+  n <- length(d)
+  if (n < 10) {
     return(NULL)
   }
 
-  return(list(
+  # Total distance must exceed target.
+  if ((d[n] - d[1]) < target_distance) {
+    return(NULL)
+  }
+
+  # Linear interpolation helper: given sample values (x, y) and a target x0
+  # strictly inside [x[j-1], x[j]], return y(x0).
+  interp <- function(x0, x_lo, x_hi, y_lo, y_hi) {
+    if (x_hi == x_lo) {
+      return(y_lo)
+    }
+    y_lo + (y_hi - y_lo) * (x0 - x_lo) / (x_hi - x_lo)
+  }
+
+  # Two-pointer sweep:
+  #   i is the start index; d_start(i) is the interpolated distance at the
+  #   i-th anchor; for each i we advance j until d[j] >= d[i] + target_distance
+  #   and interpolate the exact crossing. Because both d and t are strictly
+  #   increasing, j never decreases as i advances.
+  best_time <- Inf
+  best_start_d <- NA_real_
+  best_end_d <- NA_real_
+
+  j <- 1L
+  for (i in seq_len(n - 1)) {
+    target_d <- d[i] + target_distance
+
+    if (j <= i) j <- i + 1L
+    while (j <= n && d[j] < target_d) j <- j + 1L
+    if (j > n) break
+
+    # Interpolate end-time at the exact target_d crossing between (d[j-1], d[j]).
+    t_end <- interp(target_d, d[j - 1L], d[j], t[j - 1L], t[j])
+    elapsed <- t_end - t[i]
+
+    if (is.finite(elapsed) && elapsed > 0 && elapsed < best_time) {
+      best_time <- elapsed
+      best_start_d <- d[i]
+      best_end_d <- target_d
+    }
+  }
+
+  if (!is.finite(best_time)) {
+    return(NULL)
+  }
+
+  list(
     time_seconds = best_time,
-    start_distance = valid_data$distance[best_start_idx],
-    end_distance = valid_data$distance[best_end_idx]
-  ))
+    start_distance = best_start_d,
+    end_distance = best_end_d
+  )
 }

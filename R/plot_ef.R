@@ -122,7 +122,7 @@ plot_ef <- function(data,
       x = .data$date, y = .data$ef_value,
       color = .data[[group_var]]
     )) +
-      ggplot2::geom_point(alpha = 0.7, size = 2.5) +
+      ggplot2::geom_point(shape = 21, colour = "white", stroke = 0.6, alpha = 0.8, size = 2.2) +
       ggplot2::scale_x_date(labels = english_month_year)
 
     # Apply custom colors if provided
@@ -152,9 +152,9 @@ plot_ef <- function(data,
   } else {
     # Single group plotting (original logic)
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$ef_value)) +
-      ggplot2::geom_point(ggplot2::aes(color = .data$activity_type), alpha = 0.7, size = 2) +
+      ggplot2::geom_point(ggplot2::aes(fill = .data$activity_type), shape = 21, colour = "white", stroke = 0.6, alpha = 0.8, size = 2.2) +
       ggplot2::scale_x_date(labels = english_month_year) +
-      ggplot2::scale_color_manual(
+      ggplot2::scale_fill_manual(
         values = athlytics_palette_nature(),
         name = "Activity Type"
       ) +
@@ -163,7 +163,7 @@ plot_ef <- function(data,
         subtitle = subtitle,
         x = "Date",
         y = y_label,
-        color = "Activity Type"
+        fill = "Activity Type"
       )
 
     if (add_trend_line) {
@@ -175,7 +175,7 @@ plot_ef <- function(data,
         )
       } else {
         # Single trend line for all data
-        p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
+        p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "#0053a4", linewidth = 0.8)
       }
     }
   }

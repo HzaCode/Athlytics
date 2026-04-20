@@ -148,8 +148,8 @@ plot_pbs <- function(data,
     x = .data$activity_date, y = .data$time_seconds,
     color = .data$distance_label, group = .data$distance_label
   )) +
-    ggplot2::geom_line(linewidth = 1.8, alpha = 0.85) +
-    ggplot2::geom_point(ggplot2::aes(shape = .data$is_pb), size = 4.5, alpha = 0.95, stroke = 1.2) +
+    plot_lines(linewidth = 1) +
+    ggplot2::geom_point(ggplot2::aes(shape = .data$is_pb), size = 3.5, alpha = 0.95, stroke = 0.8) +
     ggplot2::scale_shape_manual(
       values = c("TRUE" = 19, "FALSE" = 21),
       name = "Personal Best", labels = c("TRUE" = "Yes", "FALSE" = "No")

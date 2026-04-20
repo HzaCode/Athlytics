@@ -34,10 +34,35 @@
 #'   \describe{
 #'     \item{date}{Activity date (Date class)}
 #'     \item{decoupling}{Decoupling percentage (\\%). Positive = HR drift, negative = improved efficiency}
-#'     \item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state
-#'       criteria not met, "insufficient_data" if data quality issues}
+#'     \item{status}{Character status code describing the outcome of the
+#'       calculation. See **Status vocabulary** below.}
+#'     \item{quality_score}{Numeric in \[0, 1\]. Fraction of stream samples
+#'       that passed quality-control range checks. `NA` if the activity was
+#'       rejected before the QC stage.}
+#'     \item{hr_coverage}{Numeric in \[0, 1\]. Time-weighted fraction of the
+#'       stream that carried a valid heart-rate sample.}
 #'   }
 #'   OR a single numeric decoupling value if `stream_df` is provided.
+#'
+#' @section Status vocabulary:
+#' - `"ok"`: Decoupling computed from a contiguous steady-state block.
+#' - `"missing_hr_data"`: Stream lacked a `heartrate` / `heart_rate` column.
+#' - `"missing_velocity_data"` / `"missing_power_data"`: Stream lacked the
+#'   column required by the chosen `decouple_metric`.
+#' - `"insufficient_hr_data"`: Time-weighted HR coverage < `min_hr_coverage`.
+#' - `"insufficient_data_points"`: Fewer than 100 non-NA stream samples.
+#' - `"insufficient_valid_data"`: Fewer than 100 samples survived basic
+#'   positivity filtering (`velocity > 0` or `watts > 0`).
+#' - `"insufficient_data_after_quality_filter"`: `quality_control = "filter"`
+#'   removed enough out-of-range samples to drop the stream below 100 rows.
+#' - `"insufficient_steady_duration"`: No contiguous steady-state block met
+#'   the `min_steady_minutes` threshold.
+#' - `"non_steady"`: No rolling-CV windows cleared `steady_cv_threshold`, or
+#'   time-midpoint split produced an empty half.
+#' - `"calculation_failed"`: Median first-half EF was non-positive or not
+#'   finite, so decoupling could not be expressed as a percentage.
+#' - `"calculation_error"`: An exception was raised during per-activity
+#'   processing (caught by the outer loop).
 #'
 #' @details Provides data for `plot_decoupling`. Compares output/HR efficiency
 #'   between first and second halves of activities. Positive values indicate
@@ -131,21 +156,46 @@ calculate_decoupling <- function(activities_data = NULL,
                                  stream_df = NULL,
                                  verbose = FALSE) {
   # --- Input Validation ---
-  # Handle deprecated "pace_hr" alias
+  # Normalize case first so legacy capitalized names (e.g. "Speed_HR") survive
+  # match.arg(), which is case-sensitive by default.
   decouple_metric_raw <- decouple_metric[1]
-  if (identical(decouple_metric_raw, "pace_hr")) {
+  decouple_metric_norm <- if (is.character(decouple_metric_raw)) {
+    tolower(decouple_metric_raw)
+  } else {
+    decouple_metric_raw
+  }
+
+  if (identical(decouple_metric_norm, "pace_hr")) {
     warning('decouple_metric = "pace_hr" is deprecated. Use "speed_hr" instead (Speed / HR, not Pace / HR).', call. = FALSE)
     decouple_metric <- "speed_hr"
   } else {
-    decouple_metric <- match.arg(decouple_metric)
+    decouple_metric <- match.arg(decouple_metric_norm, c("speed_hr", "power_hr"))
   }
 
-  # Normalize to lowercase (support legacy capitalized names)
-  decouple_metric <- tolower(decouple_metric)
+  # Validate parameters that are used by both stream_df and activities_data paths.
+  # Previously these validations (and quality_control match.arg) ran only after
+  # the stream_df early-return, so stream_df callers silently got defaults.
+  if (!is.numeric(min_steady_minutes) || min_steady_minutes <= 0) {
+    stop("`min_steady_minutes` must be a positive number.")
+  }
+  if (!is.numeric(steady_cv_threshold) || steady_cv_threshold <= 0 || steady_cv_threshold > 1) {
+    stop("`steady_cv_threshold` must be between 0 and 1.")
+  }
+  if (!is.numeric(min_hr_coverage) || min_hr_coverage <= 0 || min_hr_coverage > 1) {
+    stop("`min_hr_coverage` must be between 0 and 1.")
+  }
+  quality_control <- match.arg(quality_control)
 
   # If stream_df provided, calculate for single activity
   if (!is.null(stream_df)) {
-    result <- calculate_single_decoupling(stream_df, decouple_metric)
+    result <- calculate_single_decoupling(
+      stream_df = stream_df,
+      decouple_metric = decouple_metric,
+      quality_control = quality_control,
+      min_steady_minutes = min_steady_minutes,
+      steady_cv_threshold = steady_cv_threshold,
+      min_hr_coverage = min_hr_coverage
+    )
     # Return just the numeric value for backward compatibility
     return(result$value)
   }
@@ -158,24 +208,26 @@ calculate_decoupling <- function(activities_data = NULL,
   if (!is.numeric(min_duration_mins) || min_duration_mins <= 0) {
     stop("`min_duration_mins` must be a positive number.")
   }
-  if (!is.numeric(min_steady_minutes) || min_steady_minutes <= 0) {
-    stop("`min_steady_minutes` must be a positive number.")
-  }
-  if (!is.numeric(steady_cv_threshold) || steady_cv_threshold <= 0 || steady_cv_threshold > 1) {
-    stop("`steady_cv_threshold` must be between 0 and 1.")
-  }
-  if (!is.numeric(min_hr_coverage) || min_hr_coverage <= 0 || min_hr_coverage > 1) {
-    stop("`min_hr_coverage` must be between 0 and 1.")
-  }
 
-  quality_control <- match.arg(quality_control)
+  # --- Export directory / zip validation ---
+  is_zip_export <- is.character(export_dir) &&
+    length(export_dir) == 1 &&
+    file.exists(export_dir) &&
+    tolower(tools::file_ext(export_dir)) == "zip"
+  is_dir_export <- is.character(export_dir) &&
+    length(export_dir) == 1 &&
+    dir.exists(export_dir)
+
+  if (!is_zip_export && !is_dir_export) {
+    stop("`export_dir` must be an existing directory or a .zip file: ", export_dir)
+  }
 
   # --- Date Handling ---
-  analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()),
-    error = function(e) Sys.Date()
-  )
-  analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))),
-    error = function(e) analysis_end_date - lubridate::days(365)
+  analysis_end_date <- parse_analysis_date(end_date, default = Sys.Date(), arg_name = "end_date")
+  analysis_start_date <- parse_analysis_date(
+    start_date,
+    default = analysis_end_date - lubridate::days(365),
+    arg_name = "start_date"
   )
 
   if (analysis_start_date >= analysis_end_date) {
@@ -217,26 +269,17 @@ calculate_decoupling <- function(activities_data = NULL,
       return(NULL)
     }
 
-    # Construct file path
-    file_path <- file.path(export_dir, activity$filename)
-
-    if (!file.exists(file_path)) {
-      athlytics_message(sprintf(
-        "[%d/%d] Skipping activity %s (file not found: %s)",
-        i, nrow(filtered_activities), activity$date, basename(file_path)
-      ), .verbose = verbose_on)
-      return(NULL)
-    }
-
     athlytics_message(sprintf(
       "[%d/%d] Processing %s (%s)",
-      i, nrow(filtered_activities), activity$date, basename(file_path)
+      i, nrow(filtered_activities), activity$date, basename(activity$filename)
     ), .verbose = verbose_on)
 
-    # Parse activity file
+    # Parse activity file. parse_activity_file() resolves both directory and
+    # .zip export_dir values via its zip-aware logic, so we pass export_dir
+    # straight through rather than pre-building a path with file.path().
     stream_data <- tryCatch(
       {
-        parse_activity_file(file_path)
+        suppressWarnings(parse_activity_file(activity$filename, export_dir))
       },
       error = function(e) {
         athlytics_message(sprintf("  Error parsing file: %s", e$message), .verbose = verbose_on)
@@ -260,20 +303,35 @@ calculate_decoupling <- function(activities_data = NULL,
       }
     )
 
-    # Handle both old format (just numeric) and new format (list with status)
+    # Handle both old format (just numeric) and new format (list with status,
+    # optionally carrying quality_score and hr_coverage for QC transparency).
     if (is.list(decoupling_result)) {
       decoupling_value <- decoupling_result$value
       status <- decoupling_result$status
+      quality_score <- if (!is.null(decoupling_result$quality_score)) {
+        decoupling_result$quality_score
+      } else {
+        NA_real_
+      }
+      hr_coverage <- if (!is.null(decoupling_result$hr_coverage)) {
+        decoupling_result$hr_coverage
+      } else {
+        NA_real_
+      }
     } else {
       decoupling_value <- decoupling_result
       status <- if (is.na(decoupling_value)) "insufficient_data" else "ok"
+      quality_score <- NA_real_
+      hr_coverage <- NA_real_
     }
 
-    # Return result with status
+    # Return result with status plus per-activity QC metadata
     data.frame(
       date = activity$date,
       decoupling = decoupling_value,
       status = status,
+      quality_score = quality_score,
+      hr_coverage = hr_coverage,
       stringsAsFactors = FALSE
     )
   }) |> dplyr::bind_rows()
@@ -328,12 +386,34 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     stop("stream_df missing required columns: ", paste(missing_cols, collapse = ", "))
   }
 
+  # HR coverage must be measured against the ORIGINAL stream and weighted by
+  # time (not row count). Row-fraction coverage overweights densely-sampled
+  # sections and cannot catch streams where the watch stopped recording HR
+  # during long time gaps.
+  hr_coverage_raw <- NA_real_
+  if (nrow(stream_df) > 0) {
+    hr_coverage_raw <- time_weighted_coverage(stream_df, "heartrate")
+    if (hr_coverage_raw < min_hr_coverage) {
+      return(list(
+        value = NA_real_,
+        status = "insufficient_hr_data",
+        hr_coverage = hr_coverage_raw,
+        quality_score = NA_real_
+      ))
+    }
+  }
+
   # Remove NA values
   stream_clean <- stream_df %>%
     dplyr::filter(!is.na(.data$time), !is.na(.data$heartrate))
 
   if (nrow(stream_clean) < 100) {
-    return(list(value = NA_real_, status = "insufficient_data_points"))
+    return(list(
+      value = NA_real_,
+      status = "insufficient_data_points",
+      hr_coverage = hr_coverage_raw,
+      quality_score = NA_real_
+    ))
   }
 
   # Calculate velocity if needed
@@ -360,87 +440,131 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   }
 
   if (nrow(stream_clean) < 100) {
-    return(list(value = NA_real_, status = "insufficient_valid_data"))
+    return(list(
+      value = NA_real_,
+      status = "insufficient_valid_data",
+      hr_coverage = hr_coverage_raw,
+      quality_score = NA_real_
+    ))
   }
 
   # Apply quality control and steady-state gating
+  quality_score <- 1.0
   if (quality_control != "off") {
-    # Basic quality gates
     if (decouple_metric == "speed_hr") {
-      # Check for reasonable velocity values
-      stream_clean <- stream_clean %>%
-        dplyr::filter(.data$velocity > 0.5, .data$velocity < 15) # 0.5-15 m/s reasonable range
+      flag_output <- !is.na(stream_clean$velocity) &
+        (stream_clean$velocity <= 0.5 | stream_clean$velocity >= 15)
     } else {
-      # Check for reasonable power values
-      stream_clean <- stream_clean %>%
-        dplyr::filter(.data$watts > 0, .data$watts < 2000) # 0-2000W reasonable range
+      flag_output <- !is.na(stream_clean$watts) &
+        (stream_clean$watts <= 0 | stream_clean$watts >= 2000)
+    }
+    flag_hr <- !is.na(stream_clean$heartrate) &
+      (stream_clean$heartrate <= 50 | stream_clean$heartrate >= 220)
+    flag_any <- flag_output | flag_hr
+    n_flagged <- sum(flag_any, na.rm = TRUE)
+    quality_score <- if (length(flag_any) > 0) {
+      1 - n_flagged / length(flag_any)
+    } else {
+      NA_real_
     }
 
-    # Check for reasonable HR values
-    stream_clean <- stream_clean %>%
-      dplyr::filter(.data$heartrate > 50, .data$heartrate < 220)
-
-    if (nrow(stream_clean) < 100) {
-      return(list(value = NA_real_, status = "insufficient_data_after_quality_filter"))
+    if (quality_control == "filter") {
+      stream_clean <- stream_clean[!flag_any, , drop = FALSE]
+      if (nrow(stream_clean) < 100) {
+        return(list(
+          value = NA_real_,
+          status = "insufficient_data_after_quality_filter",
+          hr_coverage = hr_coverage_raw,
+          quality_score = quality_score
+        ))
+      }
+    } else if (quality_control == "flag" && n_flagged > 0) {
+      # Report flags but keep rows; median-based decoupling is robust to a
+      # small fraction of out-of-range samples.
+      athlytics_message(sprintf(
+        "  Quality flag: %d of %d stream points outside reasonable range (kept; quality_control = 'flag').",
+        n_flagged, length(flag_any)
+      ))
     }
   }
 
-  # Calculate HR coverage
-  hr_coverage <- sum(!is.na(stream_clean$heartrate) & stream_clean$heartrate > 0) / nrow(stream_clean)
-  if (hr_coverage < min_hr_coverage) {
-    return(list(value = NA_real_, status = "insufficient_hr_data"))
-  }
+  # (HR coverage was already validated against the original stream above,
+  # before the NA filter, so a second post-filter check would always be ~1.0.)
 
   # Find steady-state windows using rolling coefficient of variation
   window_size <- min(300, nrow(stream_clean) %/% 4) # 5-minute windows or 1/4 of data
   if (window_size < 60) window_size <- 60 # Minimum 1-minute windows
 
-  if (decouple_metric == "speed_hr") {
-    # Calculate rolling CV for velocity
-    stream_clean <- stream_clean %>%
-      dplyr::arrange(.data$time) %>%
-      dplyr::mutate(
-        velocity_rollmean = zoo::rollmean(.data$velocity, window_size, fill = NA, align = "center"),
-        velocity_rollsd = zoo::rollapply(.data$velocity, window_size, sd, fill = NA, align = "center"),
-        velocity_cv = .data$velocity_rollsd / .data$velocity_rollmean
-      )
+  # Rolling CV (use a unified metric_cv column so the continuous-block logic
+  # below doesn't need to branch on decouple_metric twice).
+  stream_clean <- stream_clean %>% dplyr::arrange(.data$time)
+  metric_vec <- if (decouple_metric == "speed_hr") stream_clean$velocity else stream_clean$watts
 
-    # Find steady-state periods (CV < threshold)
-    steady_periods <- stream_clean %>%
-      dplyr::filter(!is.na(.data$velocity_cv), .data$velocity_cv < steady_cv_threshold)
-  } else {
-    # Calculate rolling CV for power
-    stream_clean <- stream_clean %>%
-      dplyr::arrange(.data$time) %>%
-      dplyr::mutate(
-        watts_rollmean = zoo::rollmean(.data$watts, window_size, fill = NA, align = "center"),
-        watts_rollsd = zoo::rollapply(.data$watts, window_size, sd, fill = NA, align = "center"),
-        watts_cv = .data$watts_rollsd / .data$watts_rollmean
-      )
+  metric_rollmean <- zoo::rollmean(metric_vec, window_size, fill = NA, align = "center")
+  metric_rollsd <- zoo::rollapply(metric_vec, window_size, sd, fill = NA, align = "center")
+  metric_cv <- metric_rollsd / metric_rollmean
 
-    # Find steady-state periods (CV < threshold)
-    steady_periods <- stream_clean %>%
-      dplyr::filter(!is.na(.data$watts_cv), .data$watts_cv < steady_cv_threshold)
+  stream_clean$metric_cv <- metric_cv
+  stream_clean$is_steady <- !is.na(metric_cv) & metric_cv < steady_cv_threshold
+
+  if (!any(stream_clean$is_steady)) {
+    return(list(
+      value = NA_real_,
+      status = "non_steady",
+      hr_coverage = hr_coverage_raw,
+      quality_score = quality_score
+    ))
   }
 
-  # Check minimum duration for steady-state periods
-  if (nrow(steady_periods) > 0) {
-    steady_duration_minutes <- (max(steady_periods$time, na.rm = TRUE) - min(steady_periods$time, na.rm = TRUE)) / 60
-    if (steady_duration_minutes < min_steady_minutes) {
-      return(list(value = NA_real_, status = "insufficient_steady_duration"))
-    }
+  # Identify contiguous steady-state blocks. Prior versions collected every
+  # steady point across the whole activity and treated separated islands as one
+  # block, which inflated max-min "duration" and mixed unrelated segments into
+  # the first/second-half split.
+  runs <- rle(stream_clean$is_steady)
+  run_ends <- cumsum(runs$lengths)
+  run_starts <- c(1L, utils::head(run_ends, -1) + 1L)
+  time_num <- as.numeric(stream_clean$time)
+
+  run_duration_min <- ifelse(
+    runs$values,
+    (time_num[run_ends] - time_num[run_starts]) / 60,
+    0
+  )
+  run_sample_count <- ifelse(runs$values, runs$lengths, 0L)
+
+  qualifying <- which(runs$values &
+    run_duration_min >= min_steady_minutes &
+    run_sample_count >= 100)
+
+  if (length(qualifying) == 0) {
+    return(list(
+      value = NA_real_,
+      status = "insufficient_steady_duration",
+      hr_coverage = hr_coverage_raw,
+      quality_score = quality_score
+    ))
   }
 
-  if (nrow(steady_periods) < 100) {
-    return(list(value = NA_real_, status = "non_steady"))
+  best_run_i <- qualifying[which.max(run_duration_min[qualifying])]
+  steady_block <- stream_clean[run_starts[best_run_i]:run_ends[best_run_i], , drop = FALSE]
+
+  # Split by time midpoint (not row midpoint) so irregular sampling does not
+  # bias the first/second-half comparison.
+  t_mid <- (time_num[run_starts[best_run_i]] + time_num[run_ends[best_run_i]]) / 2
+  block_time_num <- as.numeric(steady_block$time)
+  first_half <- steady_block[block_time_num <= t_mid, , drop = FALSE]
+  second_half <- steady_block[block_time_num > t_mid, , drop = FALSE]
+
+  if (nrow(first_half) == 0 || nrow(second_half) == 0) {
+    return(list(
+      value = NA_real_,
+      status = "non_steady",
+      hr_coverage = hr_coverage_raw,
+      quality_score = quality_score
+    ))
   }
 
-  # Split steady-state periods into two halves
-  midpoint <- floor(nrow(steady_periods) / 2)
-  first_half <- steady_periods[1:midpoint, ]
-  second_half <- steady_periods[(midpoint + 1):nrow(steady_periods), ]
-
-  # Calculate efficiency factor for each half from steady-state data only
+  # Calculate efficiency factor for each half from the chosen steady block
   if (decouple_metric == "speed_hr") {
     ef_first <- median(first_half$velocity / first_half$heartrate, na.rm = TRUE)
     ef_second <- median(second_half$velocity / second_half$heartrate, na.rm = TRUE)
@@ -458,5 +582,10 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     status <- "calculation_failed"
   }
 
-  return(list(value = decoupling_pct, status = status))
+  return(list(
+    value = decoupling_pct,
+    status = status,
+    hr_coverage = hr_coverage_raw,
+    quality_score = quality_score
+  ))
 }

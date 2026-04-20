@@ -145,11 +145,35 @@ calculate_cohort_reference <- function(data,
     grouping_vars <- c(date_col, by)
   }
 
-  # Create dynamic grouping
-  reference_data <- data %>%
+  # Athlete-weighted aggregation: collapse multi-row-per-athlete inputs
+  # (e.g. activity-level data with several sessions on the same date) down
+  # to one metric value per athlete per group before computing percentiles.
+  # Without this step, athletes with many rows per day would dominate the
+  # percentile distribution, producing row-weighted rather than
+  # athlete-weighted reference bands.
+  athlete_group_vars <- unique(c(grouping_vars, "athlete_id"))
+  # `mean` is the representative per-athlete aggregation: for daily-summary
+  # inputs (e.g. ACWR output) it is a no-op because each athlete already has
+  # a single row per group; for activity-level inputs it yields a stable
+  # per-athlete value within the group.
+  metric_sym <- rlang::sym(metric)
+  pre_agg <- data %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(athlete_group_vars))) %>%
+    dplyr::summarise(
+      !!metric := mean(!!metric_sym, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    # NaN arises when every row had NA_metric; convert so quantile() treats
+    # them as missing rather than as valid 0.
+    dplyr::mutate(
+      !!metric := ifelse(is.finite(!!metric_sym), !!metric_sym, NA_real_)
+    )
+
+  # Create dynamic grouping on the per-athlete-aggregated frame.
+  reference_data <- pre_agg %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(grouping_vars))) %>%
     dplyr::summarise(
-      n_athletes = dplyr::n_distinct(.data$athlete_id, na.rm = TRUE),
+      n_athletes = sum(!is.na(.data[[metric]])),
       !!!stats::setNames(
         lapply(probs, function(p) {
           rlang::expr(stats::quantile(.data[[!!metric]], probs = !!p, na.rm = TRUE))

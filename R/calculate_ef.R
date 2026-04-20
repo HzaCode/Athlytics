@@ -64,11 +64,38 @@
 #'   \item{activity_type}{Activity type (character: "Run" or "Ride")}
 #'   \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
 #'     Units: m/s/bpm for speed_hr, W/bpm for power_hr.}
-#'   \item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for
-#'     activity-level calculation without stream data, "non_steady" if steady-state
-#'     criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
-#'     "insufficient_hr_data" if HR coverage below threshold.}
+#'   \item{status}{Character status code describing the outcome of the
+#'     calculation. See **Status vocabulary** below.}
+#'   \item{quality_score}{Numeric in \[0, 1\]. Fraction of stream samples that
+#'     passed quality-control range checks (HR, velocity, watts). `NA` when
+#'     no stream was parsed or when the activity was rejected before QC.}
+#'   \item{hr_coverage}{Numeric in \[0, 1\]. Time-weighted fraction of the
+#'     stream that carried a valid heart-rate sample. `NA` for activity-level
+#'     paths (`status = "no_streams"`).}
 #' }
+#'
+#' @section Status vocabulary:
+#' - `"ok"`: Full steady-state analysis succeeded on stream data.
+#' - `"no_streams"`: No stream file was available; `ef_value` was computed
+#'   from activity-level averages. QC and HR-coverage metrics are `NA`.
+#' - `"missing_velocity_data"`: Stream lacked both `distance` and
+#'   `velocity_smooth` when `ef_metric = "speed_hr"`.
+#' - `"missing_power_data"`: Stream lacked `watts` when
+#'   `ef_metric = "power_hr"`.
+#' - `"missing_hr_data"`: Stream lacked a `heartrate` / `heart_rate` column.
+#' - `"insufficient_hr_data"`: Time-weighted HR coverage < `min_hr_coverage`.
+#' - `"insufficient_data_points"`: Fewer than 100 non-NA stream samples.
+#' - `"insufficient_valid_data"`: Fewer than 100 samples survived the basic
+#'   positivity filter (`velocity > 0` or `watts > 0`).
+#' - `"insufficient_data_after_quality_filter"`: `quality_control = "filter"`
+#'   removed enough out-of-range samples to drop the stream below 100 rows.
+#' - `"poor_hr_quality"`: Activity-level path with out-of-range
+#'   `average_heartrate` while `quality_control = "filter"`.
+#' - `"too_short"`: Activity or steady-state window duration is below
+#'   `min_steady_minutes`.
+#' - `"non_steady"`: Fewer than 100 samples cleared the CV threshold after
+#'   the rolling-CV scan.
+#' - `"calculation_failed"`: Median ratio was non-positive or not finite.
 #'
 #' @details
 #' **Algorithm:**
@@ -205,17 +232,17 @@ calculate_ef <- function(activities_data,
     stop("`activities_data` must be a data frame (e.g., from load_local_activities()).")
   }
 
-  # Handle deprecated "pace_hr" alias
+  # Normalize case first so legacy capitalized names (e.g. "Speed_HR",
+  # "PACE_HR") survive match.arg(), which is case-sensitive by default.
   ef_metric_raw <- ef_metric[1]
-  if (identical(ef_metric_raw, "pace_hr")) {
+  ef_metric_norm <- if (is.character(ef_metric_raw)) tolower(ef_metric_raw) else ef_metric_raw
+
+  if (identical(ef_metric_norm, "pace_hr")) {
     warning('ef_metric = "pace_hr" is deprecated. Use "speed_hr" instead (Speed / HR, not Pace / HR).', call. = FALSE)
     ef_metric <- "speed_hr"
   } else {
-    ef_metric <- match.arg(ef_metric)
+    ef_metric <- match.arg(ef_metric_norm, c("speed_hr", "gap_hr", "power_hr"))
   }
-
-  # Normalize to lowercase (support legacy capitalized names)
-  ef_metric <- tolower(ef_metric)
   if (!is.numeric(min_duration_mins) || min_duration_mins < 0) {
     stop("`min_duration_mins` must be a non-negative number.")
   }
@@ -232,8 +259,12 @@ calculate_ef <- function(activities_data,
   quality_control <- match.arg(quality_control)
 
   # --- Date Handling ---
-  analysis_end_date <- tryCatch(lubridate::as_date(end_date %||% Sys.Date()), error = function(e) Sys.Date())
-  analysis_start_date <- tryCatch(lubridate::as_date(start_date %||% (analysis_end_date - lubridate::days(365))), error = function(e) analysis_end_date - lubridate::days(365))
+  analysis_end_date <- parse_analysis_date(end_date, default = Sys.Date(), arg_name = "end_date")
+  analysis_start_date <- parse_analysis_date(
+    start_date,
+    default = analysis_end_date - lubridate::days(365),
+    arg_name = "start_date"
+  )
   if (analysis_start_date >= analysis_end_date) stop("start_date must be before end_date.")
 
   athlytics_message(sprintf("Calculating EF data from %s to %s.", analysis_start_date, analysis_end_date))
@@ -323,6 +354,8 @@ calculate_ef <- function(activities_data,
             activity_type = act_type,
             ef_value = NA_real_,
             status = "poor_hr_quality",
+            quality_score = NA_real_,
+            hr_coverage = NA_real_,
             stringsAsFactors = FALSE
           ))
         }
@@ -337,6 +370,8 @@ calculate_ef <- function(activities_data,
         activity_type = act_type,
         ef_value = NA_real_,
         status = "too_short",
+        quality_score = NA_real_,
+        hr_coverage = NA_real_,
         stringsAsFactors = FALSE
       ))
     }
@@ -375,6 +410,8 @@ calculate_ef <- function(activities_data,
         activity_type = act_type,
         ef_value = ef_value,
         status = "no_streams",
+        quality_score = NA_real_,
+        hr_coverage = NA_real_,
         stringsAsFactors = FALSE
       )
     } else {
@@ -383,6 +420,8 @@ calculate_ef <- function(activities_data,
         activity_type = act_type,
         ef_value = NA_real_,
         status = "calculation_failed",
+        quality_score = NA_real_,
+        hr_coverage = NA_real_,
         stringsAsFactors = FALSE
       )
     }
@@ -393,7 +432,10 @@ calculate_ef <- function(activities_data,
     return(data.frame(
       date = lubridate::as_date(character(0)),
       activity_type = character(0),
-      ef_value = numeric(0)
+      ef_value = numeric(0),
+      status = character(0),
+      quality_score = numeric(0),
+      hr_coverage = numeric(0)
     ))
   }
 
@@ -456,7 +498,29 @@ calculate_ef <- function(activities_data,
 #'
 #' @export
 calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_metric,
-                                     min_steady_minutes, steady_cv_threshold, min_hr_coverage, quality_control) {
+                                     min_steady_minutes = 20,
+                                     steady_cv_threshold = 0.08,
+                                     min_hr_coverage = 0.9,
+                                     quality_control = "filter") {
+  # Internal helper: build a uniform-shape result row so every return path
+  # carries the same columns (including quality_score and hr_coverage) even
+  # when the activity was rejected. Callers that rbind() many activities
+  # previously had to defend against missing columns on rejection rows.
+  make_result <- function(status,
+                          ef_value = NA_real_,
+                          quality_score = NA_real_,
+                          hr_coverage = NA_real_) {
+    data.frame(
+      date = activity_date,
+      activity_type = act_type,
+      ef_value = ef_value,
+      status = status,
+      quality_score = quality_score,
+      hr_coverage = hr_coverage,
+      stringsAsFactors = FALSE
+    )
+  }
+
   # Standardize column names (some formats use heart_rate/power, others use heartrate/watts)
   if ("heart_rate" %in% colnames(stream_data) && !"heartrate" %in% colnames(stream_data)) {
     stream_data <- stream_data %>% dplyr::rename(heartrate = "heart_rate")
@@ -473,39 +537,45 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
     }
   }
 
+  # Stream-level GAP handling: Strava FIT/TCX/GPX streams do not expose a
+  # grade-adjusted speed channel. Fall back to plain speed/HR in the stream
+  # path; the activity-level branch in calculate_ef() still uses the real
+  # average_gap column from the summary CSV when available.
+  if (identical(ef_metric, "gap_hr")) {
+    athlytics_message(sprintf(
+      "  Stream-level GAP channel not present for %s; computing speed/HR for gap_hr.",
+      activity_date
+    ))
+    ef_metric <- "speed_hr"
+  }
+
   # Validate stream data structure
   required_cols <- c("time", "heartrate")
   if (ef_metric == "speed_hr") {
     if (!"distance" %in% colnames(stream_data) && !"velocity_smooth" %in% colnames(stream_data)) {
-      return(data.frame(
-        date = activity_date,
-        activity_type = act_type,
-        ef_value = NA_real_,
-        status = "missing_velocity_data",
-        stringsAsFactors = FALSE
-      ))
+      return(make_result("missing_velocity_data"))
     }
   } else { # power_hr
     if (!"watts" %in% colnames(stream_data)) {
-      return(data.frame(
-        date = activity_date,
-        activity_type = act_type,
-        ef_value = NA_real_,
-        status = "missing_power_data",
-        stringsAsFactors = FALSE
-      ))
+      return(make_result("missing_power_data"))
     }
   }
 
   missing_cols <- setdiff(required_cols, colnames(stream_data))
   if (length(missing_cols) > 0) {
-    return(data.frame(
-      date = activity_date,
-      activity_type = act_type,
-      ef_value = NA_real_,
-      status = "missing_hr_data",
-      stringsAsFactors = FALSE
-    ))
+    return(make_result("missing_hr_data"))
+  }
+
+  # HR coverage must be measured against the ORIGINAL stream and weighted by
+  # time (not row count). Row-fraction coverage overweights densely-sampled
+  # sections and cannot catch streams where the watch stopped recording HR
+  # during long time gaps.
+  hr_coverage_raw <- NA_real_
+  if (nrow(stream_data) > 0) {
+    hr_coverage_raw <- time_weighted_coverage(stream_data, "heartrate")
+    if (hr_coverage_raw < min_hr_coverage) {
+      return(make_result("insufficient_hr_data", hr_coverage = hr_coverage_raw))
+    }
   }
 
   # Clean stream data
@@ -513,28 +583,7 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
     dplyr::filter(!is.na(.data$time), !is.na(.data$heartrate))
 
   if (nrow(stream_clean) < 100) {
-    return(data.frame(
-      date = activity_date,
-      activity_type = act_type,
-      ef_value = NA_real_,
-      status = "insufficient_data_points",
-      stringsAsFactors = FALSE
-    ))
-  }
-
-  # Calculate HR coverage
-  total_time <- max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)
-  hr_data_time <- sum(!is.na(stream_clean$heartrate) & stream_clean$heartrate > 0)
-  hr_coverage <- hr_data_time / nrow(stream_clean)
-
-  if (hr_coverage < min_hr_coverage) {
-    return(data.frame(
-      date = activity_date,
-      activity_type = act_type,
-      ef_value = NA_real_,
-      status = "insufficient_hr_data",
-      stringsAsFactors = FALSE
-    ))
+    return(make_result("insufficient_data_points", hr_coverage = hr_coverage_raw))
   }
 
   # Calculate velocity if needed for speed_hr
@@ -561,49 +610,56 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
   }
 
   if (nrow(stream_clean) < 100) {
-    return(data.frame(
-      date = activity_date,
-      activity_type = act_type,
-      ef_value = NA_real_,
-      status = "insufficient_valid_data",
-      stringsAsFactors = FALSE
-    ))
+    return(make_result("insufficient_valid_data", hr_coverage = hr_coverage_raw))
   }
 
   # Quality control
+  # Build a row-level flag for implausible values without mutating stream_clean yet.
+  quality_score <- 1.0
   if (quality_control != "off") {
-    # Check for reasonable values
     if (ef_metric == "speed_hr") {
-      stream_clean <- stream_clean %>%
-        dplyr::filter(.data$velocity > 0.5, .data$velocity < 15) # 0.5-15 m/s reasonable range
+      flag_output <- !is.na(stream_clean$velocity) &
+        (stream_clean$velocity <= 0.5 | stream_clean$velocity >= 15)
     } else {
-      stream_clean <- stream_clean %>%
-        dplyr::filter(.data$watts > 0, .data$watts < 2000) # 0-2000W reasonable range
+      flag_output <- !is.na(stream_clean$watts) &
+        (stream_clean$watts <= 0 | stream_clean$watts >= 2000)
+    }
+    flag_hr <- !is.na(stream_clean$heartrate) &
+      (stream_clean$heartrate <= 50 | stream_clean$heartrate >= 220)
+    flag_any <- flag_output | flag_hr
+    n_flagged <- sum(flag_any, na.rm = TRUE)
+    quality_score <- if (length(flag_any) > 0) {
+      1 - n_flagged / length(flag_any)
+    } else {
+      NA_real_
     }
 
-    stream_clean <- stream_clean %>%
-      dplyr::filter(.data$heartrate > 50, .data$heartrate < 220)
-
-    if (nrow(stream_clean) < 100) {
-      return(data.frame(
-        date = activity_date,
-        activity_type = act_type,
-        ef_value = NA_real_,
-        status = "insufficient_data_after_quality_filter",
-        stringsAsFactors = FALSE
-      ))
+    if (quality_control == "filter") {
+      stream_clean <- stream_clean[!flag_any, , drop = FALSE]
+      if (nrow(stream_clean) < 100) {
+        return(make_result("insufficient_data_after_quality_filter",
+          quality_score = quality_score,
+          hr_coverage = hr_coverage_raw
+        ))
+      }
+    } else if (quality_control == "flag") {
+      # Report flags but keep rows; downstream median/CV is robust to the
+      # extreme minority of out-of-range samples that would otherwise be dropped.
+      if (n_flagged > 0) {
+        athlytics_message(sprintf(
+          "  Quality flag: %d of %d stream points outside reasonable range (kept; quality_control = 'flag').",
+          n_flagged, length(flag_any)
+        ))
+      }
     }
   }
 
   # Check minimum duration
   duration_minutes <- (max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)) / 60
   if (duration_minutes < min_steady_minutes) {
-    return(data.frame(
-      date = activity_date,
-      activity_type = act_type,
-      ef_value = NA_real_,
-      status = "too_short",
-      stringsAsFactors = FALSE
+    return(make_result("too_short",
+      quality_score = quality_score,
+      hr_coverage = hr_coverage_raw
     ))
   }
 
@@ -640,12 +696,9 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
   }
 
   if (nrow(steady_periods) < 100) {
-    return(data.frame(
-      date = activity_date,
-      activity_type = act_type,
-      ef_value = NA_real_,
-      status = "non_steady",
-      stringsAsFactors = FALSE
+    return(make_result("non_steady",
+      quality_score = quality_score,
+      hr_coverage = hr_coverage_raw
     ))
   }
 
@@ -657,20 +710,15 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
   }
 
   if (!is.na(ef_value) && ef_value > 0) {
-    data.frame(
-      date = activity_date,
-      activity_type = act_type,
+    make_result("ok",
       ef_value = ef_value,
-      status = "ok",
-      stringsAsFactors = FALSE
+      quality_score = quality_score,
+      hr_coverage = hr_coverage_raw
     )
   } else {
-    data.frame(
-      date = activity_date,
-      activity_type = act_type,
-      ef_value = NA_real_,
-      status = "calculation_failed",
-      stringsAsFactors = FALSE
+    make_result("calculation_failed",
+      quality_score = quality_score,
+      hr_coverage = hr_coverage_raw
     )
   }
 }

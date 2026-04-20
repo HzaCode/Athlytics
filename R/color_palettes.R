@@ -6,6 +6,32 @@
 #' @keywords internal
 NULL
 
+# Internal helper: use ggborderline if available, fallback to geom_line
+# Inspired by ropensci/spiro's plot_lines() pattern
+plot_lines <- function(data = NULL,
+                       mapping = NULL,
+                       linewidth = 1,
+                       na.rm = TRUE,
+                       ...) {
+  if (requireNamespace("ggborderline", quietly = TRUE)) {
+    ggborderline::geom_borderline(
+      data = data,
+      mapping = mapping,
+      linewidth = linewidth,
+      na.rm = na.rm,
+      ...
+    )
+  } else {
+    ggplot2::geom_line(
+      data = data,
+      mapping = mapping,
+      linewidth = linewidth,
+      na.rm = na.rm,
+      ...
+    )
+  }
+}
+
 #' Nature-Inspired Color Palette
 #'
 #' Professional, colorblind-friendly palette based on Nature journal's
@@ -101,18 +127,16 @@ theme_athlytics <- function(base_size = 13, base_family = "") {
         hjust = 1,
         margin = ggplot2::margin(t = base_size * 0.8)
       ),
-      plot.margin = ggplot2::margin(t = 15, r = 15, b = 15, l = 15),
+      plot.margin = ggplot2::margin(t = 12, r = 12, b = 12, l = 12),
 
       # Axes - clean and minimal
       axis.title.x = ggplot2::element_text(
         size = base_size * 1.05,
-        face = "bold",
         color = "#34495e",
         margin = ggplot2::margin(t = base_size * 0.6)
       ),
       axis.title.y = ggplot2::element_text(
         size = base_size * 1.05,
-        face = "bold",
         color = "#34495e",
         margin = ggplot2::margin(r = base_size * 0.6)
       ),
@@ -150,9 +174,8 @@ theme_athlytics <- function(base_size = 13, base_family = "") {
 
       # Panel grid - subtle and elegant
       panel.grid.major = ggplot2::element_line(
-        color = "#ecf0f1",
-        linewidth = 0.5,
-        linetype = "solid"
+        color = "#eeeeee",
+        linewidth = 0.3
       ),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_blank(),

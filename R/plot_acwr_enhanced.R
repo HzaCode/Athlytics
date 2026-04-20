@@ -118,40 +118,30 @@ plot_acwr_enhanced <- function(acwr_data,
     sweet_spot_max <- 1.3
     high_risk_min <- 1.5
 
-    # Determine y-axis range for zones
-    y_max <- max(acwr_data$acwr_smooth, na.rm = TRUE)
-    if (has_ci && show_ci) {
-      y_max <- max(c(y_max, acwr_data$acwr_upper), na.rm = TRUE)
-    }
-    y_max <- max(y_max, high_risk_min + 0.2)
-
-    # Add zone ribbons
-    date_range <- range(acwr_data$date, na.rm = TRUE)
-
     p <- p +
       # High Risk Zone (> 1.5)
       ggplot2::annotate("rect",
-        xmin = date_range[1], xmax = date_range[2],
-        ymin = high_risk_min, ymax = y_max,
-        fill = "red", alpha = 0.1
+        xmin = -Inf, xmax = Inf,
+        ymin = high_risk_min, ymax = Inf,
+        fill = "red", alpha = 0.06
       ) +
       # Caution Zone (1.3 - 1.5)
       ggplot2::annotate("rect",
-        xmin = date_range[1], xmax = date_range[2],
+        xmin = -Inf, xmax = Inf,
         ymin = sweet_spot_max, ymax = high_risk_min,
-        fill = "orange", alpha = 0.1
+        fill = "orange", alpha = 0.06
       ) +
       # Sweet Spot (0.8 - 1.3)
       ggplot2::annotate("rect",
-        xmin = date_range[1], xmax = date_range[2],
+        xmin = -Inf, xmax = Inf,
         ymin = sweet_spot_min, ymax = sweet_spot_max,
-        fill = "green", alpha = 0.1
+        fill = "green", alpha = 0.06
       ) +
       # Low Load (< 0.8)
       ggplot2::annotate("rect",
-        xmin = date_range[1], xmax = date_range[2],
-        ymin = 0, ymax = sweet_spot_min,
-        fill = "lightblue", alpha = 0.1
+        xmin = -Inf, xmax = Inf,
+        ymin = -Inf, ymax = sweet_spot_min,
+        fill = "lightblue", alpha = 0.06
       ) +
       # Zone reference lines
       ggplot2::geom_hline(
@@ -200,15 +190,15 @@ plot_acwr_enhanced <- function(acwr_data,
     p <- p + ggplot2::geom_ribbon(
       data = acwr_data,
       ggplot2::aes(x = .data$date, ymin = .data$acwr_lower, ymax = .data$acwr_upper),
-      fill = "steelblue", alpha = 0.3
+      fill = "steelblue", alpha = 0.2
     )
   }
 
   # --- Layer 4: Individual ACWR Line ---
-  p <- p + ggplot2::geom_line(
+  p <- p + plot_lines(
     data = acwr_data,
-    ggplot2::aes(x = .data$date, y = .data$acwr_smooth),
-    color = "#E64B35", linewidth = 2, alpha = 0.9
+    mapping = ggplot2::aes(x = .data$date, y = .data$acwr_smooth),
+    color = "#c00000", linewidth = 1
   )
 
   # --- Labels and Theme ---
@@ -308,8 +298,8 @@ plot_acwr_comparison <- function(acwr_ra,
       yintercept = c(0.8, 1.3, 1.5),
       linetype = "dotted", color = "gray50", alpha = 0.5
     ) +
-    ggplot2::geom_line(linewidth = 1.8, alpha = 0.9) +
-    ggplot2::scale_color_manual(values = c("Rolling Average (RA)" = "#4DBBD5", "EWMA" = "#E64B35")) +
+    plot_lines(linewidth = 1) +
+    ggplot2::scale_color_manual(values = c("Rolling Average (RA)" = "#0053a4", "EWMA" = "#c00000")) +
     ggplot2::facet_wrap(~ .data$method, ncol = 1) +
     ggplot2::labs(
       title = title,

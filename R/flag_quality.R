@@ -9,6 +9,8 @@
 #' @param streams A data frame containing activity stream data with time-series
 #'   measurements. Expected columns: `time` (seconds), `heartrate` (bpm),
 #'   `watts` (W), `velocity_smooth` or `speed` (m/s), `distance` (m).
+#'   `heart_rate` (FIT/TCX parser output) is accepted as an alias for
+#'   `heartrate`, and `power` as an alias for `watts`.
 #' @param sport Type of activity (e.g., "Run", "Ride"). Default "Run".
 #' @param hr_range Valid heart rate range as c(min, max). Default c(30, 220).
 #' @param pw_range Valid power range as c(min, max). Default c(0, 1500).
@@ -18,7 +20,12 @@
 #' @param max_hr_jump Maximum plausible HR change per second (bpm/s). Default 10.
 #' @param max_pw_jump Maximum plausible power change per second (W/s). Default 300.
 #' @param min_steady_minutes Minimum duration (minutes) for steady-state segment. Default 20.
-#' @param steady_cv_threshold Coefficient of variation threshold for steady-state (\\%). Default 8.
+#' @param steady_cv_threshold Coefficient of variation threshold for
+#'   steady-state, as a dimensionless fraction in (0, 1\]. Default 0.08 (i.e.
+#'   8\%). Values >= 1 are interpreted as legacy percent input and
+#'   auto-normalized with a deprecation warning. This brings `flag_quality()`
+#'   in line with `calculate_ef()` and `calculate_decoupling()`, which have
+#'   always used fraction-space thresholds.
 #'
 #' @return A data frame identical to `streams` with additional flag columns:
 #'   \describe{
@@ -69,10 +76,39 @@ flag_quality <- function(streams,
                          max_hr_jump = 10,
                          max_pw_jump = 300,
                          min_steady_minutes = 20,
-                         steady_cv_threshold = 8) {
+                         steady_cv_threshold = 0.08) {
   # --- Input Validation ---
   if (!is.data.frame(streams)) {
     stop("`streams` must be a data frame.")
+  }
+
+  # Accept the column names emitted by `parse_activity_file()` as well as the
+  # Strava-streams aliases. Without these aliases, passing raw FIT/TCX parse
+  # output into flag_quality() silently skipped the HR / power / speed
+  # quality checks because the expected columns were missing.
+  if ("heart_rate" %in% colnames(streams) && !"heartrate" %in% colnames(streams)) {
+    streams$heartrate <- streams$heart_rate
+  }
+  if ("power" %in% colnames(streams) && !"watts" %in% colnames(streams)) {
+    streams$watts <- streams$power
+  }
+
+  # Unify `steady_cv_threshold` units with calculate_ef() / calculate_decoupling():
+  # all three now take a dimensionless fraction in (0, 1]. A value >= 1 is
+  # almost certainly the legacy percent input (default used to be 8) and is
+  # auto-normalized with a one-shot deprecation warning so existing user
+  # scripts keep working.
+  if (is.numeric(steady_cv_threshold) && length(steady_cv_threshold) == 1 &&
+      !is.na(steady_cv_threshold) && steady_cv_threshold >= 1) {
+    warning(sprintf(
+      paste0(
+        "`steady_cv_threshold = %g` looks like a percentage. ",
+        "flag_quality() now expects a fraction in (0, 1] (default 0.08). ",
+        "Auto-converting to %g. Please update your call."
+      ),
+      steady_cv_threshold, steady_cv_threshold / 100
+    ), call. = FALSE)
+    steady_cv_threshold <- steady_cv_threshold / 100
   }
 
   if (nrow(streams) == 0) {
@@ -181,14 +217,20 @@ flag_quality <- function(streams,
       window_size <- min_samples
 
       if (length(ss_metric) >= window_size) {
+        # CV as a dimensionless fraction (sd/mean), compared against the
+        # fraction-space `steady_cv_threshold` used everywhere else in the
+        # package. Previously this branch multiplied by 100 and compared
+        # against a percent-space default, inconsistent with calculate_ef()
+        # and calculate_decoupling().
         rolling_cv <- zoo::rollapply(
           ss_metric,
           width = window_size,
           FUN = function(x) {
-            if (all(is.na(x)) || mean(x, na.rm = TRUE) == 0) {
-              return(NA)
+            m <- mean(x, na.rm = TRUE)
+            if (all(is.na(x)) || !is.finite(m) || m == 0) {
+              return(NA_real_)
             }
-            (sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE)) * 100
+            sd(x, na.rm = TRUE) / m
           },
           align = "center",
           fill = NA

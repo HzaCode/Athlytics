@@ -99,7 +99,7 @@ plot_decoupling <- function(data,
   y_label <- "Decoupling (%)"
 
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = .data$date, y = .data$decoupling)) +
-    ggplot2::geom_point(alpha = 0.7, size = 2, color = "#E64B35") +
+    ggplot2::geom_point(shape = 21, fill = "#E64B35", colour = "white", stroke = 0.5, alpha = 0.8, size = 2.2) +
     ggplot2::scale_x_date(labels = english_month_year) +
     ggplot2::labs(
       title = title,
@@ -110,11 +110,11 @@ plot_decoupling <- function(data,
     )
 
   # Add 5% threshold line
-  p <- p + ggplot2::geom_hline(yintercept = 5, linetype = "dashed", color = "red", alpha = 0.7) +
+  p <- p + ggplot2::geom_hline(yintercept = 5, linetype = "dashed", color = "#D9534F", alpha = 0.5) +
     ggplot2::geom_hline(yintercept = 0, linetype = "solid", color = "black", alpha = 0.5)
 
   if (add_trend_line && nrow(plot_data) >= 2) {
-    p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "blue", linewidth = 0.8)
+    p <- p + ggplot2::geom_smooth(method = smoothing_method, se = FALSE, color = "#0053a4", linewidth = 0.8)
   }
 
   p <- p +

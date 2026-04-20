@@ -137,38 +137,42 @@ plot_acwr <- function(data,
   y_max_limit <- max(plot_data$acwr_smooth, zone_y_ref, na.rm = TRUE)
   y_breaks <- seq(0, ceiling(y_max_limit * 5) / 5, by = 0.2)
 
-  # --- Add risk zone shading (using finite bounds) ---
+  # --- Add risk zone shading (using annotate to avoid inheriting group aes) ---
   if (highlight_zones) {
     p <- p +
       # High Risk Zone (e.g., > 1.5)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = high_risk_min, ymax = y_max_limit), fill = "#E64B35", alpha = 0.15) +
+      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+        ymin = high_risk_min, ymax = Inf, fill = "#E64B35", alpha = 0.06) +
       # Caution Zone (e.g., 1.3 - 1.5)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_max, ymax = high_risk_min), fill = "#F39B7F", alpha = 0.15) +
+      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+        ymin = sweet_spot_max, ymax = high_risk_min, fill = "#F39B7F", alpha = 0.06) +
       # Sweet Spot (e.g., 0.8 - 1.3)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = sweet_spot_min, ymax = sweet_spot_max), fill = "#00A087", alpha = 0.15) +
+      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+        ymin = sweet_spot_min, ymax = sweet_spot_max, fill = "#00A087", alpha = 0.06) +
       # Low Load / Undertraining Zone (e.g., < 0.8)
-      ggplot2::geom_ribbon(ggplot2::aes(ymin = 0, ymax = sweet_spot_min), fill = "#4DBBD5", alpha = 0.15)
+      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+        ymin = -Inf, ymax = sweet_spot_min, fill = "#4DBBD5", alpha = 0.06)
 
     # Always show all risk zone annotations regardless of data range
     plot_date_range <- range(plot_data$date, na.rm = TRUE)
-    annotation_x_pos <- plot_date_range[1] + lubridate::days(round(as.numeric(diff(plot_date_range)) * 0.05))
+    annotation_x_pos <- plot_date_range[2] - lubridate::days(round(as.numeric(diff(plot_date_range)) * 0.02))
 
     p <- p +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = high_risk_min + 0.15,
-        label = "High Risk", hjust = 0, vjust = 0.5, size = 3, color = "#E64B35", alpha = 0.8, fontface = "bold"
+        label = "High Risk", hjust = 1, vjust = 0.5, size = 2.8, color = "#E64B35", alpha = 0.7, fontface = "italic"
       ) +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = (sweet_spot_max + high_risk_min) / 2,
-        label = "Caution", hjust = 0, vjust = 0.5, size = 3, color = "#F39B7F", alpha = 0.8, fontface = "bold"
+        label = "Caution", hjust = 1, vjust = 0.5, size = 2.8, color = "#F39B7F", alpha = 0.7, fontface = "italic"
       ) +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = (sweet_spot_min + sweet_spot_max) / 2,
-        label = "Sweet Spot", hjust = 0, vjust = 0.5, size = 3, color = "#00A087", alpha = 0.8, fontface = "bold"
+        label = "Sweet Spot", hjust = 1, vjust = 0.5, size = 2.8, color = "#00A087", alpha = 0.7, fontface = "italic"
       ) +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = sweet_spot_min / 2,
-        label = "Low Load", hjust = 0, vjust = 0.5, size = 3, color = "#4DBBD5", alpha = 0.8, fontface = "bold"
+        label = "Low Load", hjust = 1, vjust = 0.5, size = 2.8, color = "#4DBBD5", alpha = 0.7, fontface = "italic"
       )
 
     # Zone boundary reference lines
@@ -180,7 +184,7 @@ plot_acwr <- function(data,
 
   # --- Add ACWR line(s) ---
   if (has_groups) {
-    p <- p + ggplot2::geom_line(linewidth = 1.2, alpha = 0.8)
+    p <- p + plot_lines(linewidth = 0.9, alpha = 0.8)
 
     # Apply custom colors if provided
     if (!is.null(group_colors)) {
@@ -193,7 +197,7 @@ plot_acwr <- function(data,
       )
     }
   } else {
-    p <- p + ggplot2::geom_line(color = "#E64B35", linewidth = 2, alpha = 0.9)
+    p <- p + plot_lines(mapping = ggplot2::aes(x = .data$date, y = .data$acwr_smooth), color = "#c00000", linewidth = 1)
   }
 
   # Retrieve params for labeling

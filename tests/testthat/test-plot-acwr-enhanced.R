@@ -31,7 +31,7 @@ test_that("plot_acwr_enhanced validates input data", {
 test_that("plot_acwr_enhanced returns drawable object with required geoms", {
   p <- plot_acwr_enhanced(acwr_with_ci)
   geoms <- layer_geoms(p)
-  expect_true("GeomLine" %in% geoms || "GeomPoint" %in% geoms)
+  expect_true(any(geoms %in% c("GeomLine", "GeomBorderline", "GeomPoint")))
 })
 
 test_that("plot_acwr_enhanced handles confidence interval option", {
@@ -109,12 +109,12 @@ test_that("plot_acwr_enhanced handles sparse and NA data", {
   # Single data point
   single_point <- sample_acwr[1, , drop = FALSE]
   p_single <- plot_acwr_enhanced(single_point)
-  expect_true(any(layer_geoms(p_single) %in% c("GeomLine", "GeomPoint")))
+  expect_true(any(layer_geoms(p_single) %in% c("GeomLine", "GeomBorderline", "GeomPoint")))
 
   # Data with NA values
   acwr_with_na <- sample_acwr
   na_range <- 5:min(10, nrow(acwr_with_na))
   acwr_with_na$acwr_smooth[na_range] <- NA
   p_na <- plot_acwr_enhanced(acwr_with_na)
-  expect_true(any(layer_geoms(p_na) %in% c("GeomLine", "GeomPoint")))
+  expect_true(any(layer_geoms(p_na) %in% c("GeomLine", "GeomBorderline", "GeomPoint")))
 })

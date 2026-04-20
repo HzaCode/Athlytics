@@ -112,7 +112,7 @@ test_that("plot_exposure handles parameter combinations and labels", {
   )
 
   scale_names <- sapply(p_combo$scales$scales, function(s) s$aesthetics[1])
-  expect_contains(scale_names, "colour")
+  expect_true(any(c("colour", "fill") %in% scale_names))
 
   p_no_date <- plot_exposure(
     data = sample_exposure,
