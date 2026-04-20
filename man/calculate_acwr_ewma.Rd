@@ -19,6 +19,7 @@ calculate_acwr_ewma(
   user_max_hr = NULL,
   user_resting_hr = NULL,
   smoothing_period = 7,
+  missing_load = c("zero", "na"),
   ci = FALSE,
   B = 200,
   block_len = 7,
@@ -53,6 +54,11 @@ calculate_acwr_ewma(
 \item{user_resting_hr}{Required if \code{load_metric = "hrss"}.}
 
 \item{smoothing_period}{Days for smoothing ACWR. Default 7.}
+
+\item{missing_load}{How to treat training days on which the chosen
+\code{load_metric} could not be computed (\code{"zero"} for historical
+behaviour or \code{"na"} to keep missing-data training days visibly NA).
+See \code{calculate_acwr()} for details.}
 
 \item{ci}{Logical. Whether to calculate confidence bands (EWMA only). Default FALSE.}
 

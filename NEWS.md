@@ -1,3 +1,92 @@
+# Athlytics 1.0.5
+
+## Major analysis-quality fixes
+
+* **`calculate_ef()` stream path now uses continuous-block steady-state
+  detection.** Previously EF was computed as the median ratio across every
+  scattered point whose rolling CV cleared `steady_cv_threshold`, so an
+  interval workout with three short "steady islands" could silently pass
+  the `min_steady_minutes` gate. The stream path now mirrors
+  `calculate_decoupling()`: it uses `rle()` to find contiguous steady
+  runs and only accepts activities whose *longest* run lasts at least
+  `min_steady_minutes`. New output columns `steady_duration_minutes`,
+  `n_steady_blocks`, and `sampling_interval_seconds` make the accepted
+  block auditable; new status code `"insufficient_steady_duration"`
+  distinguishes this from the old `"non_steady"`.
+
+* **`gap_hr` stream-path fallback is now explicit.** When the stream has
+  no grade-adjusted channel the function still falls back to plain
+  speed/HR, but the returned row now records this via
+  `ef_metric_requested = "gap_hr"`, `ef_metric_used = "speed_hr"`, and
+  the new status string `"gap_stream_unavailable_fallback_to_speed"`.
+  Downstream consumers that need strict GAP semantics can now filter on
+  these columns instead of assuming the `ef_metric` argument equals the
+  metric actually computed.
+
+* **Rolling windows are now time-based, not row-based.** `calculate_ef()`,
+  `calculate_decoupling()`, and `flag_quality()` previously assumed 1 Hz
+  sampling (`window_size <- 300` rows). The effective window silently
+  rescaled on 0.5 Hz smart-recording or multi-Hz streams. A new internal
+  `estimate_sampling_interval()` helper reads `diff(time)` and the three
+  functions now target wall-clock windows; the observed interval is
+  exposed as `sampling_interval_seconds` on EF/decoupling output and as
+  `attr(result, "sampling_interval_seconds")` on flag_quality output.
+
+* **`flag_quality()` HR / power jump thresholds honour their "per-second"
+  documentation.** `max_hr_jump = 10` is now compared against
+  `|dHR/dt|` (bpm / s) rather than raw sample-to-sample differences; the
+  same change applies to `max_pw_jump`. Streams that are not exactly
+  1 Hz are therefore judged consistently across recording devices.
+
+* **Training-load calculation now distinguishes rest days from
+  missing-data training days.** `compute_single_load()` returns
+  `list(value, status)` instead of collapsing every non-computable case
+  to `0`. `calculate_acwr()`, `calculate_acwr_ewma()`, and
+  `calculate_exposure()` gain a `missing_load = c("zero", "na")`
+  argument: `"zero"` (default) preserves the historical behaviour,
+  `"na"` keeps `NA` on days whose load could not be computed so the
+  rolling means visibly propagate the gap.
+
+## Transparency additions
+
+* **`calculate_decoupling(stream_df = ..., return_diagnostics = TRUE)`**
+  now returns a one-row data frame exposing `decoupling`, `status`,
+  `quality_score`, `hr_coverage`, `steady_duration_minutes`, and
+  `sampling_interval_seconds`, so callers can distinguish the reason an
+  `NA` decoupling was produced. The default still returns a numeric for
+  backward compatibility.
+
+* **`calculate_pbs()` adds a `time_basis` column** (always `"moving"` in
+  the current implementation) and clarifies in roxygen that PBs are
+  moving-time best efforts because `find_best_effort()` operates on the
+  strictly-monotonic-distance subset (paused / plateau samples are
+  excluded from the candidate window).
+
+* **`flag_quality()` surfaces the activity-level score as an attribute.**
+  The per-row `quality_score` column is preserved for backward
+  compatibility but the same value is now also attached as
+  `attr(result, "activity_quality_score")` and its activity-level
+  semantics are documented.
+
+* **`calculate_cohort_reference()` requires `athlete_id` by default.**
+  Passing a frame with no `athlete_id` column previously silently
+  injected a synthetic `"unknown"` athlete and produced a band that
+  looked cohort-derived but was actually within-athlete. The function
+  now `stop()`s unless the caller explicitly opts in via
+  `allow_unknown_athlete = TRUE`.
+
+## Documentation
+
+* Expanded the EF and decoupling roxygen `@return` tables and the
+  `Status vocabulary` sections with every status string the two
+  functions can emit.
+* Added a dedicated `PB time semantics` section to `calculate_pbs()`
+  explaining elapsed-vs-moving interpretation.
+* Documented the `missing_load` knob on every training-load entry
+  point.
+
+---
+
 # Athlytics 1.0.4
 
 * **Test suite cleanup**: Further streamlined from ~600 to 373 assertions. All tests now pass locally with zero warnings and zero skips.

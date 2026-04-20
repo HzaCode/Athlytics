@@ -28,6 +28,14 @@
 #'   If provided, calculates decoupling for this data directly, ignoring other parameters.
 #'   Must include columns: `time`, `heartrate`, and either `velocity_smooth`/`distance`
 #'   (for speed_hr) or `watts` (for power_hr).
+#' @param return_diagnostics Logical. Only consulted when `stream_df` is
+#'   supplied. When `FALSE` (default) the function returns a bare numeric
+#'   decoupling value for backward compatibility with early releases. When
+#'   `TRUE` it returns a one-row data frame with the same columns as the
+#'   activities-level path (`decoupling`, `status`, `quality_score`,
+#'   `hr_coverage`, `steady_duration_minutes`, `sampling_interval_seconds`)
+#'   so callers can distinguish rejection reasons from a genuine `NA`
+#'   decoupling value.
 #' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
 #' @return Returns a data frame with columns:
@@ -41,8 +49,17 @@
 #'       rejected before the QC stage.}
 #'     \item{hr_coverage}{Numeric in \[0, 1\]. Time-weighted fraction of the
 #'       stream that carried a valid heart-rate sample.}
+#'     \item{steady_duration_minutes}{Wall-clock duration of the contiguous
+#'       steady-state block the decoupling was derived from. `NA` when no
+#'       qualifying block existed.}
+#'     \item{sampling_interval_seconds}{Observed median sampling interval of
+#'       the stream (seconds). Useful for auditing whether the rolling-CV
+#'       window was well-calibrated.}
 #'   }
-#'   OR a single numeric decoupling value if `stream_df` is provided.
+#'   When `stream_df` is provided the default return is a single numeric
+#'   decoupling value (backward-compatible with early releases). Pass
+#'   `return_diagnostics = TRUE` to get the full one-row diagnostics frame
+#'   instead.
 #'
 #' @section Status vocabulary:
 #' - `"ok"`: Decoupling computed from a contiguous steady-state block.
@@ -154,6 +171,7 @@ calculate_decoupling <- function(activities_data = NULL,
                                  min_hr_coverage = 0.9,
                                  quality_control = c("off", "flag", "filter"),
                                  stream_df = NULL,
+                                 return_diagnostics = FALSE,
                                  verbose = FALSE) {
   # --- Input Validation ---
   # Normalize case first so legacy capitalized names (e.g. "Speed_HR") survive
@@ -196,7 +214,24 @@ calculate_decoupling <- function(activities_data = NULL,
       steady_cv_threshold = steady_cv_threshold,
       min_hr_coverage = min_hr_coverage
     )
-    # Return just the numeric value for backward compatibility
+    if (isTRUE(return_diagnostics)) {
+      # Expose the full diagnostics record so callers can distinguish
+      # "NA = no steady block" from "NA = no HR coverage" etc. without
+      # having to re-run the stream through calculate_single_decoupling()
+      # directly. Older callers that default to FALSE still receive a
+      # bare numeric value.
+      return(data.frame(
+        decoupling = result$value,
+        status = result$status %||% NA_character_,
+        quality_score = result$quality_score %||% NA_real_,
+        hr_coverage = result$hr_coverage %||% NA_real_,
+        steady_duration_minutes = result$steady_duration_minutes %||% NA_real_,
+        sampling_interval_seconds = result$sampling_interval_seconds %||% NA_real_,
+        stringsAsFactors = FALSE
+      ))
+    }
+    # Default behaviour preserved for backward compatibility: a single
+    # numeric decoupling percentage (or NA if the activity was rejected).
     return(result$value)
   }
 
@@ -304,34 +339,36 @@ calculate_decoupling <- function(activities_data = NULL,
     )
 
     # Handle both old format (just numeric) and new format (list with status,
-    # optionally carrying quality_score and hr_coverage for QC transparency).
+    # optionally carrying quality_score, hr_coverage, and the newly-added
+    # steady_duration_minutes / sampling_interval_seconds diagnostics).
     if (is.list(decoupling_result)) {
       decoupling_value <- decoupling_result$value
       status <- decoupling_result$status
-      quality_score <- if (!is.null(decoupling_result$quality_score)) {
-        decoupling_result$quality_score
-      } else {
-        NA_real_
-      }
-      hr_coverage <- if (!is.null(decoupling_result$hr_coverage)) {
-        decoupling_result$hr_coverage
-      } else {
-        NA_real_
-      }
+      quality_score <- decoupling_result$quality_score %||% NA_real_
+      hr_coverage <- decoupling_result$hr_coverage %||% NA_real_
+      steady_duration_minutes <- decoupling_result$steady_duration_minutes %||% NA_real_
+      sampling_interval_seconds <- decoupling_result$sampling_interval_seconds %||% NA_real_
     } else {
       decoupling_value <- decoupling_result
       status <- if (is.na(decoupling_value)) "insufficient_data" else "ok"
       quality_score <- NA_real_
       hr_coverage <- NA_real_
+      steady_duration_minutes <- NA_real_
+      sampling_interval_seconds <- NA_real_
     }
 
-    # Return result with status plus per-activity QC metadata
+    # Return result with status plus per-activity QC + steady-state metadata.
+    # Downstream consumers (plots, cohort comparisons, audits) can now see
+    # *why* an activity was accepted or rejected and the effective sampling
+    # frequency of its stream without re-running the analysis.
     data.frame(
       date = activity$date,
       decoupling = decoupling_value,
       status = status,
       quality_score = quality_score,
       hr_coverage = hr_coverage,
+      steady_duration_minutes = steady_duration_minutes,
+      sampling_interval_seconds = sampling_interval_seconds,
       stringsAsFactors = FALSE
     )
   }) |> dplyr::bind_rows()
@@ -361,6 +398,24 @@ calculate_decoupling <- function(activities_data = NULL,
 #' @keywords internal
 #' @noRd
 calculate_single_decoupling <- function(stream_df, decouple_metric, quality_control = "filter", min_steady_minutes = 40, steady_cv_threshold = 0.08, min_hr_coverage = 0.9) {
+  # Uniform diagnostics record. Every rejection path (and the success path)
+  # returns a list with the same fields so the outer activities loop can
+  # rbind them without special-casing missing keys. This is also what
+  # `return_diagnostics = TRUE` exposes to users.
+  make_rec <- function(value = NA_real_, status = NA_character_,
+                       hr_coverage = NA_real_, quality_score = NA_real_,
+                       steady_duration_minutes = NA_real_,
+                       sampling_interval_seconds = NA_real_) {
+    list(
+      value = value,
+      status = status,
+      hr_coverage = hr_coverage,
+      quality_score = quality_score,
+      steady_duration_minutes = steady_duration_minutes,
+      sampling_interval_seconds = sampling_interval_seconds
+    )
+  }
+
   # Standardize column names (some formats use heart_rate/power, others use heartrate/watts)
   if ("heart_rate" %in% colnames(stream_df) && !"heartrate" %in% colnames(stream_df)) {
     stream_df <- stream_df %>% dplyr::rename(heartrate = "heart_rate")
@@ -386,6 +441,11 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     stop("stream_df missing required columns: ", paste(missing_cols, collapse = ", "))
   }
 
+  # Estimate the stream's median sampling interval once so the rolling-CV
+  # window, continuous-block duration and min_steady_minutes gate all
+  # operate in wall-clock units regardless of recording frequency.
+  sampling_interval_seconds <- estimate_sampling_interval(stream_df, default = 1)
+
   # HR coverage must be measured against the ORIGINAL stream and weighted by
   # time (not row count). Row-fraction coverage overweights densely-sampled
   # sections and cannot catch streams where the watch stopped recording HR
@@ -394,11 +454,10 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   if (nrow(stream_df) > 0) {
     hr_coverage_raw <- time_weighted_coverage(stream_df, "heartrate")
     if (hr_coverage_raw < min_hr_coverage) {
-      return(list(
-        value = NA_real_,
+      return(make_rec(
         status = "insufficient_hr_data",
         hr_coverage = hr_coverage_raw,
-        quality_score = NA_real_
+        sampling_interval_seconds = sampling_interval_seconds
       ))
     }
   }
@@ -408,11 +467,10 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     dplyr::filter(!is.na(.data$time), !is.na(.data$heartrate))
 
   if (nrow(stream_clean) < 100) {
-    return(list(
-      value = NA_real_,
+    return(make_rec(
       status = "insufficient_data_points",
       hr_coverage = hr_coverage_raw,
-      quality_score = NA_real_
+      sampling_interval_seconds = sampling_interval_seconds
     ))
   }
 
@@ -440,11 +498,10 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   }
 
   if (nrow(stream_clean) < 100) {
-    return(list(
-      value = NA_real_,
+    return(make_rec(
       status = "insufficient_valid_data",
       hr_coverage = hr_coverage_raw,
-      quality_score = NA_real_
+      sampling_interval_seconds = sampling_interval_seconds
     ))
   }
 
@@ -471,11 +528,11 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     if (quality_control == "filter") {
       stream_clean <- stream_clean[!flag_any, , drop = FALSE]
       if (nrow(stream_clean) < 100) {
-        return(list(
-          value = NA_real_,
+        return(make_rec(
           status = "insufficient_data_after_quality_filter",
           hr_coverage = hr_coverage_raw,
-          quality_score = quality_score
+          quality_score = quality_score,
+          sampling_interval_seconds = sampling_interval_seconds
         ))
       }
     } else if (quality_control == "flag" && n_flagged > 0) {
@@ -491,13 +548,19 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   # (HR coverage was already validated against the original stream above,
   # before the NA filter, so a second post-filter check would always be ~1.0.)
 
-  # Find steady-state windows using rolling coefficient of variation
-  window_size <- min(300, nrow(stream_clean) %/% 4) # 5-minute windows or 1/4 of data
-  if (window_size < 60) window_size <- 60 # Minimum 1-minute windows
+  # Find steady-state windows using rolling coefficient of variation. Window
+  # width is targeted at 5 minutes of wall-clock time (not rows) so smart-
+  # recording and multi-Hz streams produce comparable CVs.
+  stream_clean <- stream_clean %>% dplyr::arrange(.data$time)
+  window_size <- time_based_window_size(
+    stream_clean,
+    window_seconds = 300,
+    min_rows = max(60L, ceiling(60 / sampling_interval_seconds)),
+    max_rows = nrow(stream_clean) %/% 4
+  )
 
   # Rolling CV (use a unified metric_cv column so the continuous-block logic
   # below doesn't need to branch on decouple_metric twice).
-  stream_clean <- stream_clean %>% dplyr::arrange(.data$time)
   metric_vec <- if (decouple_metric == "speed_hr") stream_clean$velocity else stream_clean$watts
 
   metric_rollmean <- zoo::rollmean(metric_vec, window_size, fill = NA, align = "center")
@@ -508,11 +571,11 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   stream_clean$is_steady <- !is.na(metric_cv) & metric_cv < steady_cv_threshold
 
   if (!any(stream_clean$is_steady)) {
-    return(list(
-      value = NA_real_,
+    return(make_rec(
       status = "non_steady",
       hr_coverage = hr_coverage_raw,
-      quality_score = quality_score
+      quality_score = quality_score,
+      sampling_interval_seconds = sampling_interval_seconds
     ))
   }
 
@@ -537,16 +600,17 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     run_sample_count >= 100)
 
   if (length(qualifying) == 0) {
-    return(list(
-      value = NA_real_,
+    return(make_rec(
       status = "insufficient_steady_duration",
       hr_coverage = hr_coverage_raw,
-      quality_score = quality_score
+      quality_score = quality_score,
+      sampling_interval_seconds = sampling_interval_seconds
     ))
   }
 
   best_run_i <- qualifying[which.max(run_duration_min[qualifying])]
   steady_block <- stream_clean[run_starts[best_run_i]:run_ends[best_run_i], , drop = FALSE]
+  steady_duration_minutes <- run_duration_min[best_run_i]
 
   # Split by time midpoint (not row midpoint) so irregular sampling does not
   # bias the first/second-half comparison.
@@ -556,11 +620,12 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
   second_half <- steady_block[block_time_num > t_mid, , drop = FALSE]
 
   if (nrow(first_half) == 0 || nrow(second_half) == 0) {
-    return(list(
-      value = NA_real_,
+    return(make_rec(
       status = "non_steady",
       hr_coverage = hr_coverage_raw,
-      quality_score = quality_score
+      quality_score = quality_score,
+      steady_duration_minutes = steady_duration_minutes,
+      sampling_interval_seconds = sampling_interval_seconds
     ))
   }
 
@@ -582,10 +647,12 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     status <- "calculation_failed"
   }
 
-  return(list(
+  return(make_rec(
     value = decoupling_pct,
     status = status,
     hr_coverage = hr_coverage_raw,
-    quality_score = quality_score
+    quality_score = quality_score,
+    steady_duration_minutes = steady_duration_minutes,
+    sampling_interval_seconds = sampling_interval_seconds
   ))
 }

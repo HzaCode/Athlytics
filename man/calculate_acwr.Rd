@@ -16,6 +16,7 @@ calculate_acwr(
   user_max_hr = NULL,
   user_resting_hr = NULL,
   smoothing_period = 7,
+  missing_load = c("zero", "na"),
   verbose = FALSE
 )
 }
@@ -62,6 +63,19 @@ when \code{load_metric = "tss"}. Used to normalize power-based training stress.}
 
 \item{smoothing_period}{Integer. Number of days for smoothing the ACWR using a
 rolling mean (default: 7). Reduces day-to-day noise for clearer trend visualization.}
+
+\item{missing_load}{How to treat training days on which the chosen
+\code{load_metric} could not be computed (e.g. an HRSS call on an activity
+with no HR samples, or a TSS call without FTP). Options:
+\itemize{
+\item \code{"zero"} (default): coalesce to 0, matching the historical behaviour.
+This keeps backwards compatibility but conflates missing-data
+training days with genuine rest days.
+\item \code{"na"}: keep as \code{NA}. Genuine rest days (no activity on record) are
+still imputed to 0; only days that \emph{had} an activity whose load was
+not computable remain \code{NA}. Rolling means propagate the \code{NA},
+clearly surfacing the data gap.
+}}
 
 \item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }

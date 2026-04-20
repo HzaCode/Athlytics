@@ -20,6 +20,12 @@
 #' @param user_resting_hr Required if `load_metric = "hrss"`. Your resting heart rate.
 #' @param end_date Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 #'   The analysis period covers the `chronic_period` days ending on this date.
+#' @param missing_load How to treat training days on which the chosen
+#'   `load_metric` could not be computed (e.g. HRSS with missing HR,
+#'   TSS without FTP). `"zero"` (default) matches the historical
+#'   behaviour and coalesces these days to 0, conflating them with
+#'   genuine rest days. `"na"` keeps them visibly `NA`; only days with no
+#'   recorded activity at all are treated as rest (`0`).
 #' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
 #' @return A data frame with columns: `date`, `daily_load`, `atl` (Acute Load),
@@ -94,7 +100,9 @@ calculate_exposure <- function(activities_data,
                                user_max_hr = NULL,
                                user_resting_hr = NULL,
                                end_date = Sys.Date(),
+                               missing_load = c("zero", "na"),
                                verbose = FALSE) {
+  missing_load <- match.arg(missing_load)
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
@@ -153,9 +161,20 @@ calculate_exposure <- function(activities_data,
   }
 
   # --- Aggregate Daily Load ---
+  # Rest vs missing-data distinction: a date keeps NA_real_ rather than 0
+  # only when every activity on that date had a non-computable load. The
+  # full-date left-join below then knows which NAs are rest (fill) vs
+  # data-quality gaps (retain under missing_load = "na").
   daily_load_agg <- daily_load_df %>%
     dplyr::group_by(.data$date) %>%
-    dplyr::summarise(daily_load = sum(.data$load, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::summarise(
+      daily_load = if (any(!is.na(.data$load))) {
+        sum(.data$load, na.rm = TRUE)
+      } else {
+        NA_real_
+      },
+      .groups = "drop"
+    ) %>%
     dplyr::arrange(.data$date)
 
   # --- Create Full Date Sequence ---
@@ -163,9 +182,20 @@ calculate_exposure <- function(activities_data,
     date = seq(from = fetch_start_date, to = analysis_end_date, by = "day")
   )
 
+  training_dates <- daily_load_agg$date
   load_df <- all_dates_df %>%
     dplyr::left_join(daily_load_agg, by = "date") %>%
-    dplyr::mutate(daily_load = dplyr::coalesce(.data$daily_load, 0))
+    dplyr::mutate(
+      is_rest_day = !(.data$date %in% training_dates),
+      daily_load = as.numeric(.data$daily_load)
+    )
+
+  if (missing_load == "zero") {
+    load_df$daily_load <- dplyr::coalesce(load_df$daily_load, 0)
+  } else {
+    load_df$daily_load <- ifelse(load_df$is_rest_day, 0, load_df$daily_load)
+  }
+  load_df$is_rest_day <- NULL
 
   # --- Calculate ATL, CTL, ACWR ---
   if (nrow(load_df) < chronic_period) {

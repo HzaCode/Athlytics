@@ -17,6 +17,7 @@ calculate_decoupling(
   min_hr_coverage = 0.9,
   quality_control = c("off", "flag", "filter"),
   stream_df = NULL,
+  return_diagnostics = FALSE,
   verbose = FALSE
 )
 }
@@ -54,6 +55,15 @@ If provided, calculates decoupling for this data directly, ignoring other parame
 Must include columns: \code{time}, \code{heartrate}, and either \code{velocity_smooth}/\code{distance}
 (for speed_hr) or \code{watts} (for power_hr).}
 
+\item{return_diagnostics}{Logical. Only consulted when \code{stream_df} is
+supplied. When \code{FALSE} (default) the function returns a bare numeric
+decoupling value for backward compatibility with early releases. When
+\code{TRUE} it returns a one-row data frame with the same columns as the
+activities-level path (\code{decoupling}, \code{status}, \code{quality_score},
+\code{hr_coverage}, \code{steady_duration_minutes}, \code{sampling_interval_seconds})
+so callers can distinguish rejection reasons from a genuine \code{NA}
+decoupling value.}
+
 \item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }
 \value{
@@ -61,10 +71,24 @@ Returns a data frame with columns:
 \describe{
 \item{date}{Activity date (Date class)}
 \item{decoupling}{Decoupling percentage (\\\%). Positive = HR drift, negative = improved efficiency}
-\item{status}{Character. "ok" for successful calculation, "non_steady" if steady-state
-criteria not met, "insufficient_data" if data quality issues}
+\item{status}{Character status code describing the outcome of the
+calculation. See \strong{Status vocabulary} below.}
+\item{quality_score}{Numeric in [0, 1]. Fraction of stream samples
+that passed quality-control range checks. \code{NA} if the activity was
+rejected before the QC stage.}
+\item{hr_coverage}{Numeric in [0, 1]. Time-weighted fraction of the
+stream that carried a valid heart-rate sample.}
+\item{steady_duration_minutes}{Wall-clock duration of the contiguous
+steady-state block the decoupling was derived from. \code{NA} when no
+qualifying block existed.}
+\item{sampling_interval_seconds}{Observed median sampling interval of
+the stream (seconds). Useful for auditing whether the rolling-CV
+window was well-calibrated.}
 }
-OR a single numeric decoupling value if \code{stream_df} is provided.
+When \code{stream_df} is provided the default return is a single numeric
+decoupling value (backward-compatible with early releases). Pass
+\code{return_diagnostics = TRUE} to get the full one-row diagnostics frame
+instead.
 }
 \description{
 Calculates aerobic decoupling for Strava activities from local export data.
@@ -104,6 +128,30 @@ rather than pacing variability or interval efforts (Coyle & González-Alonso,
 2001). The rolling CV approach is a standard signal-processing technique for
 detecting stationarity in physiological time series.
 }
+\section{Status vocabulary}{
+
+\itemize{
+\item \code{"ok"}: Decoupling computed from a contiguous steady-state block.
+\item \code{"missing_hr_data"}: Stream lacked a \code{heartrate} / \code{heart_rate} column.
+\item \code{"missing_velocity_data"} / \code{"missing_power_data"}: Stream lacked the
+column required by the chosen \code{decouple_metric}.
+\item \code{"insufficient_hr_data"}: Time-weighted HR coverage < \code{min_hr_coverage}.
+\item \code{"insufficient_data_points"}: Fewer than 100 non-NA stream samples.
+\item \code{"insufficient_valid_data"}: Fewer than 100 samples survived basic
+positivity filtering (\code{velocity > 0} or \code{watts > 0}).
+\item \code{"insufficient_data_after_quality_filter"}: \code{quality_control = "filter"}
+removed enough out-of-range samples to drop the stream below 100 rows.
+\item \code{"insufficient_steady_duration"}: No contiguous steady-state block met
+the \code{min_steady_minutes} threshold.
+\item \code{"non_steady"}: No rolling-CV windows cleared \code{steady_cv_threshold}, or
+time-midpoint split produced an empty half.
+\item \code{"calculation_failed"}: Median first-half EF was non-positive or not
+finite, so decoupling could not be expressed as a percentage.
+\item \code{"calculation_error"}: An exception was raised during per-activity
+processing (caught by the outer loop).
+}
+}
+
 \examples{
 # Example using simulated data
 data(sample_decoupling)

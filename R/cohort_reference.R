@@ -15,6 +15,16 @@
 #'   Default c(0.05, 0.25, 0.50, 0.75, 0.95) for 5th, 25th, 50th, 75th, 95th percentiles.
 #' @param min_athletes Minimum number of athletes required per group to calculate
 #'   valid percentiles. Default 5.
+#' @param allow_unknown_athlete Logical. Controls the behaviour when `data`
+#'   has no `athlete_id` column. `FALSE` (default) raises an error, because
+#'   a cohort reference is by definition a distribution *across athletes*,
+#'   and silently pooling the rows under a single synthetic `"unknown"`
+#'   athlete produces a band that looks multi-athlete but is not. Set to
+#'   `TRUE` only if you really are computing a pseudo-cohort from a single
+#'   athlete and understand that the resulting percentiles are row-level
+#'   quantiles within that athlete, not a peer-group distribution. In that
+#'   mode a warning is emitted and an `athlete_id = "unknown"` column is
+#'   added, matching the pre-fix behaviour.
 #' @param date_col Name of the date column. Default "date".
 #'
 #' @return A long-format data frame with columns:
@@ -98,6 +108,7 @@ calculate_cohort_reference <- function(data,
                                        by = c("sport"),
                                        probs = c(0.05, 0.25, 0.50, 0.75, 0.95),
                                        min_athletes = 5,
+                                       allow_unknown_athlete = FALSE,
                                        date_col = "date") {
   # --- Input Validation ---
   if (!is.data.frame(data)) {
@@ -126,10 +137,28 @@ calculate_cohort_reference <- function(data,
     }
   }
 
-  # Ensure athlete_id exists if not in grouping
+  # Require athlete_id by default: a cohort reference is a distribution
+  # across athletes, so silently injecting a synthetic "unknown" athlete
+  # produces a band that looks cohort-derived but is actually within-
+  # athlete. Callers that really want the old behaviour must opt in.
   if (!"athlete_id" %in% colnames(data) && !"athlete_id" %in% by) {
-    warning("`athlete_id` column not found. Assuming single athlete or unable to count distinct athletes.")
-    data$athlete_id <- "unknown"
+    if (isTRUE(allow_unknown_athlete)) {
+      warning(
+        "`athlete_id` column not found and `allow_unknown_athlete = TRUE`: ",
+        "pooling all rows under a single synthetic `athlete_id = \"unknown\"`. ",
+        "The resulting percentiles are within-athlete quantiles, not a ",
+        "cohort distribution.",
+        call. = FALSE
+      )
+      data$athlete_id <- "unknown"
+    } else {
+      stop(
+        "`athlete_id` column is required to compute cohort percentiles. ",
+        "If you really want to treat this as a single-athlete pseudo-cohort, ",
+        "pass `allow_unknown_athlete = TRUE` explicitly.",
+        call. = FALSE
+      )
+    }
   }
 
   # --- Calculate Percentiles ---
@@ -219,6 +248,7 @@ cohort_reference <- function(data,
                              by = c("sport"),
                              probs = c(0.05, 0.25, 0.50, 0.75, 0.95),
                              min_athletes = 5,
+                             allow_unknown_athlete = FALSE,
                              date_col = "date") {
   .Deprecated("calculate_cohort_reference")
   calculate_cohort_reference(
@@ -227,6 +257,7 @@ cohort_reference <- function(data,
     by = by,
     probs = probs,
     min_athletes = min_athletes,
+    allow_unknown_athlete = allow_unknown_athlete,
     date_col = date_col
   )
 }

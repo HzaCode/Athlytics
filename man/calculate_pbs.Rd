@@ -33,9 +33,11 @@ Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marath
 \item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }
 \value{
-A data frame with columns: activity_id, activity_date, distance,
-elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb,
-distance_label, time_period
+A data frame with columns: \code{activity_id}, \code{activity_date},
+\code{distance}, \code{elapsed_time}, \code{moving_time}, \code{time_seconds},
+\code{cumulative_pb_seconds}, \code{is_pb}, \code{distance_label}, \code{time_period},
+and \code{time_basis} (always \code{"moving"} in the current implementation;
+see \strong{PB time semantics} below).
 }
 \description{
 Tracks personal best times for standard distances (1k, 5k, 10k, half marathon, marathon)
@@ -62,6 +64,23 @@ Publishers.
 must be long enough to contain the target distance segments.
 }
 }
+\section{PB time semantics}{
+
+\code{find_best_effort()} selects the fastest interval whose cumulative
+\emph{distance} increases strictly monotonically. Samples where the distance
+counter plateaus (traffic stops, laps pausing the watch, signal
+dropouts) are therefore excluded from the candidate window. That makes
+the reported times \emph{moving-time} best efforts rather than elapsed-time
+best efforts. To reflect that in the output the \code{time_basis} column is
+hard-coded to \code{"moving"}, and both \code{elapsed_time} and \code{moving_time} are
+populated with the same numeric seconds value so existing downstream
+code that reads either column still works.
+
+If you need an elapsed-time PB (i.e. including paused seconds), use the
+raw stream with a separate tool; the current implementation intentionally
+does not attempt to reconstruct paused segments from FIT laps.
+}
+
 \examples{
 # Example using simulated data
 data(sample_pbs)

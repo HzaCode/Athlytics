@@ -11,6 +11,7 @@ calculate_cohort_reference(
   by = c("sport"),
   probs = c(0.05, 0.25, 0.5, 0.75, 0.95),
   min_athletes = 5,
+  allow_unknown_athlete = FALSE,
   date_col = "date"
 )
 
@@ -20,6 +21,7 @@ cohort_reference(
   by = c("sport"),
   probs = c(0.05, 0.25, 0.5, 0.75, 0.95),
   min_athletes = 5,
+  allow_unknown_athlete = FALSE,
   date_col = "date"
 )
 }
@@ -38,6 +40,17 @@ Default c(0.05, 0.25, 0.50, 0.75, 0.95) for 5th, 25th, 50th, 75th, 95th percenti
 
 \item{min_athletes}{Minimum number of athletes required per group to calculate
 valid percentiles. Default 5.}
+
+\item{allow_unknown_athlete}{Logical. Controls the behaviour when \code{data}
+has no \code{athlete_id} column. \code{FALSE} (default) raises an error, because
+a cohort reference is by definition a distribution \emph{across athletes},
+and silently pooling the rows under a single synthetic \code{"unknown"}
+athlete produces a band that looks multi-athlete but is not. Set to
+\code{TRUE} only if you really are computing a pseudo-cohort from a single
+athlete and understand that the resulting percentiles are row-level
+quantiles within that athlete, not a peer-group distribution. In that
+mode a warning is emitted and an \code{athlete_id = "unknown"} column is
+added, matching the pre-fix behaviour.}
 
 \item{date_col}{Name of the date column. Default "date".}
 }

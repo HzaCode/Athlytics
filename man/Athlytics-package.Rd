@@ -83,7 +83,7 @@ plot_acwr(acwr_data)
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://docs.ropensci.org/Athlytics/}
+  \item \url{https://ropensci.github.io/Athlytics/}
   \item \url{https://github.com/ropensci/Athlytics}
   \item Report bugs at \url{https://github.com/ropensci/Athlytics/issues}
 }
@@ -97,6 +97,12 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Zhiang He \email{ang@hezhiang.com}
+
+Other contributors:
+\itemize{
+  \item Eunseop Kim (Eunseop Kim reviewed the package (v. 1.0.4) for rOpenSci, see https://github.com/ropensci/software-review/issues/728) [reviewer]
+  \item Simon Nolte (Simon Nolte reviewed the package (v. 1.0.4) for rOpenSci, see https://github.com/ropensci/software-review/issues/728) [reviewer]
+}
 
 }
 \keyword{internal}

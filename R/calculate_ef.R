@@ -66,18 +66,36 @@
 #'     Units: m/s/bpm for speed_hr, W/bpm for power_hr.}
 #'   \item{status}{Character status code describing the outcome of the
 #'     calculation. See **Status vocabulary** below.}
+#'   \item{ef_metric_requested}{The metric the user asked for (`"speed_hr"`,
+#'     `"gap_hr"`, or `"power_hr"`). Mirrors the `ef_metric` argument.}
+#'   \item{ef_metric_used}{The metric that was actually computed. Usually
+#'     matches `ef_metric_requested`; for `gap_hr` inputs processed through
+#'     the stream path (where no GAP channel is available) this is
+#'     `"speed_hr"` and the row is also marked with status
+#'     `"gap_stream_unavailable_fallback_to_speed"`.}
 #'   \item{quality_score}{Numeric in \[0, 1\]. Fraction of stream samples that
 #'     passed quality-control range checks (HR, velocity, watts). `NA` when
 #'     no stream was parsed or when the activity was rejected before QC.}
 #'   \item{hr_coverage}{Numeric in \[0, 1\]. Time-weighted fraction of the
 #'     stream that carried a valid heart-rate sample. `NA` for activity-level
 #'     paths (`status = "no_streams"`).}
+#'   \item{steady_duration_minutes}{Wall-clock duration of the contiguous
+#'     steady-state block the EF value was derived from. `NA` for
+#'     activity-level paths or when no qualifying block existed.}
+#'   \item{n_steady_blocks}{Number of contiguous steady-state blocks that met
+#'     the `min_steady_minutes` threshold. `NA` for activity-level paths.}
+#'   \item{sampling_interval_seconds}{Observed median sampling interval of
+#'     the stream (seconds). `NA` for activity-level paths.}
 #' }
 #'
 #' @section Status vocabulary:
 #' - `"ok"`: Full steady-state analysis succeeded on stream data.
 #' - `"no_streams"`: No stream file was available; `ef_value` was computed
 #'   from activity-level averages. QC and HR-coverage metrics are `NA`.
+#' - `"gap_stream_unavailable_fallback_to_speed"`: Caller requested
+#'   `ef_metric = "gap_hr"` but the stream does not expose a grade-adjusted
+#'   channel, so `ef_value` was computed from plain speed/HR. `ef_metric_used`
+#'   is `"speed_hr"` on these rows so downstream code can filter them out.
 #' - `"missing_velocity_data"`: Stream lacked both `distance` and
 #'   `velocity_smooth` when `ef_metric = "speed_hr"`.
 #' - `"missing_power_data"`: Stream lacked `watts` when
@@ -93,8 +111,9 @@
 #'   `average_heartrate` while `quality_control = "filter"`.
 #' - `"too_short"`: Activity or steady-state window duration is below
 #'   `min_steady_minutes`.
-#' - `"non_steady"`: Fewer than 100 samples cleared the CV threshold after
-#'   the rolling-CV scan.
+#' - `"non_steady"`: No rolling-CV window cleared `steady_cv_threshold`.
+#' - `"insufficient_steady_duration"`: No *contiguous* steady-state block
+#'   lasted at least `min_steady_minutes`.
 #' - `"calculation_failed"`: Median ratio was non-positive or not finite.
 #'
 #' @details
@@ -108,21 +127,35 @@
 #' **Steady-State Detection Method:**
 #'
 #' When stream data is available (via `export_dir`), the function applies a rolling
-#' coefficient of variation (CV) approach to identify steady-state periods:
+#' coefficient of variation (CV) approach to identify steady-state periods and
+#' then enforces *contiguous* block duration so scattered "steady" islands are
+#' not averaged together:
 #'
-#' 1. **Rolling window**: A sliding window (default 300 seconds, or 1/4 of data, min 60 s)
-#'    computes the rolling mean and standard deviation of the output metric (velocity or power).
-#' 2. **CV calculation**: CV = rolling SD / rolling mean at each time point.
-#' 3. **Threshold filtering**: Time points where CV < `steady_cv_threshold` (default 8%)
-#'    are classified as steady-state.
-#' 4. **Minimum duration**: At least `min_steady_minutes` of steady-state data
-#'    must be present; otherwise the activity is marked as `"non_steady"`.
-#' 5. **EF computation**: The median EF across all steady-state data points is reported.
+#' 1. **Sampling-interval awareness**: The observed median sampling interval is
+#'    estimated via `diff(time)` so the rolling window targets a fixed number of
+#'    seconds regardless of recording frequency (1 Hz, 0.5 Hz smart-recording,
+#'    multi-Hz). This removes the implicit 1 Hz assumption from earlier versions.
+#' 2. **Rolling window**: A sliding window targeting 300 seconds (capped by
+#'    `nrow / 4`, floor at 60 seconds' worth of samples) computes rolling mean
+#'    and SD of the output metric.
+#' 3. **CV calculation**: CV = rolling SD / rolling mean at each time point.
+#' 4. **Continuous blocks**: All time points with CV < `steady_cv_threshold`
+#'    are marked steady, then grouped into contiguous runs via `rle()`. A block
+#'    qualifies only if its wall-clock span is >= `min_steady_minutes` AND it
+#'    has >= 100 samples. If no block qualifies, status is
+#'    `"insufficient_steady_duration"` (activities with no steady CV window at
+#'    all are marked `"non_steady"`).
+#' 5. **EF computation**: The longest qualifying block is selected; EF is the
+#'    median output/HR ratio across that block. `steady_duration_minutes`,
+#'    `n_steady_blocks` and `sampling_interval_seconds` are returned alongside
+#'    the EF value for auditability.
 #'
-#' This approach follows the principle that valid EF comparisons require quasi-constant
-#' output intensity, as outlined by Coyle & González-Alonso (2001), who demonstrated that
-#' cardiovascular drift is meaningful only under steady-state exercise conditions.
-#' The rolling CV method is a common signal-processing technique for detecting stationarity
+#' This mirrors the block-based steady-state logic used in
+#' [calculate_decoupling()] and follows the principle that valid EF comparisons
+#' require quasi-constant output intensity, as outlined by Coyle &
+#' González-Alonso (2001), who demonstrated that cardiovascular drift is
+#' meaningful only under steady-state exercise conditions. The rolling CV
+#' method is a common signal-processing technique for detecting stationarity
 #' in physiological time series.
 #'
 #' **Data Quality Considerations:**
@@ -296,6 +329,27 @@ calculate_ef <- function(activities_data,
     activity <- activities_df_filtered[i, ]
     act_type <- activity$type %||% "Unknown"
     activity_date <- activity$date
+    # Build a uniform result row for the activity-level path. Mirrors the
+    # make_result() helper inside calculate_ef_from_stream(); keeping the
+    # two schemas aligned is what lets dplyr::bind_rows() produce a single
+    # output frame below without column-coercion quirks.
+    make_activity_result <- function(status, ef_value = NA_real_,
+                                     ef_metric_used = ef_metric) {
+      data.frame(
+        date = activity_date,
+        activity_type = act_type,
+        ef_value = ef_value,
+        status = status,
+        ef_metric_requested = ef_metric,
+        ef_metric_used = ef_metric_used,
+        quality_score = NA_real_,
+        hr_coverage = NA_real_,
+        steady_duration_minutes = NA_real_,
+        n_steady_blocks = NA_integer_,
+        sampling_interval_seconds = NA_real_,
+        stringsAsFactors = FALSE
+      )
+    }
     duration_sec <- safe_as_numeric(activity$moving_time)
     avg_hr <- safe_as_numeric(activity$average_heartrate)
     distance_m <- safe_as_numeric(activity$distance)
@@ -349,15 +403,7 @@ calculate_ef <- function(activities_data,
       # Check for reasonable HR values (basic quality gate)
       if (avg_hr < 50 || avg_hr > 220) {
         if (quality_control == "filter") {
-          return(data.frame(
-            date = activity_date,
-            activity_type = act_type,
-            ef_value = NA_real_,
-            status = "poor_hr_quality",
-            quality_score = NA_real_,
-            hr_coverage = NA_real_,
-            stringsAsFactors = FALSE
-          ))
+          return(make_activity_result("poor_hr_quality"))
         }
         # If "flag", we continue but mark the status
       }
@@ -365,18 +411,16 @@ calculate_ef <- function(activities_data,
 
     # Steady-state gating: check minimum duration
     if (duration_sec < (min_steady_minutes * 60)) {
-      return(data.frame(
-        date = activity_date,
-        activity_type = act_type,
-        ef_value = NA_real_,
-        status = "too_short",
-        quality_score = NA_real_,
-        hr_coverage = NA_real_,
-        stringsAsFactors = FALSE
-      ))
+      return(make_activity_result("too_short"))
     }
 
     ef_value <- NA
+    # Track which metric was actually computed; activity-level gap_hr can
+    # legitimately fall back to plain speed when the CSV lacks an
+    # average_gap column. Surfaced in ef_metric_used so users do not
+    # silently mis-interpret speed/HR rows as GAP/HR.
+    ef_metric_used_i <- ef_metric
+    activity_status <- "no_streams"
 
     if (ef_metric == "speed_hr") {
       if (distance_m > 0 && duration_sec > 0) {
@@ -393,10 +437,20 @@ calculate_ef <- function(activities_data,
         # GAP is already in m/s (speed), use directly
         ef_value <- gap_value / avg_hr
       } else if (distance_m > 0 && duration_sec > 0) {
-        # Fallback to regular speed if GAP not available
+        # Fallback to regular speed if GAP not available. Record both the
+        # fallback status AND the fact that the emitted ratio is speed/HR
+        # rather than GAP/HR so downstream analyses do not conflate them.
         speed_ms <- distance_m / duration_sec
         ef_value <- speed_ms / avg_hr
-        warning(sprintf("GAP data not available for activity on %s, using regular speed", activity_date))
+        ef_metric_used_i <- "speed_hr"
+        activity_status <- "gap_stream_unavailable_fallback_to_speed"
+        warning(sprintf(
+          paste0(
+            "GAP data not available for activity on %s; falling back to ",
+            "speed/HR. ef_metric_used is 'speed_hr' on this row."
+          ),
+          activity_date
+        ), call. = FALSE)
       }
     } else if (ef_metric == "power_hr") {
       if (!is.na(power_used) && power_used > 0) {
@@ -405,24 +459,13 @@ calculate_ef <- function(activities_data,
     }
 
     if (!is.na(ef_value) && ef_value > 0) {
-      data.frame(
-        date = activity_date,
-        activity_type = act_type,
+      make_activity_result(activity_status,
         ef_value = ef_value,
-        status = "no_streams",
-        quality_score = NA_real_,
-        hr_coverage = NA_real_,
-        stringsAsFactors = FALSE
+        ef_metric_used = ef_metric_used_i
       )
     } else {
-      data.frame(
-        date = activity_date,
-        activity_type = act_type,
-        ef_value = NA_real_,
-        status = "calculation_failed",
-        quality_score = NA_real_,
-        hr_coverage = NA_real_,
-        stringsAsFactors = FALSE
+      make_activity_result("calculation_failed",
+        ef_metric_used = ef_metric_used_i
       )
     }
   }) |> dplyr::bind_rows()
@@ -434,8 +477,13 @@ calculate_ef <- function(activities_data,
       activity_type = character(0),
       ef_value = numeric(0),
       status = character(0),
+      ef_metric_requested = character(0),
+      ef_metric_used = character(0),
       quality_score = numeric(0),
-      hr_coverage = numeric(0)
+      hr_coverage = numeric(0),
+      steady_duration_minutes = numeric(0),
+      n_steady_blocks = integer(0),
+      sampling_interval_seconds = numeric(0)
     ))
   }
 
@@ -502,21 +550,37 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
                                      steady_cv_threshold = 0.08,
                                      min_hr_coverage = 0.9,
                                      quality_control = "filter") {
+  # Record the metric the caller asked for BEFORE any stream-level fallback
+  # so the returned frame can report both the request and what was actually
+  # computed. See the status vocabulary in calculate_ef() for
+  # "gap_stream_unavailable_fallback_to_speed".
+  ef_metric_requested <- ef_metric
+
   # Internal helper: build a uniform-shape result row so every return path
-  # carries the same columns (including quality_score and hr_coverage) even
-  # when the activity was rejected. Callers that rbind() many activities
-  # previously had to defend against missing columns on rejection rows.
+  # carries the same columns (including quality_score, hr_coverage, steady
+  # diagnostics and the sampling interval) even when the activity was
+  # rejected. Callers that rbind() many activities previously had to defend
+  # against missing columns on rejection rows.
   make_result <- function(status,
                           ef_value = NA_real_,
+                          ef_metric_used = ef_metric,
                           quality_score = NA_real_,
-                          hr_coverage = NA_real_) {
+                          hr_coverage = NA_real_,
+                          steady_duration_minutes = NA_real_,
+                          n_steady_blocks = NA_integer_,
+                          sampling_interval_seconds = NA_real_) {
     data.frame(
       date = activity_date,
       activity_type = act_type,
       ef_value = ef_value,
       status = status,
+      ef_metric_requested = ef_metric_requested,
+      ef_metric_used = ef_metric_used,
       quality_score = quality_score,
       hr_coverage = hr_coverage,
+      steady_duration_minutes = steady_duration_minutes,
+      n_steady_blocks = n_steady_blocks,
+      sampling_interval_seconds = sampling_interval_seconds,
       stringsAsFactors = FALSE
     )
   }
@@ -539,32 +603,51 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
 
   # Stream-level GAP handling: Strava FIT/TCX/GPX streams do not expose a
   # grade-adjusted speed channel. Fall back to plain speed/HR in the stream
-  # path; the activity-level branch in calculate_ef() still uses the real
-  # average_gap column from the summary CSV when available.
+  # path and mark both the status and ef_metric_used so callers do not mis-
+  # interpret the resulting speed/HR ratio as GAP/HR. The activity-level
+  # branch in calculate_ef() still uses the real average_gap column from
+  # the summary CSV when it is present.
+  stream_gap_fallback <- FALSE
   if (identical(ef_metric, "gap_hr")) {
     athlytics_message(sprintf(
       "  Stream-level GAP channel not present for %s; computing speed/HR for gap_hr.",
       activity_date
     ))
     ef_metric <- "speed_hr"
+    stream_gap_fallback <- TRUE
   }
+  # ef_metric_used_default becomes the value reported on every non-"ok" row
+  # (missing data / insufficient points / etc) so a gap_hr request rejected
+  # at any stage still propagates the fact that the stream path would have
+  # fallen back to speed/HR, had it succeeded.
+  ef_metric_used_default <- if (stream_gap_fallback) "speed_hr" else ef_metric_requested
 
   # Validate stream data structure
   required_cols <- c("time", "heartrate")
   if (ef_metric == "speed_hr") {
     if (!"distance" %in% colnames(stream_data) && !"velocity_smooth" %in% colnames(stream_data)) {
-      return(make_result("missing_velocity_data"))
+      return(make_result("missing_velocity_data",
+        ef_metric_used = ef_metric_used_default
+      ))
     }
   } else { # power_hr
     if (!"watts" %in% colnames(stream_data)) {
-      return(make_result("missing_power_data"))
+      return(make_result("missing_power_data",
+        ef_metric_used = ef_metric_used_default
+      ))
     }
   }
 
   missing_cols <- setdiff(required_cols, colnames(stream_data))
   if (length(missing_cols) > 0) {
-    return(make_result("missing_hr_data"))
+    return(make_result("missing_hr_data", ef_metric_used = ef_metric_used_default))
   }
+
+  # Estimate the stream's median sampling interval once so every downstream
+  # heuristic (rolling-CV window, continuous-block duration) is sampling-
+  # frequency aware. Prior versions assumed 1 Hz and silently rescaled
+  # window size by the actual sampling rate.
+  sampling_interval_seconds <- estimate_sampling_interval(stream_data, default = 1)
 
   # HR coverage must be measured against the ORIGINAL stream and weighted by
   # time (not row count). Row-fraction coverage overweights densely-sampled
@@ -574,7 +657,11 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
   if (nrow(stream_data) > 0) {
     hr_coverage_raw <- time_weighted_coverage(stream_data, "heartrate")
     if (hr_coverage_raw < min_hr_coverage) {
-      return(make_result("insufficient_hr_data", hr_coverage = hr_coverage_raw))
+      return(make_result("insufficient_hr_data",
+        ef_metric_used = ef_metric_used_default,
+        hr_coverage = hr_coverage_raw,
+        sampling_interval_seconds = sampling_interval_seconds
+      ))
     }
   }
 
@@ -583,7 +670,11 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
     dplyr::filter(!is.na(.data$time), !is.na(.data$heartrate))
 
   if (nrow(stream_clean) < 100) {
-    return(make_result("insufficient_data_points", hr_coverage = hr_coverage_raw))
+    return(make_result("insufficient_data_points",
+      ef_metric_used = ef_metric_used_default,
+      hr_coverage = hr_coverage_raw,
+      sampling_interval_seconds = sampling_interval_seconds
+    ))
   }
 
   # Calculate velocity if needed for speed_hr
@@ -610,7 +701,11 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
   }
 
   if (nrow(stream_clean) < 100) {
-    return(make_result("insufficient_valid_data", hr_coverage = hr_coverage_raw))
+    return(make_result("insufficient_valid_data",
+      ef_metric_used = ef_metric_used_default,
+      hr_coverage = hr_coverage_raw,
+      sampling_interval_seconds = sampling_interval_seconds
+    ))
   }
 
   # Quality control
@@ -638,8 +733,10 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stream_clean <- stream_clean[!flag_any, , drop = FALSE]
       if (nrow(stream_clean) < 100) {
         return(make_result("insufficient_data_after_quality_filter",
+          ef_metric_used = ef_metric_used_default,
           quality_score = quality_score,
-          hr_coverage = hr_coverage_raw
+          hr_coverage = hr_coverage_raw,
+          sampling_interval_seconds = sampling_interval_seconds
         ))
       }
     } else if (quality_control == "flag") {
@@ -658,67 +755,111 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
   duration_minutes <- (max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)) / 60
   if (duration_minutes < min_steady_minutes) {
     return(make_result("too_short",
+      ef_metric_used = ef_metric_used_default,
       quality_score = quality_score,
-      hr_coverage = hr_coverage_raw
+      hr_coverage = hr_coverage_raw,
+      sampling_interval_seconds = sampling_interval_seconds
     ))
   }
 
-  # Find steady-state windows using rolling coefficient of variation
-  window_size <- min(300, nrow(stream_clean) %/% 4) # 5-minute windows or 1/4 of data
-  if (window_size < 60) window_size <- 60 # Minimum 1-minute windows
+  # Sort once so rle(), time midpoints and run indexing are all self-consistent.
+  stream_clean <- stream_clean %>% dplyr::arrange(.data$time)
 
-  if (ef_metric == "speed_hr") {
-    # Calculate rolling CV for velocity
-    stream_clean <- stream_clean %>%
-      dplyr::arrange(.data$time) %>%
-      dplyr::mutate(
-        velocity_rollmean = zoo::rollmean(.data$velocity, window_size, fill = NA, align = "center"),
-        velocity_rollsd = zoo::rollapply(.data$velocity, window_size, sd, fill = NA, align = "center"),
-        velocity_cv = .data$velocity_rollsd / .data$velocity_rollmean
-      )
+  # Rolling-CV window sized by wall-clock time, not row count. Targets
+  # ~5 minutes of data, capped at nrow/4 so the window cannot swallow the
+  # whole activity, floor at ~60 seconds of samples so very dense streams
+  # do not reduce to a 2-sample SD.
+  window_size <- time_based_window_size(
+    stream_clean,
+    window_seconds = 300,
+    min_rows = max(60L, ceiling(60 / sampling_interval_seconds)),
+    max_rows = nrow(stream_clean) %/% 4
+  )
 
-    # Find steady-state periods (CV < threshold)
-    steady_periods <- stream_clean %>%
-      dplyr::filter(!is.na(.data$velocity_cv), .data$velocity_cv < steady_cv_threshold)
-  } else {
-    # Calculate rolling CV for power
-    stream_clean <- stream_clean %>%
-      dplyr::arrange(.data$time) %>%
-      dplyr::mutate(
-        watts_rollmean = zoo::rollmean(.data$watts, window_size, fill = NA, align = "center"),
-        watts_rollsd = zoo::rollapply(.data$watts, window_size, sd, fill = NA, align = "center"),
-        watts_cv = .data$watts_rollsd / .data$watts_rollmean
-      )
+  metric_vec <- if (ef_metric == "speed_hr") stream_clean$velocity else stream_clean$watts
+  metric_rollmean <- zoo::rollmean(metric_vec, window_size, fill = NA, align = "center")
+  metric_rollsd <- zoo::rollapply(metric_vec, window_size, sd, fill = NA, align = "center")
+  metric_cv <- metric_rollsd / metric_rollmean
 
-    # Find steady-state periods (CV < threshold)
-    steady_periods <- stream_clean %>%
-      dplyr::filter(!is.na(.data$watts_cv), .data$watts_cv < steady_cv_threshold)
-  }
+  stream_clean$is_steady <- !is.na(metric_cv) & metric_cv < steady_cv_threshold
 
-  if (nrow(steady_periods) < 100) {
+  if (!any(stream_clean$is_steady)) {
     return(make_result("non_steady",
+      ef_metric_used = ef_metric_used_default,
       quality_score = quality_score,
-      hr_coverage = hr_coverage_raw
+      hr_coverage = hr_coverage_raw,
+      sampling_interval_seconds = sampling_interval_seconds
     ))
   }
 
-  # Calculate EF from steady-state periods
+  # Identify contiguous steady-state blocks. Mirrors the decoupling logic:
+  # previous EF implementations collected every steady point across the
+  # whole activity and treated scattered islands as one block, which
+  # inflated "steady duration" and let interval workouts silently pass the
+  # min_steady_minutes gate. The rle() sweep below rejects activities that
+  # only contain short isolated steady patches.
+  runs <- rle(stream_clean$is_steady)
+  run_ends <- cumsum(runs$lengths)
+  run_starts <- c(1L, utils::head(run_ends, -1) + 1L)
+  time_num <- as.numeric(stream_clean$time)
+
+  run_duration_min <- ifelse(
+    runs$values,
+    (time_num[run_ends] - time_num[run_starts]) / 60,
+    0
+  )
+  run_sample_count <- ifelse(runs$values, runs$lengths, 0L)
+
+  qualifying <- which(
+    runs$values &
+      run_duration_min >= min_steady_minutes &
+      run_sample_count >= 100
+  )
+
+  if (length(qualifying) == 0) {
+    return(make_result("insufficient_steady_duration",
+      ef_metric_used = ef_metric_used_default,
+      quality_score = quality_score,
+      hr_coverage = hr_coverage_raw,
+      sampling_interval_seconds = sampling_interval_seconds
+    ))
+  }
+
+  best_run_i <- qualifying[which.max(run_duration_min[qualifying])]
+  steady_block <- stream_clean[run_starts[best_run_i]:run_ends[best_run_i], , drop = FALSE]
+  steady_duration_minutes <- run_duration_min[best_run_i]
+  n_steady_blocks <- length(qualifying)
+
+  # Calculate EF from the chosen steady block
   if (ef_metric == "speed_hr") {
-    ef_value <- median(steady_periods$velocity / steady_periods$heartrate, na.rm = TRUE)
+    ef_value <- median(steady_block$velocity / steady_block$heartrate, na.rm = TRUE)
   } else {
-    ef_value <- median(steady_periods$watts / steady_periods$heartrate, na.rm = TRUE)
+    ef_value <- median(steady_block$watts / steady_block$heartrate, na.rm = TRUE)
   }
 
   if (!is.na(ef_value) && ef_value > 0) {
-    make_result("ok",
+    ok_status <- if (stream_gap_fallback) {
+      "gap_stream_unavailable_fallback_to_speed"
+    } else {
+      "ok"
+    }
+    make_result(ok_status,
       ef_value = ef_value,
+      ef_metric_used = ef_metric_used_default,
       quality_score = quality_score,
-      hr_coverage = hr_coverage_raw
+      hr_coverage = hr_coverage_raw,
+      steady_duration_minutes = steady_duration_minutes,
+      n_steady_blocks = n_steady_blocks,
+      sampling_interval_seconds = sampling_interval_seconds
     )
   } else {
     make_result("calculation_failed",
+      ef_metric_used = ef_metric_used_default,
       quality_score = quality_score,
-      hr_coverage = hr_coverage_raw
+      hr_coverage = hr_coverage_raw,
+      steady_duration_minutes = steady_duration_minutes,
+      n_steady_blocks = n_steady_blocks,
+      sampling_interval_seconds = sampling_interval_seconds
     )
   }
 }

@@ -72,10 +72,28 @@ A tibble with the following columns:
 \item{activity_type}{Activity type (character: "Run" or "Ride")}
 \item{ef_value}{Efficiency Factor value (numeric). Higher = better fitness.
 Units: m/s/bpm for speed_hr, W/bpm for power_hr.}
-\item{status}{Character. "ok" for successful calculation with stream data, "no_streams" for
-activity-level calculation without stream data, "non_steady" if steady-state
-criteria not met, "insufficient_data" if data quality issues, "too_short" if below min_steady_minutes,
-"insufficient_hr_data" if HR coverage below threshold.}
+\item{status}{Character status code describing the outcome of the
+calculation. See \strong{Status vocabulary} below.}
+\item{ef_metric_requested}{The metric the user asked for (\code{"speed_hr"},
+\code{"gap_hr"}, or \code{"power_hr"}). Mirrors the \code{ef_metric} argument.}
+\item{ef_metric_used}{The metric that was actually computed. Usually
+matches \code{ef_metric_requested}; for \code{gap_hr} inputs processed through
+the stream path (where no GAP channel is available) this is
+\code{"speed_hr"} and the row is also marked with status
+\code{"gap_stream_unavailable_fallback_to_speed"}.}
+\item{quality_score}{Numeric in [0, 1]. Fraction of stream samples that
+passed quality-control range checks (HR, velocity, watts). \code{NA} when
+no stream was parsed or when the activity was rejected before QC.}
+\item{hr_coverage}{Numeric in [0, 1]. Time-weighted fraction of the
+stream that carried a valid heart-rate sample. \code{NA} for activity-level
+paths (\code{status = "no_streams"}).}
+\item{steady_duration_minutes}{Wall-clock duration of the contiguous
+steady-state block the EF value was derived from. \code{NA} for
+activity-level paths or when no qualifying block existed.}
+\item{n_steady_blocks}{Number of contiguous steady-state blocks that met
+the \code{min_steady_minutes} threshold. \code{NA} for activity-level paths.}
+\item{sampling_interval_seconds}{Observed median sampling interval of
+the stream (seconds). \code{NA} for activity-level paths.}
 }
 }
 \description{
@@ -123,22 +141,36 @@ EF is a key indicator of aerobic fitness and training adaptation (Allen et al., 
 \strong{Steady-State Detection Method:}
 
 When stream data is available (via \code{export_dir}), the function applies a rolling
-coefficient of variation (CV) approach to identify steady-state periods:
+coefficient of variation (CV) approach to identify steady-state periods and
+then enforces \emph{contiguous} block duration so scattered "steady" islands are
+not averaged together:
 \enumerate{
-\item \strong{Rolling window}: A sliding window (default 300 seconds, or 1/4 of data, min 60 s)
-computes the rolling mean and standard deviation of the output metric (velocity or power).
+\item \strong{Sampling-interval awareness}: The observed median sampling interval is
+estimated via \code{diff(time)} so the rolling window targets a fixed number of
+seconds regardless of recording frequency (1 Hz, 0.5 Hz smart-recording,
+multi-Hz). This removes the implicit 1 Hz assumption from earlier versions.
+\item \strong{Rolling window}: A sliding window targeting 300 seconds (capped by
+\code{nrow / 4}, floor at 60 seconds' worth of samples) computes rolling mean
+and SD of the output metric.
 \item \strong{CV calculation}: CV = rolling SD / rolling mean at each time point.
-\item \strong{Threshold filtering}: Time points where CV < \code{steady_cv_threshold} (default 8\%)
-are classified as steady-state.
-\item \strong{Minimum duration}: At least \code{min_steady_minutes} of steady-state data
-must be present; otherwise the activity is marked as \code{"non_steady"}.
-\item \strong{EF computation}: The median EF across all steady-state data points is reported.
+\item \strong{Continuous blocks}: All time points with CV < \code{steady_cv_threshold}
+are marked steady, then grouped into contiguous runs via \code{rle()}. A block
+qualifies only if its wall-clock span is >= \code{min_steady_minutes} AND it
+has >= 100 samples. If no block qualifies, status is
+\code{"insufficient_steady_duration"} (activities with no steady CV window at
+all are marked \code{"non_steady"}).
+\item \strong{EF computation}: The longest qualifying block is selected; EF is the
+median output/HR ratio across that block. \code{steady_duration_minutes},
+\code{n_steady_blocks} and \code{sampling_interval_seconds} are returned alongside
+the EF value for auditability.
 }
 
-This approach follows the principle that valid EF comparisons require quasi-constant
-output intensity, as outlined by Coyle & González-Alonso (2001), who demonstrated that
-cardiovascular drift is meaningful only under steady-state exercise conditions.
-The rolling CV method is a common signal-processing technique for detecting stationarity
+This mirrors the block-based steady-state logic used in
+\code{\link[=calculate_decoupling]{calculate_decoupling()}} and follows the principle that valid EF comparisons
+require quasi-constant output intensity, as outlined by Coyle &
+González-Alonso (2001), who demonstrated that cardiovascular drift is
+meaningful only under steady-state exercise conditions. The rolling CV
+method is a common signal-processing technique for detecting stationarity
 in physiological time series.
 
 \strong{Data Quality Considerations:}
@@ -169,6 +201,38 @@ in physiological time series.
 Note: EF values are relative to individual baseline. Focus on personal trends
 rather than absolute comparisons with other athletes.
 }
+\section{Status vocabulary}{
+
+\itemize{
+\item \code{"ok"}: Full steady-state analysis succeeded on stream data.
+\item \code{"no_streams"}: No stream file was available; \code{ef_value} was computed
+from activity-level averages. QC and HR-coverage metrics are \code{NA}.
+\item \code{"gap_stream_unavailable_fallback_to_speed"}: Caller requested
+\code{ef_metric = "gap_hr"} but the stream does not expose a grade-adjusted
+channel, so \code{ef_value} was computed from plain speed/HR. \code{ef_metric_used}
+is \code{"speed_hr"} on these rows so downstream code can filter them out.
+\item \code{"missing_velocity_data"}: Stream lacked both \code{distance} and
+\code{velocity_smooth} when \code{ef_metric = "speed_hr"}.
+\item \code{"missing_power_data"}: Stream lacked \code{watts} when
+\code{ef_metric = "power_hr"}.
+\item \code{"missing_hr_data"}: Stream lacked a \code{heartrate} / \code{heart_rate} column.
+\item \code{"insufficient_hr_data"}: Time-weighted HR coverage < \code{min_hr_coverage}.
+\item \code{"insufficient_data_points"}: Fewer than 100 non-NA stream samples.
+\item \code{"insufficient_valid_data"}: Fewer than 100 samples survived the basic
+positivity filter (\code{velocity > 0} or \code{watts > 0}).
+\item \code{"insufficient_data_after_quality_filter"}: \code{quality_control = "filter"}
+removed enough out-of-range samples to drop the stream below 100 rows.
+\item \code{"poor_hr_quality"}: Activity-level path with out-of-range
+\code{average_heartrate} while \code{quality_control = "filter"}.
+\item \code{"too_short"}: Activity or steady-state window duration is below
+\code{min_steady_minutes}.
+\item \code{"non_steady"}: No rolling-CV window cleared \code{steady_cv_threshold}.
+\item \code{"insufficient_steady_duration"}: No \emph{contiguous} steady-state block
+lasted at least \code{min_steady_minutes}.
+\item \code{"calculation_failed"}: Median ratio was non-positive or not finite.
+}
+}
+
 \examples{
 # Example using simulated data
 data(sample_ef)

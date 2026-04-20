@@ -9,10 +9,10 @@ calculate_ef_from_stream(
   activity_date,
   act_type,
   ef_metric,
-  min_steady_minutes,
-  steady_cv_threshold,
-  min_hr_coverage,
-  quality_control
+  min_steady_minutes = 20,
+  steady_cv_threshold = 0.08,
+  min_hr_coverage = 0.9,
+  quality_control = "filter"
 )
 }
 \arguments{

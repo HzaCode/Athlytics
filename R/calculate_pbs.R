@@ -16,9 +16,26 @@
 #'   Default: c(1000, 5000, 10000, 21097.5, 42195) for 1k, 5k, 10k, half, full marathon.
 #' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
-#' @return A data frame with columns: activity_id, activity_date, distance,
-#'   elapsed_time, moving_time, time_seconds, cumulative_pb_seconds, is_pb,
-#'   distance_label, time_period
+#' @return A data frame with columns: `activity_id`, `activity_date`,
+#'   `distance`, `elapsed_time`, `moving_time`, `time_seconds`,
+#'   `cumulative_pb_seconds`, `is_pb`, `distance_label`, `time_period`,
+#'   and `time_basis` (always `"moving"` in the current implementation;
+#'   see **PB time semantics** below).
+#'
+#' @section PB time semantics:
+#' `find_best_effort()` selects the fastest interval whose cumulative
+#' *distance* increases strictly monotonically. Samples where the distance
+#' counter plateaus (traffic stops, laps pausing the watch, signal
+#' dropouts) are therefore excluded from the candidate window. That makes
+#' the reported times *moving-time* best efforts rather than elapsed-time
+#' best efforts. To reflect that in the output the `time_basis` column is
+#' hard-coded to `"moving"`, and both `elapsed_time` and `moving_time` are
+#' populated with the same numeric seconds value so existing downstream
+#' code that reads either column still works.
+#'
+#' If you need an elapsed-time PB (i.e. including paused seconds), use the
+#' raw stream with a separate tool; the current implementation intentionally
+#' does not attempt to reconstruct paused segments from FIT laps.
 #'
 #' @details
 #' This function analyzes detailed activity files (FIT/TCX/GPX) to find the fastest
@@ -143,7 +160,8 @@ calculate_pbs <- function(activities_data,
       cumulative_pb_seconds = numeric(0),
       is_pb = logical(0),
       distance_label = character(0),
-      time_period = character(0)
+      time_period = character(0),
+      time_basis = character(0)
     ))
   }
 
@@ -205,7 +223,8 @@ calculate_pbs <- function(activities_data,
       cumulative_pb_seconds = numeric(0),
       is_pb = logical(0),
       distance_label = character(0),
-      time_period = character(0)
+      time_period = character(0),
+      time_basis = character(0)
     ))
   }
 
@@ -249,11 +268,17 @@ calculate_pbs <- function(activities_data,
     levels = as.character(label_levels)
   )
 
-  # Add elapsed_time and moving_time (same as time_seconds for best efforts)
+  # Add elapsed_time and moving_time. find_best_effort() operates on the
+  # strictly-monotonic-distance subset, which excludes paused/plateau
+  # samples, so the interval duration it returns is moving time, not
+  # elapsed time. We set both columns to the same value for backward
+  # compatibility with early callers, and surface the semantic choice via
+  # an explicit `time_basis` column so newer code can filter on it.
   pb_results <- pb_results %>%
     dplyr::mutate(
       elapsed_time = .data$time_seconds,
-      moving_time = .data$time_seconds
+      moving_time = .data$time_seconds,
+      time_basis = "moving"
     )
 
   # Select final columns
@@ -262,7 +287,7 @@ calculate_pbs <- function(activities_data,
       .data$activity_id, .data$activity_date, .data$distance,
       .data$elapsed_time, .data$moving_time, .data$time_seconds,
       .data$cumulative_pb_seconds, .data$is_pb,
-      .data$distance_label, .data$time_period
+      .data$distance_label, .data$time_period, .data$time_basis
     ) %>%
     dplyr::arrange(.data$activity_date, .data$distance)
 

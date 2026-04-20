@@ -7,6 +7,25 @@
 find_best_effort(stream_data, target_distance)
 }
 \description{
-Find Best Effort for Target Distance
+Locates the fastest contiguous sub-segment that covers \code{target_distance}
+within a stream. Two robustness improvements over the original
+nearest-row approach:
+}
+\details{
+\enumerate{
+\item \strong{Strictly-monotonic-distance filter}: the input is reduced to rows
+where cumulative distance and time both strictly increase, so spurious
+backward jumps (GPS glitches, laps restarting the distance counter) no
+longer contribute fake short intervals.
+\item \strong{Linear interpolation at the target distance}: the start and end
+points of each candidate window are interpolated between recorded
+samples, eliminating a systematic bias toward slower efforts that
+nearest-row lookup introduced on low-Hz streams (a ~0.1 Hz Garmin
+smart-recording sample could previously inflate a 5 km time by up to
+~10 s on each side).
+\item \strong{O(n) two-pointer sweep}: replaces the previous O(n^2) scan across
+start indices with a single left-to-right pass, making per-activity
+PB extraction tractable on multi-hour ultras.
+}
 }
 \keyword{internal}

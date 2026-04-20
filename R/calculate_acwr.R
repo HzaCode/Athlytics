@@ -48,6 +48,16 @@
 #'   `load_metric = "hrss"`. Used for heart rate reserve calculations.
 #' @param smoothing_period Integer. Number of days for smoothing the ACWR using a
 #'   rolling mean (default: 7). Reduces day-to-day noise for clearer trend visualization.
+#' @param missing_load How to treat training days on which the chosen
+#'   `load_metric` could not be computed (e.g. an HRSS call on an activity
+#'   with no HR samples, or a TSS call without FTP). Options:
+#'   * `"zero"` (default): coalesce to 0, matching the historical behaviour.
+#'     This keeps backwards compatibility but conflates missing-data
+#'     training days with genuine rest days.
+#'   * `"na"`: keep as `NA`. Genuine rest days (no activity on record) are
+#'     still imputed to 0; only days that *had* an activity whose load was
+#'     not computable remain `NA`. Rolling means propagate the `NA`,
+#'     clearly surfacing the data gap.
 #' @param verbose Logical. If TRUE, prints progress messages. Default FALSE.
 #'
 #' @return A tibble with the following columns:
@@ -223,7 +233,9 @@ calculate_acwr <- function(activities_data,
                            user_max_hr = NULL,
                            user_resting_hr = NULL,
                            smoothing_period = 7,
+                           missing_load = c("zero", "na"),
                            verbose = FALSE) {
+  missing_load <- match.arg(missing_load)
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
     stop("`activities_data` must be provided. Use load_local_activities() to load your Strava export data.")
@@ -335,17 +347,54 @@ calculate_acwr <- function(activities_data,
     stop("No activities found with valid load data for the specified criteria.")
   }
 
+  # Aggregate to daily load. A date gets NA_real_ (rather than 0) only when
+  # every activity on that date had a non-computable load (e.g. HRSS with
+  # missing HR); this is what `missing_load = "na"` preserves downstream.
   daily_load_summary <- daily_load_df %>%
     dplyr::group_by(date) %>%
-    dplyr::summarise(daily_load = sum(load, na.rm = TRUE), .groups = "drop")
+    dplyr::summarise(
+      daily_load = if (any(!is.na(.data$load))) {
+        sum(.data$load, na.rm = TRUE)
+      } else {
+        NA_real_
+      },
+      .groups = "drop"
+    )
 
   # --- Create Full Time Series & Calculate ATL/CTL ---
   all_dates_sequence <- seq(fetch_start_date, analysis_end_date, by = "day")
 
+  # Tag each date in the continuous sequence as either a genuine rest day
+  # (no activity row was produced) or a training day. The zero-coalesce
+  # logic below uses this to distinguish "0 because the athlete rested"
+  # from "NA because the load metric was not computable on a day that did
+  # have training".
+  training_dates <- daily_load_summary$date
+
   daily_load_complete <- dplyr::tibble(date = all_dates_sequence) %>%
     dplyr::left_join(daily_load_summary, by = "date") %>%
-    dplyr::mutate(daily_load = dplyr::coalesce(.data$daily_load, 0)) %>%
+    dplyr::mutate(
+      is_rest_day = !(.data$date %in% training_dates),
+      daily_load = as.numeric(.data$daily_load)
+    ) %>%
     dplyr::arrange(.data$date)
+
+  if (missing_load == "zero") {
+    # Historical behaviour: conflate "rest" and "missing data" into 0.
+    daily_load_complete$daily_load <- dplyr::coalesce(
+      daily_load_complete$daily_load, 0
+    )
+  } else {
+    # "na" mode: only genuine rest days become 0; training days with
+    # non-computable load stay NA so the rolling means visibly propagate
+    # the gap.
+    daily_load_complete$daily_load <- ifelse(
+      daily_load_complete$is_rest_day,
+      0,
+      daily_load_complete$daily_load
+    )
+  }
+  daily_load_complete$is_rest_day <- NULL
 
   # --- Force evaluation to potentially resolve lazy-eval issues ---
   force(daily_load_complete)

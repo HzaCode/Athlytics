@@ -14,6 +14,7 @@ calculate_exposure(
   user_max_hr = NULL,
   user_resting_hr = NULL,
   end_date = Sys.Date(),
+  missing_load = c("zero", "na"),
   verbose = FALSE
 )
 }
@@ -40,6 +41,13 @@ Default includes common run/ride types.}
 
 \item{end_date}{Optional. Analysis end date (YYYY-MM-DD string or Date). Defaults to today.
 The analysis period covers the \code{chronic_period} days ending on this date.}
+
+\item{missing_load}{How to treat training days on which the chosen
+\code{load_metric} could not be computed (e.g. HRSS with missing HR,
+TSS without FTP). \code{"zero"} (default) matches the historical
+behaviour and coalesces these days to 0, conflating them with
+genuine rest days. \code{"na"} keeps them visibly \code{NA}; only days with no
+recorded activity at all are treated as rest (\code{0}).}
 
 \item{verbose}{Logical. If TRUE, prints progress messages. Default FALSE.}
 }

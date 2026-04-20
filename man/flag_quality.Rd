@@ -15,13 +15,15 @@ flag_quality(
   max_hr_jump = 10,
   max_pw_jump = 300,
   min_steady_minutes = 20,
-  steady_cv_threshold = 8
+  steady_cv_threshold = 0.08
 )
 }
 \arguments{
 \item{streams}{A data frame containing activity stream data with time-series
 measurements. Expected columns: \code{time} (seconds), \code{heartrate} (bpm),
-\code{watts} (W), \code{velocity_smooth} or \code{speed} (m/s), \code{distance} (m).}
+\code{watts} (W), \code{velocity_smooth} or \code{speed} (m/s), \code{distance} (m).
+\code{heart_rate} (FIT/TCX parser output) is accepted as an alias for
+\code{heartrate}, and \code{power} as an alias for \code{watts}.}
 
 \item{sport}{Type of activity (e.g., "Run", "Ride"). Default "Run".}
 
@@ -35,13 +37,24 @@ measurements. Expected columns: \code{time} (seconds), \code{heartrate} (bpm),
 
 \item{max_accel}{Maximum plausible acceleration in m/s². Default 3.0.}
 
-\item{max_hr_jump}{Maximum plausible HR change per second (bpm/s). Default 10.}
+\item{max_hr_jump}{Maximum plausible HR change \strong{per second} (bpm/s).
+Default 10. The value is compared against \verb{|dHR/dt|} (i.e. the
+per-second rate of change), which makes the threshold meaningful on
+streams that are not 1 Hz. Earlier versions compared raw
+sample-to-sample differences, silently changing the effective threshold
+on 0.5 Hz smart-recording or higher-frequency (e.g. Bluetooth) data.}
 
-\item{max_pw_jump}{Maximum plausible power change per second (W/s). Default 300.}
+\item{max_pw_jump}{Maximum plausible power change \strong{per second} (W/s).
+Default 300. Rate-based in the same sense as \code{max_hr_jump}.}
 
 \item{min_steady_minutes}{Minimum duration (minutes) for steady-state segment. Default 20.}
 
-\item{steady_cv_threshold}{Coefficient of variation threshold for steady-state (\\\%). Default 8.}
+\item{steady_cv_threshold}{Coefficient of variation threshold for
+steady-state, as a dimensionless fraction in (0, 1]. Default 0.08 (i.e.
+8\\%). Values >= 1 are interpreted as legacy percent input and
+auto-normalized with a deprecation warning. This brings \code{flag_quality()}
+in line with \code{calculate_ef()} and \code{calculate_decoupling()}, which have
+always used fraction-space thresholds.}
 }
 \value{
 A data frame identical to \code{streams} with additional flag columns:
@@ -51,7 +64,13 @@ A data frame identical to \code{streams} with additional flag columns:
 \item{flag_gps_drift}{Logical. TRUE if speed or acceleration is implausible.}
 \item{flag_any}{Logical. TRUE if any quality flag is raised.}
 \item{is_steady_state}{Logical. TRUE if segment meets steady-state criteria.}
-\item{quality_score}{Numeric 0-1. Proportion of clean data (1 = perfect).}
+\item{quality_score}{Numeric 0-1. Activity-level proportion of clean
+data (1 = perfect). This is \emph{not} a per-row score, it is the single
+summary \code{1 - mean(flag_any)} broadcast to every row for
+backward-compatible column semantics. The same value is also stored
+on the returned frame as
+\code{attr(result, "activity_quality_score")} so downstream code that
+wants a single number can read it without assuming row constancy.}
 }
 }
 \description{
@@ -63,10 +82,13 @@ suitable for physiological metrics calculation.
 This function performs several quality checks:
 \itemize{
 \item \strong{HR/Power Spikes}: Flags values outside physiological ranges or with
-sudden jumps (Delta HR > 10 bpm/s, Delta P > 300 W/s).
+sudden per-second jumps (|dHR/dt| > \code{max_hr_jump}, |dP/dt| > \code{max_pw_jump}).
+Rate computation uses \code{diff(time)} so the thresholds are sampling-rate
+invariant.
 \item \strong{GPS Drift}: Flags implausible speeds or accelerations based on sport type.
 \item \strong{Steady-State Detection}: Identifies segments with low variability
-(CV < 8\%) lasting >= 20 minutes, suitable for EF/decoupling calculations.
+(CV < \code{steady_cv_threshold}) lasting >= \code{min_steady_minutes} of
+\emph{wall-clock time} (not rows), suitable for EF/decoupling calculations.
 }
 
 The function is sport-aware and adjusts thresholds accordingly. All thresholds

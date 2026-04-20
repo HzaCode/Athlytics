@@ -19,6 +19,10 @@
 #' @param user_max_hr Required if `load_metric = "hrss"`.
 #' @param user_resting_hr Required if `load_metric = "hrss"`.
 #' @param smoothing_period Days for smoothing ACWR. Default 7.
+#' @param missing_load How to treat training days on which the chosen
+#'   `load_metric` could not be computed (`"zero"` for historical
+#'   behaviour or `"na"` to keep missing-data training days visibly NA).
+#'   See `calculate_acwr()` for details.
 #' @param ci Logical. Whether to calculate confidence bands (EWMA only). Default FALSE.
 #' @param B Number of bootstrap iterations (if ci = TRUE). Default 200.
 #' @param block_len Block length for moving-block bootstrap (days). Default 7.
@@ -84,12 +88,14 @@ calculate_acwr_ewma <- function(activities_data,
                                 user_max_hr = NULL,
                                 user_resting_hr = NULL,
                                 smoothing_period = 7,
+                                missing_load = c("zero", "na"),
                                 ci = FALSE,
                                 B = 200,
                                 block_len = 7,
                                 conf_level = 0.95) {
   # --- Match method argument ---
   method <- match.arg(method)
+  missing_load <- match.arg(missing_load)
 
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
@@ -237,19 +243,49 @@ calculate_acwr_ewma <- function(activities_data,
     user_ftp, user_max_hr, user_resting_hr
   )
 
+  # Aggregate to daily load; preserve NA on days where every activity had a
+  # non-computable load so `missing_load = "na"` can propagate it below.
   daily_load_summary <- daily_load_df %>%
     dplyr::group_by(date) %>%
-    dplyr::summarise(daily_load = sum(load, na.rm = TRUE), .groups = "drop")
+    dplyr::summarise(
+      daily_load = if (any(!is.na(.data$load))) {
+        sum(.data$load, na.rm = TRUE)
+      } else {
+        NA_real_
+      },
+      .groups = "drop"
+    )
 
   # Create complete time series starting from the first real activity date.
   # Days between first_activity_date and last recorded date with no activity
   # are genuine rest days (load = 0). Days before first_activity_date are not
   # included, so rollmean does not average over imputed zeros.
   all_dates_sequence <- seq(fetch_start_date, analysis_end_date, by = "day")
+  training_dates <- daily_load_summary$date
   daily_load_complete <- dplyr::tibble(date = all_dates_sequence) %>%
     dplyr::left_join(daily_load_summary, by = "date") %>%
-    dplyr::mutate(daily_load = dplyr::coalesce(.data$daily_load, 0)) %>%
+    dplyr::mutate(
+      is_rest_day = !(.data$date %in% training_dates),
+      daily_load = as.numeric(.data$daily_load)
+    ) %>%
     dplyr::arrange(.data$date)
+
+  if (missing_load == "zero") {
+    # Legacy: rest day and missing-data training day both become 0.
+    daily_load_complete$daily_load <- dplyr::coalesce(
+      daily_load_complete$daily_load, 0
+    )
+  } else {
+    # Only genuine rest days are imputed to 0. Missing-data training days
+    # stay NA; downstream EWMA / RA logic treats them as gaps rather than
+    # as zero-load sessions.
+    daily_load_complete$daily_load <- ifelse(
+      daily_load_complete$is_rest_day,
+      0,
+      daily_load_complete$daily_load
+    )
+  }
+  daily_load_complete$is_rest_day <- NULL
 
   # --- Calculate ACWR based on method ---
   if (method == "ra") {

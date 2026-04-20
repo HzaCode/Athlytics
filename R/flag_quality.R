@@ -17,8 +17,14 @@
 #' @param max_run_speed Maximum plausible running speed in m/s. Default 7.0 (approx. 2:23/km).
 #' @param max_ride_speed Maximum plausible riding speed in m/s. Default 25.0 (approx. 90 km/h).
 #' @param max_accel Maximum plausible acceleration in m/s². Default 3.0.
-#' @param max_hr_jump Maximum plausible HR change per second (bpm/s). Default 10.
-#' @param max_pw_jump Maximum plausible power change per second (W/s). Default 300.
+#' @param max_hr_jump Maximum plausible HR change **per second** (bpm/s).
+#'   Default 10. The value is compared against `|dHR/dt|` (i.e. the
+#'   per-second rate of change), which makes the threshold meaningful on
+#'   streams that are not 1 Hz. Earlier versions compared raw
+#'   sample-to-sample differences, silently changing the effective threshold
+#'   on 0.5 Hz smart-recording or higher-frequency (e.g. Bluetooth) data.
+#' @param max_pw_jump Maximum plausible power change **per second** (W/s).
+#'   Default 300. Rate-based in the same sense as `max_hr_jump`.
 #' @param min_steady_minutes Minimum duration (minutes) for steady-state segment. Default 20.
 #' @param steady_cv_threshold Coefficient of variation threshold for
 #'   steady-state, as a dimensionless fraction in (0, 1\]. Default 0.08 (i.e.
@@ -34,16 +40,25 @@
 #'     \item{flag_gps_drift}{Logical. TRUE if speed or acceleration is implausible.}
 #'     \item{flag_any}{Logical. TRUE if any quality flag is raised.}
 #'     \item{is_steady_state}{Logical. TRUE if segment meets steady-state criteria.}
-#'     \item{quality_score}{Numeric 0-1. Proportion of clean data (1 = perfect).}
+#'     \item{quality_score}{Numeric 0-1. Activity-level proportion of clean
+#'       data (1 = perfect). This is *not* a per-row score, it is the single
+#'       summary `1 - mean(flag_any)` broadcast to every row for
+#'       backward-compatible column semantics. The same value is also stored
+#'       on the returned frame as
+#'       `attr(result, "activity_quality_score")` so downstream code that
+#'       wants a single number can read it without assuming row constancy.}
 #'   }
 #'
 #' @details
 #' This function performs several quality checks:
 #' - **HR/Power Spikes**: Flags values outside physiological ranges or with
-#'   sudden jumps (Delta HR > 10 bpm/s, Delta P > 300 W/s).
+#'   sudden per-second jumps (|dHR/dt| > `max_hr_jump`, |dP/dt| > `max_pw_jump`).
+#'   Rate computation uses `diff(time)` so the thresholds are sampling-rate
+#'   invariant.
 #' - **GPS Drift**: Flags implausible speeds or accelerations based on sport type.
 #' - **Steady-State Detection**: Identifies segments with low variability
-#'   (CV < 8%) lasting >= 20 minutes, suitable for EF/decoupling calculations.
+#'   (CV < `steady_cv_threshold`) lasting >= `min_steady_minutes` of
+#'   *wall-clock time* (not rows), suitable for EF/decoupling calculations.
 #'
 #' The function is sport-aware and adjusts thresholds accordingly. All thresholds
 #' are configurable to accommodate different athlete profiles and data quality.
@@ -135,6 +150,24 @@ flag_quality <- function(streams,
   streams$is_steady_state <- FALSE
   streams$quality_score <- 1.0
 
+  # Per-second rate helper. `max_hr_jump` / `max_pw_jump` are documented as
+  # bpm/s and W/s respectively, so we must divide the sample-to-sample
+  # difference by the corresponding dt (in seconds), not use raw diffs. For
+  # the first row there is no preceding sample and dt is undefined: flag it
+  # FALSE so the opening data point is never gratuitously rejected.
+  time_num <- suppressWarnings(as.numeric(streams$time))
+  dt_vec <- c(NA_real_, diff(time_num))
+  # Zero / negative dt (duplicate timestamps, non-monotonic stream) cannot
+  # produce a meaningful rate; treat those rows as NA so the flag stays FALSE.
+  dt_vec[!is.finite(dt_vec) | dt_vec <= 0] <- NA_real_
+
+  per_second_rate <- function(x) {
+    if (is.null(x) || length(x) == 0) {
+      return(rep(NA_real_, nrow(streams)))
+    }
+    abs(c(NA_real_, diff(x))) / dt_vec
+  }
+
   # --- HR Spike Detection ---
   if ("heartrate" %in% colnames(streams)) {
     hr <- streams$heartrate
@@ -142,9 +175,9 @@ flag_quality <- function(streams,
     # Flag out-of-range HR
     hr_out_of_range <- !is.na(hr) & (hr < hr_range[1] | hr > hr_range[2])
 
-    # Flag excessive HR jumps
-    hr_diff <- c(0, diff(hr))
-    hr_excessive_jump <- !is.na(hr_diff) & abs(hr_diff) > max_hr_jump
+    # Flag excessive HR rate-of-change (bpm/s)
+    hr_rate <- per_second_rate(hr)
+    hr_excessive_jump <- !is.na(hr_rate) & hr_rate > max_hr_jump
 
     streams$flag_hr_spike <- hr_out_of_range | hr_excessive_jump
   }
@@ -156,9 +189,9 @@ flag_quality <- function(streams,
     # Flag out-of-range power
     pw_out_of_range <- !is.na(pw) & (pw < pw_range[1] | pw > pw_range[2])
 
-    # Flag excessive power jumps
-    pw_diff <- c(0, diff(pw))
-    pw_excessive_jump <- !is.na(pw_diff) & abs(pw_diff) > max_pw_jump
+    # Flag excessive power rate-of-change (W/s)
+    pw_rate <- per_second_rate(pw)
+    pw_excessive_jump <- !is.na(pw_rate) & pw_rate > max_pw_jump
 
     streams$flag_pw_spike <- pw_out_of_range | pw_excessive_jump
   }
@@ -195,15 +228,27 @@ flag_quality <- function(streams,
   streams$flag_any <- streams$flag_hr_spike | streams$flag_pw_spike | streams$flag_gps_drift
 
   # --- Calculate Quality Score (proportion of clean data) ---
+  activity_quality_score <- NA_real_
   if (nrow(streams) > 0) {
-    streams$quality_score <- 1 - (sum(streams$flag_any, na.rm = TRUE) / nrow(streams))
+    activity_quality_score <- 1 - (sum(streams$flag_any, na.rm = TRUE) / nrow(streams))
+    streams$quality_score <- activity_quality_score
   }
 
-  # --- Steady-State Detection ---
-  # Requires sufficient data and a metric to evaluate (prefer power, then speed)
-  min_samples <- min_steady_minutes * 60 # Convert to seconds
+  # --- Steady-State Detection (time-based window) ---
+  # Convert `min_steady_minutes` (wall-clock duration) into an equivalent
+  # row-count window using the observed median sampling interval. The
+  # prior implementation assumed 1 Hz and required `min_steady_minutes * 60`
+  # *rows*, which silently rescaled the steady-state definition on
+  # smart-recording (~0.5 Hz) or high-frequency (~2 Hz) streams.
+  sampling_interval_seconds <- estimate_sampling_interval(streams, default = 1)
+  window_size <- time_based_window_size(
+    streams,
+    window_seconds = min_steady_minutes * 60,
+    min_rows = ceiling(60 / sampling_interval_seconds), # at least ~1 minute worth of samples
+    max_rows = nrow(streams)
+  )
 
-  if (nrow(streams) >= min_samples) {
+  if (nrow(streams) >= window_size) {
     # Determine which metric to use for steady-state
     ss_metric <- NULL
     if ("watts" %in% colnames(streams) && any(!is.na(streams$watts))) {
@@ -212,35 +257,28 @@ flag_quality <- function(streams,
       ss_metric <- streams[[speed_col]]
     }
 
-    if (!is.null(ss_metric)) {
-      # Calculate rolling CV (coefficient of variation)
-      window_size <- min_samples
+    if (!is.null(ss_metric) && length(ss_metric) >= window_size) {
+      # CV as a dimensionless fraction (sd/mean), compared against the
+      # fraction-space `steady_cv_threshold` used everywhere else in the
+      # package.
+      rolling_cv <- zoo::rollapply(
+        ss_metric,
+        width = window_size,
+        FUN = function(x) {
+          m <- mean(x, na.rm = TRUE)
+          if (all(is.na(x)) || !is.finite(m) || m == 0) {
+            return(NA_real_)
+          }
+          sd(x, na.rm = TRUE) / m
+        },
+        align = "center",
+        fill = NA
+      )
 
-      if (length(ss_metric) >= window_size) {
-        # CV as a dimensionless fraction (sd/mean), compared against the
-        # fraction-space `steady_cv_threshold` used everywhere else in the
-        # package. Previously this branch multiplied by 100 and compared
-        # against a percent-space default, inconsistent with calculate_ef()
-        # and calculate_decoupling().
-        rolling_cv <- zoo::rollapply(
-          ss_metric,
-          width = window_size,
-          FUN = function(x) {
-            m <- mean(x, na.rm = TRUE)
-            if (all(is.na(x)) || !is.finite(m) || m == 0) {
-              return(NA_real_)
-            }
-            sd(x, na.rm = TRUE) / m
-          },
-          align = "center",
-          fill = NA
-        )
-
-        # Mark as steady-state if CV is below threshold and no flags
-        streams$is_steady_state <- !is.na(rolling_cv) &
-          rolling_cv < steady_cv_threshold &
-          !streams$flag_any
-      }
+      # Mark as steady-state if CV is below threshold and no flags
+      streams$is_steady_state <- !is.na(rolling_cv) &
+        rolling_cv < steady_cv_threshold &
+        !streams$flag_any
     }
   }
 
@@ -254,6 +292,12 @@ flag_quality <- function(streams,
     "Quality check complete: %.1f%% flagged, %.1f%% steady-state",
     pct_flagged, pct_steady
   ))
+
+  # Expose the activity-level summary as an attribute (plus an extra
+  # sampling-interval diagnostic) so callers who want a single scalar QC
+  # number can read it directly rather than subsetting a constant column.
+  attr(streams, "activity_quality_score") <- activity_quality_score
+  attr(streams, "sampling_interval_seconds") <- sampling_interval_seconds
 
   return(streams)
 }
