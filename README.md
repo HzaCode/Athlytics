@@ -40,13 +40,6 @@ The package standardizes the workflow from data ingestion and quality control to
 
 ## 📦 Installation
 
-> ⚠️ **Version mismatch notice.** The current GitHub / rOpenSci release is
-> **1.0.5** (offline `.zip` / FIT / TCX / GPX workflow, rOpenSci-reviewed).
-> The CRAN release is still **0.1.2**, a much older codebase that predates
-> the offline workflow and still depends on the Strava API stack
-> (`httr`, `jsonlite`, `rStrava`, `viridis`). Until CRAN catches up,
-> install from **r-universe** or **GitHub** to get the current package.
-
 **1. R-Universe (rOpenSci, recommended)**
 ```r
 install.packages("Athlytics", repos = c('https://ropensci.r-universe.dev', 'https://cloud.r-project.org'))
