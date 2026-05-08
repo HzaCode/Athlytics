@@ -136,21 +136,25 @@ plot_acwr <- function(data,
   }
   y_max_limit <- max(plot_data$acwr_smooth, zone_y_ref, na.rm = TRUE)
   y_breaks <- seq(0, ceiling(y_max_limit * 5) / 5, by = 0.2)
+  date_bounds <- if (highlight_zones) padded_date_range(plot_data$date) else NULL
 
   # --- Add risk zone shading (using annotate to avoid inheriting group aes) ---
   if (highlight_zones) {
+    date_xmin <- date_bounds[1]
+    date_xmax <- date_bounds[2]
+
     p <- p +
       # High Risk Zone (e.g., > 1.5)
-      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+      ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = high_risk_min, ymax = Inf, fill = "#E64B35", alpha = 0.06) +
       # Caution Zone (e.g., 1.3 - 1.5)
-      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+      ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_max, ymax = high_risk_min, fill = "#F39B7F", alpha = 0.06) +
       # Sweet Spot (e.g., 0.8 - 1.3)
-      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+      ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_min, ymax = sweet_spot_max, fill = "#00A087", alpha = 0.06) +
       # Low Load / Undertraining Zone (e.g., < 0.8)
-      ggplot2::annotate("rect", xmin = -Inf, xmax = Inf,
+      ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = -Inf, ymax = sweet_spot_min, fill = "#4DBBD5", alpha = 0.06)
 
     # Always show all risk zone annotations regardless of data range
@@ -219,6 +223,15 @@ plot_acwr <- function(data,
   }
 
   if (is.null(title)) title <- "Acute:Chronic Workload Ratio"
+  x_scale <- if (highlight_zones) {
+    ggplot2::scale_x_date(
+      labels = english_month_year,
+      limits = date_bounds,
+      expand = ggplot2::expansion(mult = 0)
+    )
+  } else {
+    ggplot2::scale_x_date(labels = english_month_year)
+  }
 
   p <- p +
     ggplot2::labs(
@@ -228,7 +241,7 @@ plot_acwr <- function(data,
       y = "ACWR"
     ) +
     ggplot2::scale_y_continuous(limits = c(0, y_max_limit), breaks = y_breaks) +
-    ggplot2::scale_x_date(labels = english_month_year) +
+    x_scale +
     theme_athlytics() +
     ggplot2::theme(
       legend.position = if (has_groups) "bottom" else "none"

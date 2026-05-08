@@ -90,6 +90,27 @@ test_that("plot_acwr_enhanced handles risk zones and custom labels", {
   expect_equal(p_labels$labels$subtitle, "Custom Subtitle")
 })
 
+test_that("ACWR plots build without Date scale warnings", {
+  rect_x_bounds_are_finite <- function(built_plot) {
+    all(vapply(built_plot$data[1:4], function(layer) {
+      all(is.finite(layer$xmin), is.finite(layer$xmax))
+    }, logical(1)))
+  }
+
+  acwr_built <- expect_no_warning(ggplot2::ggplot_build(plot_acwr(sample_acwr)))
+  enhanced_built <- expect_no_warning(ggplot2::ggplot_build(plot_acwr_enhanced(sample_acwr, show_ci = FALSE)))
+
+  expect_true(rect_x_bounds_are_finite(acwr_built))
+  expect_true(rect_x_bounds_are_finite(enhanced_built))
+})
+
+test_that("plot_lines uses deterministic ggplot2 line geometry", {
+  p <- ggplot2::ggplot(sample_acwr, ggplot2::aes(x = .data$date, y = .data$acwr_smooth)) +
+    plot_lines()
+
+  expect_identical(unname(layer_geoms(p)), "GeomLine")
+})
+
 test_that("plot_acwr_comparison combines both methods correctly", {
   acwr_ra <- sample_acwr
   acwr_ewma <- sample_acwr

@@ -6,30 +6,19 @@
 #' @keywords internal
 NULL
 
-# Internal helper: use ggborderline if available, fallback to geom_line
-# Inspired by ropensci/spiro's plot_lines() pattern
+# Internal helper: keep line rendering deterministic across dependency states.
 plot_lines <- function(data = NULL,
                        mapping = NULL,
                        linewidth = 1,
                        na.rm = TRUE,
                        ...) {
-  if (requireNamespace("ggborderline", quietly = TRUE)) {
-    ggborderline::geom_borderline(
-      data = data,
-      mapping = mapping,
-      linewidth = linewidth,
-      na.rm = na.rm,
-      ...
-    )
-  } else {
-    ggplot2::geom_line(
-      data = data,
-      mapping = mapping,
-      linewidth = linewidth,
-      na.rm = na.rm,
-      ...
-    )
-  }
+  ggplot2::geom_line(
+    data = data,
+    mapping = mapping,
+    linewidth = linewidth,
+    na.rm = na.rm,
+    ...
+  )
 }
 
 #' Nature-Inspired Color Palette

@@ -111,35 +111,43 @@ plot_acwr_enhanced <- function(acwr_data,
 
   # --- Create Base Plot ---
   p <- ggplot2::ggplot()
+  date_bounds <- NULL
 
   # --- Layer 1: Risk Zones (if enabled) ---
   if (highlight_zones) {
     sweet_spot_min <- 0.8
     sweet_spot_max <- 1.3
     high_risk_min <- 1.5
+    plot_dates <- acwr_data$date
+    if (show_reference && !is.null(reference_data) && "date" %in% colnames(reference_data)) {
+      plot_dates <- c(plot_dates, reference_data$date)
+    }
+    date_bounds <- padded_date_range(plot_dates)
+    date_xmin <- date_bounds[1]
+    date_xmax <- date_bounds[2]
 
     p <- p +
       # High Risk Zone (> 1.5)
       ggplot2::annotate("rect",
-        xmin = -Inf, xmax = Inf,
+        xmin = date_xmin, xmax = date_xmax,
         ymin = high_risk_min, ymax = Inf,
         fill = "red", alpha = 0.06
       ) +
       # Caution Zone (1.3 - 1.5)
       ggplot2::annotate("rect",
-        xmin = -Inf, xmax = Inf,
+        xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_max, ymax = high_risk_min,
         fill = "orange", alpha = 0.06
       ) +
       # Sweet Spot (0.8 - 1.3)
       ggplot2::annotate("rect",
-        xmin = -Inf, xmax = Inf,
+        xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_min, ymax = sweet_spot_max,
         fill = "green", alpha = 0.06
       ) +
       # Low Load (< 0.8)
       ggplot2::annotate("rect",
-        xmin = -Inf, xmax = Inf,
+        xmin = date_xmin, xmax = date_xmax,
         ymin = -Inf, ymax = sweet_spot_min,
         fill = "lightblue", alpha = 0.06
       ) +
@@ -222,15 +230,20 @@ plot_acwr_enhanced <- function(acwr_data,
       NULL
     }
   }
-
-  p <- p +
-    ggplot2::labs(
-      title = plot_title,
-      subtitle = subtitle,
-      x = "Date",
-      y = "ACWR (Smoothed)",
-      caption = caption
-    ) +
+  x_scale <- if (highlight_zones) {
+    ggplot2::scale_x_date(
+      date_breaks = "3 months",
+      labels = function(x) {
+        months <- c(
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        )
+        paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
+      },
+      limits = date_bounds,
+      expand = ggplot2::expansion(mult = 0)
+    )
+  } else {
     ggplot2::scale_x_date(
       date_breaks = "3 months",
       labels = function(x) {
@@ -240,7 +253,18 @@ plot_acwr_enhanced <- function(acwr_data,
         )
         paste(months[as.integer(format(x, "%m"))], format(x, "%Y"))
       }
+    )
+  }
+
+  p <- p +
+    ggplot2::labs(
+      title = plot_title,
+      subtitle = subtitle,
+      x = "Date",
+      y = "ACWR (Smoothed)",
+      caption = caption
     ) +
+    x_scale +
     theme_athlytics() +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)

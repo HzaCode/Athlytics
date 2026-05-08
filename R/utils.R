@@ -19,6 +19,23 @@ athlytics_message <- function(..., .verbose = athlytics_is_verbose()) {
   }
 }
 
+padded_date_range <- function(dates, pad_fraction = 0.05, min_pad_days = 1L) {
+  dates <- suppressWarnings(lubridate::as_date(dates))
+  dates <- dates[!is.na(dates)]
+  if (length(dates) == 0) {
+    return(c(as.Date(NA), as.Date(NA)))
+  }
+
+  date_range <- range(dates)
+  span_days <- as.numeric(date_range[2] - date_range[1])
+  if (!is.finite(span_days) || span_days < 0) {
+    span_days <- 0
+  }
+  pad_days <- max(as.numeric(min_pad_days), span_days * pad_fraction)
+
+  c(date_range[1] - pad_days, date_range[2] + pad_days)
+}
+
 #' Internal: Time-Weighted Stream Coverage
 #'
 #' Computes the fraction of total recording time for which a given column is
