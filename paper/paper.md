@@ -16,9 +16,9 @@ authors:
 affiliations:
   - name: Independent Researcher
     index: 1
-date: "2025-10-11"
+date: 9 May 2026
 bibliography: paper.bib
-version: 1.0.4
+version: 1.0.5
 license: MIT
 ---
 
@@ -45,7 +45,7 @@ We provide a direct feature comparison to highlight the capabilities essential f
 | **Cohort benchmarking (percentile bands)** | ✓ | ✕ | **Partial** (summaries only) | ✕ | ✕ | **Partial** (for injury/exposure) |
 | **Diagnostic outputs (status/reason)** | ✓ | ✕ | ✕ | ✕ | ✕ | ✕ |
 
-Athlytics is unique in providing an API-free, end-to-end workflow that integrates a full suite of physiological models, uncertainty quantification, and built-in cohort benchmarking features essential for reproducible research.
+Compared with existing R tools, Athlytics combines local Strava export ingestion, quality-control checks, ACWR/EF/decoupling workflows, uncertainty summaries, and cohort reference bands in a single offline workflow.
 
 # Software Description
 
@@ -100,5 +100,7 @@ plot_acwr_enhanced(
 # Acknowledgements
 
 I would like to thank Benjamin S. Baumer and Iztok Fister Jr. for their insightful feedback and constructive suggestions during the development of this package.
+
+This work received no external funding.
 
 # References

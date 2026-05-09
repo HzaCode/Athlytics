@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/ropensci/Athlytics",
   "issueTracker": "https://github.com/ropensci/Athlytics/issues",
   "license": "https://spdx.org/licenses/MIT",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -249,7 +249,7 @@
       ],
       "name": "Athlytics: A Reproducible Framework for Endurance Data Analysis",
       "url": "https://github.com/ropensci/Athlytics",
-      "description": "R package version 1.0.4"
+      "description": "R package version 1.0.5"
     }
   ],
   "releaseNotes": "https://github.com/ropensci/Athlytics/blob/main/NEWS.md",
