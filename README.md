@@ -160,10 +160,10 @@ We provide input validation, outlier handling, and activity-level QC filters (e.
 If you use **Athlytics** in academic work, please cite the software as well as the original methodological sources for specific metrics.
 
 ```bibtex
-@software{athlytics2025,
+@software{athlytics2026,
   title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
   author  = {Zhiang He},
-  year    = {2025},
+  year    = {2026},
   version = {1.0.5},
   url     = {https://github.com/ropensci/Athlytics}
 }
