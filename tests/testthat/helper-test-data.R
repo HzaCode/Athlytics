@@ -88,10 +88,14 @@ make_extdata_zip <- function() {
   act_files <- list.files(src_acts, full.names = TRUE)
   file.copy(act_files, file.path(staging, "activities"), overwrite = TRUE)
 
-  old_wd <- getwd()
-  on.exit(setwd(old_wd), add = TRUE)
-  setwd(staging)
-  utils::zip(zip_path, files = c("activities.csv", "activities"), flags = "-q")
+  zip_files <- c(
+    file.path(staging, "activities.csv"),
+    list.files(file.path(staging, "activities"),
+      full.names = TRUE,
+      recursive = TRUE
+    )
+  )
+  utils::zip(zip_path, files = zip_files, flags = "-q")
 
   zip_path
 }

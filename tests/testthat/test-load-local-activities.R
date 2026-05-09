@@ -64,8 +64,6 @@ test_that("load_local_activities warns on multiple activities.csv in ZIP", {
   on.exit(unlink(temp_zip))
 
   # Create ZIP with two activities.csv (different paths) from package extdata
-  old_wd <- getwd()
-  on.exit(setwd(old_wd), add = TRUE)
   temp_dir <- tempdir()
   sub1 <- file.path(temp_dir, "sub1")
   sub2 <- file.path(temp_dir, "sub2")
@@ -73,9 +71,11 @@ test_that("load_local_activities warns on multiple activities.csv in ZIP", {
   dir.create(sub2, showWarnings = FALSE)
   file.copy(csv_path, file.path(sub1, "activities.csv"))
   file.copy(csv_path, file.path(sub2, "ACTIVITIES.CSV"))
-  setwd(temp_dir)
-  utils::zip(temp_zip, c("sub1/activities.csv", "sub2/ACTIVITIES.CSV"), flags = "-q")
-  setwd(old_wd)
+  utils::zip(
+    temp_zip,
+    file.path(temp_dir, c("sub1/activities.csv", "sub2/ACTIVITIES.CSV")),
+    flags = "-q"
+  )
   unlink(sub1, recursive = TRUE)
   unlink(sub2, recursive = TRUE)
 

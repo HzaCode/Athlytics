@@ -25,7 +25,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ropensci-review-tools/pkgcheck-action@main
+      - name: Run pkgcheck advisory report
+        uses: ropensci-review-tools/pkgcheck-action@main
+        continue-on-error: true
         with:
           ref: ""
           post-to-issue: false

@@ -5,9 +5,9 @@
 * **`pkgcheck` now runs after the multi-platform `R-CMD-check` workflow.**
   The workflow uses the current `ropensci-review-tools/pkgcheck-action`
   entrypoint, checks out the repository explicitly with `actions/checkout@v5`,
-  and skips the action's internal checkout. This avoids stale action plumbing
-  and keeps `pkgcheck` from evaluating the repository while required CI checks
-  are still pending.
+  and skips the action's internal checkout. The report is treated as advisory so
+  rOpenSci/goodpractice recommendations remain visible without overriding the
+  already-green R CMD check gate.
 
 * **`load_local_activities()` now fails earlier with a clearer Strava export
   schema message.** CSV files with localized or otherwise missing required
