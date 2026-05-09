@@ -27,6 +27,23 @@ test_that("load_local_activities with empty CSV warns and returns zero rows", {
   expect_equal(nrow(result), 0)
 })
 
+test_that("load_local_activities explains likely non-English Strava exports", {
+  temp_csv <- tempfile(fileext = ".csv")
+  on.exit(unlink(temp_csv))
+  writeLines(
+    c(
+      "ID Activite,Date Activite,Type Activite,Distance",
+      "1,2025-01-01,Run,5000"
+    ),
+    temp_csv
+  )
+
+  expect_error(
+    load_local_activities(temp_csv),
+    "Activity ID.*English Strava bulk-export schema"
+  )
+})
+
 test_that("load_local_activities with ZIP missing activities.csv errors", {
   temp_zip <- tempfile(fileext = ".zip")
   temp_txt <- tempfile(fileext = ".txt")

@@ -45,7 +45,9 @@
 #'
 #' **Language Note**: Strava export language must be set to **English** for proper
 #' CSV parsing. Change this in Strava Settings > Display Preferences > Language
-#' before requesting your data export.
+#' before requesting your data export. If `load_local_activities()` reports
+#' missing Strava export columns, first check that the export was requested after
+#' changing this setting.
 #'
 #' **Privacy Note**: This function processes local export data only and does not
 #' connect to the internet. Ensure you have permission to analyze the data and
@@ -167,19 +169,60 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
   # Store column names to avoid using `.` inside mutate
   col_names <- names(activities_raw)
 
+  find_column <- function(aliases) {
+    hits <- aliases[aliases %in% col_names]
+    if (length(hits) == 0) {
+      return(NA_character_)
+    }
+    hits[1]
+  }
+
+  get_column <- function(aliases) {
+    column <- find_column(aliases)
+    if (is.na(column)) {
+      return(rep(NA, nrow(activities_raw)))
+    }
+    activities_raw[[column]]
+  }
+
+  required_columns <- list(
+    "Activity ID" = c("Activity ID"),
+    "Activity Date" = c("Activity Date"),
+    "Activity Type" = c("Activity Type"),
+    "Distance" = c("Distance", "Distance.1", "Distance...18"),
+    "Elapsed Time" = c("Elapsed Time", "Elapsed.Time.1", "Elapsed Time...16"),
+    "Moving Time" = c("Moving Time", "Moving.Time")
+  )
+
+  missing_required <- names(required_columns)[
+    vapply(required_columns, function(aliases) is.na(find_column(aliases)), logical(1))
+  ]
+
+  if (length(missing_required) > 0) {
+    stop(
+      "activities.csv is missing required Strava export column(s): ",
+      paste(missing_required, collapse = ", "),
+      "\nAthlytics expects the English Strava bulk-export schema. ",
+      "If this is a Strava export, set Strava language to English ",
+      "(Settings > Display Preferences > Language) before requesting the export, ",
+      "then download a fresh ZIP/CSV.",
+      call. = FALSE
+    )
+  }
+
   activities_df <- activities_raw %>%
     dplyr::mutate(
       # ID
-      id = as.numeric(.data$`Activity ID`),
+      id = as.numeric(get_column(c("Activity ID"))),
 
       # Name and Type
-      name = as.character(.data$`Activity Name`),
-      type = as.character(.data$`Activity Type`),
-      sport_type = as.character(.data$`Activity Type`), # Strava export doesn't distinguish
+      name = as.character(get_column(c("Activity Name"))),
+      type = as.character(get_column(c("Activity Type"))),
+      sport_type = as.character(get_column(c("Activity Type"))), # Strava export doesn't distinguish
 
       # Parse Date - Strava format: "Feb 17, 2022, 12:18:26 PM"
       start_date_local = lubridate::parse_date_time(
-        .data$`Activity Date`,
+        get_column(c("Activity Date")),
         orders = c("b d, Y, I:M:S p", "mdy HMS p", "ymd HMS"),
         tz = "UTC" # Will be converted to local if needed
       ),
@@ -188,69 +231,69 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
       # Distance - CSV has two "Distance" columns, use the second (more detailed)
       # R renames duplicate columns by appending .1, .2, etc.
       distance = as.numeric(if ("Distance.1" %in% col_names) {
-        .data$Distance.1
+        get_column(c("Distance.1"))
       } else if ("Distance...18" %in% col_names) {
-        .data$`Distance...18`
+        get_column(c("Distance...18"))
       } else {
-        .data$Distance
+        get_column(c("Distance"))
       }),
 
       # Times - CSV shows seconds, has duplicate columns
       # Handle different possible column names based on how R reads the CSV
-      moving_time = as.integer(if ("Moving.Time" %in% col_names) .data$Moving.Time else .data$`Moving Time`),
+      moving_time = as.integer(get_column(c("Moving.Time", "Moving Time"))),
       elapsed_time = as.integer(if ("Elapsed.Time.1" %in% col_names) {
-        .data$Elapsed.Time.1
+        get_column(c("Elapsed.Time.1"))
       } else if ("Elapsed Time...16" %in% col_names) {
-        .data$`Elapsed Time...16`
+        get_column(c("Elapsed Time...16"))
       } else {
-        .data$`Elapsed Time`
+        get_column(c("Elapsed Time"))
       }),
 
       # Heart Rate - handle duplicate columns
-      average_heartrate = as.numeric(if ("Average.Heart.Rate" %in% col_names) .data$Average.Heart.Rate else .data$`Average Heart Rate`),
+      average_heartrate = as.numeric(get_column(c("Average.Heart.Rate", "Average Heart Rate"))),
       max_heartrate = as.numeric(if ("Max.Heart.Rate.1" %in% col_names) {
-        .data$Max.Heart.Rate.1
+        get_column(c("Max.Heart.Rate.1"))
       } else if ("Max Heart Rate...31" %in% col_names) {
-        .data$`Max Heart Rate...31`
+        get_column(c("Max Heart Rate...31"))
       } else {
-        .data$`Max Heart Rate`
+        get_column(c("Max Heart Rate"))
       }),
 
       # Power
-      average_watts = as.numeric(if ("Average.Watts" %in% col_names) .data$Average.Watts else .data$`Average Watts`),
-      max_watts = as.numeric(if ("Max.Watts" %in% col_names) .data$Max.Watts else .data$`Max Watts`),
-      weighted_average_watts = as.numeric(if ("Weighted Average Power" %in% col_names) .data$`Weighted Average Power` else NA_real_),
+      average_watts = as.numeric(get_column(c("Average.Watts", "Average Watts"))),
+      max_watts = as.numeric(get_column(c("Max.Watts", "Max Watts"))),
+      weighted_average_watts = as.numeric(get_column(c("Weighted Average Power"))),
 
       # Elevation
-      elevation_gain = as.numeric(if ("Elevation.Gain" %in% col_names) .data$Elevation.Gain else .data$`Elevation Gain`),
-      elevation_loss = as.numeric(if ("Elevation.Loss" %in% col_names) .data$Elevation.Loss else .data$`Elevation Loss`),
+      elevation_gain = as.numeric(get_column(c("Elevation.Gain", "Elevation Gain"))),
+      elevation_loss = as.numeric(get_column(c("Elevation.Loss", "Elevation Loss"))),
 
       # Speed
-      average_speed = as.numeric(if ("Average.Speed" %in% col_names) .data$Average.Speed else .data$`Average Speed`),
-      max_speed = as.numeric(if ("Max.Speed" %in% col_names) .data$Max.Speed else .data$`Max Speed`),
+      average_speed = as.numeric(get_column(c("Average.Speed", "Average Speed"))),
+      max_speed = as.numeric(get_column(c("Max.Speed", "Max Speed"))),
 
       # Grade Adjusted Pace (GAP) - accounts for elevation changes
       # Note: despite the column name "Pace", Strava stores this as speed in m/s
       average_gap = as.numeric(if ("Average.Grade.Adjusted.Pace" %in% col_names) {
-        .data$Average.Grade.Adjusted.Pace
+        get_column(c("Average.Grade.Adjusted.Pace"))
       } else if ("Average Grade Adjusted Pace" %in% col_names) {
-        .data$`Average Grade Adjusted Pace`
+        get_column(c("Average Grade Adjusted Pace"))
       } else {
         NA_real_
       }),
 
       # Other useful metrics
-      calories = as.numeric(.data$Calories),
+      calories = as.numeric(get_column(c("Calories"))),
       relative_effort = as.numeric(if ("Relative.Effort.1" %in% col_names) {
-        .data$Relative.Effort.1
+        get_column(c("Relative.Effort.1"))
       } else if ("Relative Effort...38" %in% col_names) {
-        .data$`Relative Effort...38`
+        get_column(c("Relative Effort...38"))
       } else {
-        .data$`Relative Effort`
+        get_column(c("Relative Effort"))
       }),
 
       # File path for detailed activity data (for decoupling, pbs analysis)
-      filename = as.character(.data$Filename)
+      filename = as.character(get_column(c("Filename")))
     )
 
   # --- Select Key Columns ---

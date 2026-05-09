@@ -28,6 +28,7 @@
 ^\.Rhistory$
 # Ignore OS specific hidden files
 ^\.DS_Store$
+(^|/)\._.*$
 ^Thumbs\.db$
 # Ignore testthat snapshots if any
 ^tests/testthat/_snaps/$

@@ -64,7 +64,9 @@ analysis functions. The transformation includes:
 
 \strong{Language Note}: Strava export language must be set to \strong{English} for proper
 CSV parsing. Change this in Strava Settings > Display Preferences > Language
-before requesting your data export.
+before requesting your data export. If \code{load_local_activities()} reports
+missing Strava export columns, first check that the export was requested after
+changing this setting.
 
 \strong{Privacy Note}: This function processes local export data only and does not
 connect to the internet. Ensure you have permission to analyze the data and
