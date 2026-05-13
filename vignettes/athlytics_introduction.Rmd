@@ -821,11 +821,11 @@ If you're using Athlytics for research:
 If you use Athlytics in your research, please cite:
 
 ```bibtex
-@software{athlytics2025,
-  title   = {Athlytics: A Computational Framework for Longitudinal Analysis of Exercise Physiology},
+@software{athlytics2026,
+  title   = {Athlytics: A Reproducible Framework for Endurance Data Analysis},
   author  = {Zhiang He},
-  year    = {2025},
-  version = {1.0.4},
+  year    = {2026},
+  version = {1.0.5},
   url     = {https://github.com/ropensci/Athlytics}
 }
 ```
