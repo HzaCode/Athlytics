@@ -7,8 +7,10 @@
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
 #'   Must contain columns: date, type, filename, distance.
-#' @param export_dir Base directory of the Strava export containing the activities folder.
-#'   Default is "strava_export_data".
+#'   Optional `id`, `name`, and `start_date_local` columns are used when
+#'   available; otherwise row number, filename, and date fallbacks are used.
+#' @param export_dir Path to a Strava export directory or ZIP file containing
+#'   the activities folder. Default is "strava_export_data".
 #' @param activity_type Type of activities to analyze (typically "Run"). Default "Run".
 #' @param start_date Optional start date for analysis (YYYY-MM-DD). If NULL, defaults to 365 days before `end_date`.
 #' @param end_date End date for analysis (YYYY-MM-DD). Default `Sys.Date()` (today).
@@ -24,11 +26,12 @@
 #'
 #' @section PB time semantics:
 #' `find_best_effort()` selects the fastest interval whose cumulative
-#' *distance* increases strictly monotonically. Samples where the distance
-#' counter plateaus (traffic stops, laps pausing the watch, signal
-#' dropouts) are therefore excluded from the candidate window. That makes
-#' the reported times *moving-time* best efforts rather than elapsed-time
-#' best efforts.
+#' *distance* increases strictly monotonically. It builds a compressed
+#' moving-time axis from those increasing-distance samples, so samples where
+#' the distance counter plateaus (traffic stops, laps pausing the watch,
+#' signal dropouts) are excluded from the candidate window and from the
+#' reported duration. That makes the reported times *moving-time* best
+#' efforts rather than elapsed-time best efforts.
 #'
 #' The authoritative field is `time_basis`, which is hard-coded to
 #' `"moving"` in the current implementation. For backward compatibility
@@ -176,10 +179,24 @@ calculate_pbs <- function(activities_data,
   # --- Calculate Best Efforts for Each Activity ---
   all_efforts <- lapply(1:nrow(filtered_activities), function(i) {
     activity <- filtered_activities[i, ]
+    activity_id <- if ("id" %in% names(activity) && !is.na(activity$id)) activity$id else i
+    activity_name <- if ("name" %in% names(activity) &&
+      !is.na(activity$name) &&
+      nzchar(as.character(activity$name))) {
+      as.character(activity$name)
+    } else {
+      as.character(activity$filename)
+    }
+    activity_date <- if ("start_date_local" %in% names(activity) &&
+      !is.na(activity$start_date_local)) {
+      activity$start_date_local
+    } else {
+      activity$date
+    }
 
     athlytics_message(sprintf(
       "Processing activity %d/%d: %s (%s)",
-      i, nrow(filtered_activities), activity$name, activity$date
+      i, nrow(filtered_activities), activity_name, activity$date
     ), .verbose = verbose_on)
 
     # Parse activity file. parse_activity_file() resolves both directory
@@ -191,13 +208,13 @@ calculate_pbs <- function(activities_data,
     stream_data <- parse_activity_file(activity$filename, export_dir)
 
     if (is.null(stream_data) || nrow(stream_data) < 10) {
-      warning(sprintf("Insufficient data in file for activity %s", activity$id))
+      warning(sprintf("Insufficient data in file for activity %s", activity_id))
       return(NULL)
     }
 
     # Check for distance data
     if (!"distance" %in% names(stream_data) || all(is.na(stream_data$distance))) {
-      warning(sprintf("No distance data for activity %s", activity$id))
+      warning(sprintf("No distance data for activity %s", activity_id))
       return(NULL)
     }
 
@@ -210,8 +227,8 @@ calculate_pbs <- function(activities_data,
       }
 
       data.frame(
-        activity_id = activity$id,
-        activity_date = activity$start_date_local,
+        activity_id = activity_id,
+        activity_date = activity_date,
         distance = target_distance,
         time_seconds = best_effort$time_seconds,
         start_distance = best_effort$start_distance,
@@ -229,6 +246,8 @@ calculate_pbs <- function(activities_data,
       activity_id = numeric(0),
       activity_date = lubridate::as_datetime(character(0)),
       distance = numeric(0),
+      elapsed_time = numeric(0),
+      moving_time = numeric(0),
       time_seconds = numeric(0),
       cumulative_pb_seconds = numeric(0),
       is_pb = logical(0),
@@ -293,12 +312,12 @@ calculate_pbs <- function(activities_data,
 
   # Select final columns
   pb_results <- pb_results %>%
-    dplyr::select(
-      .data$activity_id, .data$activity_date, .data$distance,
-      .data$elapsed_time, .data$moving_time, .data$time_seconds,
-      .data$cumulative_pb_seconds, .data$is_pb,
-      .data$distance_label, .data$time_period, .data$time_basis
-    ) %>%
+    dplyr::select(dplyr::all_of(c(
+      "activity_id", "activity_date", "distance",
+      "elapsed_time", "moving_time", "time_seconds",
+      "cumulative_pb_seconds", "is_pb",
+      "distance_label", "time_period", "time_basis"
+    ))) %>%
     dplyr::arrange(.data$activity_date, .data$distance)
 
   athlytics_message(sprintf(
@@ -327,15 +346,13 @@ calculate_pbs <- function(activities_data,
 #'    where cumulative distance and time both strictly increase, so spurious
 #'    backward jumps (GPS glitches, laps restarting the distance counter) no
 #'    longer contribute fake short intervals.
-#' 2. **Linear interpolation at the target distance**: the start and end
-#'    points of each candidate window are interpolated between recorded
-#'    samples, eliminating a systematic bias toward slower efforts that
-#'    nearest-row lookup introduced on low-Hz streams (a ~0.1 Hz Garmin
-#'    smart-recording sample could previously inflate a 5 km time by up to
-#'    ~10 s on each side).
-#' 3. **O(n) two-pointer sweep**: replaces the previous O(n^2) scan across
-#'    start indices with a single left-to-right pass, making per-activity
-#'    PB extraction tractable on multi-hour ultras.
+#' 2. **Linear interpolation at both segment boundaries**: candidate windows
+#'    may start or end between recorded samples. Interpolating both boundaries
+#'    removes nearest-row bias on low-Hz streams and avoids missing
+#'    end-anchored fastest efforts whose true start falls between samples.
+#' 3. **Bounded candidate sweep**: candidates are generated from recorded
+#'    starts and recorded ends shifted back by `target_distance`, avoiding the
+#'    previous O(n^2) scan while preserving exact fixed-distance intervals.
 #'
 #' @keywords internal
 find_best_effort <- function(stream_data, target_distance) {
@@ -355,28 +372,60 @@ find_best_effort <- function(stream_data, target_distance) {
   }
 
   # Sort by time (not assumed to already be sorted), then enforce strict
-  # monotonicity of distance. This rejects GPS bounce-backs, lap resets and
-  # paused-then-resumed intervals that would otherwise create pseudo-segments
-  # of near-zero elapsed time.
+  # monotonicity of distance. While doing so, build a compressed moving-time
+  # axis: intervals where cumulative distance did not increase are not counted
+  # toward PB duration. This rejects GPS bounce-backs, lap resets and pause
+  # plateaus without converting stopped time into moving-time best efforts.
   ord <- order(t)
-  t <- t[ord]
-  d <- d[ord]
+  raw_t <- t[ord]
+  raw_d <- d[ord]
 
-  keep <- rep(TRUE, length(d))
-  if (length(d) >= 2) {
-    running_max <- d[1]
-    running_t <- t[1]
-    for (i in 2:length(d)) {
-      if (d[i] > running_max && t[i] > running_t) {
-        running_max <- d[i]
-        running_t <- t[i]
-      } else {
-        keep[i] <- FALSE
+  keep_d <- numeric(length(raw_d))
+  keep_t <- numeric(length(raw_t))
+  keep_count <- 1L
+  keep_d[1] <- raw_d[1]
+  keep_t[1] <- 0
+
+  running_max <- raw_d[1]
+  last_counted_time <- raw_t[1]
+  moving_time <- 0
+  saw_bounce_since_last_gain <- FALSE
+
+  if (length(raw_d) >= 2) {
+    for (idx in 2:length(raw_d)) {
+      current_time <- raw_t[idx]
+      interval_seconds <- current_time - last_counted_time
+
+      if (is.finite(interval_seconds) &&
+        interval_seconds > 0 &&
+        raw_d[idx] > running_max) {
+        moving_time <- moving_time + interval_seconds
+        running_max <- raw_d[idx]
+        keep_count <- keep_count + 1L
+        keep_d[keep_count] <- running_max
+        keep_t[keep_count] <- moving_time
+        last_counted_time <- current_time
+        saw_bounce_since_last_gain <- FALSE
+      } else if (is.finite(interval_seconds) &&
+        interval_seconds > 0 &&
+        raw_d[idx] == running_max) {
+        # True distance plateaus are pause-like for moving-time PBs. GPS
+        # bounce-backs below the running max are not treated as pauses; if the
+        # cumulative distance later resumes above the prior max, the intervening
+        # time remains counted rather than creating a fake short effort.
+        if (!saw_bounce_since_last_gain) {
+          last_counted_time <- current_time
+        }
+      } else if (is.finite(interval_seconds) &&
+        interval_seconds > 0 &&
+        raw_d[idx] < running_max) {
+        saw_bounce_since_last_gain <- TRUE
       }
     }
   }
-  d <- d[keep]
-  t <- t[keep]
+
+  d <- keep_d[seq_len(keep_count)]
+  t <- keep_t[seq_len(keep_count)]
 
   n <- length(d)
   if (n < 10) {
@@ -388,50 +437,75 @@ find_best_effort <- function(stream_data, target_distance) {
     return(NULL)
   }
 
-  # Linear interpolation helper: given sample values (x, y) and a target x0
-  # strictly inside [x[j-1], x[j]], return y(x0).
-  interp <- function(x0, x_lo, x_hi, y_lo, y_hi) {
-    if (x_hi == x_lo) {
-      return(y_lo)
+  # Vectorized linear interpolation helper for the compressed moving-time axis.
+  interp_at <- function(x0) {
+    out <- rep(NA_real_, length(x0))
+    if (length(x0) == 0) {
+      return(out)
     }
-    y_lo + (y_hi - y_lo) * (x0 - x_lo) / (x_hi - x_lo)
+
+    at_or_before_start <- x0 <= d[1]
+    at_or_after_end <- x0 >= d[n]
+    out[at_or_before_start] <- t[1]
+    out[at_or_after_end] <- t[n]
+
+    mid <- is.na(out)
+    if (any(mid)) {
+      x_mid <- x0[mid]
+      idx <- findInterval(x_mid, d)
+      idx <- pmax(1L, pmin(idx, n - 1L))
+
+      mid_out <- numeric(length(x_mid))
+      exact <- d[idx] == x_mid
+      if (any(exact)) {
+        mid_out[exact] <- t[idx[exact]]
+      }
+      if (any(!exact)) {
+        k <- idx[!exact]
+        mid_out[!exact] <- t[k] +
+          (t[k + 1L] - t[k]) * (x_mid[!exact] - d[k]) / (d[k + 1L] - d[k])
+      }
+
+      out[mid] <- mid_out
+    }
+
+    out
   }
 
-  # Two-pointer sweep:
-  #   i is the start index; d_start(i) is the interpolated distance at the
-  #   i-th anchor; for each i we advance j until d[j] >= d[i] + target_distance
-  #   and interpolate the exact crossing. Because both d and t are strictly
-  #   increasing, j never decreases as i advances.
-  best_time <- Inf
-  best_start_d <- NA_real_
-  best_end_d <- NA_real_
+  max_start_d <- d[n] - target_distance
+  eps <- sqrt(.Machine$double.eps) * max(1, abs(c(d, target_distance)), na.rm = TRUE)
 
-  j <- 1L
-  for (i in seq_len(n - 1)) {
-    target_d <- d[i] + target_distance
+  candidate_starts <- sort(unique(c(
+    d[d <= max_start_d + eps],
+    d[d >= d[1] + target_distance - eps] - target_distance
+  )))
+  candidate_starts <- candidate_starts[
+    is.finite(candidate_starts) &
+      candidate_starts >= d[1] - eps &
+      candidate_starts <= max_start_d + eps
+  ]
+  candidate_starts <- sort(unique(pmin(pmax(candidate_starts, d[1]), max_start_d)))
 
-    if (j <= i) j <- i + 1L
-    while (j <= n && d[j] < target_d) j <- j + 1L
-    if (j > n) break
-
-    # Interpolate end-time at the exact target_d crossing between (d[j-1], d[j]).
-    t_end <- interp(target_d, d[j - 1L], d[j], t[j - 1L], t[j])
-    elapsed <- t_end - t[i]
-
-    if (is.finite(elapsed) && elapsed > 0 && elapsed < best_time) {
-      best_time <- elapsed
-      best_start_d <- d[i]
-      best_end_d <- target_d
-    }
-  }
-
-  if (!is.finite(best_time)) {
+  if (length(candidate_starts) == 0) {
     return(NULL)
   }
 
+  t_start <- interp_at(candidate_starts)
+  candidate_ends <- candidate_starts + target_distance
+  t_end <- interp_at(candidate_ends)
+  elapsed <- t_end - t_start
+
+  valid_candidates <- is.finite(elapsed) & elapsed > 0
+  if (!any(valid_candidates)) {
+    return(NULL)
+  }
+
+  valid_indices <- which(valid_candidates)
+  best_index <- valid_indices[which.min(elapsed[valid_candidates])]
+
   list(
-    time_seconds = best_time,
-    start_distance = best_start_d,
-    end_distance = best_end_d
+    time_seconds = elapsed[best_index],
+    start_distance = candidate_starts[best_index],
+    end_distance = candidate_ends[best_index]
   )
 }

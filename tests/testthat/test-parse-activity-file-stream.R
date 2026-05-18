@@ -67,7 +67,11 @@ test_that("parse_activity_file parses real TCX file correctly", {
   result <- suppressWarnings(parse_activity_file(tcx_path))
   expect_s3_class(result, "data.frame")
   expect_gt(nrow(result), 0)
-  expect_true(any(c("time", "distance", "heartrate") %in% names(result)))
+  expect_contains(names(result), c("time", "latitude", "longitude", "elevation"))
+  expect_contains(names(result), "heart_rate")
+  expect_contains(names(result), "distance")
+  expect_true(any(!is.na(result$heart_rate)))
+  expect_true(any(!is.na(result$distance)))
 })
 
 test_that("parse_activity_file parses real GPX file correctly", {
@@ -75,7 +79,9 @@ test_that("parse_activity_file parses real GPX file correctly", {
   result <- suppressWarnings(parse_activity_file(gpx_path))
   expect_s3_class(result, "data.frame")
   expect_gt(nrow(result), 0)
-  expect_true(any(c("time", "distance", "lat", "lon") %in% names(result)))
+  expect_contains(names(result), c("time", "latitude", "longitude", "elevation"))
+  expect_true(any(!is.na(result$latitude)))
+  expect_true(any(!is.na(result$longitude)))
 })
 
 test_that("parse_activity_file with export_dir resolves path", {
@@ -112,4 +118,91 @@ test_that("parse_gpx_file handles empty/invalid XML content", {
   on.exit(unlink(bad_file), add = TRUE)
   writeLines("not gpx content", bad_file)
   suppressWarnings(expect_null(parse_activity_file(bad_file)))
+})
+
+test_that("parse_activity_file handles alternate TCX and GPX extension prefixes", {
+  skip_if(!requireNamespace("xml2", quietly = TRUE), "xml2 not available")
+
+  tcx_file <- tempfile(fileext = ".tcx")
+  gpx_file <- tempfile(fileext = ".gpx")
+  on.exit(unlink(c(tcx_file, gpx_file)), add = TRUE)
+
+  writeLines(c(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2"',
+    '  xmlns:pwr="http://www.garmin.com/xmlschemas/ActivityExtension/v2">',
+    '  <Activities><Activity Sport="Running"><Lap StartTime="2024-01-01T00:00:00">',
+    '    <Track>',
+    '      <Trackpoint>',
+    '        <Time>2024-01-01T00:00:00</Time>',
+    '        <Position><LatitudeDegrees>31.1</LatitudeDegrees><LongitudeDegrees>121.1</LongitudeDegrees></Position>',
+    '        <AltitudeMeters>10</AltitudeMeters>',
+    '        <DistanceMeters>0</DistanceMeters>',
+    '        <HeartRateBpm><Value>140</Value></HeartRateBpm>',
+    '        <Cadence>80</Cadence>',
+    '        <Extensions><pwr:TPX><pwr:Watts>220</pwr:Watts></pwr:TPX></Extensions>',
+    '      </Trackpoint>',
+    '    </Track>',
+    '  </Lap></Activity></Activities>',
+    '</TrainingCenterDatabase>'
+  ), tcx_file)
+
+  tcx_result <- parse_activity_file(tcx_file)
+  expect_s3_class(tcx_result, "data.frame")
+  expect_true(any(!is.na(tcx_result$power)))
+  expect_true(any(!is.na(tcx_result$heart_rate)))
+  expect_true(any(!is.na(tcx_result$cadence)))
+
+  writeLines(c(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<gpx version="1.1" creator="Athlytics test"',
+    '  xmlns="http://www.topografix.com/GPX/1/1"',
+    '  xmlns:altpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">',
+    '  <trk><trkseg>',
+    '    <trkpt lat="31.1" lon="121.1">',
+    '      <ele>10</ele>',
+    '      <time>2024-01-01T00:00:00Z</time>',
+    '      <extensions><altpx:TrackPointExtension><altpx:hr>142</altpx:hr><altpx:cad>81</altpx:cad><altpx:PowerInWatts>215</altpx:PowerInWatts></altpx:TrackPointExtension></extensions>',
+    '    </trkpt>',
+    '  </trkseg></trk>',
+    '</gpx>'
+  ), gpx_file)
+
+  gpx_result <- parse_activity_file(gpx_file)
+  expect_s3_class(gpx_result, "data.frame")
+  expect_true(any(!is.na(gpx_result$heart_rate)))
+  expect_true(any(!is.na(gpx_result$cadence)))
+  expect_true(any(!is.na(gpx_result$power)))
+})
+
+test_that("parse_activity_file accepts TCX timestamps with trailing Z", {
+  skip_if(!requireNamespace("xml2", quietly = TRUE), "xml2 not available")
+
+  tcx_file <- tempfile(fileext = ".tcx")
+  on.exit(unlink(tcx_file), add = TRUE)
+
+  writeLines(c(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrainingCenterDatabase xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2">',
+    '  <Activities><Activity Sport="Running"><Lap StartTime="2024-01-01T00:00:00Z">',
+    '    <Track>',
+    '      <Trackpoint>',
+    '        <Time>2024-01-01T00:00:00Z</Time>',
+    '        <DistanceMeters>0</DistanceMeters>',
+    '      </Trackpoint>',
+    '      <Trackpoint>',
+    '        <Time>2024-01-01T00:00:10Z</Time>',
+    '        <DistanceMeters>25</DistanceMeters>',
+    '      </Trackpoint>',
+    '    </Track>',
+    '  </Lap></Activity></Activities>',
+    '</TrainingCenterDatabase>'
+  ), tcx_file)
+
+  tcx_result <- parse_activity_file(tcx_file)
+
+  expect_s3_class(tcx_result, "data.frame")
+  expect_equal(nrow(tcx_result), 2)
+  expect_false(any(is.na(tcx_result$time)))
+  expect_equal(as.numeric(diff(tcx_result$time)), 10)
 })

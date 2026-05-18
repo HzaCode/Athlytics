@@ -17,8 +17,9 @@ heart_rate, power, cadence, speed (all optional depending on file content).
 Returns NULL if file cannot be parsed or does not exist.
 }
 \description{
-Parse activity files from Strava export data.
-Supports FIT, TCX, and GPX formats (including .gz compressed files).
+Parse activity files from Strava export data. TCX and GPX parsing requires
+the suggested \code{xml2} package; FIT parsing requires the optional \code{FITfileR}
+package. \code{.gz} compressed files require the suggested \code{R.utils} package.
 }
 \examples{
 # Parse a built-in example TCX file

@@ -43,18 +43,18 @@ We provide a direct feature comparison to highlight the capabilities essential f
 | **Steady-state guards & HR-coverage checks** | ✓ | ✕ | ✕ | ✕ | ✕ | ✕ |
 | **Uncertainty (ACWR-EWMA confidence bands)** | ✓ | ✕ | ✕ | ✕ | ✕ | ✕ |
 | **Cohort benchmarking (percentile bands)** | ✓ | ✕ | **Partial** (summaries only) | ✕ | ✕ | **Partial** (for injury/exposure) |
-| **Diagnostic outputs (status/reason)** | ✓ | ✕ | ✕ | ✕ | ✕ | ✕ |
+| **Diagnostic outputs (status codes/fields)** | ✓ | ✕ | ✕ | ✕ | ✕ | ✕ |
 
 Compared with existing R tools, Athlytics combines local Strava export ingestion, quality-control checks, ACWR/EF/decoupling workflows, uncertainty summaries, and cohort reference bands in a single offline workflow.
 
 # Software Description
 
--   **Offline Data Parsing:** Operates directly on local Strava ZIP exports. Using `.fit`, `.tcx`, and `.gpx` parsers via underlying XML and binary decoders (with optional `FITfileR` [@FITfileR] support), activity streams are loaded on demand.
+-   **Offline Data Parsing:** Operates directly on local Strava ZIP exports. Using `.tcx` and `.gpx` parsers through `xml2` plus optional `.fit` parsing through `FITfileR` [@FITfileR], activity streams are loaded on demand.
 -   **Physiological & Load Metrics:** Supports multiple load tracking algorithms including HRSS (TRIMP-based) and TSS approximations. Calculates core metrics such as **Aerobic Decoupling**, **Efficiency Factor (EF)**, and automatically tracks **Personal Bests (PBs)** using sliding-window spatial algorithms.
--   **Signal Processing & Quality Control:** Automatically filters non-steady-state segments using a rolling coefficient of variation (CV) algorithm to ensure valid physiological comparisons, discarding activities with excessive HR/power drift or GPS anomalies.
--   **Uncertainty Quantification:** Provides confidence intervals for EWMA-based ACWR models using a moving-block bootstrap [@kunsch1989; @politis1994], effectively handling temporal autocorrelation in training loads. This rigorous uncertainty reporting acknowledges the ongoing conceptual debates surrounding ACWR as a predictive tool [@impellizzeri2020acwr; @impellizzeri2021dismiss].
--   **Cohort Benchmarking & Visualization:** Generates population-level percentile reference bands (`calculate_cohort_reference()`) layered via an elegant, Nature-journal-inspired plotting API (e.g., `plot_acwr_enhanced()`).
--   **Diagnostics & Transparency:** Functions return **diagnostic fields** (e.g., `status`, `reason`) when inputs are insufficient, making the workflow transparent and debuggable.
+-   **Signal Processing & Quality Control:** Automatically filters implausible HR, power, and velocity samples and identifies steady-state output segments using a rolling coefficient of variation (CV) algorithm to support valid physiological comparisons.
+-   **Uncertainty Quantification:** Provides confidence intervals for EWMA-based ACWR models using a moving-block bootstrap [@kunsch1989; @politis1994], partly preserving short-range temporal dependence in training loads. This uncertainty reporting acknowledges the ongoing conceptual debates surrounding ACWR as a predictive tool [@impellizzeri2020acwr; @impellizzeri2021dismiss].
+-   **Cohort Benchmarking & Visualization:** Generates population-level percentile reference bands (`calculate_cohort_reference()`) that can be layered onto publication-ready ACWR plots (e.g., `plot_acwr_enhanced()`).
+-   **Diagnostics & Transparency:** Functions return **diagnostic fields** (e.g., `status`, `quality_score`, `hr_coverage`) when inputs are insufficient, making the workflow transparent and debuggable.
 
 # Example
 
@@ -82,6 +82,7 @@ cohort_acwr <- bind_rows(
 reference_bands <- calculate_cohort_reference(
   cohort_acwr, 
   metric = "acwr_smooth", 
+  by = character(0),
   min_athletes = 2
 )
 

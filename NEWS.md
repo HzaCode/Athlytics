@@ -1,5 +1,28 @@
 # Athlytics 1.0.5
 
+## Robustness and documentation updates
+
+* ACWR, EWMA ACWR, and exposure calculations now avoid treating unavailable
+  pre-export history as zero-load rest days. EWMA also uses the corrected
+  half-life mapping and overlapping moving-block bootstrap confidence bands.
+
+* Stream-based EF, decoupling, and PB calculations are more robust with ZIP
+  exports, POSIXct stream timestamps, missing activity filenames, and activity
+  streams with pauses, distance plateaus, or GPS bounce-backs.
+
+* Local Strava parsing is more tolerant of duplicate CSV headers, TCX timestamps
+  ending in `Z`, and TCX/GPX extension fields that use alternate namespace
+  prefixes for heart rate, cadence, or power.
+
+* Public examples and documentation now match the current offline ZIP workflow:
+  examples pass explicit `activity_type` values, stream-based functions show
+  `export_dir`, PB output documents `time_basis`, and ACWR wording uses
+  descriptive bands rather than injury-risk claims.
+
+* Regression tests were expanded across ACWR/EWMA, EF, decoupling, PBs, local
+  activity loading, XML stream parsing, cohort-reference plotting, and public
+  documentation wording.
+
 ## CI and data-import diagnostics
 
 * **`pkgcheck` now runs after the multi-platform `R-CMD-check` workflow.**
@@ -149,7 +172,7 @@
 
 * **Dependency cleanup**: Removed `purrr` entirely (only used once via superseded `purrr::transpose()`). R CMD check now passes with 0 errors and 0 warnings.
 
-* **Packaging**: Removed `CITATION.cff` (was flagged by R CMD check as non-standard), cleaned up NAMESPACE and `.Rbuildignore`.
+* **Packaging**: Excluded `CITATION.cff` from the R package build (it was flagged by R CMD check as non-standard), cleaned up NAMESPACE and `.Rbuildignore`.
 
 # Athlytics 1.0.3
 

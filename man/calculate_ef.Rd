@@ -14,7 +14,7 @@ calculate_ef(
   min_steady_minutes = 20,
   steady_cv_threshold = 0.08,
   min_hr_coverage = 0.9,
-  quality_control = c("off", "flag", "filter"),
+  quality_control = c("filter", "flag", "off"),
   export_dir = NULL
 )
 }
@@ -62,8 +62,10 @@ Activities with lower HR coverage are rejected as insufficient data quality.}
 \item{quality_control}{Character. Quality control mode: "off" (no filtering), "flag" (mark issues),
 or "filter" (exclude flagged data). Default "filter" for scientific rigor.}
 
-\item{export_dir}{Optional. Path to Strava export directory containing activity files.
-When provided, enables stream data analysis for more accurate steady-state detection.}
+\item{export_dir}{Optional. Path to a Strava export directory or ZIP file
+containing activity files. When provided, enables stream data analysis for
+more accurate steady-state detection; when omitted, EF falls back to
+activity-summary averages.}
 }
 \value{
 A tibble with the following columns:
@@ -224,6 +226,8 @@ positivity filter (\code{velocity > 0} or \code{watts > 0}).
 removed enough out-of-range samples to drop the stream below 100 rows.
 \item \code{"poor_hr_quality"}: Activity-level path with out-of-range
 \code{average_heartrate} while \code{quality_control = "filter"}.
+\item \code{"poor_hr_quality_flagged"}: Activity-level path with out-of-range
+\code{average_heartrate} kept for inspection because \code{quality_control = "flag"}.
 \item \code{"too_short"}: Activity or steady-state window duration is below
 \code{min_steady_minutes}.
 \item \code{"non_steady"}: No rolling-CV window cleared \code{steady_cv_threshold}.

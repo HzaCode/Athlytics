@@ -13,7 +13,7 @@
 #' @param show_reference Logical. Whether to show cohort reference bands (if provided).
 #'   Default TRUE.
 #' @param reference_bands Which reference bands to show. Default c("p25_p75", "p05_p95", "p50").
-#' @param highlight_zones Logical. Whether to highlight ACWR risk zones. Default TRUE.
+#' @param highlight_zones Logical. Whether to highlight descriptive ACWR zones. Default TRUE.
 #' @param title Plot title. Default NULL (auto-generated).
 #' @param subtitle Plot subtitle. Default NULL (auto-generated).
 #' @param method_label Optional label for the method used (e.g., "RA", "EWMA"). Default NULL.
@@ -23,20 +23,20 @@
 #'
 #' @details
 #' This enhanced plot function combines multiple visualization layers:
-#' - Risk zone shading (sweet spot: 0.8-1.3, caution: 1.3-1.5, high risk: >1.5)
+#' - ACWR zone shading (reference band: 0.8-1.3, elevated ACWR: 1.3-1.5, high ACWR: >1.5)
 #' - Cohort reference percentile bands (if provided)
 #' - Bootstrap confidence bands (if available in data)
 #' - Individual ACWR trend line
 #'
 #' The layering order (bottom to top):
-#' 1. Risk zones (background)
+#' 1. ACWR zones (background)
 #' 2. Cohort reference bands (P5-P95, then P25-P75)
 #' 3. Confidence intervals (individual uncertainty)
 #' 4. ACWR line (individual trend)
 #'
-#' **Note:** The predictive value of ACWR for injury risk is debated in the
-#' literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
-#' as descriptive heuristics, not validated injury predictors. See
+#' **Note:** The predictive value of ACWR for injury outcomes is debated in the
+#' literature (Impellizzeri et al., 2020). Zone labels should be interpreted
+#' as descriptive workload heuristics, not validated injury predictors. See
 #' `calculate_acwr()` documentation for full references.
 #'
 #' @export
@@ -56,6 +56,7 @@
 #' # Calculate ACWR with EWMA and confidence bands
 #' acwr <- calculate_acwr_ewma(
 #'   activities,
+#'   activity_type = "Run",
 #'   method = "ewma",
 #'   ci = TRUE,
 #'   B = 200
@@ -78,7 +79,7 @@ plot_acwr_enhanced <- function(acwr_data,
                                subtitle = NULL,
                                method_label = NULL,
                                caption = if (highlight_zones) {
-                                 "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
+                                 "Zones: Green = Reference Band (0.8-1.3) | Orange = Elevated ACWR | Red = High ACWR (>1.5)"
                                } else {
                                  NULL
                                }) {
@@ -113,7 +114,7 @@ plot_acwr_enhanced <- function(acwr_data,
   p <- ggplot2::ggplot()
   date_bounds <- NULL
 
-  # --- Layer 1: Risk Zones (if enabled) ---
+  # --- Layer 1: Descriptive ACWR Bands (if enabled) ---
   if (highlight_zones) {
     sweet_spot_min <- 0.8
     sweet_spot_max <- 1.3
@@ -127,25 +128,25 @@ plot_acwr_enhanced <- function(acwr_data,
     date_xmax <- date_bounds[2]
 
     p <- p +
-      # High Risk Zone (> 1.5)
+      # High ACWR zone (> 1.5)
       ggplot2::annotate("rect",
         xmin = date_xmin, xmax = date_xmax,
         ymin = high_risk_min, ymax = Inf,
         fill = "red", alpha = 0.06
       ) +
-      # Caution Zone (1.3 - 1.5)
+      # Elevated ACWR band (1.3 - 1.5)
       ggplot2::annotate("rect",
         xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_max, ymax = high_risk_min,
         fill = "orange", alpha = 0.06
       ) +
-      # Sweet Spot (0.8 - 1.3)
+      # Reference band (0.8 - 1.3)
       ggplot2::annotate("rect",
         xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_min, ymax = sweet_spot_max,
         fill = "green", alpha = 0.06
       ) +
-      # Low Load (< 0.8)
+      # Low ACWR band (< 0.8)
       ggplot2::annotate("rect",
         xmin = date_xmin, xmax = date_xmax,
         ymin = -Inf, ymax = sweet_spot_min,
@@ -160,10 +161,9 @@ plot_acwr_enhanced <- function(acwr_data,
 
   # --- Layer 2: Cohort Reference Bands (if provided) ---
   if (show_reference && !is.null(reference_data)) {
-    # Pivot reference to wide format
-    ref_wide <- reference_data %>%
-      dplyr::select("date", "percentile", "value") %>%
-      tidyr::pivot_wider(names_from = "percentile", values_from = "value")
+    # Pivot reference to wide format. Grouped reference outputs must be
+    # filtered to one cohort group first.
+    ref_wide <- reference_data_to_wide(reference_data)
 
     # Add P5-P95 band (outermost)
     if ("p05_p95" %in% reference_bands && all(c("p05", "p95") %in% colnames(ref_wide))) {
@@ -302,8 +302,8 @@ plot_acwr_enhanced <- function(acwr_data,
 #' \dontrun{
 #' activities <- load_local_activities("export.zip")
 #'
-#' acwr_ra <- calculate_acwr_ewma(activities, method = "ra")
-#' acwr_ewma <- calculate_acwr_ewma(activities, method = "ewma")
+#' acwr_ra <- calculate_acwr_ewma(activities, activity_type = "Run", method = "ra")
+#' acwr_ewma <- calculate_acwr_ewma(activities, activity_type = "Run", method = "ewma")
 #'
 #' plot_acwr_comparison(acwr_ra, acwr_ewma)
 #' }
@@ -327,7 +327,7 @@ plot_acwr_comparison <- function(acwr_ra,
     ggplot2::facet_wrap(~ .data$method, ncol = 1) +
     ggplot2::labs(
       title = title,
-      subtitle = "Dotted lines: 0.8 (low load) | 1.3 (sweet spot max) | 1.5 (high risk)",
+      subtitle = "Dotted lines: 0.8 (low ACWR) | 1.3 (reference band upper) | 1.5 (high ACWR)",
       x = "Date",
       y = "ACWR (Smoothed)"
     ) +

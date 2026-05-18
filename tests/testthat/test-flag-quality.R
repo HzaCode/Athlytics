@@ -333,6 +333,33 @@ test_that("flag_quality does not over-flag when per-sample diff is large but per
   expect_false(any(flagged$flag_hr_spike, na.rm = TRUE))
 })
 
+test_that("flag_quality computes GPS acceleration with POSIXct time", {
+  start_time <- as.POSIXct("2024-01-01 00:00:00", tz = "UTC")
+  plausible <- data.frame(
+    time = start_time + 0:4,
+    velocity_smooth = c(3.0, 3.5, 4.0, 4.5, 5.0)
+  )
+  plausible_flagged <- suppressMessages(flag_quality(
+    plausible,
+    sport = "Run",
+    max_run_speed = 100,
+    max_accel = 3
+  ))
+  expect_false(any(plausible_flagged$flag_gps_drift, na.rm = TRUE))
+
+  excessive <- data.frame(
+    time = start_time + 0:4,
+    velocity_smooth = c(3, 10, 10, 10, 10)
+  )
+  excessive_flagged <- suppressMessages(flag_quality(
+    excessive,
+    sport = "Run",
+    max_run_speed = 100,
+    max_accel = 3
+  ))
+  expect_true(excessive_flagged$flag_gps_drift[2])
+})
+
 # --- Activity-level quality score attribute (v1.0.5) --------------------
 
 test_that("flag_quality exposes activity_quality_score attribute (regression)", {

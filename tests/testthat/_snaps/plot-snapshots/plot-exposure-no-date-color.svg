@@ -378,10 +378,10 @@
 <line x1='-598.48' y1='831.47' x2='1361.31' y2='-91.69' style='stroke-width: 1.26; stroke: #0000FF; stroke-dasharray: 1.68,5.04; stroke-linecap: butt;' />
 <line x1='-547.62' y1='984.87' x2='1259.60' y2='-398.48' style='stroke-width: 1.26; stroke: #FFA500; stroke-dasharray: 1.68,5.04; stroke-linecap: butt;' />
 <line x1='-467.30' y1='984.87' x2='1098.95' y2='-398.48' style='stroke-width: 1.26; stroke: #FF0000; stroke-dasharray: 1.68,5.04; stroke-linecap: butt;' />
-<text x='87.45' y='91.17' style='font-size: 7.97px; fill: #FF0000; fill-opacity: 0.70; font-family: sans;' textLength='57.35px' lengthAdjust='spacingAndGlyphs'>High Risk (&gt;1.5)</text>
-<text x='185.43' y='206.45' style='font-size: 7.97px; fill: #FFA500; fill-opacity: 0.70; font-family: sans;' textLength='59.78px' lengthAdjust='spacingAndGlyphs'>Caution (1.3-1.5)</text>
-<text x='381.41' y='298.68' style='font-size: 7.97px; fill: #006400; fill-opacity: 0.70; font-family: sans;' textLength='73.07px' lengthAdjust='spacingAndGlyphs'>Sweet Spot (0.8-1.3)</text>
-<text x='512.07' y='431.53' style='font-size: 7.97px; fill: #0000FF; fill-opacity: 0.70; font-family: sans;' textLength='57.81px' lengthAdjust='spacingAndGlyphs'>Low Load (&lt;0.8)</text>
+<text x='87.45' y='91.17' style='font-size: 7.97px; fill: #FF0000; fill-opacity: 0.70; font-family: sans;' textLength='66.19px' lengthAdjust='spacingAndGlyphs'>High ACWR (&gt;1.5)</text>
+<text x='185.43' y='206.45' style='font-size: 7.97px; fill: #FFA500; fill-opacity: 0.70; font-family: sans;' textLength='89.89px' lengthAdjust='spacingAndGlyphs'>Elevated ACWR (1.3-1.5)</text>
+<text x='381.41' y='298.68' style='font-size: 7.97px; fill: #006400; fill-opacity: 0.70; font-family: sans;' textLength='89.91px' lengthAdjust='spacingAndGlyphs'>Reference Band (0.8-1.3)</text>
+<text x='512.07' y='431.53' style='font-size: 7.97px; fill: #0000FF; fill-opacity: 0.70; font-family: sans;' textLength='64.43px' lengthAdjust='spacingAndGlyphs'>Low ACWR (&lt;0.8)</text>
 </g>
 <g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
 <text x='44.97' y='527.78' text-anchor='end' style='font-size: 11.70px; fill: #7F8C8D; font-family: sans;' textLength='6.51px' lengthAdjust='spacingAndGlyphs'>0</text>

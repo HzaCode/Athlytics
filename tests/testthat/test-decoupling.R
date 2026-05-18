@@ -163,6 +163,48 @@ test_that("quality_control = 'flag' keeps rows instead of dropping them (regress
   )
 })
 
+test_that("calculate_decoupling defaults to filtering implausible stream values", {
+  stream <- data.frame(
+    time = 0:3599,
+    heartrate = rep(250, 3600),
+    velocity_smooth = rep(20, 3600)
+  )
+
+  result <- calculate_decoupling(
+    stream_df = stream,
+    decouple_metric = "speed_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.1,
+    min_hr_coverage = 0.8,
+    return_diagnostics = TRUE
+  )
+
+  expect_equal(result$status, "insufficient_data_after_quality_filter")
+  expect_true(is.na(result$decoupling))
+})
+
+test_that("calculate_decoupling derives distance velocity with POSIXct time", {
+  n <- 3600
+  stream <- data.frame(
+    time = as.POSIXct("2024-01-01 00:00:00", tz = "UTC") + seq(0, n - 1),
+    heartrate = rep(150, n),
+    distance = seq(0, by = 3, length.out = n)
+  )
+
+  result <- calculate_decoupling(
+    stream_df = stream,
+    decouple_metric = "speed_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.1,
+    min_hr_coverage = 0.8,
+    quality_control = "off",
+    return_diagnostics = TRUE
+  )
+
+  expect_equal(result$status, "ok")
+  expect_true(is.finite(result$decoupling))
+})
+
 # --- calculate_decoupling(stream_df=...) forwards user params (v1.0.4) --
 
 test_that("calculate_decoupling(stream_df=...) forwards min_hr_coverage (regression)", {
@@ -372,4 +414,36 @@ test_that("calculate_decoupling returns numeric by default and a data frame with
   ))
   expect_equal(nrow(diag_out), 1L)
   expect_equal(diag_out$status, "ok")
+})
+
+test_that("calculate_decoupling returns structural diagnostic statuses for stream_df", {
+  times <- as.POSIXct("2024-01-01 00:00:00", tz = "UTC") + 0:9
+
+  missing_velocity <- calculate_decoupling(
+    stream_df = data.frame(time = times, heartrate = rep(150, 10)),
+    decouple_metric = "speed_hr",
+    return_diagnostics = TRUE
+  )
+  expect_equal(missing_velocity$status, "missing_velocity_data")
+
+  missing_power <- calculate_decoupling(
+    stream_df = data.frame(time = times, heartrate = rep(150, 10)),
+    decouple_metric = "power_hr",
+    return_diagnostics = TRUE
+  )
+  expect_equal(missing_power$status, "missing_power_data")
+
+  missing_hr <- calculate_decoupling(
+    stream_df = data.frame(time = times, distance = seq_len(10)),
+    decouple_metric = "speed_hr",
+    return_diagnostics = TRUE
+  )
+  expect_equal(missing_hr$status, "missing_hr_data")
+
+  missing_time <- calculate_decoupling(
+    stream_df = data.frame(heartrate = rep(150, 10), distance = seq_len(10)),
+    decouple_metric = "speed_hr",
+    return_diagnostics = TRUE
+  )
+  expect_equal(missing_time$status, "missing_time_data")
 })

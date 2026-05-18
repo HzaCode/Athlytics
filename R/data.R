@@ -64,18 +64,20 @@
 #' A dataset containing pre-calculated Personal Best (PB) times for various distances,
 #' derived from simulated Strava data. Used in examples and tests.
 #'
-#' @format A tibble with 100 rows and 10 variables:
+#' @format A tibble with 26 rows and 11 variables:
 #' \describe{
 #'   \item{activity_id}{ID of the activity where the effort occurred, as a character string.}
 #'   \item{activity_date}{Date and time of the activity, as a POSIXct object.}
 #'   \item{distance}{Target distance in meters for the best effort, as a numeric value.}
 #'   \item{elapsed_time}{Elapsed time for the effort in seconds, as a numeric value.}
 #'   \item{moving_time}{Moving time for the effort in seconds, as a numeric value.}
-#'   \item{time_seconds}{Typically the same as elapsed_time for best efforts, in seconds, as a numeric value.}
+#'   \item{time_seconds}{Reported PB duration in seconds, as a numeric value.
+#'   Interpret this using `time_basis`.}
 #'   \item{cumulative_pb_seconds}{The personal best time for that distance up to that date, in seconds, as a numeric value.}
 #'   \item{is_pb}{Logical, TRUE if this effort set a new personal best.}
 #'   \item{distance_label}{Factor representing the distance (e.g., "1k", "5k").}
 #'   \item{time_period}{Formatted time of the effort, as a Period object from lubridate.}
+#'   \item{time_basis}{Time basis for the effort, currently `"moving"`.}
 #' }
 #' @source Simulated data generated for package examples.
 "sample_pbs"

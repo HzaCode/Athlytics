@@ -110,3 +110,17 @@ test_that("estimate_sampling_interval recovers 1 Hz, 0.5 Hz and 2 Hz streams (re
   expect_equal(Athlytics:::estimate_sampling_interval(half_hz), 2)
   expect_equal(Athlytics:::estimate_sampling_interval(two_hz), 0.5)
 })
+
+test_that("time_based_window_size treats max_rows as a hard cap", {
+  stream <- data.frame(time = 0:20)
+
+  expect_equal(
+    Athlytics:::time_based_window_size(
+      stream,
+      window_seconds = 300,
+      min_rows = 60,
+      max_rows = 5
+    ),
+    5L
+  )
+})

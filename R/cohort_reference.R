@@ -87,7 +87,9 @@
 #' # Calculate ACWR for each athlete
 #' cohort_acwr <- cohort_data %>%
 #'   group_by(athlete_id) %>%
-#'   group_modify(~ calculate_acwr_ewma(.x))
+#'   group_modify(~ calculate_acwr_ewma(.x, activity_type = "Run")) %>%
+#'   ungroup() %>%
+#'   mutate(sport = "Run")
 #'
 #' # Calculate reference percentiles
 #' reference <- calculate_cohort_reference(
@@ -185,27 +187,30 @@ calculate_cohort_reference <- function(data,
   # inputs (e.g. ACWR output) it is a no-op because each athlete already has
   # a single row per group; for activity-level inputs it yields a stable
   # per-athlete value within the group.
-  metric_sym <- rlang::sym(metric)
   pre_agg <- data %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(athlete_group_vars))) %>%
     dplyr::summarise(
-      !!metric := mean(!!metric_sym, na.rm = TRUE),
+      .athlytics_metric = mean(.data[[metric]], na.rm = TRUE),
       .groups = "drop"
     ) %>%
     # NaN arises when every row had NA_metric; convert so quantile() treats
     # them as missing rather than as valid 0.
     dplyr::mutate(
-      !!metric := ifelse(is.finite(!!metric_sym), !!metric_sym, NA_real_)
+      .athlytics_metric = ifelse(
+        is.finite(.data$.athlytics_metric),
+        .data$.athlytics_metric,
+        NA_real_
+      )
     )
 
   # Create dynamic grouping on the per-athlete-aggregated frame.
   reference_data <- pre_agg %>%
     dplyr::group_by(dplyr::across(dplyr::all_of(grouping_vars))) %>%
     dplyr::summarise(
-      n_athletes = sum(!is.na(.data[[metric]])),
+      n_athletes = sum(!is.na(.data$.athlytics_metric)),
       !!!stats::setNames(
         lapply(probs, function(p) {
-          rlang::expr(stats::quantile(.data[[!!metric]], probs = !!p, na.rm = TRUE))
+          rlang::expr(stats::quantile(.data$.athlytics_metric, probs = !!p, na.rm = TRUE))
         }),
         paste0("p", sprintf("%02d", probs * 100))
       ),
@@ -260,6 +265,36 @@ cohort_reference <- function(data,
     allow_unknown_athlete = allow_unknown_athlete,
     date_col = date_col
   )
+}
+
+
+#' Internal: convert cohort reference percentiles to plotting-wide format
+#' @keywords internal
+#' @noRd
+reference_data_to_wide <- function(reference_data) {
+  required_cols <- c("date", "percentile", "value")
+  missing_cols <- setdiff(required_cols, colnames(reference_data))
+  if (length(missing_cols) > 0) {
+    stop(
+      "`reference_data` must contain columns: ",
+      paste(required_cols, collapse = ", ")
+    )
+  }
+
+  dupes <- reference_data %>%
+    dplyr::count(.data$date, .data$percentile, name = "n") %>%
+    dplyr::filter(.data$n > 1)
+
+  if (nrow(dupes) > 0) {
+    stop(
+      "`reference_data` contains multiple groups per date/percentile. ",
+      "Filter to one cohort group before plotting."
+    )
+  }
+
+  reference_data %>%
+    dplyr::select("date", "percentile", "value") %>%
+    tidyr::pivot_wider(names_from = "percentile", values_from = "value")
 }
 
 
@@ -318,10 +353,9 @@ add_reference_bands <- function(p,
     stop("`reference_data` must be a data frame from calculate_cohort_reference().")
   }
 
-  # Pivot reference data to wide format for plotting
-  ref_wide <- reference_data %>%
-    dplyr::select("date", "percentile", "value") %>%
-    tidyr::pivot_wider(names_from = "percentile", values_from = "value")
+  # Pivot reference data to wide format for plotting. Grouped reference
+  # outputs must be filtered to one cohort group first.
+  ref_wide <- reference_data_to_wide(reference_data)
 
   # Add bands in order (outermost to innermost)
   if ("p05_p95" %in% bands && all(c("p05", "p95") %in% colnames(ref_wide))) {
@@ -425,10 +459,9 @@ plot_with_reference <- function(individual,
     stop(sprintf("Metric '%s' not found in individual data.", metric))
   }
 
-  # Pivot reference to wide
-  ref_wide <- reference %>%
-    dplyr::select("date", "percentile", "value") %>%
-    tidyr::pivot_wider(names_from = "percentile", values_from = "value")
+  # Pivot reference to wide. Grouped reference outputs must be filtered to
+  # one cohort group first.
+  ref_wide <- reference_data_to_wide(reference)
 
   # Create base plot with reference bands
   p <- ggplot2::ggplot()

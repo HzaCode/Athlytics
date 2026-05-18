@@ -17,15 +17,13 @@ nearest-row approach:
 where cumulative distance and time both strictly increase, so spurious
 backward jumps (GPS glitches, laps restarting the distance counter) no
 longer contribute fake short intervals.
-\item \strong{Linear interpolation at the target distance}: the start and end
-points of each candidate window are interpolated between recorded
-samples, eliminating a systematic bias toward slower efforts that
-nearest-row lookup introduced on low-Hz streams (a ~0.1 Hz Garmin
-smart-recording sample could previously inflate a 5 km time by up to
-~10 s on each side).
-\item \strong{O(n) two-pointer sweep}: replaces the previous O(n^2) scan across
-start indices with a single left-to-right pass, making per-activity
-PB extraction tractable on multi-hour ultras.
+\item \strong{Linear interpolation at both segment boundaries}: candidate windows
+may start or end between recorded samples. Interpolating both boundaries
+removes nearest-row bias on low-Hz streams and avoids missing
+end-anchored fastest efforts whose true start falls between samples.
+\item \strong{Bounded candidate sweep}: candidates are generated from recorded
+starts and recorded ends shifted back by \code{target_distance}, avoiding the
+previous O(n^2) scan while preserving exact fixed-distance intervals.
 }
 }
 \keyword{internal}

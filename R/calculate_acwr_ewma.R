@@ -6,7 +6,8 @@
 #' Weighted Moving Average (EWMA) with optional bootstrap confidence bands.
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
-#' @param activity_type Optional. Filter activities by type. Default NULL includes all.
+#' @param activity_type Required. Filter activities by type, such as `"Run"` or
+#'   `"Ride"`. Explicit filtering avoids mixing incompatible sport contexts.
 #' @param load_metric Method for calculating daily load. Default "duration_mins".
 #' @param method ACWR calculation method: "ra" (rolling average) or "ewma". Default "ra".
 #' @param acute_period Days for acute window (for RA method). Default 7.
@@ -38,12 +39,13 @@
 #'   with configurable half-lives. More responsive to recent changes.
 #'
 #' **EWMA Formula**: The smoothing parameter alpha is calculated from half-life:
-#' `alpha = ln(2) / half_life`. The EWMA update is: `E_t = alpha * L_t + (1-alpha) * E_{t-1}`
-#' where L_t is daily load and E_t is the exponentially weighted average.
+#' `alpha = 1 - exp(-ln(2) / half_life)`. The EWMA update is:
+#' `E_t = alpha * L_t + (1-alpha) * E_{t-1}` where L_t is daily load
+#' and E_t is the exponentially weighted average.
 #'
 #' **Confidence Bands**: When `ci = TRUE` and `method = "ewma"`, uses **moving-block
 #' bootstrap** to estimate uncertainty. The daily load sequence is resampled in
-#' weekly blocks (preserving within-week correlation), ACWR is recalculated,
+#' overlapping weekly blocks (preserving within-week correlation), ACWR is recalculated,
 #' and percentiles form the confidence bands. This accounts for temporal correlation
 #' in training load patterns.
 #'
@@ -58,11 +60,12 @@
 #' activities <- load_local_activities("export_12345678.zip")
 #'
 #' # Calculate ACWR using Rolling Average (RA)
-#' acwr_ra <- calculate_acwr_ewma(activities, method = "ra")
+#' acwr_ra <- calculate_acwr_ewma(activities, activity_type = "Run", method = "ra")
 #'
 #' # Calculate ACWR using EWMA with confidence bands
 #' acwr_ewma <- calculate_acwr_ewma(
 #'   activities,
+#'   activity_type = "Run",
 #'   method = "ewma",
 #'   half_life_acute = 3.5,
 #'   half_life_chronic = 14,
@@ -75,7 +78,7 @@
 #' }
 #' @export
 calculate_acwr_ewma <- function(activities_data,
-                                activity_type = NULL,
+                                activity_type,
                                 load_metric = "duration_mins",
                                 method = c("ra", "ewma"),
                                 acute_period = 7,
@@ -128,9 +131,29 @@ calculate_acwr_ewma <- function(activities_data,
     }
   }
 
+  if (!is.numeric(smoothing_period) || length(smoothing_period) != 1 ||
+    is.na(smoothing_period) || smoothing_period <= 0 ||
+    smoothing_period != floor(smoothing_period)) {
+    stop("`smoothing_period` must be a positive integer.")
+  }
+
   if (ci && method == "ra") {
     warning("Confidence bands are only available for EWMA method. Setting ci = FALSE.")
     ci <- FALSE
+  }
+
+  if (ci) {
+    if (!is.numeric(B) || length(B) != 1 || is.na(B) || B < 1 || B != floor(B)) {
+      stop("`B` must be a positive integer.")
+    }
+    if (!is.numeric(block_len) || length(block_len) != 1 ||
+      is.na(block_len) || block_len < 1 || block_len != floor(block_len)) {
+      stop("`block_len` must be a positive integer.")
+    }
+    if (!is.numeric(conf_level) || length(conf_level) != 1 ||
+      is.na(conf_level) || conf_level <= 0 || conf_level >= 1) {
+      stop("`conf_level` must be between 0 and 1.")
+    }
   }
 
   # --- Date Handling ---
@@ -160,7 +183,7 @@ calculate_acwr_ewma <- function(activities_data,
   }
 
   # Force explicit activity_type specification to prevent mixing incompatible sports
-  if (is.null(activity_type) || length(activity_type) == 0) {
+  if (missing(activity_type) || is.null(activity_type) || length(activity_type) == 0) {
     stop(
       "`activity_type` must be explicitly specified (e.g., 'Run' or 'Ride'). ",
       "Mixing different activity types can lead to incompatible load metrics. ",
@@ -181,60 +204,29 @@ calculate_acwr_ewma <- function(activities_data,
   fetch_start_buffer_days <- if (method == "ra") chronic_period else ceiling(4 * half_life_chronic)
   fetch_start_date <- analysis_start_date - lubridate::days(fetch_start_buffer_days)
 
-  # Filter activities
-  activities_df_filtered <- activities_data %>%
-    dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
-
-  if (!is.null(activity_type)) {
-    activities_df_filtered <- activities_df_filtered %>%
-      dplyr::filter(.data$type %in% activity_type)
+  activities_df_scoped <- activity_history_scope(
+    activities_data, activity_type, analysis_end_date
+  )
+  effective_chronic <- if (method == "ra") {
+    chronic_period
+  } else {
+    ceiling(3 * half_life_chronic)
   }
+  fetch_start_date <- clip_unknown_prehistory_start(
+    scoped_activities = activities_df_scoped,
+    fetch_start_date = fetch_start_date,
+    analysis_start_date = analysis_start_date,
+    analysis_end_date = analysis_end_date,
+    baseline_days = effective_chronic,
+    metric_label = "ACWR"
+  )
+  activities_df_filtered <- activities_df_scoped %>%
+    dplyr::filter(.data$date >= fetch_start_date)
 
   athlytics_message(sprintf("Processing %d activities...", nrow(activities_df_filtered)))
 
   if (nrow(activities_df_filtered) == 0) {
     stop("No activities found for the specified criteria.")
-  }
-
-  # Clip the chronic-buffer start to the earliest recorded activity to avoid
-  # conflating "rest day" (real 0 load) with "no data yet" (unknown load).
-  # Prior versions coalesced every pre-history day to 0 and dragged the
-  # chronic baseline toward 0, producing spuriously high ACWR in the first
-  # chronic_period days of output.
-  first_activity_date <- suppressWarnings(min(
-    as.Date(activities_df_filtered$date),
-    na.rm = TRUE
-  ))
-  if (is.finite(first_activity_date) && first_activity_date > fetch_start_date) {
-    # Only warn when the gap is material: i.e. the earliest activity is so
-    # late that roughly half or more of the chronic window's worth of
-    # analysis days cannot be fully populated by real history. A 1- or 2-day
-    # start-date misalignment is a common, benign pattern (users set
-    # start_date = first_activity_date) and should not spam warnings.
-    gap_days <- as.integer(first_activity_date - analysis_start_date)
-    effective_chronic <- if (method == "ra") {
-      chronic_period
-    } else {
-      ceiling(3 * half_life_chronic)
-    }
-    warn_threshold <- max(7L, as.integer(effective_chronic / 2))
-    if (gap_days >= warn_threshold) {
-      affected_days <- as.integer(
-        pmin(first_activity_date + effective_chronic - 1, analysis_end_date) -
-          analysis_start_date + 1
-      )
-      affected_days <- max(0L, affected_days)
-      warning(sprintf(
-        paste0(
-          "Earliest activity (%s) is %d day(s) after the requested start_date (%s). ",
-          "ACWR for roughly the first %d day(s) of the analysis window will be NA ",
-          "because the chronic baseline has no prior data to anchor on."
-        ),
-        format(first_activity_date), gap_days,
-        format(analysis_start_date), affected_days
-      ), call. = FALSE)
-    }
-    fetch_start_date <- first_activity_date
   }
 
   # Calculate daily load using internal helper
@@ -306,6 +298,25 @@ calculate_acwr_ewma <- function(activities_data,
     )
   }
 
+  attr(acwr_data, "params") <- list(
+    activity_type = activity_type,
+    load_metric = load_metric,
+    method = method,
+    acute_period = acute_period,
+    chronic_period = chronic_period,
+    half_life_acute = half_life_acute,
+    half_life_chronic = half_life_chronic,
+    smoothing_period = smoothing_period,
+    missing_load = missing_load,
+    ci = ci,
+    B = if (ci) B else NULL,
+    block_len = if (ci) block_len else NULL,
+    conf_level = if (ci) conf_level else NULL,
+    start_date = analysis_start_date,
+    end_date = analysis_end_date
+  )
+  class(acwr_data) <- c("athlytics_acwr", class(acwr_data))
+
   athlytics_message("Calculation complete.")
   return(acwr_data)
 }
@@ -342,38 +353,21 @@ calculate_acwr_ra_internal <- function(daily_load_complete, acute_period, chroni
 calculate_acwr_ewma_internal <- function(daily_load_complete, half_life_acute, half_life_chronic,
                                          smoothing_period, start_date, end_date,
                                          ci, B, block_len, conf_level) {
-  # Calculate alpha from half-life: α = ln(2) / half_life
-  alpha_acute <- log(2) / half_life_acute
-  alpha_chronic <- log(2) / half_life_chronic
+  # Calculate alpha from half-life: alpha = 1 - exp(-ln(2) / half_life)
+  alpha_acute <- 1 - exp(-log(2) / half_life_acute)
+  alpha_chronic <- 1 - exp(-log(2) / half_life_chronic)
 
   # Calculate EWMA loads
   loads <- daily_load_complete$daily_load
-  n <- length(loads)
-
-  acute_load <- numeric(n)
-  chronic_load <- numeric(n)
-
-  acute_load[1] <- loads[1]
-  chronic_load[1] <- loads[1]
-
-  for (i in 2:n) {
-    acute_load[i] <- alpha_acute * loads[i] + (1 - alpha_acute) * acute_load[i - 1]
-    chronic_load[i] <- alpha_chronic * loads[i] + (1 - alpha_chronic) * chronic_load[i - 1]
-  }
-
-  # Calculate ACWR
-  acwr <- ifelse(chronic_load > 0.01, acute_load / chronic_load, NA)
-
-  # Smooth ACWR
-  acwr_smooth <- zoo::rollmean(acwr, k = smoothing_period, align = "right", fill = NA)
+  ewma <- calculate_ewma_loads(loads, alpha_acute, alpha_chronic, smoothing_period)
 
   # Build base result
   acwr_data <- data.frame(
     date = daily_load_complete$date,
-    atl = acute_load,
-    ctl = chronic_load,
-    acwr = acwr,
-    acwr_smooth = acwr_smooth
+    atl = ewma$acute_load,
+    ctl = ewma$chronic_load,
+    acwr = ewma$acwr,
+    acwr_smooth = ewma$acwr_smooth
   ) %>%
     dplyr::filter(.data$date >= start_date & .data$date <= end_date)
 
@@ -389,20 +383,94 @@ calculate_acwr_ewma_internal <- function(daily_load_complete, half_life_acute, h
       smoothing_period, B, block_len, conf_level
     )
 
-    # Trim to analysis period
-    start_idx <- which(daily_load_complete$date == start_date)[1]
-    end_idx <- which(daily_load_complete$date == end_date)[1]
-
-    if (!is.na(start_idx) && !is.na(end_idx)) {
-      acwr_data$acwr_lower <- ci_bounds$lower[start_idx:end_idx]
-      acwr_data$acwr_upper <- ci_bounds$upper[start_idx:end_idx]
-    } else {
-      acwr_data$acwr_lower <- NA
-      acwr_data$acwr_upper <- NA
-    }
+    ci_data <- data.frame(
+      date = daily_load_complete$date,
+      acwr_lower = ci_bounds$lower,
+      acwr_upper = ci_bounds$upper
+    )
+    acwr_data <- dplyr::left_join(acwr_data, ci_data, by = "date")
   }
 
   return(acwr_data)
+}
+
+
+#' Internal: Calculate EWMA Load Series
+#' @keywords internal
+#' @noRd
+calculate_ewma_loads <- function(loads, alpha_acute, alpha_chronic,
+                                 smoothing_period) {
+  n <- length(loads)
+  acute_load <- rep(NA_real_, n)
+  chronic_load <- rep(NA_real_, n)
+  last_acute <- NA_real_
+  last_chronic <- NA_real_
+
+  for (i in seq_len(n)) {
+    current_load <- loads[i]
+    if (is.na(current_load)) {
+      next
+    }
+
+    if (is.na(last_acute) || is.na(last_chronic)) {
+      last_acute <- current_load
+      last_chronic <- current_load
+    } else {
+      last_acute <- alpha_acute * current_load + (1 - alpha_acute) * last_acute
+      last_chronic <- alpha_chronic * current_load + (1 - alpha_chronic) * last_chronic
+    }
+
+    acute_load[i] <- last_acute
+    chronic_load[i] <- last_chronic
+  }
+
+  acwr <- ifelse(!is.na(chronic_load) & chronic_load > 0.01,
+    acute_load / chronic_load,
+    NA_real_
+  )
+
+  acwr_smooth <- zoo::rollmean(acwr, k = smoothing_period, align = "right", fill = NA)
+
+  list(
+    acute_load = acute_load,
+    chronic_load = chronic_load,
+    acwr = acwr,
+    acwr_smooth = acwr_smooth
+  )
+}
+
+
+#' Internal: Resample Loads with Overlapping Moving Blocks
+#' @keywords internal
+#' @noRd
+moving_block_bootstrap_loads <- function(loads, block_len, starts = NULL) {
+  n <- length(loads)
+  if (n == 0) {
+    return(loads)
+  }
+
+  block_len <- min(max(1L, as.integer(block_len)), n)
+  n_blocks <- ceiling(n / block_len)
+  max_start <- n - block_len + 1L
+
+  if (is.null(starts)) {
+    starts <- sample.int(max_start, n_blocks, replace = TRUE)
+  } else {
+    starts <- as.integer(starts)
+    if (length(starts) < n_blocks ||
+      any(is.na(starts)) ||
+      any(starts < 1L) ||
+      any(starts > max_start)) {
+      stop("`starts` must contain valid moving-block start positions.")
+    }
+    starts <- starts[seq_len(n_blocks)]
+  }
+
+  boot_loads <- unlist(lapply(starts, function(start_pos) {
+    loads[seq.int(start_pos, length.out = block_len)]
+  }), use.names = FALSE)
+
+  boot_loads[seq_len(n)]
 }
 
 
@@ -412,40 +480,20 @@ calculate_acwr_ewma_internal <- function(daily_load_complete, half_life_acute, h
 bootstrap_acwr_ci <- function(loads, alpha_acute, alpha_chronic,
                               smoothing_period, B, block_len, conf_level) {
   n <- length(loads)
-  n_blocks <- ceiling(n / block_len)
 
   # Store bootstrap ACWR values
   boot_acwr_matrix <- matrix(NA, nrow = n, ncol = B)
 
   for (b in 1:B) {
-    # Moving-block bootstrap: sample blocks with replacement
-    sampled_blocks <- sample(1:n_blocks, n_blocks, replace = TRUE)
-    boot_loads <- numeric(0)
+    # Moving-block bootstrap: sample overlapping windows with replacement.
+    boot_loads <- moving_block_bootstrap_loads(loads, block_len)
 
-    for (block_idx in sampled_blocks) {
-      start_pos <- (block_idx - 1) * block_len + 1
-      end_pos <- min(block_idx * block_len, n)
-      boot_loads <- c(boot_loads, loads[start_pos:end_pos])
-    }
-
-    # Trim to original length
-    boot_loads <- boot_loads[1:n]
-
-    # Calculate EWMA for this bootstrap sample
-    acute_boot <- numeric(n)
-    chronic_boot <- numeric(n)
-    acute_boot[1] <- boot_loads[1]
-    chronic_boot[1] <- boot_loads[1]
-
-    for (i in 2:n) {
-      acute_boot[i] <- alpha_acute * boot_loads[i] + (1 - alpha_acute) * acute_boot[i - 1]
-      chronic_boot[i] <- alpha_chronic * boot_loads[i] + (1 - alpha_chronic) * chronic_boot[i - 1]
-    }
-
-    acwr_boot <- ifelse(chronic_boot > 0.01, acute_boot / chronic_boot, NA)
-    acwr_boot_smooth <- zoo::rollmean(acwr_boot, k = smoothing_period, align = "right", fill = NA)
-
-    boot_acwr_matrix[, b] <- acwr_boot_smooth
+    # Calculate EWMA for this bootstrap sample. Missing-load days are
+    # reported as NA at that position, but the recursive state resumes on
+    # the next finite load rather than poisoning every later day.
+    boot_acwr_matrix[, b] <- calculate_ewma_loads(
+      boot_loads, alpha_acute, alpha_chronic, smoothing_period
+    )$acwr_smooth
   }
 
   # Calculate percentiles
@@ -453,8 +501,16 @@ bootstrap_acwr_ci <- function(loads, alpha_acute, alpha_chronic,
   lower_quantile <- alpha_level / 2
   upper_quantile <- 1 - alpha_level / 2
 
-  acwr_lower <- apply(boot_acwr_matrix, 1, function(x) quantile(x, probs = lower_quantile, na.rm = TRUE))
-  acwr_upper <- apply(boot_acwr_matrix, 1, function(x) quantile(x, probs = upper_quantile, na.rm = TRUE))
+  safe_quantile <- function(x, probs) {
+    x <- x[!is.na(x)]
+    if (length(x) == 0) {
+      return(NA_real_)
+    }
+    unname(stats::quantile(x, probs = probs, na.rm = TRUE))
+  }
+
+  acwr_lower <- apply(boot_acwr_matrix, 1, safe_quantile, probs = lower_quantile)
+  acwr_upper <- apply(boot_acwr_matrix, 1, safe_quantile, probs = upper_quantile)
 
   list(lower = acwr_lower, upper = acwr_upper)
 }

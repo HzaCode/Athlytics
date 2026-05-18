@@ -15,7 +15,7 @@ calculate_decoupling(
   min_steady_minutes = 40,
   steady_cv_threshold = 0.08,
   min_hr_coverage = 0.9,
-  quality_control = c("off", "flag", "filter"),
+  quality_control = c("filter", "flag", "off"),
   stream_df = NULL,
   return_diagnostics = FALSE,
   verbose = FALSE
@@ -101,7 +101,7 @@ instead.
 Calculates aerobic decoupling for Strava activities from local export data.
 }
 \details{
-Calculates aerobic decoupling (HR drift relative to pace/power) using detailed
+Calculates aerobic decoupling (HR drift relative to speed/power) using detailed
 activity stream data from local FIT/TCX/GPX files.
 
 Provides data for \code{plot_decoupling}. Compares output/HR efficiency
@@ -124,8 +124,8 @@ deviation of the output metric (velocity or power).
 \item The CV (= rolling SD / rolling mean) is calculated at each time point.
 \item Time points with CV < \code{steady_cv_threshold} (default 8 \%) are classified
 as steady-state.
-\item At least \code{min_steady_minutes} of steady-state data must be present;
-otherwise the activity is marked \code{"non_steady"}.
+\item At least \code{min_steady_minutes} of contiguous steady-state data must be
+present; otherwise the activity is marked \code{"insufficient_steady_duration"}.
 \item Decoupling is then calculated by comparing the EF (output / HR) of the
 first half vs. the second half of the steady-state segment.
 }
@@ -140,6 +140,7 @@ detecting stationarity in physiological time series.
 \itemize{
 \item \code{"ok"}: Decoupling computed from a contiguous steady-state block.
 \item \code{"missing_hr_data"}: Stream lacked a \code{heartrate} / \code{heart_rate} column.
+\item \code{"missing_time_data"}: Stream lacked a \code{time} column.
 \item \code{"missing_velocity_data"} / \code{"missing_power_data"}: Stream lacked the
 column required by the chosen \code{decouple_metric}.
 \item \code{"insufficient_hr_data"}: Time-weighted HR coverage < \code{min_hr_coverage}.

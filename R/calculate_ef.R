@@ -55,8 +55,10 @@
 #'   Activities with lower HR coverage are rejected as insufficient data quality.
 #' @param quality_control Character. Quality control mode: "off" (no filtering), "flag" (mark issues),
 #'   or "filter" (exclude flagged data). Default "filter" for scientific rigor.
-#' @param export_dir Optional. Path to Strava export directory containing activity files.
-#'   When provided, enables stream data analysis for more accurate steady-state detection.
+#' @param export_dir Optional. Path to a Strava export directory or ZIP file
+#'   containing activity files. When provided, enables stream data analysis for
+#'   more accurate steady-state detection; when omitted, EF falls back to
+#'   activity-summary averages.
 #'
 #' @return A tibble with the following columns:
 #' \describe{
@@ -109,6 +111,8 @@
 #'   removed enough out-of-range samples to drop the stream below 100 rows.
 #' - `"poor_hr_quality"`: Activity-level path with out-of-range
 #'   `average_heartrate` while `quality_control = "filter"`.
+#' - `"poor_hr_quality_flagged"`: Activity-level path with out-of-range
+#'   `average_heartrate` kept for inspection because `quality_control = "flag"`.
 #' - `"too_short"`: Activity or steady-state window duration is below
 #'   `min_steady_minutes`.
 #' - `"non_steady"`: No rolling-CV window cleared `steady_cv_threshold`.
@@ -254,7 +258,7 @@ calculate_ef <- function(activities_data,
                          min_steady_minutes = 20,
                          steady_cv_threshold = 0.08,
                          min_hr_coverage = 0.9,
-                         quality_control = c("off", "flag", "filter"),
+                         quality_control = c("filter", "flag", "off"),
                          export_dir = NULL) {
   # --- Input Validation ---
   if (missing(activities_data) || is.null(activities_data)) {
@@ -355,7 +359,13 @@ calculate_ef <- function(activities_data,
     distance_m <- safe_as_numeric(activity$distance)
     avg_power <- safe_as_numeric(activity$average_watts)
     weighted_power <- safe_as_numeric(activity$weighted_average_watts)
-    power_used <- ifelse(weighted_power > 0, weighted_power, avg_power)
+    power_used <- if (!is.na(weighted_power) && is.finite(weighted_power) && weighted_power > 0) {
+      weighted_power
+    } else if (!is.na(avg_power) && is.finite(avg_power) && avg_power > 0) {
+      avg_power
+    } else {
+      NA_real_
+    }
 
     if (is.na(activity_date) || activity_date < analysis_start_date || activity_date > analysis_end_date) {
       return(NULL)
@@ -372,10 +382,11 @@ calculate_ef <- function(activities_data,
 
     # Try to parse stream data for proper steady-state analysis
     stream_data <- NULL
-    if (!is.null(export_dir) && !is.na(activity$filename) && nchar(activity$filename) > 0) {
+    activity_filename <- activity$filename %||% NA_character_
+    if (!is.null(export_dir) && !is.na(activity_filename) && nchar(activity_filename) > 0) {
       tryCatch(
         {
-          stream_data <- parse_activity_file(activity$filename, export_dir)
+          stream_data <- parse_activity_file(activity_filename, export_dir)
         },
         error = function(e) {
           athlytics_message(sprintf("  Could not parse stream data for activity %s: %s", activity_date, e$message))
@@ -395,17 +406,17 @@ calculate_ef <- function(activities_data,
     athlytics_message(sprintf("  No stream data available for %s, using activity-level averages (less reliable)", activity_date))
 
     # Quality control integration
+    activity_quality_flagged <- FALSE
     if (quality_control != "off") {
-      # For now, we use simplified quality checks since we don't have stream data
-      # In a full implementation, we would parse stream files and call flag_quality()
-      # This is a placeholder for the quality control framework
+      # Activity-level fallback only has summary HR fields; stream-level
+      # diagnostics are available when parsed stream files are present.
 
       # Check for reasonable HR values (basic quality gate)
       if (avg_hr < 50 || avg_hr > 220) {
         if (quality_control == "filter") {
           return(make_activity_result("poor_hr_quality"))
         }
-        # If "flag", we continue but mark the status
+        activity_quality_flagged <- TRUE
       }
     }
 
@@ -420,7 +431,11 @@ calculate_ef <- function(activities_data,
     # average_gap column. Surfaced in ef_metric_used so users do not
     # silently mis-interpret speed/HR rows as GAP/HR.
     ef_metric_used_i <- ef_metric
-    activity_status <- "no_streams"
+    activity_status <- if (activity_quality_flagged) {
+      "poor_hr_quality_flagged"
+    } else {
+      "no_streams"
+    }
 
     if (ef_metric == "speed_hr") {
       if (distance_m > 0 && duration_sec > 0) {
@@ -683,14 +698,19 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
       stream_clean <- stream_clean %>%
         dplyr::mutate(velocity = .data$velocity_smooth)
     } else if ("distance" %in% colnames(stream_clean)) {
-      # Calculate velocity from distance
-      stream_clean <- stream_clean %>%
-        dplyr::arrange(.data$time) %>%
-        dplyr::mutate(
-          distance_diff = .data$distance - dplyr::lag(.data$distance, default = first(.data$distance)),
-          time_diff = .data$time - dplyr::lag(.data$time, default = first(.data$time)),
-          velocity = ifelse(.data$time_diff > 0, .data$distance_diff / .data$time_diff, 0)
-        )
+      # Calculate velocity from distance using numeric seconds so POSIXct
+      # stream timestamps do not yield difftime arithmetic.
+      stream_clean <- stream_clean %>% dplyr::arrange(.data$time)
+      time_seconds <- stream_time_seconds(stream_clean$time)
+      stream_clean$distance_diff <- stream_clean$distance -
+        dplyr::lag(stream_clean$distance, default = dplyr::first(stream_clean$distance))
+      stream_clean$time_diff <- time_seconds -
+        dplyr::lag(time_seconds, default = dplyr::first(time_seconds))
+      stream_clean$velocity <- ifelse(
+        is.finite(stream_clean$time_diff) & stream_clean$time_diff > 0,
+        stream_clean$distance_diff / stream_clean$time_diff,
+        0
+      )
     }
 
     stream_clean <- stream_clean %>%
@@ -752,7 +772,11 @@ calculate_ef_from_stream <- function(stream_data, activity_date, act_type, ef_me
   }
 
   # Check minimum duration
-  duration_minutes <- (max(stream_clean$time, na.rm = TRUE) - min(stream_clean$time, na.rm = TRUE)) / 60
+  stream_duration_seconds <- stream_time_seconds(stream_clean$time)
+  duration_minutes <- (
+    max(stream_duration_seconds, na.rm = TRUE) -
+      min(stream_duration_seconds, na.rm = TRUE)
+  ) / 60
   if (duration_minutes < min_steady_minutes) {
     return(make_result("too_short",
       ef_metric_used = ef_metric_used_default,

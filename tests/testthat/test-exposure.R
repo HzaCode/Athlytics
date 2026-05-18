@@ -112,3 +112,118 @@ test_that("calculate_exposure produces correct ATL/CTL with constant load", {
     )
   }
 })
+
+test_that("calculate_exposure does not fill unknown prehistory with zero load", {
+  end_date <- as.Date("2024-03-31")
+  dates <- seq(end_date - 4, end_date, by = "day")
+  activities <- data.frame(
+    id = seq_along(dates),
+    name = paste("Run", seq_along(dates)),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, length(dates)),
+    moving_time = rep(3600, length(dates)),
+    elapsed_time = rep(3600, length(dates)),
+    average_heartrate = rep(150, length(dates)),
+    average_speed = rep(3.0, length(dates)),
+    stringsAsFactors = FALSE
+  )
+
+  warnings <- character()
+  result <- withCallingHandlers(
+    calculate_exposure(
+      activities_data = activities,
+      activity_type = "Run",
+      load_metric = "duration_mins",
+      acute_period = 7,
+      chronic_period = 28,
+      end_date = end_date
+    ),
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  expect_true(any(grepl("Earliest activity", warnings)))
+  expect_true(any(grepl("Not enough data", warnings)))
+  expect_s3_class(result, "athlytics_exposure")
+  expect_equal(min(result$date), min(dates))
+  expect_true(all(is.na(result$ctl)))
+  expect_true(all(is.na(result$acwr)))
+})
+
+test_that("calculate_exposure warns when chronic buffer is only partly observed", {
+  end_date <- as.Date("2024-03-31")
+  dates <- seq(as.Date("2024-02-20"), end_date, by = "day")
+  activities <- data.frame(
+    id = seq_along(dates),
+    name = paste("Run", seq_along(dates)),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, length(dates)),
+    moving_time = rep(3600, length(dates)),
+    elapsed_time = rep(3600, length(dates)),
+    average_heartrate = rep(150, length(dates)),
+    average_speed = rep(3.0, length(dates)),
+    stringsAsFactors = FALSE
+  )
+
+  warnings <- character()
+  result <- withCallingHandlers(
+    calculate_exposure(
+      activities_data = activities,
+      activity_type = "Run",
+      load_metric = "duration_mins",
+      acute_period = 7,
+      chronic_period = 28,
+      end_date = end_date
+    ),
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  expect_true(any(grepl("required history-buffer start", warnings)))
+  expect_s3_class(result, "athlytics_exposure")
+  expect_true(any(is.na(result$ctl)))
+  expect_true(any(!is.na(result$ctl)))
+})
+
+test_that("calculate_exposure does not clip observed rest days at the buffer start", {
+  end_date <- as.Date("2024-03-31")
+  chronic_period <- 28
+  analysis_start <- end_date - chronic_period + 1
+  fetch_start <- analysis_start - chronic_period
+  activities <- data.frame(
+    id = 1:2,
+    name = c("Run before buffer", "Run in window"),
+    type = "Run",
+    sport_type = "Run",
+    date = c(fetch_start - 10, analysis_start + 16),
+    start_date_local = as.POSIXct(c(fetch_start - 10, analysis_start + 16)),
+    distance = c(10000, 10000),
+    moving_time = c(3600, 3600),
+    elapsed_time = c(3600, 3600),
+    average_heartrate = c(150, 150),
+    average_speed = c(3.0, 3.0),
+    stringsAsFactors = FALSE
+  )
+
+  result <- expect_no_warning(suppressMessages(calculate_exposure(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "duration_mins",
+    acute_period = 7,
+    chronic_period = chronic_period,
+    end_date = end_date
+  )))
+
+  expect_equal(min(result$date), analysis_start)
+  expect_true(any(!is.na(result$ctl)))
+})

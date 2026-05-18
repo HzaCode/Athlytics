@@ -119,7 +119,9 @@ cohort_data <- bind_rows(athlete1, athlete2, athlete3)
 # Calculate ACWR for each athlete
 cohort_acwr <- cohort_data \%>\%
   group_by(athlete_id) \%>\%
-  group_modify(~ calculate_acwr_ewma(.x))
+  group_modify(~ calculate_acwr_ewma(.x, activity_type = "Run")) \%>\%
+  ungroup() \%>\%
+  mutate(sport = "Run")
 
 # Calculate reference percentiles
 reference <- calculate_cohort_reference(

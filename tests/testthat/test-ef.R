@@ -196,6 +196,107 @@ test_that("calculate_ef produces correct power_hr values", {
   }
 })
 
+test_that("calculate_ef falls back to average watts when weighted watts is missing", {
+  activities <- data.frame(
+    date = Sys.Date(),
+    type = "Ride",
+    moving_time = 3600,
+    distance = 40000,
+    average_heartrate = 150,
+    average_watts = 200,
+    weighted_average_watts = NA_real_,
+    filename = NA_character_,
+    stringsAsFactors = FALSE
+  )
+
+  result <- suppressWarnings(calculate_ef(
+    activities,
+    activity_type = "Ride",
+    ef_metric = "power_hr",
+    quality_control = "off",
+    min_duration_mins = 20,
+    min_steady_minutes = 20
+  ))
+
+  expect_equal(result$status, "no_streams")
+  expect_equal(result$ef_value, 200 / 150)
+})
+
+test_that("calculate_ef tolerates export_dir when filename column is absent", {
+  activities <- data.frame(
+    date = Sys.Date(),
+    type = "Run",
+    moving_time = 3600,
+    distance = 10000,
+    average_heartrate = 150,
+    average_watts = NA_real_,
+    weighted_average_watts = NA_real_,
+    stringsAsFactors = FALSE
+  )
+
+  result <- suppressMessages(calculate_ef(
+    activities,
+    activity_type = "Run",
+    ef_metric = "speed_hr",
+    export_dir = tempdir(),
+    quality_control = "off",
+    min_duration_mins = 20,
+    min_steady_minutes = 20
+  ))
+
+  expect_s3_class(result, "data.frame")
+  expect_equal(result$status, "no_streams")
+})
+
+test_that("calculate_ef defaults to filtering activity-level quality issues", {
+  activities <- data.frame(
+    date = Sys.Date(),
+    type = "Run",
+    moving_time = 3600,
+    distance = 10000,
+    average_heartrate = 250,
+    average_watts = 0,
+    weighted_average_watts = 0,
+    filename = NA_character_,
+    stringsAsFactors = FALSE
+  )
+
+  result <- suppressWarnings(calculate_ef(
+    activities,
+    activity_type = "Run",
+    ef_metric = "speed_hr"
+  ))
+
+  expect_equal(result$status, "poor_hr_quality")
+  expect_true(is.na(result$ef_value))
+})
+
+test_that("calculate_ef flags activity-level quality issues when requested", {
+  activities <- data.frame(
+    date = Sys.Date(),
+    type = "Run",
+    moving_time = 3600,
+    distance = 10000,
+    average_heartrate = 250,
+    average_watts = 0,
+    weighted_average_watts = 0,
+    filename = NA_character_,
+    stringsAsFactors = FALSE
+  )
+
+  result <- suppressWarnings(calculate_ef(
+    activities,
+    activity_type = "Run",
+    ef_metric = "speed_hr",
+    quality_control = "flag",
+    min_duration_mins = 20,
+    min_steady_minutes = 20
+  ))
+
+  expect_equal(result$status, "poor_hr_quality_flagged")
+  expect_true(is.finite(result$ef_value))
+})
+
 test_that("calculate_ef returns athlytics_ef class", {
   end_date <- Sys.Date()
   start_date <- end_date - 9
@@ -630,6 +731,29 @@ test_that("calculate_ef_from_stream handles velocity from distance", {
   expect_contains(names(result), "ef_value")
 })
 
+test_that("calculate_ef_from_stream derives distance velocity with POSIXct time", {
+  n <- 1800
+  stream_with_posix_time <- data.frame(
+    time = as.POSIXct("2024-01-01 00:00:00", tz = "UTC") + seq(0, n - 1),
+    heartrate = rep(150, n),
+    distance = seq(0, by = 3, length.out = n)
+  )
+
+  result <- calculate_ef_from_stream(
+    stream_data = stream_with_posix_time,
+    activity_date = as.Date("2024-01-01"),
+    act_type = "Run",
+    ef_metric = "speed_hr",
+    min_steady_minutes = 10,
+    steady_cv_threshold = 0.1,
+    min_hr_coverage = 0.8,
+    quality_control = "off"
+  )
+
+  expect_equal(result$status, "ok")
+  expect_true(is.finite(result$ef_value))
+})
+
 test_that("calculate_ef_from_stream handles quality control filtering", {
   stream_bad_values <- data.frame(
     time = seq(0, 599, by = 1),
@@ -921,11 +1045,11 @@ test_that("calculate_ef_from_stream accepts a contiguous steady block >= min_ste
 
 # --- Sampling-rate aware rolling window (v1.0.5) -------------------------
 
-test_that("calculate_ef_from_stream reports sampling_interval_seconds for 0.5 Hz data", {
+test_that("calculate_ef_from_stream reports sampling_interval_seconds for 2 Hz data", {
   # Half-second-resolution stream of ~30 minutes of steady 3 m/s pace.
   set.seed(3)
   n <- 3600L
-  time <- seq(0, by = 0.5, length.out = n) # 0.5 Hz, total = 30 min
+  time <- seq(0, by = 0.5, length.out = n) # 2 Hz, total = 30 min
   velocity <- rep(3, n) + rnorm(n, 0, 0.02)
   hr <- rep(150, n) + rnorm(n, 0, 1)
 

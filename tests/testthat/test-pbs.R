@@ -363,6 +363,46 @@ test_that("find_best_effort interpolates target distance crossings (regression)"
   expect_equal(eff$time_seconds, 1000 / 3, tolerance = 1e-6)
 })
 
+test_that("find_best_effort considers end-anchored interpolated starts", {
+  stream <- data.frame(
+    distance = 0:20,
+    time = c(0:10, 10 + ((11:20) - 10) / 10)
+  )
+
+  eff <- Athlytics:::find_best_effort(stream, target_distance = 15.5)
+
+  expect_false(is.null(eff))
+  expect_equal(eff$time_seconds, 6.5, tolerance = 1e-9)
+  expect_equal(eff$start_distance, 4.5, tolerance = 1e-9)
+  expect_equal(eff$end_distance, 20, tolerance = 1e-9)
+})
+
+test_that("find_best_effort excludes distance plateaus from moving-time duration", {
+  stream <- data.frame(
+    distance = c(0:5, rep(5, 5), 6:20),
+    time = 0:25
+  )
+
+  eff <- Athlytics:::find_best_effort(stream, target_distance = 15)
+
+  expect_false(is.null(eff))
+  expect_equal(eff$time_seconds, 15, tolerance = 1e-9)
+})
+
+test_that("GPS bounce-backs returning to the running max do not exclude moving time", {
+  stream <- data.frame(
+    distance = c(0:10, 9, 10, 11:25),
+    time = c(seq(0, 100, by = 10), 110, 120, 121:135)
+  )
+
+  eff <- Athlytics:::find_best_effort(stream, target_distance = 15)
+
+  expect_false(is.null(eff))
+  expect_equal(eff$start_distance, 10, tolerance = 1e-9)
+  expect_equal(eff$end_distance, 25, tolerance = 1e-9)
+  expect_equal(eff$time_seconds, 35, tolerance = 1e-9)
+})
+
 test_that("find_best_effort drops non-monotonic distance samples (regression)", {
   # Inject a GPS bounce-back that previously manufactured fake sub-second
   # 100 m segments via pure nearest-row lookup. After the fix, the monotonic-
@@ -383,10 +423,10 @@ test_that("find_best_effort drops non-monotonic distance samples (regression)", 
   expect_gt(eff$time_seconds, 25)
 })
 
-test_that("find_best_effort runs in ~linear time on large streams (regression)", {
+test_that("find_best_effort remains fast on large streams (regression)", {
   # A 10-hour run (36000 rows) used to be O(n^2) in the number of start
-  # indices. Post-fix the two-pointer sweep completes in well under a
-  # second even in a cold R session.
+  # indices. The bounded candidate sweep should remain comfortably below
+  # a few seconds even in a cold R session.
   n <- 36000
   d <- seq(0, by = 3, length.out = n)
   t <- seq(0, by = 1, length.out = n)
@@ -422,6 +462,81 @@ test_that("calculate_pbs output contract includes time_basis column", {
   ) |> suppressWarnings()
 
   expect_true("time_basis" %in% colnames(empty))
+})
+
+test_that("calculate_pbs no-best-efforts empty path keeps output columns", {
+  activities <- data.frame(
+    id = 1,
+    name = "Missing detailed stream",
+    date = as.Date("2024-01-01"),
+    start_date_local = lubridate::as_datetime("2024-01-01 08:00:00"),
+    type = "Run",
+    filename = "missing_activity.tcx",
+    distance = 5000,
+    stringsAsFactors = FALSE
+  )
+
+  warnings <- character()
+  result <- withCallingHandlers(
+    calculate_pbs(
+      activities_data = activities,
+      export_dir = tempdir(),
+      start_date = "2024-01-01",
+      end_date = "2024-01-02",
+      distances_m = c(1000)
+    ),
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  expect_true(any(grepl("No best efforts could be calculated", warnings)))
+  expect_equal(nrow(result), 0)
+  expect_named(result, c(
+    "activity_id",
+    "activity_date",
+    "distance",
+    "elapsed_time",
+    "moving_time",
+    "time_seconds",
+    "cumulative_pb_seconds",
+    "is_pb",
+    "distance_label",
+    "time_period",
+    "time_basis"
+  ))
+  expect_true(all(c("elapsed_time", "moving_time", "time_basis") %in% colnames(result)))
+})
+
+test_that("calculate_pbs accepts documented minimum activity columns structurally", {
+  activities <- data.frame(
+    date = as.Date("2024-01-01"),
+    type = "Run",
+    filename = "missing_activity.tcx",
+    distance = 5000,
+    stringsAsFactors = FALSE
+  )
+
+  expect_silent({
+    result <- withCallingHandlers(
+      calculate_pbs(
+        activities_data = activities,
+        export_dir = tempdir(),
+        start_date = "2024-01-01",
+        end_date = "2024-01-02",
+        distances_m = c(1000)
+      ),
+      warning = function(w) invokeRestart("muffleWarning")
+    )
+  })
+  expect_equal(nrow(result), 0)
+  expect_named(result, c(
+    "activity_id", "activity_date", "distance",
+    "elapsed_time", "moving_time", "time_seconds",
+    "cumulative_pb_seconds", "is_pb",
+    "distance_label", "time_period", "time_basis"
+  ))
 })
 
 # --- End-to-end PB extraction from a zip export_dir (v1.0.5) -----------

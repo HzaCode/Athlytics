@@ -6,10 +6,11 @@
 #'
 #' @param data A data frame from `calculate_acwr()` or `calculate_acwr_ewma()`.
 #'   Must contain `date` and `acwr_smooth` columns.
-#' @param highlight_zones Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default `TRUE`.
-#' @param sweet_spot_min Lower bound for the "sweet spot" ACWR zone. Default 0.8.
-#' @param sweet_spot_max Upper bound for the "sweet spot" ACWR zone. Default 1.3.
-#' @param high_risk_min Lower bound for the "high risk" ACWR zone. Default 1.5.
+#' @param highlight_zones Logical, whether to highlight descriptive ACWR bands
+#'   (e.g., reference band, high ACWR) on the plot. Default `TRUE`.
+#' @param sweet_spot_min Lower bound for the reference ACWR band. Default 0.8.
+#' @param sweet_spot_max Upper bound for the reference ACWR band. Default 1.3.
+#' @param high_risk_min Lower bound for the high-ACWR band. Default 1.5.
 #' @param group_var Optional. Column name for grouping/faceting (e.g., "athlete_id").
 #' @param group_colors Optional. Named vector of colors for groups.
 #' @param title Optional. Custom title for the plot.
@@ -23,17 +24,19 @@
 #'
 #' @details Plots the ACWR trend over time.
 #'   **Best practice: Use `calculate_acwr()` first, then pass the result to this function.**
-#'   ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
+#'   ACWR is calculated as acute load / chronic load. The default 0.8-1.3
+#'   band is a commonly used reference band.
 #'
-#'   When `highlight_zones = TRUE`, all risk zone labels (High Risk, Caution, Sweet Spot,
-#'   Low Load) are **always displayed** regardless of whether data falls within each zone.
+#'   When `highlight_zones = TRUE`, all zone labels (High ACWR, Elevated ACWR,
+#'   Reference Band, Low ACWR) are **always displayed** regardless of whether
+#'   data falls within each zone.
 #'   The y-axis is automatically extended to ensure all zone annotations remain visible.
 #'   Zone boundaries can be customised via `sweet_spot_min`, `sweet_spot_max`, and
 #'   `high_risk_min`.
 #'
-#'   **Note:** The predictive value of ACWR for injury risk is debated in the
-#'   literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
-#'   as descriptive heuristics, not validated injury predictors. See
+#'   **Note:** The predictive value of ACWR for injury outcomes is debated in the
+#'   literature (Impellizzeri et al., 2020). Zone labels should be interpreted
+#'   as descriptive workload heuristics, not validated injury predictors. See
 #'   `calculate_acwr()` documentation for full references.
 #'
 #' @export
@@ -138,45 +141,45 @@ plot_acwr <- function(data,
   y_breaks <- seq(0, ceiling(y_max_limit * 5) / 5, by = 0.2)
   date_bounds <- if (highlight_zones) padded_date_range(plot_data$date) else NULL
 
-  # --- Add risk zone shading (using annotate to avoid inheriting group aes) ---
+  # --- Add ACWR zone shading (using annotate to avoid inheriting group aes) ---
   if (highlight_zones) {
     date_xmin <- date_bounds[1]
     date_xmax <- date_bounds[2]
 
     p <- p +
-      # High Risk Zone (e.g., > 1.5)
+      # High ACWR zone (e.g., > 1.5)
       ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = high_risk_min, ymax = Inf, fill = "#E64B35", alpha = 0.06) +
-      # Caution Zone (e.g., 1.3 - 1.5)
+      # Elevated ACWR band (e.g., 1.3 - 1.5)
       ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_max, ymax = high_risk_min, fill = "#F39B7F", alpha = 0.06) +
-      # Sweet Spot (e.g., 0.8 - 1.3)
+      # Reference band (e.g., 0.8 - 1.3)
       ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = sweet_spot_min, ymax = sweet_spot_max, fill = "#00A087", alpha = 0.06) +
-      # Low Load / Undertraining Zone (e.g., < 0.8)
+      # Low ACWR band (e.g., < 0.8)
       ggplot2::annotate("rect", xmin = date_xmin, xmax = date_xmax,
         ymin = -Inf, ymax = sweet_spot_min, fill = "#4DBBD5", alpha = 0.06)
 
-    # Always show all risk zone annotations regardless of data range
+    # Always show all ACWR zone annotations regardless of data range
     plot_date_range <- range(plot_data$date, na.rm = TRUE)
     annotation_x_pos <- plot_date_range[2] - lubridate::days(round(as.numeric(diff(plot_date_range)) * 0.02))
 
     p <- p +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = high_risk_min + 0.15,
-        label = "High Risk", hjust = 1, vjust = 0.5, size = 2.8, color = "#E64B35", alpha = 0.7, fontface = "italic"
+        label = "High ACWR", hjust = 1, vjust = 0.5, size = 2.8, color = "#E64B35", alpha = 0.7, fontface = "italic"
       ) +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = (sweet_spot_max + high_risk_min) / 2,
-        label = "Caution", hjust = 1, vjust = 0.5, size = 2.8, color = "#F39B7F", alpha = 0.7, fontface = "italic"
+        label = "Elevated ACWR", hjust = 1, vjust = 0.5, size = 2.8, color = "#F39B7F", alpha = 0.7, fontface = "italic"
       ) +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = (sweet_spot_min + sweet_spot_max) / 2,
-        label = "Sweet Spot", hjust = 1, vjust = 0.5, size = 2.8, color = "#00A087", alpha = 0.7, fontface = "italic"
+        label = "Reference Band", hjust = 1, vjust = 0.5, size = 2.8, color = "#00A087", alpha = 0.7, fontface = "italic"
       ) +
       ggplot2::annotate("text",
         x = annotation_x_pos, y = sweet_spot_min / 2,
-        label = "Low Load", hjust = 1, vjust = 0.5, size = 2.8, color = "#4DBBD5", alpha = 0.7, fontface = "italic"
+        label = "Low ACWR", hjust = 1, vjust = 0.5, size = 2.8, color = "#4DBBD5", alpha = 0.7, fontface = "italic"
       )
 
     # Zone boundary reference lines

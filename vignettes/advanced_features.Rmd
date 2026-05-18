@@ -183,7 +183,7 @@ ggplot(acwr_ewma_ci, aes(x = date)) +
 ### Technical Note: Bootstrap Method
 
 The confidence bands use **moving-block bootstrap**:
-1. Daily load sequence is resampled in weekly blocks (preserves within-week correlation)
+1. Daily load sequence is resampled in overlapping weekly blocks (preserves within-week correlation)
 2. ACWR is recalculated for each bootstrap sample (B = 200 iterations)
 3. 2.5th and 97.5th percentiles form the 95% confidence band
 
@@ -214,8 +214,9 @@ cohort_data <- bind_rows(athlete1, athlete2, athlete3)
 # Calculate ACWR for each athlete
 cohort_acwr <- cohort_data |>
   group_by(athlete_id) |>
-  group_modify(~ calculate_acwr_ewma(.x, method = "ewma")) |>
+  group_modify(~ calculate_acwr_ewma(.x, activity_type = "Run", method = "ewma")) |>
   ungroup() |>
+  mutate(type = "Run") |>
   left_join(
     cohort_data |> select(athlete_id, sex, age_band) |> distinct(),
     by = "athlete_id"
@@ -308,6 +309,7 @@ cohort_acwr <- cohort_data |>
   group_by(athlete_id) |>
   group_modify(~ calculate_acwr_ewma(
     .x,
+    activity_type = "Run",
     method = "ewma",
     half_life_acute = 3.5,
     half_life_chronic = 14,
@@ -315,7 +317,8 @@ cohort_acwr <- cohort_data |>
     ci = TRUE,
     B = 100 # Reduced for speed in example
   )) |>
-  ungroup()
+  ungroup() |>
+  mutate(type = "Run")
 
 # --- Step 4: Calculate cohort reference ---
 reference <- calculate_cohort_reference(
@@ -404,5 +407,3 @@ A: Use the standard software citation format with version number and repository 
 ```{r}
 sessionInfo()
 ```
-
-

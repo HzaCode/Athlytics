@@ -132,13 +132,19 @@ calculate_exposure <- function(activities_data,
   fetch_start_date <- analysis_start_date - lubridate::days(chronic_period)
 
   athlytics_message("Processing local activities data...", .verbose = verbose_on)
-  activities_df_filtered <- activities_data %>%
-    dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
-
-  if (!is.null(activity_type)) {
-    activities_df_filtered <- activities_df_filtered %>%
-      dplyr::filter(.data$type %in% activity_type)
-  }
+  activities_df_scoped <- activity_history_scope(
+    activities_data, activity_type, analysis_end_date
+  )
+  fetch_start_date <- clip_unknown_prehistory_start(
+    scoped_activities = activities_df_scoped,
+    fetch_start_date = fetch_start_date,
+    analysis_start_date = analysis_start_date,
+    analysis_end_date = analysis_end_date,
+    baseline_days = chronic_period,
+    metric_label = "Exposure metrics"
+  )
+  activities_df_filtered <- activities_df_scoped %>%
+    dplyr::filter(.data$date >= fetch_start_date)
 
   activities_fetched_count <- nrow(activities_df_filtered)
   athlytics_message(sprintf("Loaded %d activities from local data.", activities_fetched_count), .verbose = verbose_on)
@@ -203,7 +209,10 @@ calculate_exposure <- function(activities_data,
 
   # --- Calculate ATL, CTL, ACWR ---
   if (nrow(load_df) < chronic_period) {
-    stop(sprintf("Not enough data to calculate chronic load (%d days required, %d available).", chronic_period, nrow(load_df)))
+    warning(sprintf(
+      "Not enough data to calculate the full chronic load (%d days required, %d available). Results may be NA until enough observed history accumulates.",
+      chronic_period, nrow(load_df)
+    ), call. = FALSE)
   }
 
   load_df <- load_df %>%

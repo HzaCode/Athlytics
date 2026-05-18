@@ -16,10 +16,10 @@
   },
   "runtimePlatform": "R version 4.5.0 (2025-04-11 ucrt)",
   "provider": {
-    "@id": "https://cran.r-project.org",
+    "@id": "https://ropensci.r-universe.dev",
     "@type": "Organization",
-    "name": "Comprehensive R Archive Network (CRAN)",
-    "url": "https://cran.r-project.org"
+    "name": "rOpenSci R-universe",
+    "url": "https://ropensci.r-universe.dev"
   },
   "author": [
     {
@@ -107,7 +107,7 @@
       "@type": "SoftwareApplication",
       "identifier": "testthat",
       "name": "testthat",
-      "version": ">= 3.0.0",
+      "version": ">= 3.1.5",
       "provider": {
         "@id": "https://cran.r-project.org",
         "@type": "Organization",

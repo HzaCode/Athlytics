@@ -6,7 +6,7 @@
 \usage{
 calculate_acwr(
   activities_data,
-  activity_type = NULL,
+  activity_type,
   load_metric = "duration_mins",
   acute_period = 7,
   chronic_period = 28,
@@ -92,21 +92,22 @@ A tibble with the following columns:
 \description{
 This function calculates daily training load and derives acute (short-term) and
 chronic (long-term) load averages, then computes their ratio (ACWR). The ACWR
-helps identify periods of rapid training load increases that may elevate injury risk.
+helps identify periods when recent load is elevated relative to chronic load.
 
 \strong{Key Concepts:}
 \itemize{
 \item \strong{Acute Load (ATL)}: Rolling average of recent training (default: 7 days)
 \item \strong{Chronic Load (CTL)}: Rolling average of longer-term training (default: 28 days)
 \item \strong{ACWR}: Ratio of ATL to CTL (ATL / CTL)
-\item \strong{Safe Zone}: ACWR between 0.8-1.3 (optimal training stimulus)
-\item \strong{Danger Zone}: ACWR > 1.5 (increased injury risk)
+\item \strong{Reference Band}: ACWR between 0.8-1.3 (commonly used load-balance band)
+\item \strong{Elevated ACWR Band}: ACWR between 1.3-1.5
+\item \strong{High ACWR Band}: ACWR > 1.5 (load-spike threshold)
 }
 }
 \details{
 Computes the Acute:Chronic Workload Ratio (ACWR) from local Strava activity data
 using rolling average methods. ACWR is a key metric for monitoring training load
-and injury risk in athletes (Gabbett, 2016; Hulin et al., 2016).
+balance in athletes (Gabbett, 2016; Hulin et al., 2016).
 
 \strong{Algorithm:}
 \enumerate{
@@ -132,12 +133,12 @@ Formula: \verb{(duration_sec × NP × IF) / (FTP × 3600) × 100}, where \code{I
 Formula: \code{duration_sec * (HR - resting_HR) / (max_HR - resting_HR)}.
 }
 
-\strong{Interpretation Guidelines:}
+\strong{Descriptive ACWR Bands:}
 \itemize{
-\item ACWR < 0.8: May indicate detraining or insufficient load
-\item ACWR 0.8-1.3: "Sweet spot" - optimal training stimulus with lower injury risk
-\item ACWR 1.3-1.5: Caution zone - monitor for fatigue
-\item ACWR > 1.5: High risk zone - consider load management
+\item ACWR < 0.8: Recent load below chronic load
+\item ACWR 0.8-1.3: Commonly used training-load reference band
+\item ACWR 1.3-1.5: Elevated recent/chronic load ratio
+\item ACWR > 1.5: High ACWR ratio / load-spike band
 }
 
 \strong{Multi-Athlete Studies:}
@@ -150,8 +151,8 @@ For cohort analyses, add an \code{athlete_id} column before calculation and use
 recent literature. Some researchers argue that ACWR may have limited utility for
 predicting injuries (Impellizzeri et al., 2020), and a subsequent analysis has
 called for dismissing the ACWR framework entirely (Impellizzeri et al., 2021).
-Users should interpret ACWR risk zones with caution and consider them as
-descriptive heuristics rather than validated injury predictors.
+Users should interpret ACWR zones as descriptive heuristics rather than
+validated injury predictors.
 
 Impellizzeri, F. M., Tenan, M. S., Kempton, T., Novak, A., & Coutts, A. J. (2020).
 Acute:chronic workload ratio: conceptual issues and fundamental pitfalls.

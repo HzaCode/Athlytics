@@ -16,7 +16,7 @@ plot_acwr_enhanced(
   method_label = NULL,
   caption = if (highlight_zones) {
     
-    "Zones: Green = Sweet Spot (0.8-1.3) | Orange = Caution | Red = High Risk (>1.5)"
+    "Zones: Green = Reference Band (0.8-1.3) | Orange = Elevated ACWR | Red = High ACWR (>1.5)"
  }
     else {
      NULL
@@ -37,7 +37,7 @@ Default TRUE.}
 
 \item{reference_bands}{Which reference bands to show. Default c("p25_p75", "p05_p95", "p50").}
 
-\item{highlight_zones}{Logical. Whether to highlight ACWR risk zones. Default TRUE.}
+\item{highlight_zones}{Logical. Whether to highlight descriptive ACWR zones. Default TRUE.}
 
 \item{title}{Plot title. Default NULL (auto-generated).}
 
@@ -57,7 +57,7 @@ and cohort reference percentiles.
 \details{
 This enhanced plot function combines multiple visualization layers:
 \itemize{
-\item Risk zone shading (sweet spot: 0.8-1.3, caution: 1.3-1.5, high risk: >1.5)
+\item ACWR zone shading (reference band: 0.8-1.3, elevated ACWR: 1.3-1.5, high ACWR: >1.5)
 \item Cohort reference percentile bands (if provided)
 \item Bootstrap confidence bands (if available in data)
 \item Individual ACWR trend line
@@ -65,15 +65,15 @@ This enhanced plot function combines multiple visualization layers:
 
 The layering order (bottom to top):
 \enumerate{
-\item Risk zones (background)
+\item ACWR zones (background)
 \item Cohort reference bands (P5-P95, then P25-P75)
 \item Confidence intervals (individual uncertainty)
 \item ACWR line (individual trend)
 }
 
-\strong{Note:} The predictive value of ACWR for injury risk is debated in the
-literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
-as descriptive heuristics, not validated injury predictors. See
+\strong{Note:} The predictive value of ACWR for injury outcomes is debated in the
+literature (Impellizzeri et al., 2020). Zone labels should be interpreted
+as descriptive workload heuristics, not validated injury predictors. See
 \code{calculate_acwr()} documentation for full references.
 }
 \examples{
@@ -91,6 +91,7 @@ activities <- load_local_activities("export.zip")
 # Calculate ACWR with EWMA and confidence bands
 acwr <- calculate_acwr_ewma(
   activities,
+  activity_type = "Run",
   method = "ewma",
   ci = TRUE,
   B = 200

@@ -19,23 +19,23 @@ test_that("plot_exposure handles data calculation from activities", {
   csv_path <- system.file("extdata", "activities.csv", package = "Athlytics")
   activities <- load_local_activities(csv_path, start_date = "2025-01-01", end_date = "2025-01-31")
 
-  exposure_result <- calculate_exposure(
+  exposure_result <- suppressWarnings(calculate_exposure(
     activities_data = activities,
     activity_type = "Run",
     load_metric = "duration_mins",
     end_date = "2025-01-31"
-  )
+  ))
   p <- plot_exposure(data = exposure_result)
   expect_equal(nrow(p$data), nrow(exposure_result))
 
-  exposure_result2 <- calculate_exposure(
+  exposure_result2 <- suppressWarnings(calculate_exposure(
     activities_data = activities,
     activity_type = "Run",
     load_metric = "duration_mins",
     acute_period = 5,
     chronic_period = 30,
     end_date = "2025-01-31"
-  )
+  ))
   p2 <- plot_exposure(data = exposure_result2)
   expect_equal(nrow(p2$data), nrow(exposure_result2))
 })
@@ -44,23 +44,23 @@ test_that("plot_exposure handles different load metrics", {
   csv_path <- system.file("extdata", "activities.csv", package = "Athlytics")
   activities <- load_local_activities(csv_path, start_date = "2025-01-01", end_date = "2025-01-31")
 
-  exposure_duration <- calculate_exposure(
+  exposure_duration <- suppressWarnings(calculate_exposure(
     activities_data = activities,
     activity_type = "Run",
     load_metric = "duration_mins",
     end_date = "2025-01-31"
-  )
+  ))
   p_duration <- plot_exposure(data = exposure_duration)
   expect_equal(nrow(p_duration$data), nrow(exposure_duration))
 
-  exposure_hrss <- calculate_exposure(
+  exposure_hrss <- suppressWarnings(calculate_exposure(
     activities_data = activities,
     activity_type = "Run",
     load_metric = "hrss",
     user_max_hr = 200,
     user_resting_hr = 50,
     end_date = "2025-01-31"
-  )
+  ))
   p_hrss <- plot_exposure(data = exposure_hrss)
   expect_equal(nrow(p_hrss$data), nrow(exposure_hrss))
 })

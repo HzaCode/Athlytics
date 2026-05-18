@@ -43,8 +43,22 @@ calculate_daily_load_internal <- function(activities_df,
                                           user_ftp = NULL,
                                           user_max_hr = NULL,
                                           user_resting_hr = NULL) {
-  safe_as_numeric <- function(x) {
-    as.numeric(rlang::`%||%`(x, 0))
+  safe_as_numeric <- function(x, default = NA_real_) {
+    x <- rlang::`%||%`(x, default)
+    if (length(x) == 0) {
+      x <- default
+    }
+    suppressWarnings(as.numeric(x)[1])
+  }
+
+  first_positive_numeric <- function(...) {
+    for (value in list(...)) {
+      numeric_value <- safe_as_numeric(value)
+      if (!is.na(numeric_value) && is.finite(numeric_value) && numeric_value > 0) {
+        return(numeric_value)
+      }
+    }
+    0
   }
 
   lapply(seq_len(nrow(activities_df)), function(i) {
@@ -57,8 +71,10 @@ calculate_daily_load_internal <- function(activities_df,
     elapsed_sec <- safe_as_numeric(activity$elapsed_time)
     avg_hr <- safe_as_numeric(activity$average_heartrate)
     elevation_gain <- safe_as_numeric(activity$elevation_gain)
-    np_proxy <- safe_as_numeric(activity$weighted_average_watts %||%
-      activity$average_watts %||% 0)
+    np_proxy <- first_positive_numeric(
+      activity$weighted_average_watts,
+      activity$average_watts
+    )
 
     # Calculate load based on metric
     load_rec <- compute_single_load(
@@ -164,7 +180,8 @@ warn_missing_load_absorbed <- function(daily_load_df, missing_load) {
 #'   `NA_real_` when the metric was not computable. `status` is one of
 #'   `"ok"`, `"missing_duration"`, `"missing_heart_rate"`,
 #'   `"missing_threshold_hr"`, `"hr_out_of_range"`, `"missing_power"`,
-#'   `"missing_ftp"`, or `"unsupported_metric"`.
+#'   `"missing_ftp"`, `"missing_distance"`, `"missing_elapsed_time"`,
+#'   `"missing_elevation_gain"`, or `"unsupported_metric"`.
 #'
 #' @keywords internal
 #' @noRd
@@ -178,17 +195,43 @@ compute_single_load <- function(load_metric,
                                 user_ftp,
                                 user_max_hr,
                                 user_resting_hr) {
-  if (is.na(duration_sec) || duration_sec <= 0) {
-    return(list(value = NA_real_, status = "missing_duration"))
+  missing_numeric <- function(x) {
+    length(x) != 1 || is.na(x) || !is.finite(x)
   }
 
   switch(load_metric,
-    "duration_mins" = list(value = duration_sec / 60, status = "ok"),
-    "distance_km" = list(value = distance_m / 1000, status = "ok"),
-    "elapsed_time_mins" = list(value = elapsed_sec / 60, status = "ok"),
-    "elevation_gain_m" = list(value = elevation_gain, status = "ok"),
+    "duration_mins" = {
+      if (missing_numeric(duration_sec) || duration_sec <= 0) {
+        list(value = NA_real_, status = "missing_duration")
+      } else {
+        list(value = duration_sec / 60, status = "ok")
+      }
+    },
+    "distance_km" = {
+      if (missing_numeric(distance_m)) {
+        list(value = NA_real_, status = "missing_distance")
+      } else {
+        list(value = distance_m / 1000, status = "ok")
+      }
+    },
+    "elapsed_time_mins" = {
+      if (missing_numeric(elapsed_sec) || elapsed_sec <= 0) {
+        list(value = NA_real_, status = "missing_elapsed_time")
+      } else {
+        list(value = elapsed_sec / 60, status = "ok")
+      }
+    },
+    "elevation_gain_m" = {
+      if (missing_numeric(elevation_gain)) {
+        list(value = NA_real_, status = "missing_elevation_gain")
+      } else {
+        list(value = elevation_gain, status = "ok")
+      }
+    },
     "hrss" = {
-      if (is.null(user_max_hr) || is.null(user_resting_hr) ||
+      if (missing_numeric(duration_sec) || duration_sec <= 0) {
+        list(value = NA_real_, status = "missing_duration")
+      } else if (is.null(user_max_hr) || is.null(user_resting_hr) ||
         !is.numeric(user_max_hr) || !is.numeric(user_resting_hr) ||
         user_max_hr <= user_resting_hr) {
         list(value = NA_real_, status = "missing_threshold_hr")
@@ -203,7 +246,9 @@ compute_single_load <- function(load_metric,
       }
     },
     "tss" = {
-      if (is.null(user_ftp) || !is.numeric(user_ftp) || user_ftp <= 0) {
+      if (missing_numeric(duration_sec) || duration_sec <= 0) {
+        list(value = NA_real_, status = "missing_duration")
+      } else if (is.null(user_ftp) || !is.numeric(user_ftp) || user_ftp <= 0) {
         list(value = NA_real_, status = "missing_ftp")
       } else if (is.na(np_proxy) || np_proxy <= 0) {
         list(value = NA_real_, status = "missing_power")

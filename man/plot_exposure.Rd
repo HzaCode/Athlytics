@@ -19,7 +19,7 @@ plot_exposure(
 \item{data}{A data frame from \code{calculate_exposure()}.
 Must contain \code{date}, \code{atl}, and \code{ctl} columns.}
 
-\item{risk_zones}{Add background shading for typical ACWR risk zones? Default \code{TRUE}.}
+\item{risk_zones}{Add background shading for typical descriptive ACWR zones? Default \code{TRUE}.}
 
 \item{show_date_color}{Logical. Whether to color points by date (gradient). Default \code{TRUE}.
 The date gradient helps visualize the training trajectory over time: lighter colors
@@ -31,7 +31,7 @@ is less important than the overall distribution).}
 \item{caption}{Plot caption. Default NULL (no caption).}
 
 \item{axis_limit}{Optional. Numeric value to set both x and y axis limits (0 to axis_limit).
-Useful when plotting risk zones without data or with sparse data. Default NULL (auto-scale).}
+Useful when plotting ACWR zones without data or with sparse data. Default NULL (auto-scale).}
 
 \item{title}{Optional. Custom title for the plot.}
 
@@ -50,7 +50,7 @@ Visualizes the relationship between Acute and Chronic Training Load.
 \details{
 Visualizes training state by plotting ATL vs CTL (related to PMC charts).
 Points are colored by date, latest point is highlighted (red triangle).
-Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
+Optional ACWR zones (based on thresholds ~0.8, 1.3, 1.5) can be shaded.
 \strong{Best practice: Use \code{calculate_exposure()} first, then pass the result to this function.}
 }
 \examples{

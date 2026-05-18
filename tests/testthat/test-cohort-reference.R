@@ -164,6 +164,60 @@ test_that("add_reference_bands adds layers to plot", {
   expect_gt(length(plot_with_bands$layers), length(base_plot$layers))
 })
 
+test_that("reference plotting rejects unfiltered grouped reference data", {
+  dates <- seq(as.Date("2024-01-01"), by = "day", length.out = 3)
+  grouped_reference <- data.frame(
+    date = rep(dates, times = 10),
+    percentile = rep(rep(c("p05", "p25", "p50", "p75", "p95"), each = 3), times = 2),
+    value = runif(30),
+    sport = rep(c("Run", "Ride"), each = 15),
+    stringsAsFactors = FALSE
+  )
+
+  individual <- data.frame(
+    date = dates,
+    acwr_smooth = c(0.9, 1.0, 1.1),
+    stringsAsFactors = FALSE
+  )
+
+  base_plot <- ggplot2::ggplot(individual, ggplot2::aes(x = date, y = acwr_smooth)) +
+    ggplot2::geom_line()
+
+  expect_error(
+    add_reference_bands(base_plot, grouped_reference),
+    "multiple groups per date/percentile"
+  )
+  expect_error(
+    plot_with_reference(individual, grouped_reference),
+    "multiple groups per date/percentile"
+  )
+
+  run_reference <- dplyr::filter(grouped_reference, .data$sport == "Run")
+  expect_s3_class(add_reference_bands(base_plot, run_reference), "ggplot")
+  expect_s3_class(plot_with_reference(individual, run_reference), "ggplot")
+})
+
+test_that("README cohort reference example is runnable with two athletes", {
+  data("sample_acwr", package = "Athlytics")
+  cohort_acwr <- dplyr::bind_rows(
+    dplyr::mutate(sample_acwr, athlete_id = "A1"),
+    dplyr::mutate(sample_acwr,
+      athlete_id = "A2",
+      acwr_smooth = acwr_smooth * 1.05
+    )
+  )
+
+  reference_bands <- calculate_cohort_reference(
+    cohort_acwr,
+    metric = "acwr_smooth",
+    by = character(0),
+    min_athletes = 2
+  )
+
+  expect_s3_class(reference_bands, "data.frame")
+  expect_gt(nrow(reference_bands), 0)
+})
+
 test_that("cohort_reference handles missing grouping variables gracefully", {
   cohort_data <- data.frame(
     date = rep(as.Date("2024-01-01"), 10),

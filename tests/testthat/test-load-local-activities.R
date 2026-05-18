@@ -44,6 +44,36 @@ test_that("load_local_activities explains likely non-English Strava exports", {
   )
 })
 
+test_that("load_local_activities preserves duplicate CSV headers for alias fallback", {
+  temp_csv <- tempfile(fileext = ".csv")
+  on.exit(unlink(temp_csv))
+  writeLines(
+    c(
+      paste(
+        "Activity ID", "Activity Date", "Activity Type",
+        "Distance", "Distance",
+        "Elapsed Time", "Elapsed Time",
+        "Moving Time", "Moving Time",
+        sep = ","
+      ),
+      paste(
+        "1", "2024-01-01 08:00:00", "Run",
+        "9999", "5000",
+        "2000", "2100",
+        "1900", "1950",
+        sep = ","
+      )
+    ),
+    temp_csv
+  )
+
+  result <- load_local_activities(temp_csv)
+
+  expect_equal(result$distance, 5000)
+  expect_equal(result$elapsed_time, 2100)
+  expect_equal(result$moving_time, 1950)
+})
+
 test_that("load_local_activities with ZIP missing activities.csv errors", {
   temp_zip <- tempfile(fileext = ".zip")
   temp_txt <- tempfile(fileext = ".txt")

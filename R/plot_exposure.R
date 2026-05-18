@@ -6,7 +6,7 @@
 #'
 #' @param data A data frame from `calculate_exposure()`.
 #'   Must contain `date`, `atl`, and `ctl` columns.
-#' @param risk_zones Add background shading for typical ACWR risk zones? Default `TRUE`.
+#' @param risk_zones Add background shading for typical descriptive ACWR zones? Default `TRUE`.
 #' @param show_date_color Logical. Whether to color points by date (gradient). Default `TRUE`.
 #'   The date gradient helps visualize the training trajectory over time: lighter colors
 #'   represent earlier dates and darker colors represent more recent dates, so you can
@@ -15,7 +15,7 @@
 #'   is less important than the overall distribution).
 #' @param caption Plot caption. Default NULL (no caption).
 #' @param axis_limit Optional. Numeric value to set both x and y axis limits (0 to axis_limit).
-#'   Useful when plotting risk zones without data or with sparse data. Default NULL (auto-scale).
+#'   Useful when plotting ACWR zones without data or with sparse data. Default NULL (auto-scale).
 #' @param title Optional. Custom title for the plot.
 #' @param subtitle Optional. Custom subtitle for the plot.
 #' @param ... Additional arguments.
@@ -26,7 +26,7 @@
 #'
 #' @details Visualizes training state by plotting ATL vs CTL (related to PMC charts).
 #'   Points are colored by date, latest point is highlighted (red triangle).
-#'   Optional risk zones (based on ACWR thresholds ~0.8, 1.3, 1.5) can be shaded.
+#'   Optional ACWR zones (based on thresholds ~0.8, 1.3, 1.5) can be shaded.
 #'   **Best practice: Use `calculate_exposure()` first, then pass the result to this function.**
 #'
 #' @export
@@ -206,10 +206,10 @@ plot_exposure <- function(data,
       ggplot2::geom_abline(intercept = 0, slope = danger_zone_upper, linetype = "dotted", color = "red") +
       ggplot2::coord_cartesian(xlim = c(0, max_ctl_limit), ylim = c(0, max_atl_limit), expand = FALSE)
 
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.05, y = max_atl_limit * 0.95, label = sprintf("High Risk (>%.1f)", danger_zone_upper), hjust = 0, vjust = 1, color = "red", size = 2.8, alpha = 0.7)
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.2, y = max_atl_limit * 0.7, label = sprintf("Caution (%.1f-%.1f)", sweet_spot_upper, danger_zone_upper), hjust = 0, vjust = 1, color = "orange", size = 2.8, alpha = 0.7)
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.5, y = max_atl_limit * 0.5, label = sprintf("Sweet Spot (%.1f-%.1f)", sweet_spot_lower, sweet_spot_upper), hjust = 0, vjust = 1, color = "darkgreen", size = 2.8, alpha = 0.7)
-    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.7, y = max_atl_limit * 0.2, label = sprintf("Low Load (<%.1f)", sweet_spot_lower), hjust = 0, vjust = 0, color = "blue", size = 2.8, alpha = 0.7)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.05, y = max_atl_limit * 0.95, label = sprintf("High ACWR (>%.1f)", danger_zone_upper), hjust = 0, vjust = 1, color = "red", size = 2.8, alpha = 0.7)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.2, y = max_atl_limit * 0.7, label = sprintf("Elevated ACWR (%.1f-%.1f)", sweet_spot_upper, danger_zone_upper), hjust = 0, vjust = 1, color = "orange", size = 2.8, alpha = 0.7)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.5, y = max_atl_limit * 0.5, label = sprintf("Reference Band (%.1f-%.1f)", sweet_spot_lower, sweet_spot_upper), hjust = 0, vjust = 1, color = "darkgreen", size = 2.8, alpha = 0.7)
+    p <- p + ggplot2::annotate("text", x = max_ctl_limit * 0.7, y = max_atl_limit * 0.2, label = sprintf("Low ACWR (<%.1f)", sweet_spot_lower), hjust = 0, vjust = 0, color = "blue", size = 2.8, alpha = 0.7)
   }
 
   return(p)

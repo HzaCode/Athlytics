@@ -4,19 +4,20 @@
 #'
 #' Computes the Acute:Chronic Workload Ratio (ACWR) from local Strava activity data
 #' using rolling average methods. ACWR is a key metric for monitoring training load
-#' and injury risk in athletes (Gabbett, 2016; Hulin et al., 2016).
+#' balance in athletes (Gabbett, 2016; Hulin et al., 2016).
 #'
 #' @description
 #' This function calculates daily training load and derives acute (short-term) and
 #' chronic (long-term) load averages, then computes their ratio (ACWR). The ACWR
-#' helps identify periods of rapid training load increases that may elevate injury risk.
+#' helps identify periods when recent load is elevated relative to chronic load.
 #'
 #' **Key Concepts:**
 #' - **Acute Load (ATL)**: Rolling average of recent training (default: 7 days)
 #' - **Chronic Load (CTL)**: Rolling average of longer-term training (default: 28 days)
 #' - **ACWR**: Ratio of ATL to CTL (ATL / CTL)
-#' - **Safe Zone**: ACWR between 0.8-1.3 (optimal training stimulus)
-#' - **Danger Zone**: ACWR > 1.5 (increased injury risk)
+#' - **Reference Band**: ACWR between 0.8-1.3 (commonly used load-balance band)
+#' - **Elevated ACWR Band**: ACWR between 1.3-1.5
+#' - **High ACWR Band**: ACWR > 1.5 (load-spike threshold)
 #'
 #' @param activities_data A data frame of activities from `load_local_activities()`.
 #'   Must contain columns: `date`, `distance`, `moving_time`, `elapsed_time`,
@@ -90,11 +91,11 @@
 #' - `"hrss"`: HR-based load using heart rate reserve (simplified TRIMP; **not** TrainingPeaks hrTSS).
 #'   Formula: `duration_sec * (HR - resting_HR) / (max_HR - resting_HR)`.
 #'
-#' **Interpretation Guidelines:**
-#' - ACWR < 0.8: May indicate detraining or insufficient load
-#' - ACWR 0.8-1.3: "Sweet spot" - optimal training stimulus with lower injury risk
-#' - ACWR 1.3-1.5: Caution zone - monitor for fatigue
-#' - ACWR > 1.5: High risk zone - consider load management
+#' **Descriptive ACWR Bands:**
+#' - ACWR < 0.8: Recent load below chronic load
+#' - ACWR 0.8-1.3: Commonly used training-load reference band
+#' - ACWR 1.3-1.5: Elevated recent/chronic load ratio
+#' - ACWR > 1.5: High ACWR ratio / load-spike band
 #'
 #' **Multi-Athlete Studies:**
 #' For cohort analyses, add an `athlete_id` column before calculation and use
@@ -115,8 +116,8 @@
 #' recent literature. Some researchers argue that ACWR may have limited utility for
 #' predicting injuries (Impellizzeri et al., 2020), and a subsequent analysis has
 #' called for dismissing the ACWR framework entirely (Impellizzeri et al., 2021).
-#' Users should interpret ACWR risk zones with caution and consider them as
-#' descriptive heuristics rather than validated injury predictors.
+#' Users should interpret ACWR zones as descriptive heuristics rather than
+#' validated injury predictors.
 #'
 #' Impellizzeri, F. M., Tenan, M. S., Kempton, T., Novak, A., & Coutts, A. J. (2020).
 #' Acute:chronic workload ratio: conceptual issues and fundamental pitfalls.
@@ -223,7 +224,7 @@
 #' print(cohort_acwr)
 #' }
 calculate_acwr <- function(activities_data,
-                           activity_type = NULL,
+                           activity_type,
                            load_metric = "duration_mins",
                            acute_period = 7,
                            chronic_period = 28,
@@ -252,7 +253,7 @@ calculate_acwr <- function(activities_data,
   validate_load_metric_params(load_metric, user_ftp, user_max_hr, user_resting_hr)
 
   # Force explicit activity_type specification to prevent mixing incompatible sports
-  if (is.null(activity_type) || length(activity_type) == 0) {
+  if (missing(activity_type) || is.null(activity_type) || length(activity_type) == 0) {
     stop(
       "`activity_type` must be explicitly specified (e.g., 'Run' or 'Ride'). ",
       "Mixing different activity types can lead to incompatible load metrics. ",
@@ -279,57 +280,26 @@ calculate_acwr <- function(activities_data,
   fetch_start_buffer_days <- chronic_period
   fetch_start_date <- analysis_start_date - lubridate::days(fetch_start_buffer_days)
 
-  # Use local activities data
   athlytics_message("Processing local activities data...", .verbose = verbose_on)
-  activities_df_filtered <- activities_data %>%
-    dplyr::filter(.data$date >= fetch_start_date & .data$date <= analysis_end_date)
-
-  if (!is.null(activity_type)) {
-    activities_df_filtered <- activities_df_filtered %>%
-      dplyr::filter(.data$type %in% activity_type)
-  }
+  activities_df_scoped <- activity_history_scope(
+    activities_data, activity_type, analysis_end_date
+  )
+  fetch_start_date <- clip_unknown_prehistory_start(
+    scoped_activities = activities_df_scoped,
+    fetch_start_date = fetch_start_date,
+    analysis_start_date = analysis_start_date,
+    analysis_end_date = analysis_end_date,
+    baseline_days = chronic_period,
+    metric_label = "ACWR"
+  )
+  activities_df_filtered <- activities_df_scoped %>%
+    dplyr::filter(.data$date >= fetch_start_date)
 
   activities_fetched_count <- nrow(activities_df_filtered)
   athlytics_message(sprintf("Loaded %d activities from local data.", activities_fetched_count), .verbose = verbose_on)
 
   if (activities_fetched_count == 0) {
     stop("No activities found in local data for the required date range (", fetch_start_date, " to ", analysis_end_date, ").")
-  }
-
-  # Clip the chronic-buffer start to the earliest recorded activity to avoid
-  # conflating "rest day" (real 0 load) with "no data yet" (unknown load).
-  # Prior versions coalesced every pre-history day to 0 and dragged the
-  # chronic baseline toward 0, producing spuriously high ACWR in the first
-  # chronic_period days of output.
-  first_activity_date <- suppressWarnings(min(
-    as.Date(activities_df_filtered$date),
-    na.rm = TRUE
-  ))
-  if (is.finite(first_activity_date) && first_activity_date > fetch_start_date) {
-    # Only warn when the gap is material: i.e. the earliest activity is so
-    # late that roughly half or more of the chronic window's worth of
-    # analysis days cannot be fully populated by real history. A 1- or 2-day
-    # start-date misalignment is a common, benign pattern (users set
-    # start_date = first_activity_date) and should not spam warnings.
-    gap_days <- as.integer(first_activity_date - analysis_start_date)
-    warn_threshold <- max(7L, as.integer(chronic_period / 2))
-    if (gap_days >= warn_threshold) {
-      affected_days <- as.integer(
-        pmin(first_activity_date + chronic_period - 1, analysis_end_date) -
-          analysis_start_date + 1
-      )
-      affected_days <- max(0L, affected_days)
-      warning(sprintf(
-        paste0(
-          "Earliest activity (%s) is %d day(s) after the requested start_date (%s). ",
-          "ACWR for roughly the first %d day(s) of the analysis window will be NA ",
-          "because the chronic baseline has no prior data to anchor on."
-        ),
-        format(first_activity_date), gap_days,
-        format(analysis_start_date), affected_days
-      ), call. = FALSE)
-    }
-    fetch_start_date <- first_activity_date
   }
 
   # --- Process Activities into Daily Load (using internal helper) ---

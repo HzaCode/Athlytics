@@ -76,6 +76,29 @@ test_that("plot_acwr_enhanced handles reference overlays", {
   expect_true(any(layer_geoms(p_incomplete) %in% c("GeomLine", "GeomRibbon", "GeomRect")))
 })
 
+test_that("plot_acwr_enhanced rejects grouped reference data unless filtered", {
+  n_dates <- min(5, nrow(sample_acwr))
+  ref_dates <- sample_acwr$date[1:n_dates]
+  grouped_reference <- data.frame(
+    date = rep(ref_dates, times = 10),
+    percentile = rep(rep(c("p05", "p25", "p50", "p75", "p95"), each = n_dates), times = 2),
+    value = runif(10 * n_dates),
+    sport = rep(c("Run", "Ride"), each = 5 * n_dates),
+    stringsAsFactors = FALSE
+  )
+
+  expect_error(
+    plot_acwr_enhanced(acwr_with_ci, reference_data = grouped_reference),
+    "multiple groups per date/percentile"
+  )
+
+  run_reference <- dplyr::filter(grouped_reference, .data$sport == "Run")
+  expect_s3_class(
+    plot_acwr_enhanced(acwr_with_ci, reference_data = run_reference),
+    "ggplot"
+  )
+})
+
 test_that("plot_acwr_enhanced handles risk zones and custom labels", {
   p_zone <- plot_acwr_enhanced(acwr_with_ci, highlight_zones = TRUE)
   expect_true(any(layer_geoms(p_zone) %in% c("GeomRect", "GeomAnnotation")))
@@ -121,6 +144,8 @@ test_that("plot_acwr_comparison combines both methods correctly", {
   expect_equal(nrow(p$data), nrow(acwr_ra) + nrow(acwr_ewma))
   expect_contains(names(p$data), "method")
   expect_length(unique(p$data$method), 2)
+  expect_false(grepl(paste("high", "risk"), p$labels$subtitle, ignore.case = TRUE))
+  expect_match(p$labels$subtitle, "high ACWR|load spike", ignore.case = TRUE)
 
   p_custom <- plot_acwr_comparison(acwr_ra, acwr_ewma, title = "Custom Comparison")
   expect_equal(p_custom$labels$title, "Custom Comparison")

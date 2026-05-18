@@ -4,7 +4,7 @@
 #'
 #' Calculates aerobic decoupling for Strava activities from local export data.
 #'
-#' Calculates aerobic decoupling (HR drift relative to pace/power) using detailed
+#' Calculates aerobic decoupling (HR drift relative to speed/power) using detailed
 #' activity stream data from local FIT/TCX/GPX files.
 #'
 #' @param activities_data A data frame from `load_local_activities()`. Required unless `stream_df` is provided.
@@ -71,6 +71,7 @@
 #' @section Status vocabulary:
 #' - `"ok"`: Decoupling computed from a contiguous steady-state block.
 #' - `"missing_hr_data"`: Stream lacked a `heartrate` / `heart_rate` column.
+#' - `"missing_time_data"`: Stream lacked a `time` column.
 #' - `"missing_velocity_data"` / `"missing_power_data"`: Stream lacked the
 #'   column required by the chosen `decouple_metric`.
 #' - `"insufficient_hr_data"`: Time-weighted HR coverage < `min_hr_coverage`.
@@ -108,8 +109,8 @@
 #'   2. The CV (= rolling SD / rolling mean) is calculated at each time point.
 #'   3. Time points with CV < `steady_cv_threshold` (default 8 %) are classified
 #'      as steady-state.
-#'   4. At least `min_steady_minutes` of steady-state data must be present;
-#'      otherwise the activity is marked `"non_steady"`.
+#'   4. At least `min_steady_minutes` of contiguous steady-state data must be
+#'      present; otherwise the activity is marked `"insufficient_steady_duration"`.
 #'   5. Decoupling is then calculated by comparing the EF (output / HR) of the
 #'      first half vs. the second half of the steady-state segment.
 #'
@@ -176,7 +177,7 @@ calculate_decoupling <- function(activities_data = NULL,
                                  min_steady_minutes = 40,
                                  steady_cv_threshold = 0.08,
                                  min_hr_coverage = 0.9,
-                                 quality_control = c("off", "flag", "filter"),
+                                 quality_control = c("filter", "flag", "off"),
                                  stream_df = NULL,
                                  return_diagnostics = FALSE,
                                  verbose = FALSE) {
@@ -431,21 +432,22 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
     stream_df <- stream_df %>% dplyr::rename(watts = "power")
   }
 
-  # Validate stream_df structure
-  required_cols <- c("time", "heartrate")
+  # Validate stream_df structure. Return diagnostic statuses instead of
+  # throwing, so return_diagnostics = TRUE can expose the promised reason.
+  if (!"time" %in% colnames(stream_df)) {
+    return(make_rec(status = "missing_time_data"))
+  }
+  if (!"heartrate" %in% colnames(stream_df)) {
+    return(make_rec(status = "missing_hr_data"))
+  }
   if (decouple_metric == "speed_hr") {
     if (!"distance" %in% colnames(stream_df) && !"velocity_smooth" %in% colnames(stream_df)) {
-      stop("For speed_hr decoupling, stream_df must contain 'distance' or 'velocity_smooth' column.")
+      return(make_rec(status = "missing_velocity_data"))
     }
   } else { # power_hr
     if (!"watts" %in% colnames(stream_df)) {
-      stop("For power_hr decoupling, stream_df must contain 'watts' column.")
+      return(make_rec(status = "missing_power_data"))
     }
-  }
-
-  missing_cols <- setdiff(required_cols, colnames(stream_df))
-  if (length(missing_cols) > 0) {
-    stop("stream_df missing required columns: ", paste(missing_cols, collapse = ", "))
   }
 
   # Estimate the stream's median sampling interval once so the rolling-CV
@@ -487,14 +489,19 @@ calculate_single_decoupling <- function(stream_df, decouple_metric, quality_cont
       stream_clean <- stream_clean %>%
         dplyr::mutate(velocity = .data$velocity_smooth)
     } else if ("distance" %in% colnames(stream_clean)) {
-      # Calculate velocity from distance
-      stream_clean <- stream_clean %>%
-        dplyr::arrange(.data$time) %>%
-        dplyr::mutate(
-          distance_diff = .data$distance - dplyr::lag(.data$distance, default = first(.data$distance)),
-          time_diff = .data$time - dplyr::lag(.data$time, default = first(.data$time)),
-          velocity = ifelse(.data$time_diff > 0, .data$distance_diff / .data$time_diff, 0)
-        )
+      # Calculate velocity from distance using numeric seconds so POSIXct
+      # stream timestamps do not yield difftime arithmetic.
+      stream_clean <- stream_clean %>% dplyr::arrange(.data$time)
+      time_seconds <- stream_time_seconds(stream_clean$time)
+      stream_clean$distance_diff <- stream_clean$distance -
+        dplyr::lag(stream_clean$distance, default = dplyr::first(stream_clean$distance))
+      stream_clean$time_diff <- time_seconds -
+        dplyr::lag(time_seconds, default = dplyr::first(time_seconds))
+      stream_clean$velocity <- ifelse(
+        is.finite(stream_clean$time_diff) & stream_clean$time_diff > 0,
+        stream_clean$distance_diff / stream_clean$time_diff,
+        0
+      )
     }
 
     stream_clean <- stream_clean %>%

@@ -6,7 +6,7 @@
 \usage{
 calculate_acwr_ewma(
   activities_data,
-  activity_type = NULL,
+  activity_type,
   load_metric = "duration_mins",
   method = c("ra", "ewma"),
   acute_period = 7,
@@ -29,7 +29,8 @@ calculate_acwr_ewma(
 \arguments{
 \item{activities_data}{A data frame of activities from \code{load_local_activities()}.}
 
-\item{activity_type}{Optional. Filter activities by type. Default NULL includes all.}
+\item{activity_type}{Required. Filter activities by type, such as \code{"Run"} or
+\code{"Ride"}. Explicit filtering avoids mixing incompatible sport contexts.}
 
 \item{load_metric}{Method for calculating daily load. Default "duration_mins".}
 
@@ -85,12 +86,13 @@ with configurable half-lives. More responsive to recent changes.
 }
 
 \strong{EWMA Formula}: The smoothing parameter alpha is calculated from half-life:
-\code{alpha = ln(2) / half_life}. The EWMA update is: \verb{E_t = alpha * L_t + (1-alpha) * E_\{t-1\}}
-where L_t is daily load and E_t is the exponentially weighted average.
+\code{alpha = 1 - exp(-ln(2) / half_life)}. The EWMA update is:
+\verb{E_t = alpha * L_t + (1-alpha) * E_\{t-1\}} where L_t is daily load
+and E_t is the exponentially weighted average.
 
 \strong{Confidence Bands}: When \code{ci = TRUE} and \code{method = "ewma"}, uses \strong{moving-block
 bootstrap} to estimate uncertainty. The daily load sequence is resampled in
-weekly blocks (preserving within-week correlation), ACWR is recalculated,
+overlapping weekly blocks (preserving within-week correlation), ACWR is recalculated,
 and percentiles form the confidence bands. This accounts for temporal correlation
 in training load patterns.
 }
@@ -104,11 +106,12 @@ head(sample_acwr)
 activities <- load_local_activities("export_12345678.zip")
 
 # Calculate ACWR using Rolling Average (RA)
-acwr_ra <- calculate_acwr_ewma(activities, method = "ra")
+acwr_ra <- calculate_acwr_ewma(activities, activity_type = "Run", method = "ra")
 
 # Calculate ACWR using EWMA with confidence bands
 acwr_ewma <- calculate_acwr_ewma(
   activities,
+  activity_type = "Run",
   method = "ewma",
   half_life_acute = 3.5,
   half_life_chronic = 14,

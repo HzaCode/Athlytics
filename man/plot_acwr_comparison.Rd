@@ -39,8 +39,8 @@ if (!is.null(sample_acwr) && nrow(sample_acwr) > 0) {
 \dontrun{
 activities <- load_local_activities("export.zip")
 
-acwr_ra <- calculate_acwr_ewma(activities, method = "ra")
-acwr_ewma <- calculate_acwr_ewma(activities, method = "ewma")
+acwr_ra <- calculate_acwr_ewma(activities, activity_type = "Run", method = "ra")
+acwr_ewma <- calculate_acwr_ewma(activities, activity_type = "Run", method = "ewma")
 
 plot_acwr_comparison(acwr_ra, acwr_ewma)
 }

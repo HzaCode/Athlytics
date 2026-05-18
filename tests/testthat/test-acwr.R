@@ -363,6 +363,8 @@ test_that("calculate_acwr_ewma works with EWMA method", {
 
   expect_s3_class(result, "data.frame")
   expect_contains(colnames(result), c("date", "atl", "ctl", "acwr", "acwr_smooth"))
+  expect_s3_class(result, "athlytics_acwr")
+  expect_equal(attr(result, "params")$method, "ewma")
   expect_gt(nrow(result), 0)
   expect_true(all(result$atl >= 0, na.rm = TRUE))
   expect_true(all(result$ctl >= 0, na.rm = TRUE))
@@ -390,6 +392,53 @@ test_that("calculate_acwr_ewma CI works with EWMA method", {
   if (any(valid)) {
     expect_true(all(result$acwr_lower[valid] <= result$acwr_upper[valid]))
   }
+})
+
+test_that("calculate_acwr_ewma CI aligns after history-start clipping", {
+  first_activity <- as.Date("2024-02-01")
+  dates <- seq(first_activity, by = "day", length.out = 80)
+  activities <- data.frame(
+    id = seq_along(dates),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates, tz = "UTC"),
+    moving_time = rep(3600, length(dates)),
+    elapsed_time = rep(3600, length(dates)),
+    distance = 10000 + seq_along(dates),
+    average_heartrate = rep(150, length(dates)),
+    average_speed = rep(3.0, length(dates)),
+    stringsAsFactors = FALSE
+  )
+
+  set.seed(123)
+  result <- suppressWarnings(suppressMessages(calculate_acwr_ewma(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "distance_km",
+    method = "ewma",
+    start_date = first_activity - 14,
+    end_date = first_activity + 60,
+    ci = TRUE,
+    B = 10
+  )))
+
+  finite_ci <- is.finite(result$acwr_lower) & is.finite(result$acwr_upper)
+  expect_true(any(finite_ci))
+  expect_true(all(result$acwr_lower[finite_ci] <= result$acwr_upper[finite_ci]))
+  expect_true(all(result$date >= first_activity))
+})
+
+test_that("moving-block bootstrap samples overlapping start positions", {
+  loads <- 1:10
+
+  boot_loads <- Athlytics:::moving_block_bootstrap_loads(
+    loads,
+    block_len = 4,
+    starts = c(2, 5, 7)
+  )
+
+  expect_equal(boot_loads, c(2, 3, 4, 5, 5, 6, 7, 8, 7, 8))
 })
 
 test_that("calculate_acwr_ewma warns when CI used with RA method", {
@@ -427,6 +476,61 @@ test_that("calculate_acwr_ewma validates EWMA parameters", {
       method = "ewma", half_life_acute = 20, half_life_chronic = 10),
     "half_life_acute.*less than.*half_life_chronic"
   )
+  expect_error(
+    calculate_acwr_ewma(activities, activity_type = "Run",
+      method = "ewma", smoothing_period = 0),
+    "smoothing_period.*positive integer"
+  )
+  expect_error(
+    calculate_acwr_ewma(activities, activity_type = "Run",
+      method = "ewma", ci = TRUE, B = 0),
+    "`B`.*positive integer"
+  )
+  expect_error(
+    calculate_acwr_ewma(activities, activity_type = "Run",
+      method = "ewma", ci = TRUE, block_len = 0),
+    "block_len.*positive integer"
+  )
+  expect_error(
+    calculate_acwr_ewma(activities, activity_type = "Run",
+      method = "ewma", ci = TRUE, conf_level = 1),
+    "conf_level.*between 0 and 1"
+  )
+})
+
+test_that("EWMA half-life mapping reaches half value after one half-life", {
+  h <- 4
+  alpha <- 1 - exp(-log(2) / h)
+  out <- Athlytics:::calculate_ewma_loads(
+    loads = c(100, rep(0, h)),
+    alpha_acute = alpha,
+    alpha_chronic = alpha,
+    smoothing_period = 1
+  )
+
+  expect_equal(out$acute_load[h + 1], 50, tolerance = 1e-8)
+  expect_equal(out$chronic_load[h + 1], 50, tolerance = 1e-8)
+})
+
+test_that("calculate_acwr_ewma remains stable with short half-lives", {
+  activities <- load_extdata_activities()
+  win <- extdata_window(activities)
+
+  result <- suppressMessages(calculate_acwr_ewma(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "duration_mins",
+    method = "ewma",
+    half_life_acute = 0.5,
+    half_life_chronic = 1,
+    start_date = win$start_date,
+    end_date = win$end_date
+  ))
+
+  expect_true(all(is.na(result$atl) | is.finite(result$atl)))
+  expect_true(all(is.na(result$ctl) | is.finite(result$ctl)))
+  expect_true(all(result$atl >= 0, na.rm = TRUE))
+  expect_true(all(result$ctl >= 0, na.rm = TRUE))
 })
 
 test_that("calculate_acwr_ewma validates RA parameters", {
@@ -552,14 +656,14 @@ test_that("calculate_acwr warns when requested start_date is far before first ac
       start_date = start,
       end_date = end
     )),
-    regexp = "is.*day.*after.*start_date"
+    regexp = "after the required history-buffer start"
   )
 })
 
-test_that("calculate_acwr does not warn when start_date equals first_activity_date (regression)", {
-  # Common benign pattern: user sets start_date to their first activity date.
-  # Pre-fix this warned every time; post-fix the threshold check suppresses
-  # benign 0 / 1 day gaps.
+test_that("calculate_acwr warns when start_date equals first activity but buffer history is unknown", {
+  # If the first available activity is also the requested start date, the
+  # chronic buffer is still unobserved. This should be explicit rather than
+  # silently imputing pre-export history as rest.
   end <- Sys.Date()
   first_activity <- end - 60
   activities <- data.frame(
@@ -572,13 +676,76 @@ test_that("calculate_acwr does not warn when start_date equals first_activity_da
     stringsAsFactors = FALSE
   )
 
-  expect_no_warning(suppressMessages(calculate_acwr(
+  expect_warning(
+    suppressMessages(calculate_acwr(
+      activities_data = activities,
+      activity_type = "Run",
+      load_metric = "distance_km",
+      start_date = first_activity,
+      end_date = end
+    )),
+    regexp = "required history-buffer start"
+  )
+})
+
+test_that("calculate_acwr does not clip observed rest days at the buffer start", {
+  end <- as.Date("2024-03-31")
+  start <- as.Date("2024-03-04")
+  fetch_start <- start - 28
+  activities <- data.frame(
+    id = 1:2,
+    type = "Run",
+    sport_type = "Run",
+    date = c(fetch_start - 10, start + 16),
+    start_date_local = as.POSIXct(c(fetch_start - 10, start + 16)),
+    moving_time = c(3600, 3600),
+    distance = c(10000, 10000),
+    average_heartrate = c(150, 150),
+    stringsAsFactors = FALSE
+  )
+
+  result <- expect_no_warning(suppressMessages(calculate_acwr(
     activities_data = activities,
     activity_type = "Run",
     load_metric = "distance_km",
-    start_date = first_activity,
+    acute_period = 7,
+    chronic_period = 28,
+    start_date = start,
     end_date = end
   )))
+
+  expect_equal(min(result$date), start)
+  expect_true(any(!is.na(result$ctl)))
+})
+
+test_that("calculate_acwr_ewma does not clip observed rest days at the buffer start", {
+  end <- as.Date("2024-03-31")
+  start <- as.Date("2024-03-04")
+  fetch_start <- start - ceiling(4 * 14)
+  activities <- data.frame(
+    id = 1:2,
+    type = "Run",
+    sport_type = "Run",
+    date = c(fetch_start - 10, start + 16),
+    start_date_local = as.POSIXct(c(fetch_start - 10, start + 16)),
+    moving_time = c(3600, 3600),
+    distance = c(10000, 10000),
+    average_heartrate = c(150, 150),
+    stringsAsFactors = FALSE
+  )
+
+  result <- expect_no_warning(suppressMessages(calculate_acwr_ewma(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "distance_km",
+    method = "ewma",
+    half_life_acute = 3.5,
+    half_life_chronic = 14,
+    start_date = start,
+    end_date = end
+  )))
+
+  expect_equal(min(result$date), start)
 })
 
 # --- missing_load: rest day vs missing-data training day (v1.0.5) -------
@@ -671,4 +838,106 @@ test_that("calculate_acwr warns when missing_load = 'zero' silently absorbs data
     )),
     regexp = "non-computable load.*missing_load = \"na\""
   )
+})
+
+test_that("calculate_acwr warns for missing distance loads under default zero mode (regression)", {
+  n <- 60
+  end_day <- as.Date("2024-03-01")
+  dates <- seq(end_day - (n - 1), end_day, by = "day")
+  activities <- data.frame(
+    id = seq_len(n),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n),
+    moving_time = rep(3600, n),
+    elapsed_time = rep(3600, n),
+    average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n),
+    stringsAsFactors = FALSE
+  )
+  activities$distance[30] <- NA_real_
+
+  expect_warning(
+    suppressMessages(calculate_acwr(
+      activities_data = activities,
+      activity_type = "Run",
+      load_metric = "distance_km",
+      start_date = dates[1],
+      end_date = end_day
+    )),
+    regexp = "missing_distance.*missing_load = \"na\""
+  )
+})
+
+test_that("calculate_acwr_ewma resumes after missing-load gaps in NA mode (regression)", {
+  n <- 80
+  end_day <- as.Date("2024-03-20")
+  dates <- seq(end_day - (n - 1), end_day, by = "day")
+  activities <- data.frame(
+    id = seq_len(n),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n),
+    moving_time = rep(3600, n),
+    elapsed_time = rep(3600, n),
+    average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n),
+    stringsAsFactors = FALSE
+  )
+  activities$distance[30] <- NA_real_
+
+  result <- suppressWarnings(calculate_acwr_ewma(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "distance_km",
+    method = "ewma",
+    start_date = dates[1],
+    end_date = end_day,
+    missing_load = "na"
+  ))
+
+  expect_true(is.na(result$acwr[result$date == dates[30]]))
+  expect_true(any(!is.na(tail(result$acwr, 10))))
+})
+
+test_that("calculate_acwr_ewma CI resumes after missing-load gaps in NA mode", {
+  n <- 80
+  end_day <- as.Date("2024-03-20")
+  dates <- seq(end_day - (n - 1), end_day, by = "day")
+  activities <- data.frame(
+    id = seq_len(n),
+    type = "Run",
+    sport_type = "Run",
+    date = dates,
+    start_date_local = as.POSIXct(dates),
+    distance = rep(10000, n),
+    moving_time = rep(3600, n),
+    elapsed_time = rep(3600, n),
+    average_heartrate = rep(150, n),
+    average_speed = rep(3.0, n),
+    stringsAsFactors = FALSE
+  )
+  activities$distance[30] <- NA_real_
+
+  set.seed(123)
+  result <- suppressWarnings(calculate_acwr_ewma(
+    activities_data = activities,
+    activity_type = "Run",
+    load_metric = "distance_km",
+    method = "ewma",
+    start_date = dates[1],
+    end_date = end_day,
+    missing_load = "na",
+    ci = TRUE,
+    B = 10
+  ))
+
+  finite_ci <- is.finite(result$acwr_lower) & is.finite(result$acwr_upper)
+  expect_true(any(finite_ci))
+  expect_true(all(result$acwr_lower[finite_ci] <= result$acwr_upper[finite_ci]))
+  expect_true(any(finite_ci & result$date > dates[30]))
 })

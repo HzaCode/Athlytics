@@ -75,6 +75,7 @@ all_data <- rbind(df_1k, df_5k, df_10k, df_hm) %>%
     activity_id = paste0("activity_", row_number()),
     elapsed_time = time_seconds,
     moving_time = time_seconds,
+    time_basis = "moving",
     time_period = seconds_to_period(time_seconds)
   )
 
@@ -92,7 +93,8 @@ sample_pbs <- all_data %>%
   # Select and order columns to match package documentation
   select(
     activity_id, activity_date, distance, elapsed_time, moving_time,
-    time_seconds, cumulative_pb_seconds, is_pb, distance_label, time_period
+    time_seconds, cumulative_pb_seconds, is_pb, distance_label, time_period,
+    time_basis
   )
 
 # Convert to tibble for consistency

@@ -8,14 +8,14 @@
   <!-- Group 1: CI/CD, Reviews & Licenses -->
   <a href="https://github.com/ropensci/Athlytics/actions/workflows/R-CMD-check.yml"><img src="https://img.shields.io/github/actions/workflow/status/ropensci/Athlytics/R-CMD-check.yml?style=flat-square&label=R-CMD-check" alt="R-CMD-check"></a>
   <a href="https://github.com/ropensci/software-review/issues/728"><img src="https://badges.ropensci.org/728_status.svg" alt="rOpenSci Status"></a>
-  <a href="https://ropensci.github.io/Athlytics/"><img src="https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square" alt="Documentation"></a>
+  <a href="https://docs.ropensci.org/Athlytics/"><img src="https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square" alt="Documentation"></a>
   <a href="https://app.codecov.io/gh/ropensci/Athlytics"><img src="https://img.shields.io/codecov/c/github/ropensci/Athlytics?style=flat-square" alt="Codecov"></a>
   <a href="https://www.repostatus.org/#active"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License"></a>
   <br>
   <!-- Group 2: CRAN Release & Status (Moved to the back) -->
-  <a href="https://cran.r-project.org/package=Athlytics"><img src="https://img.shields.io/badge/CRAN-Accepted-blue?style=flat-square" alt="CRAN Status"></a>
-  <a href="https://CRAN.R-project.org/view=SportsAnalytics"><img src="https://img.shields.io/badge/CRAN%20Listed-Sports%20Analytics-orange?style=flat-square" alt="CRAN Listed"></a>
+  <a href="https://cran.r-project.org/package=Athlytics"><img src="https://www.r-pkg.org/badges/version/Athlytics?style=flat-square" alt="CRAN Version"></a>
+  <a href="https://CRAN.R-project.org/view=SportsAnalytics"><img src="https://img.shields.io/badge/Task%20View-Sports%20Analytics-orange?style=flat-square" alt="CRAN Task View: Sports Analytics"></a>
   <a href="https://cran.r-project.org/package=Athlytics"><img src="https://cranlogs.r-pkg.org/badges/grand-total/Athlytics?style=flat-square" alt="CRAN Downloads"></a>
 </p>
 
@@ -31,8 +31,8 @@ The package standardizes the workflow from data ingestion and quality control to
 ## Key Features
 
 * **Reproducible by design** - Fully offline; no API keys. Deterministic pipelines suitable for longitudinal studies.
-* **Validated metrics** - Implements ACWR, EF, and decoupling commonly used in exercise physiology; integrated **QC** checks.
-* **Uncertainty-aware** - Functions return estimates with variance/intervals where applicable, enabling principled inference.
+* **Sports-science metrics** - Implements ACWR, EF, and decoupling workflows commonly used in exercise physiology; integrated **QC** checks.
+* **Uncertainty-aware** - Functions return confidence intervals or reference bands where implemented, enabling transparent inference.
 * **Cohort support** - Built-in helpers for multi-athlete datasets and percentile-band references.
 * **Tidy outputs** - Consistent, analysis-ready tibbles for downstream modeling and figure pipelines.
 
@@ -61,9 +61,11 @@ decoupling logic, zip-aware PB calculation, `time_basis`, the
 `missing_load` knob, or any of the 1.0.x rOpenSci review fixes. Only
 use it if you specifically need the legacy Strava-API pipeline.*
 
-### Optional: FIT file support
+### Optional: stream parser support
 
-Athlytics can parse activity stream files in TCX/GPX formats out of the box. **FIT support is optional** and uses **FITfileR**, which is installed from GitHub (not CRAN).
+Athlytics can parse TCX/GPX activity stream files when the suggested `xml2`
+package is installed. **FIT support is optional** and uses **FITfileR**, which
+is installed from GitHub (not CRAN).
 
 If your Strava export includes `.fit` files (and you want Athlytics to parse them), install FITfileR:
 
@@ -81,7 +83,7 @@ remotes::install_github("grimbough/FITfileR")
 1.  Navigate to **[Strava](https://www.strava.com/)** and open Settings → My Account.
 2.  Under "Download or Delete Your Account," click **"Get Started"** and then **"Request Your Archive"**.
 3.  You'll receive an email with a download link - this may take some time.
-4.  Download the ZIP file (e.g., `export_12345678.zip`). As of **1.0.5** the `.zip` can be passed directly to `load_local_activities()`, `calculate_pbs()`, and `calculate_decoupling()` via their `export_dir` argument; `calculate_ef()` still operates on activity summaries and therefore does not need `export_dir` for its main workflow. Unzipping into a directory is still supported and is a reasonable option if you plan to iterate over the export many times.
+4.  Download the ZIP file (e.g., `export_12345678.zip`). As of **1.0.5** the `.zip` can be passed directly to `load_local_activities()`. Stream-based functions can reuse that same ZIP path via `export_dir`: `calculate_pbs()`, `calculate_decoupling()`, and `calculate_ef()` when you want EF to use activity streams for steady-state detection. `calculate_ef()` also falls back to activity-summary averages when `export_dir` is omitted. Unzipping into a directory is still supported and is a reasonable option if you plan to iterate over the export many times.
 
 ### 💻 Step 2: Load and Analyze (Cohort Example)
 
@@ -103,7 +105,12 @@ cohort_acwr <- cohort_data |>
   ungroup()
 
 # 3. Generate percentile bands to serve as a reference for the cohort
-reference_bands <- calculate_cohort_reference(cohort_acwr, metric = "acwr_smooth")
+reference_bands <- calculate_cohort_reference(
+  cohort_acwr,
+  metric = "acwr_smooth",
+  by = character(0),
+  min_athletes = 2
+)
 
 # 4. Plot an individual's data against the cohort reference bands
 individual_acwr <- cohort_acwr |> filter(athlete_id == "A1")
@@ -122,15 +129,17 @@ Track how your training load is progressing to avoid ramping up too quickly — 
 
 ![ACWR Analysis](man/figures/01b_acwr_multi_group.png)
 
-*[Learn more about ACWR analysis](https://ropensci.github.io/Athlytics/reference/calculate_acwr.html)*
+*[Learn more about ACWR analysis](https://docs.ropensci.org/Athlytics/reference/calculate_acwr.html)*
 
 ### Aerobic Efficiency (EF)
 
-See how your aerobic fitness is changing over time by comparing your output (pace or power) to your effort (heart rate). A rising trend is a great sign of improving fitness.
+See how your aerobic fitness is changing over time by comparing your output (speed or power) to your effort (heart rate). A rising trend is a great sign of improving fitness.
 
 ![Efficiency Factor](man/figures/02b_ef_multi_group.png)
 
-*[Learn more about Aerobic Efficiency](https://ropensci.github.io/Athlytics/reference/calculate_ef.html)*
+When an export ZIP or directory is supplied through `export_dir`, EF uses activity streams for steady-state detection; without it, EF is computed from activity-summary averages.
+
+*[Learn more about Aerobic Efficiency](https://docs.ropensci.org/Athlytics/reference/calculate_ef.html)*
 
 ### Cardiovascular Decoupling
 
@@ -138,7 +147,7 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
 
 ![Decoupling Analysis](man/figures/05b_decoupling_multi_group.png)
 
-*[Learn more about Decoupling](https://ropensci.github.io/Athlytics/reference/calculate_decoupling.html)*
+*[Learn more about Decoupling](https://docs.ropensci.org/Athlytics/reference/calculate_decoupling.html)*
 
 
 
@@ -146,8 +155,8 @@ Measure your endurance by analyzing how much your heart rate "drifts" upward dur
 
 This release implements widely used constructs in endurance-exercise analytics:
 - **ACWR**: rolling acute (e.g., 7-day) vs chronic (e.g., 28-day) load ratios with smoothing options.
-- **Aerobic Efficiency (EF)**: output (pace/power) relative to effort (heart rate) over time.
-- **Cardiovascular Decoupling (pa:hr)**: drift between pace/power and heart rate during steady efforts.
+- **Aerobic Efficiency (EF)**: output (speed/power) relative to effort (heart rate) over time.
+- **Cardiovascular Decoupling (pa:hr)**: drift between speed/power and heart rate during steady efforts.
 
 **Important**: ACWR is a descriptive monitoring tool and should be interpreted with caution. It is not a validated injury-prediction model; see discussion in the sports science literature (e.g., DOI: 10.1007/s40279-020-01378-6).
 

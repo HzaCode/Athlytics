@@ -2,8 +2,9 @@
 
 #' Parse Activity File (FIT, TCX, or GPX)
 #'
-#' Parse activity files from Strava export data.
-#' Supports FIT, TCX, and GPX formats (including .gz compressed files).
+#' Parse activity files from Strava export data. TCX and GPX parsing requires
+#' the suggested `xml2` package; FIT parsing requires the optional `FITfileR`
+#' package. `.gz` compressed files require the suggested `R.utils` package.
 #'
 #' @param file_path Path to the activity file (can be .fit, .tcx, .gpx, or .gz compressed)
 #' @param export_dir Base directory of the Strava export (for resolving relative paths)
@@ -75,16 +76,20 @@ parse_activity_file <- function(file_path, export_dir = NULL) {
     }
     # Decompress to temp file
     temp_file <- tempfile(fileext = gsub("\\.gz$", "", basename(file_path)))
-    tryCatch(
+    decompressed <- tryCatch(
       {
         R.utils::gunzip(file_path, destname = temp_file, remove = FALSE, overwrite = TRUE)
-        file_path <- temp_file
+        TRUE
       },
       error = function(e) {
         warning(sprintf("Failed to decompress file: %s", e$message))
-        return(NULL)
+        FALSE
       }
     )
+    if (!decompressed) {
+      return(NULL)
+    }
+    file_path <- temp_file
   }
 
   # Determine file type
@@ -272,6 +277,14 @@ read_xml_file_safely <- function(file_path) {
   xml2::read_xml(xml_raw[first_lt:length(xml_raw)])
 }
 
+parse_tcx_time <- function(x) {
+  parsed <- as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC")
+  if (is.na(parsed)) {
+    parsed <- as.POSIXct(x, format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC")
+  }
+  parsed
+}
+
 #' Parse TCX file
 #' @keywords internal
 parse_tcx_file <- function(file_path) {
@@ -315,12 +328,13 @@ parse_tcx_file <- function(file_path) {
     dist_node <- xml2::xml_find_first(tp, "./d1:DistanceMeters", ns)
     dist <- if (length(dist_node) > 0) xml2::xml_text(dist_node) else character(0)
 
-    # Extensions for power
-    power_node <- xml2::xml_find_first(tp, ".//ns3:Watts", ns)
+    # Extensions for power. Match by local name so real TCX files using a
+    # different extension namespace prefix still parse correctly.
+    power_node <- xml2::xml_find_first(tp, ".//*[local-name()='Watts']")
     power <- if (length(power_node) > 0) xml2::xml_text(power_node) else character(0)
 
     data.frame(
-      time = if (length(time) > 0) as.POSIXct(time[1], format = "%Y-%m-%dT%H:%M:%OS", tz = "UTC") else NA,
+      time = if (length(time) > 0) parse_tcx_time(time[1]) else NA,
       latitude = if (length(lat) > 0) as.numeric(lat[1]) else NA,
       longitude = if (length(lon) > 0) as.numeric(lon[1]) else NA,
       elevation = if (length(alt) > 0) as.numeric(alt[1]) else NA,
@@ -376,11 +390,20 @@ parse_gpx_file <- function(file_path) {
     time_node <- xml2::xml_find_first(trkpt, "./d1:time", ns)
     time <- if (length(time_node) > 0) xml2::xml_text(time_node) else character(0)
 
-    hr_node <- xml2::xml_find_first(trkpt, ".//gpxtpx:hr", ns)
+    hr_node <- xml2::xml_find_first(trkpt, ".//*[local-name()='hr']")
     hr <- if (length(hr_node) > 0) xml2::xml_text(hr_node) else character(0)
 
-    cad_node <- xml2::xml_find_first(trkpt, ".//gpxtpx:cad", ns)
+    cad_node <- xml2::xml_find_first(trkpt, ".//*[local-name()='cad']")
     cad <- if (length(cad_node) > 0) xml2::xml_text(cad_node) else character(0)
+
+    power_node <- xml2::xml_find_first(
+      trkpt,
+      paste0(
+        ".//*[local-name()='power' or local-name()='PowerInWatts' ",
+        "or local-name()='Watts']"
+      )
+    )
+    power <- if (length(power_node) > 0) xml2::xml_text(power_node) else character(0)
 
     data.frame(
       time = if (length(time) > 0) as.POSIXct(time[1], format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC") else NA,
@@ -388,7 +411,7 @@ parse_gpx_file <- function(file_path) {
       longitude = if (!is.null(lon)) as.numeric(lon) else NA,
       elevation = if (length(ele) > 0) as.numeric(ele[1]) else NA,
       heart_rate = if (length(hr) > 0) as.numeric(hr[1]) else NA,
-      power = NA,
+      power = if (length(power) > 0) as.numeric(power[1]) else NA,
       cadence = if (length(cad) > 0) as.numeric(cad[1]) else NA,
       stringsAsFactors = FALSE
     )

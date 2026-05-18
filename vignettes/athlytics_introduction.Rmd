@@ -46,12 +46,18 @@ This tutorial will guide you through a complete workflow—from loading your Str
 For installation instructions, see the [README](https://github.com/ropensci/Athlytics#installation). The quick version:
 
 ```{r eval=FALSE}
-# CRAN (stable)
-install.packages("Athlytics")
+# Current release from r-universe (recommended)
+install.packages(
+  "Athlytics",
+  repos = c("https://ropensci.r-universe.dev", "https://cloud.r-project.org")
+)
 
-# GitHub (latest features)
+# Development version from GitHub
 remotes::install_github("ropensci/Athlytics")
 ```
+
+CRAN currently carries an older release (`0.1.2`). Use r-universe or GitHub for
+the current offline Strava ZIP workflow described here.
 
 ## Your Strava Data Export
 
@@ -63,7 +69,9 @@ You'll need a Strava data export ZIP file. If you haven't exported your data yet
 3. Request "Download" (NOT delete!)
 4. Wait for email with download link
 5. Download the ZIP file (e.g., `export_12345678.zip`)
-6. **Don't unzip it** — Athlytics reads ZIP files directly
+6. Keep the ZIP path — Athlytics reads ZIP files directly. Stream-based
+   functions such as `calculate_pbs()`, `calculate_decoupling()`, and
+   stream-based `calculate_ef()` reuse this same path passed as `export_dir`.
 
 ---
 
@@ -76,7 +84,8 @@ library(Athlytics)
 library(dplyr) # For data manipulation
 
 # Load your activities
-activities <- load_local_activities("path/to/export_12345678.zip")
+export_path <- "path/to/export_12345678.zip"
+activities <- load_local_activities(export_path)
 
 # View the first few rows
 head(activities)
@@ -110,7 +119,7 @@ names(activities)
 - `id` — Unique activity identifier
 - `date` — Activity date
 - `type` — Activity type (Run, Ride, Swim, etc.)
-- `distance` — Distance in kilometers
+- `distance` — Distance in meters
 - `moving_time` — Moving time in seconds
 - `average_heartrate` — Average heart rate (if recorded)
 - `max_heartrate` — Maximum heart rate
@@ -161,7 +170,7 @@ runs_2024_hr <- activities |>
 
 # Long runs only (> 15 km)
 long_runs <- activities |>
-  filter(type == "Run", distance > 15)
+  filter(type == "Run", distance > 15000)
 ```
 
 ---
@@ -208,7 +217,7 @@ head(acwr_data)
 # Basic plot
 plot_acwr(acwr_data)
 
-# With risk zones highlighted (recommended)
+# With ACWR zones highlighted (recommended)
 plot_acwr(acwr_data, highlight_zones = TRUE)
 ```
 
@@ -218,35 +227,35 @@ plot_acwr(acwr_data, highlight_zones = TRUE)
 # Load built-in sample data
 data("sample_acwr", package = "Athlytics")
 
-# Plot ACWR with risk zones
+# Plot ACWR with ACWR zones
 plot_acwr(sample_acwr, highlight_zones = TRUE)
 ```
 
-### Risk Zones
+### Descriptive ACWR Bands
 
-- **< 0.8** — Undertraining (fitness may decline)
-- **0.8-1.3** — "Sweet spot" (optimal adaptation zone)
-- **1.3-1.5** — Moderate risk (load increasing rapidly)
-- **> 1.5** — High risk (excessive load spike, injury risk)
+- **< 0.8** - Low ACWR / recent load below chronic load
+- **0.8-1.3** - Commonly used reference band
+- **1.3-1.5** - Elevated ACWR ratio; recent load increasing faster than chronic load
+- **> 1.5** - High ACWR ratio; descriptive load-spike band, not a validated injury-prediction rule
 
 ### Interpreting Your ACWR
 
 **What to look for:**
 
-1. **Gradual increases** = Good progressive overload
-2. **Sharp spikes above 1.5** = Warning signs, consider recovery
-3. **Extended periods < 0.8** = May need to increase training volume
-4. **Stable values in 0.8-1.3** = Optimal training stimulus
+1. **Gradual increases** = progressive recent-load increase
+2. **Sharp spikes above 1.5** = large recent/chronic-load imbalance; interpret with training context
+3. **Extended periods < 0.8** = recent load below the chronic-load baseline
+4. **Stable values in 0.8-1.3** = values within a commonly used reference band
 
 **Practical Example:**
 
 ```{r eval=FALSE}
-# Identify high-risk periods
-high_risk <- acwr_data |>
+# Identify high-ACWR periods
+high_acwr <- acwr_data |>
   filter(acwr_smooth > 1.5) |>
   select(date, atl, ctl, acwr_smooth)
 
-print(high_risk)
+print(high_acwr)
 
 # Check recent trend
 recent_acwr <- acwr_data |>
@@ -272,13 +281,16 @@ Different load metrics for different goals:
 # Calculate using HRSS (heart rate stress score)
 acwr_hrss <- calculate_acwr(
   activities_data = runs,
-  load_metric = "hrss" # Automatically calculated if average_heartrate available
+  activity_type = "Run",
+  load_metric = "hrss",
+  user_max_hr = 190,
+  user_resting_hr = 50
 )
 ```
 
 ### Important Caveats
 
-ACWR is widely used in practice, but its interpretation — especially as an "injury risk" indicator — is debated in the sports science literature. The original framework was proposed by Hulin et al. (2014) and popularized by Gabbett (2016), but subsequent analyses have questioned its predictive validity (Impellizzeri et al., 2020; Lolli et al., 2019), and a further critique called for dismissing the ACWR framework entirely (Impellizzeri et al., 2021). **Use risk zones as descriptive heuristics rather than validated injury predictors.**
+ACWR is widely used in practice, but its interpretation — especially as an "injury risk" indicator — is debated in the sports science literature. The original framework was proposed by Hulin et al. (2014) and popularized by Gabbett (2016), but subsequent analyses have questioned its predictive validity (Impellizzeri et al., 2020; Lolli et al., 2019), and a further critique called for dismissing the ACWR framework entirely (Impellizzeri et al., 2021). **Use ACWR zones as descriptive workload heuristics rather than validated injury predictors.**
 
 > **Key references:**
 >
@@ -317,7 +329,8 @@ Efficiency Factor measures how much output (speed/power) you generate per unit o
 ef_runs <- calculate_ef(
   activities_data = runs,
   activity_type = "Run",
-  ef_metric = "speed_hr" # Speed (m/s) / HR
+  ef_metric = "speed_hr", # Speed (m/s) / HR
+  export_dir = export_path # Optional; enables stream-based steady-state EF
 )
 
 # For cycling (Power/HR)
@@ -325,7 +338,8 @@ rides <- activities |> filter(type == "Ride")
 ef_cycling <- calculate_ef(
   activities_data = rides,
   activity_type = "Ride",
-  ef_metric = "power_hr" # Power divided by HR
+  ef_metric = "power_hr", # Power divided by HR
+  export_dir = export_path # Optional; enables stream-based steady-state EF
 )
 
 # View results
@@ -350,7 +364,11 @@ plot_ef(ef_runs, add_trend_line = TRUE)
 
 # Smooth per activity type (separate trend lines for each discipline)
 # Note: requires data with multiple activity types (e.g., Run + Ride)
-ef_multi <- calculate_ef(activities_data = activities, ef_metric = "speed_hr")
+ef_multi <- calculate_ef(
+  activities_data = activities,
+  ef_metric = "speed_hr",
+  export_dir = export_path
+)
 plot_ef(ef_multi, add_trend_line = TRUE, smooth_per_activity_type = TRUE)
 ```
 
@@ -386,11 +404,11 @@ plot_ef(sample_ef, add_trend_line = TRUE, smooth_per_activity_type = TRUE)
 <details>
 <summary><strong>Technical Detail: Steady-State Detection Algorithm</strong></summary>
 
-1. **Rolling window**: A centered rolling window of min(300, N/4) data points (minimum 60 points, ~1-5 minutes at 1 Hz sampling) is applied to the activity stream.
+1. **Time-based rolling window**: Window size is derived from the stream's median sampling interval, targeting a 300-second centered window while respecting minimum and maximum row caps.
 2. **Coefficient of Variation (CV)**: For each window position, CV = rolling SD / rolling mean is calculated for the primary metric (velocity for running, power for cycling).
-3. **Filtering**: Data points where CV < `steady_cv_threshold` (default 8%) are classified as steady-state segments.
-4. **Minimum duration**: For EF, at least 100 steady-state data points are required. For decoupling, the steady-state segment must span at least `min_steady_minutes` (default 40 minutes).
-5. **Aggregation**: EF and decoupling are computed from steady-state data only, using median-based aggregation to reduce sensitivity to outliers.
+3. **Contiguous steady-state blocks**: Data points where CV < `steady_cv_threshold` (default 8%) are grouped into continuous steady-state blocks rather than pooled across scattered intervals.
+4. **Minimum duration**: EF and decoupling require a contiguous steady-state block spanning at least `min_steady_minutes` (default 20 minutes for EF, 40 minutes for decoupling).
+5. **Aggregation**: EF and decoupling are computed from the accepted steady-state block, using median-based aggregation to reduce sensitivity to outliers.
 
 </details>
 
@@ -435,7 +453,7 @@ While EF tracks aerobic efficiency **across** activities over time, decoupling l
 
 **What is Decoupling?**
 
-Decoupling quantifies cardiovascular drift—the phenomenon where heart rate gradually rises during prolonged efforts even if pace/power remains constant. Low decoupling indicates good aerobic endurance.
+Decoupling quantifies cardiovascular drift—the phenomenon where heart rate gradually rises during prolonged efforts even if speed/power remains constant. Low decoupling indicates good aerobic endurance.
 
 **How It Works:**
 
@@ -459,6 +477,7 @@ Positive values = efficiency decline in second half (HR drift); <5% commonly use
 # For running
 decoupling_runs <- calculate_decoupling(
   activities_data = runs,
+  export_dir = export_path,
   activity_type = "Run",
   decouple_metric = "speed_hr",
   min_duration_mins = 60 # Only analyze runs ≥ 60 minutes
@@ -467,6 +486,7 @@ decoupling_runs <- calculate_decoupling(
 # For cycling
 decoupling_rides <- calculate_decoupling(
   activities_data = rides,
+  export_dir = export_path,
   activity_type = "Ride",
   decouple_metric = "power_hr",
   min_duration_mins = 90 # Longer threshold for cycling
@@ -480,7 +500,9 @@ head(decoupling_runs)
 
 - `date` — Activity date
 - `decoupling` — Decoupling percentage (%). Positive = HR drift
-- `status` — Calculation status (ok, non_steady, insufficient_data)
+- `status` — Calculation status (for example: `ok`, `non_steady`,
+  `insufficient_steady_duration`, `insufficient_hr_data`,
+  `missing_velocity_data`, `missing_power_data`)
 
 ### Visualizing Decoupling
 
@@ -560,6 +582,7 @@ periodization principles (Matveyev, 1981).
 # Extract personal bests
 pbs <- calculate_pbs(
   activities_data = runs,
+  export_dir = export_path,
   activity_type = "Run"
 )
 
@@ -580,7 +603,7 @@ print(pbs)
 plot_pbs(pbs)
 
 # Filter to specific distance
-pbs_5k <- pbs |> filter(distance == "5k")
+pbs_5k <- pbs |> filter(distance_label == "5k")
 print(pbs_5k)
 ```
 
@@ -603,7 +626,7 @@ Visualize your training state in 2D space: acute load vs chronic load.
 > **How does this differ from ACWR?** Both use the same underlying data (ATL and CTL), but provide different perspectives:
 >
 > - **ACWR** collapses acute and chronic load into a **single ratio** plotted over time — it tells you *when* load spikes occurred.
-> - **Load Exposure** preserves the **two-dimensional relationship** (ATL vs CTL scatter plot) — it tells you *where* you are in the fitness-fatigue state space, revealing whether a high ACWR comes from ramping up on a low base (risky) or from a natural fluctuation on a high base (less risky).
+> - **Load Exposure** preserves the **two-dimensional relationship** (ATL vs CTL scatter plot) - it tells you *where* you are in the training-load state space, showing whether a high ACWR comes from ramping up on a low chronic-load base or from a natural fluctuation around a high chronic-load base.
 >
 > In practice, **use ACWR for day-to-day monitoring** and **Load Exposure for strategic planning** across training phases. Using both together gives a more complete picture than either alone.
 
@@ -617,7 +640,7 @@ exposure <- calculate_exposure(
   load_metric = "duration_mins"
 )
 
-# Plot with risk zones
+# Plot with ACWR zones
 plot_exposure(data = exposure, risk_zones = TRUE)
 ```
 
@@ -636,7 +659,7 @@ plot_exposure(data = sample_exposure)
 - **Points above diagonal** = Acute > chronic (ramping up training)
 - **Points on diagonal** = Balanced state
 - **Points below diagonal** = Tapering or recovery
-- **Red zone** = High ACWR, injury risk
+- **Red zone** = High ACWR ratio; descriptive load-spike zone, not a validated injury prediction
 
 ---
 
@@ -650,7 +673,8 @@ library(dplyr)
 library(ggplot2)
 
 # ---- 1. Load and Filter Data ----
-activities <- load_local_activities("my_strava_export.zip")
+export_path <- "my_strava_export.zip"
+activities <- load_local_activities(export_path)
 
 # Focus on running activities with HR data
 runs <- activities |>
@@ -661,6 +685,7 @@ cat(sprintf("Loaded %d running activities with HR data\n", nrow(runs)))
 # ---- 2. Training Load Monitoring ----
 acwr_data <- calculate_acwr(
   activities_data = runs,
+  activity_type = "Run",
   load_metric = "duration_mins"
 )
 
@@ -680,7 +705,9 @@ print(p1)
 # ---- 3. Aerobic Fitness Tracking ----
 ef_data <- calculate_ef(
   activities_data = runs,
-  ef_metric = "speed_hr"
+  activity_type = "Run",
+  ef_metric = "speed_hr",
+  export_dir = export_path
 )
 
 # Calculate fitness trend
@@ -697,6 +724,8 @@ print(p2)
 # Only for long runs (> 60 min)
 decoupling_data <- calculate_decoupling(
   activities_data = runs,
+  export_dir = export_path,
+  activity_type = "Run",
   min_duration_mins = 60
 )
 
@@ -752,8 +781,12 @@ sum(!is.na(activities$average_heartrate))
 # Verify date range
 range(activities$date, na.rm = TRUE)
 
-# Try without filtering first
-test <- calculate_acwr(activities_data = activities, activity_type = NULL)
+# Use an explicit activity type that appears in the table above
+test <- calculate_acwr(
+  activities_data = activities,
+  activity_type = "Run",
+  load_metric = "duration_mins"
+)
 ```
 
 ### "Not enough data for chronic period"

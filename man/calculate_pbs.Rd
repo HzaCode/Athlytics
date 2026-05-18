@@ -16,10 +16,12 @@ calculate_pbs(
 }
 \arguments{
 \item{activities_data}{A data frame of activities from \code{load_local_activities()}.
-Must contain columns: date, type, filename, distance.}
+Must contain columns: date, type, filename, distance.
+Optional \code{id}, \code{name}, and \code{start_date_local} columns are used when
+available; otherwise row number, filename, and date fallbacks are used.}
 
-\item{export_dir}{Base directory of the Strava export containing the activities folder.
-Default is "strava_export_data".}
+\item{export_dir}{Path to a Strava export directory or ZIP file containing
+the activities folder. Default is "strava_export_data".}
 
 \item{activity_type}{Type of activities to analyze (typically "Run"). Default "Run".}
 
@@ -67,11 +69,12 @@ must be long enough to contain the target distance segments.
 \section{PB time semantics}{
 
 \code{find_best_effort()} selects the fastest interval whose cumulative
-\emph{distance} increases strictly monotonically. Samples where the distance
-counter plateaus (traffic stops, laps pausing the watch, signal
-dropouts) are therefore excluded from the candidate window. That makes
-the reported times \emph{moving-time} best efforts rather than elapsed-time
-best efforts.
+\emph{distance} increases strictly monotonically. It builds a compressed
+moving-time axis from those increasing-distance samples, so samples where
+the distance counter plateaus (traffic stops, laps pausing the watch,
+signal dropouts) are excluded from the candidate window and from the
+reported duration. That makes the reported times \emph{moving-time} best
+efforts rather than elapsed-time best efforts.
 
 The authoritative field is \code{time_basis}, which is hard-coded to
 \code{"moving"} in the current implementation. For backward compatibility

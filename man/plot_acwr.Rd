@@ -21,13 +21,14 @@ plot_acwr(
 \item{data}{A data frame from \code{calculate_acwr()} or \code{calculate_acwr_ewma()}.
 Must contain \code{date} and \code{acwr_smooth} columns.}
 
-\item{highlight_zones}{Logical, whether to highlight different ACWR zones (e.g., sweet spot, high risk) on the plot. Default \code{TRUE}.}
+\item{highlight_zones}{Logical, whether to highlight descriptive ACWR bands
+(e.g., reference band, high ACWR) on the plot. Default \code{TRUE}.}
 
-\item{sweet_spot_min}{Lower bound for the "sweet spot" ACWR zone. Default 0.8.}
+\item{sweet_spot_min}{Lower bound for the reference ACWR band. Default 0.8.}
 
-\item{sweet_spot_max}{Upper bound for the "sweet spot" ACWR zone. Default 1.3.}
+\item{sweet_spot_max}{Upper bound for the reference ACWR band. Default 1.3.}
 
-\item{high_risk_min}{Lower bound for the "high risk" ACWR zone. Default 1.5.}
+\item{high_risk_min}{Lower bound for the high-ACWR band. Default 1.5.}
 
 \item{group_var}{Optional. Column name for grouping/faceting (e.g., "athlete_id").}
 
@@ -51,17 +52,19 @@ Visualizes the Acute:Chronic Workload Ratio (ACWR) trend over time.
 \details{
 Plots the ACWR trend over time.
 \strong{Best practice: Use \code{calculate_acwr()} first, then pass the result to this function.}
-ACWR is calculated as acute load / chronic load. A ratio of 0.8-1.3 is often considered the "sweet spot".
+ACWR is calculated as acute load / chronic load. The default 0.8-1.3
+band is a commonly used reference band.
 
-When \code{highlight_zones = TRUE}, all risk zone labels (High Risk, Caution, Sweet Spot,
-Low Load) are \strong{always displayed} regardless of whether data falls within each zone.
+When \code{highlight_zones = TRUE}, all zone labels (High ACWR, Elevated ACWR,
+Reference Band, Low ACWR) are \strong{always displayed} regardless of whether
+data falls within each zone.
 The y-axis is automatically extended to ensure all zone annotations remain visible.
 Zone boundaries can be customised via \code{sweet_spot_min}, \code{sweet_spot_max}, and
 \code{high_risk_min}.
 
-\strong{Note:} The predictive value of ACWR for injury risk is debated in the
-literature (Impellizzeri et al., 2020). Risk zone labels should be interpreted
-as descriptive heuristics, not validated injury predictors. See
+\strong{Note:} The predictive value of ACWR for injury outcomes is debated in the
+literature (Impellizzeri et al., 2020). Zone labels should be interpreted
+as descriptive workload heuristics, not validated injury predictors. See
 \code{calculate_acwr()} documentation for full references.
 }
 \examples{

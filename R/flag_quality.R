@@ -214,10 +214,11 @@ flag_quality <- function(streams,
     # Flag implausible speeds
     speed_implausible <- !is.na(speed) & speed > max_speed
 
-    # Flag excessive acceleration
-    speed_diff <- c(0, diff(speed))
-    time_diff <- c(1, diff(streams$time))
-    time_diff[time_diff == 0] <- 1 # Avoid division by zero
+    # Flag excessive acceleration using numeric seconds. Parsed stream times
+    # are often POSIXct; direct subtraction would create difftime values.
+    speed_diff <- c(NA_real_, diff(speed))
+    time_diff <- c(NA_real_, diff(time_num))
+    time_diff[!is.finite(time_diff) | time_diff <= 0] <- NA_real_
     accel <- speed_diff / time_diff
     accel_excessive <- !is.na(accel) & abs(accel) > max_accel
 

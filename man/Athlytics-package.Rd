@@ -83,7 +83,7 @@ plot_acwr(acwr_data)
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://ropensci.github.io/Athlytics/}
+  \item \url{https://docs.ropensci.org/Athlytics/}
   \item \url{https://github.com/ropensci/Athlytics}
   \item Report bugs at \url{https://github.com/ropensci/Athlytics/issues}
 }
@@ -97,6 +97,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Zhiang He \email{ang@hezhiang.com}
+
+Authors:
+\itemize{
+  \item Zhiang He \email{ang@hezhiang.com}
+}
 
 Other contributors:
 \itemize{

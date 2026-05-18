@@ -136,7 +136,12 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
   activities_raw <- tryCatch(
     {
       if (requireNamespace("readr", quietly = TRUE)) {
-        readr::read_csv(path, show_col_types = FALSE, col_types = readr::cols())
+        readr::read_csv(
+          path,
+          show_col_types = FALSE,
+          col_types = readr::cols(),
+          name_repair = "minimal"
+        )
       } else {
         utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
       }
@@ -145,6 +150,7 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
       stop("Failed to read CSV file: ", e$message)
     }
   )
+  names(activities_raw) <- make.unique(names(activities_raw))
 
   if (nrow(activities_raw) == 0) {
     warning("No activities found in CSV file.")
@@ -190,8 +196,8 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
     "Activity Date" = c("Activity Date"),
     "Activity Type" = c("Activity Type"),
     "Distance" = c("Distance", "Distance.1", "Distance...18"),
-    "Elapsed Time" = c("Elapsed Time", "Elapsed.Time.1", "Elapsed Time...16"),
-    "Moving Time" = c("Moving Time", "Moving.Time")
+    "Elapsed Time" = c("Elapsed Time", "Elapsed Time.1", "Elapsed.Time.1", "Elapsed Time...16"),
+    "Moving Time" = c("Moving Time", "Moving Time.1", "Moving.Time", "Moving.Time.1")
   )
 
   missing_required <- names(required_columns)[
@@ -240,8 +246,10 @@ load_local_activities <- function(path = "strava_export_data/activities.csv",
 
       # Times - CSV shows seconds, has duplicate columns
       # Handle different possible column names based on how R reads the CSV
-      moving_time = as.integer(get_column(c("Moving.Time", "Moving Time"))),
-      elapsed_time = as.integer(if ("Elapsed.Time.1" %in% col_names) {
+      moving_time = as.integer(get_column(c("Moving Time.1", "Moving.Time.1", "Moving.Time", "Moving Time"))),
+      elapsed_time = as.integer(if ("Elapsed Time.1" %in% col_names) {
+        get_column(c("Elapsed Time.1"))
+      } else if ("Elapsed.Time.1" %in% col_names) {
         get_column(c("Elapsed.Time.1"))
       } else if ("Elapsed Time...16" %in% col_names) {
         get_column(c("Elapsed Time...16"))
